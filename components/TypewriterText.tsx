@@ -71,10 +71,10 @@ export function TypewriterText() {
   }, [isMounted]);
 
   return (
-    <div className="text-base md:text-lg text-os-text-secondary-dark font-mono mt-2">
+    <div className="text-base md:text-lg text-os-text-secondary-dark font-accent mt-2">
       <span>Made to help you </span>
       <div 
-        className="inline whitespace-pre-wrap tracking-tight text-brand-aperol font-accent"
+        className="inline whitespace-pre-wrap tracking-tight text-brand-aperol"
         suppressHydrationWarning
       >
         <span suppressHydrationWarning>{text}</span>

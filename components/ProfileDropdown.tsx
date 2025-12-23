@@ -16,7 +16,7 @@ import {
 interface ProfileDropdownProps {
   isOpen: boolean;
   onClose: () => void;
-  triggerRef: React.RefObject<HTMLButtonElement>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
 }
 
 type ThemeOption = 'dark' | 'light' | 'system';

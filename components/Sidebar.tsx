@@ -82,12 +82,12 @@ function SidebarControl() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
+            initial={{ opacity: 0, x: -4 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -4 }}
             transition={{ duration: 0.15 }}
             className="
-              absolute bottom-full left-0 mb-1
+              fixed bottom-12 left-12
               w-44 bg-[var(--bg-secondary)]
               rounded-lg border border-[var(--border-secondary)]
               shadow-lg z-[100]

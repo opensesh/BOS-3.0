@@ -25,8 +25,8 @@ export function Brandmark({ className = '', size = 24 }: BrandmarkProps) {
 
   return (
     <div 
-      className={`flex items-center justify-center ${className}`}
-      style={{ width: size, height: size }}
+      className={`flex items-center justify-center overflow-hidden ${className}`}
+      style={{ width: size, height: size, maxWidth: size, maxHeight: size }}
     >
       <Image
         src={logoSrc}
@@ -34,6 +34,7 @@ export function Brandmark({ className = '', size = 24 }: BrandmarkProps) {
         width={size}
         height={size}
         className="object-contain transition-opacity duration-200"
+        style={{ width: 'auto', height: 'auto', maxWidth: size, maxHeight: size }}
       />
     </div>
   );

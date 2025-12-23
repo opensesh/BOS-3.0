@@ -418,9 +418,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display thin"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayBlack 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayBlack 2.woff2",
+      "variant": "neue-haas-grotesk-display-black",
+      "description": "neue-haas-grotesk-display black"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayBlack.woff2",
       "category": "fonts",
       "filename": "NeueHaasDisplayBlack.woff2",
+      "variant": "neue-haas-grotesk-display-black",
+      "description": "neue-haas-grotesk-display black"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayBlackItalic 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayBlackItalic 2.woff2",
       "variant": "neue-haas-grotesk-display-black",
       "description": "neue-haas-grotesk-display black"
     },
@@ -432,9 +446,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display black"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayBold 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayBold 2.woff2",
+      "variant": "neue-haas-grotesk-display-bold",
+      "description": "neue-haas-grotesk-display bold"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayBold.woff2",
       "category": "fonts",
       "filename": "NeueHaasDisplayBold.woff2",
+      "variant": "neue-haas-grotesk-display-bold",
+      "description": "neue-haas-grotesk-display bold"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayBoldItalic 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayBoldItalic 2.woff2",
       "variant": "neue-haas-grotesk-display-bold",
       "description": "neue-haas-grotesk-display bold"
     },
@@ -446,9 +474,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display bold"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayLight 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayLight 2.woff2",
+      "variant": "neue-haas-grotesk-display-light",
+      "description": "neue-haas-grotesk-display light"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayLight.woff2",
       "category": "fonts",
       "filename": "NeueHaasDisplayLight.woff2",
+      "variant": "neue-haas-grotesk-display-light",
+      "description": "neue-haas-grotesk-display light"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayLightItalic 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayLightItalic 2.woff2",
       "variant": "neue-haas-grotesk-display-light",
       "description": "neue-haas-grotesk-display light"
     },
@@ -460,9 +502,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display light"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayMedium 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayMedium 2.woff2",
+      "variant": "neue-haas-grotesk-display-medium",
+      "description": "neue-haas-grotesk-display medium"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayMedium.woff2",
       "category": "fonts",
       "filename": "NeueHaasDisplayMedium.woff2",
+      "variant": "neue-haas-grotesk-display-medium",
+      "description": "neue-haas-grotesk-display medium"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayMediumItalic 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayMediumItalic 2.woff2",
       "variant": "neue-haas-grotesk-display-medium",
       "description": "neue-haas-grotesk-display medium"
     },
@@ -474,9 +530,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display medium"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayRoman 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayRoman 2.woff2",
+      "variant": "neue-haas-grotesk-display-regular",
+      "description": "neue-haas-grotesk-display regular"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayRoman.woff2",
       "category": "fonts",
       "filename": "NeueHaasDisplayRoman.woff2",
+      "variant": "neue-haas-grotesk-display-regular",
+      "description": "neue-haas-grotesk-display regular"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayRomanItalic 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayRomanItalic 2.woff2",
       "variant": "neue-haas-grotesk-display-regular",
       "description": "neue-haas-grotesk-display regular"
     },
@@ -488,9 +558,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display regular"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayThin 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayThin 2.woff2",
+      "variant": "neue-haas-grotesk-display-thin",
+      "description": "neue-haas-grotesk-display thin"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayThin.woff2",
       "category": "fonts",
       "filename": "NeueHaasDisplayThin.woff2",
+      "variant": "neue-haas-grotesk-display-thin",
+      "description": "neue-haas-grotesk-display thin"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayThinItalic 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayThinItalic 2.woff2",
       "variant": "neue-haas-grotesk-display-thin",
       "description": "neue-haas-grotesk-display thin"
     },
@@ -502,9 +586,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display thin"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayXThin 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayXThin 2.woff2",
+      "variant": "neue-haas-grotesk-display-thin",
+      "description": "neue-haas-grotesk-display thin"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayXThin.woff2",
       "category": "fonts",
       "filename": "NeueHaasDisplayXThin.woff2",
+      "variant": "neue-haas-grotesk-display-thin",
+      "description": "neue-haas-grotesk-display thin"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayXThinItalic 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayXThinItalic 2.woff2",
       "variant": "neue-haas-grotesk-display-thin",
       "description": "neue-haas-grotesk-display thin"
     },
@@ -516,9 +614,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display thin"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayXXThin 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayXXThin 2.woff2",
+      "variant": "neue-haas-grotesk-display-thin",
+      "description": "neue-haas-grotesk-display thin"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayXXThin.woff2",
       "category": "fonts",
       "filename": "NeueHaasDisplayXXThin.woff2",
+      "variant": "neue-haas-grotesk-display-thin",
+      "description": "neue-haas-grotesk-display thin"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk display/Web/NeueHassGrotesk_Display/NeueHaasDisplayXXThinItalic 2.woff2",
+      "category": "fonts",
+      "filename": "NeueHaasDisplayXXThinItalic 2.woff2",
       "variant": "neue-haas-grotesk-display-thin",
       "description": "neue-haas-grotesk-display thin"
     },
@@ -530,9 +642,23 @@ export const ASSET_MANIFEST: {
       "description": "neue-haas-grotesk-display thin"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-55Rg 2.otf",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-55Rg 2.otf",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-55Rg.otf",
       "category": "fonts",
       "filename": "NHaasGroteskTXPro-55Rg.otf",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-56It 2.otf",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-56It 2.otf",
       "variant": "unknown-regular",
       "description": "unknown regular"
     },
@@ -544,9 +670,23 @@ export const ASSET_MANIFEST: {
       "description": "unknown regular"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-65Md 2.otf",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-65Md 2.otf",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-65Md.otf",
       "category": "fonts",
       "filename": "NHaasGroteskTXPro-65Md.otf",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-66MdIt 2.otf",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-66MdIt 2.otf",
       "variant": "unknown-regular",
       "description": "unknown regular"
     },
@@ -558,9 +698,23 @@ export const ASSET_MANIFEST: {
       "description": "unknown regular"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-75Bd 2.otf",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-75Bd 2.otf",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-75Bd.otf",
       "category": "fonts",
       "filename": "NHaasGroteskTXPro-75Bd.otf",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk text/Desktop/Text/NHaasGroteskTXPro-76BdIt 2.otf",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-76BdIt 2.otf",
       "variant": "unknown-regular",
       "description": "unknown regular"
     },
@@ -572,9 +726,23 @@ export const ASSET_MANIFEST: {
       "description": "unknown regular"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-55Rg 2.woff2",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-55Rg 2.woff2",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-55Rg.woff2",
       "category": "fonts",
       "filename": "NHaasGroteskTXPro-55Rg.woff2",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-56It 2.woff2",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-56It 2.woff2",
       "variant": "unknown-regular",
       "description": "unknown regular"
     },
@@ -586,9 +754,23 @@ export const ASSET_MANIFEST: {
       "description": "unknown regular"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-65Md 2.woff2",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-65Md 2.woff2",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-65Md.woff2",
       "category": "fonts",
       "filename": "NHaasGroteskTXPro-65Md.woff2",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-66MdIt 2.woff2",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-66MdIt 2.woff2",
       "variant": "unknown-regular",
       "description": "unknown regular"
     },
@@ -600,9 +782,23 @@ export const ASSET_MANIFEST: {
       "description": "unknown regular"
     },
     {
+      "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-75Bd 2.woff2",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-75Bd 2.woff2",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
       "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-75Bd.woff2",
       "category": "fonts",
       "filename": "NHaasGroteskTXPro-75Bd.woff2",
+      "variant": "unknown-regular",
+      "description": "unknown regular"
+    },
+    {
+      "path": "/assets/fonts/neue-haas-grotesk text/Web/NeueHassGrotesk_Text/NHaasGroteskTXPro-76BdIt 2.woff2",
+      "category": "fonts",
+      "filename": "NHaasGroteskTXPro-76BdIt 2.woff2",
       "variant": "unknown-regular",
       "description": "unknown regular"
     },
@@ -614,6 +810,13 @@ export const ASSET_MANIFEST: {
       "description": "unknown regular"
     },
     {
+      "path": "/assets/fonts/offbit/Desktop/OffBit-101 2.ttf",
+      "category": "fonts",
+      "filename": "OffBit-101 2.ttf",
+      "variant": "offbit-regular",
+      "description": "offbit regular"
+    },
+    {
       "path": "/assets/fonts/offbit/Desktop/OffBit-101.ttf",
       "category": "fonts",
       "filename": "OffBit-101.ttf",
@@ -621,9 +824,23 @@ export const ASSET_MANIFEST: {
       "description": "offbit regular"
     },
     {
+      "path": "/assets/fonts/offbit/Desktop/OffBit-101Bold 2.ttf",
+      "category": "fonts",
+      "filename": "OffBit-101Bold 2.ttf",
+      "variant": "offbit-bold",
+      "description": "offbit bold"
+    },
+    {
       "path": "/assets/fonts/offbit/Desktop/OffBit-101Bold.ttf",
       "category": "fonts",
       "filename": "OffBit-101Bold.ttf",
+      "variant": "offbit-bold",
+      "description": "offbit bold"
+    },
+    {
+      "path": "/assets/fonts/offbit/Desktop/OffBit-Bold 2.ttf",
+      "category": "fonts",
+      "filename": "OffBit-Bold 2.ttf",
       "variant": "offbit-bold",
       "description": "offbit bold"
     },
@@ -635,11 +852,25 @@ export const ASSET_MANIFEST: {
       "description": "offbit bold"
     },
     {
+      "path": "/assets/fonts/offbit/Desktop/OffBit-Dot 2.ttf",
+      "category": "fonts",
+      "filename": "OffBit-Dot 2.ttf",
+      "variant": "offbit-regular",
+      "description": "offbit regular"
+    },
+    {
       "path": "/assets/fonts/offbit/Desktop/OffBit-Dot.ttf",
       "category": "fonts",
       "filename": "OffBit-Dot.ttf",
       "variant": "offbit-regular",
       "description": "offbit regular"
+    },
+    {
+      "path": "/assets/fonts/offbit/Desktop/OffBit-DotBold 2.ttf",
+      "category": "fonts",
+      "filename": "OffBit-DotBold 2.ttf",
+      "variant": "offbit-bold",
+      "description": "offbit bold"
     },
     {
       "path": "/assets/fonts/offbit/Desktop/OffBit-DotBold.ttf",
@@ -649,9 +880,23 @@ export const ASSET_MANIFEST: {
       "description": "offbit bold"
     },
     {
+      "path": "/assets/fonts/offbit/Desktop/OffBit-Regular 2.ttf",
+      "category": "fonts",
+      "filename": "OffBit-Regular 2.ttf",
+      "variant": "offbit-regular",
+      "description": "offbit regular"
+    },
+    {
       "path": "/assets/fonts/offbit/Desktop/OffBit-Regular.ttf",
       "category": "fonts",
       "filename": "OffBit-Regular.ttf",
+      "variant": "offbit-regular",
+      "description": "offbit regular"
+    },
+    {
+      "path": "/assets/fonts/offbit/offbit_Web/OffBit-101 2.woff2",
+      "category": "fonts",
+      "filename": "OffBit-101 2.woff2",
       "variant": "offbit-regular",
       "description": "offbit regular"
     },
@@ -663,9 +908,23 @@ export const ASSET_MANIFEST: {
       "description": "offbit regular"
     },
     {
+      "path": "/assets/fonts/offbit/offbit_Web/OffBit-101Bold 2.woff2",
+      "category": "fonts",
+      "filename": "OffBit-101Bold 2.woff2",
+      "variant": "offbit-bold",
+      "description": "offbit bold"
+    },
+    {
       "path": "/assets/fonts/offbit/offbit_Web/OffBit-101Bold.woff2",
       "category": "fonts",
       "filename": "OffBit-101Bold.woff2",
+      "variant": "offbit-bold",
+      "description": "offbit bold"
+    },
+    {
+      "path": "/assets/fonts/offbit/offbit_Web/OffBit-Bold 2.woff2",
+      "category": "fonts",
+      "filename": "OffBit-Bold 2.woff2",
       "variant": "offbit-bold",
       "description": "offbit bold"
     },
@@ -677,6 +936,13 @@ export const ASSET_MANIFEST: {
       "description": "offbit bold"
     },
     {
+      "path": "/assets/fonts/offbit/offbit_Web/OffBit-Dot 2.woff2",
+      "category": "fonts",
+      "filename": "OffBit-Dot 2.woff2",
+      "variant": "offbit-regular",
+      "description": "offbit regular"
+    },
+    {
       "path": "/assets/fonts/offbit/offbit_Web/OffBit-Dot.woff2",
       "category": "fonts",
       "filename": "OffBit-Dot.woff2",
@@ -684,11 +950,25 @@ export const ASSET_MANIFEST: {
       "description": "offbit regular"
     },
     {
+      "path": "/assets/fonts/offbit/offbit_Web/OffBit-DotBold 2.woff2",
+      "category": "fonts",
+      "filename": "OffBit-DotBold 2.woff2",
+      "variant": "offbit-bold",
+      "description": "offbit bold"
+    },
+    {
       "path": "/assets/fonts/offbit/offbit_Web/OffBit-DotBold.woff2",
       "category": "fonts",
       "filename": "OffBit-DotBold.woff2",
       "variant": "offbit-bold",
       "description": "offbit bold"
+    },
+    {
+      "path": "/assets/fonts/offbit/offbit_Web/OffBit-Regular 2.woff2",
+      "category": "fonts",
+      "filename": "OffBit-Regular 2.woff2",
+      "variant": "offbit-regular",
+      "description": "offbit regular"
     },
     {
       "path": "/assets/fonts/offbit/offbit_Web/OffBit-Regular.woff2",
@@ -1558,10 +1838,10 @@ export function getAllAssetPaths(): string[] {
 // Asset counts for summary
 export const ASSET_COUNTS = {
   logos: 25,
-  fonts: 72,
+  fonts: 112,
   illustrations: 35,
   images: 48,
   textures: 25,
   icons: 9,
-  total: 214,
+  total: 254,
 };

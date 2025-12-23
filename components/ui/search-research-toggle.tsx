@@ -166,10 +166,10 @@ export function SearchResearchToggle({
     <div ref={containerRef} className="inline-block">
       {/* Toggle Buttons with iOS-style slider */}
       <div className="relative inline-block">
-        <div className="relative inline-flex items-center bg-os-bg-dark rounded-lg p-1">
+        <div className="relative inline-flex items-center bg-[var(--bg-tertiary)] rounded-lg p-1">
           {/* Sliding pill indicator */}
           <div
-            className="absolute top-1 h-[calc(100%-8px)] w-[32px] bg-brand-aperol rounded-md transition-all duration-300 ease-out"
+            className="absolute top-1 h-[calc(100%-8px)] w-[32px] bg-[var(--bg-brand-solid)] rounded-md transition-all duration-300 ease-out"
             style={{
               left: activeMode === 'search' ? '4px' : '36px',
             }}
@@ -186,8 +186,8 @@ export function SearchResearchToggle({
                 relative z-10 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-300
                 ${
                   activeMode === 'search'
-                    ? 'text-white'
-                    : 'text-os-text-secondary-dark hover:text-os-text-primary-dark'
+                    ? 'text-[var(--fg-white)]'
+                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'
                 }
               `}
               aria-label="Search mode"
@@ -196,7 +196,7 @@ export function SearchResearchToggle({
             </button>
             {/* Simple tooltip when suggestions are showing */}
             {showSuggestionsState && (
-              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-os-text-primary-dark bg-os-surface-dark border border-os-border-dark rounded-md opacity-0 group-hover/search:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-50">
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-[var(--fg-primary)] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-md opacity-0 group-hover/search:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-50">
                 Search
               </span>
             )}
@@ -213,8 +213,8 @@ export function SearchResearchToggle({
                 relative z-10 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-300
                 ${
                   activeMode === 'research'
-                    ? 'text-white'
-                    : 'text-os-text-secondary-dark hover:text-os-text-primary-dark'
+                    ? 'text-[var(--fg-white)]'
+                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'
                 }
               `}
               aria-label="Research mode"
@@ -223,7 +223,7 @@ export function SearchResearchToggle({
             </button>
             {/* Simple tooltip when suggestions are showing */}
             {showSuggestionsState && (
-              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-os-text-primary-dark bg-os-surface-dark border border-os-border-dark rounded-md opacity-0 group-hover/research:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-50">
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-[var(--fg-primary)] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-md opacity-0 group-hover/research:opacity-100 transition-opacity duration-150 whitespace-nowrap pointer-events-none z-50">
                 Research
               </span>
             )}
@@ -235,41 +235,35 @@ export function SearchResearchToggle({
           <div
             onMouseEnter={handleTooltipMouseEnter}
             onMouseLeave={handleTooltipMouseLeave}
-            className="absolute top-full left-0 mt-3 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-os-border-dark shadow-2xl p-4 z-[10001]"
-            style={{
-              backgroundColor: '#1a1a1a',
-            }}
+            className="absolute top-full left-0 mt-3 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-[var(--border-secondary)] shadow-[var(--shadow-lg)] p-4 z-[10001] bg-[var(--bg-secondary)]"
           >
             {/* Arrow pointer with solid background */}
             <div
-              className={`absolute -top-[9px] w-4 h-4 border-l border-t border-os-border-dark transform rotate-45 transition-all duration-200 ${getArrowPosition()}`}
-              style={{ 
-                backgroundColor: '#1a1a1a',
-              }}
+              className={`absolute -top-[9px] w-4 h-4 border-l border-t border-[var(--border-secondary)] transform rotate-45 transition-all duration-200 bg-[var(--bg-secondary)] ${getArrowPosition()}`}
             />
             
             <div className="relative">
-              <h3 className="font-semibold text-os-text-primary-dark mb-1">
+              <h3 className="font-semibold text-[var(--fg-primary)] mb-1">
                 {hoveredButton === 'search' ? 'Search' : 'Research'}
               </h3>
-              <p className="text-sm text-os-text-secondary-dark mb-3">
+              <p className="text-sm text-[var(--fg-tertiary)] mb-3">
                 {hoveredButton === 'search'
                   ? 'Fast answers to everyday questions'
                   : 'Deep research on any topic'}
               </p>
-              <div className="border-t border-os-border-dark pt-3">
-                <p className="text-xs text-brand-aperol mb-2">
+              <div className="border-t border-[var(--border-secondary)] pt-3">
+                <p className="text-xs text-[var(--fg-brand-primary)] mb-2">
                   Extended access for subscribers
                 </p>
-                <p className="text-xs text-os-text-secondary-dark mb-2">
+                <p className="text-xs text-[var(--fg-tertiary)] mb-2">
                   {hoveredButton === 'search'
                     ? 'Advanced search with 10x the sources; powered by top models'
                     : 'In-depth reports with more sources, charts, and advanced reasoning'}
                 </p>
-                <p className="text-xs text-os-text-secondary-dark mb-3">
+                <p className="text-xs text-[var(--fg-tertiary)] mb-3">
                   3 queries remaining today
                 </p>
-                <button className="w-full bg-brand-aperol hover:bg-orange-600 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors">
+                <button className="w-full bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid_hover)] text-[var(--fg-white)] text-sm font-medium py-2 px-4 rounded-lg transition-colors">
                   Upgrade to Pro
                 </button>
               </div>
@@ -330,7 +324,7 @@ export function SearchResearchSuggestions({
       {/* Loading indicator */}
       {isLoading && (
         <div className="flex items-center justify-center py-2">
-          <div className="w-4 h-4 border-2 border-brand-aperol border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-[var(--border-brand-solid)] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -343,13 +337,13 @@ export function SearchResearchSuggestions({
               variants={suggestionItem}
               type="button"
               onClick={() => onQueryClick?.(suggestion, true)}
-              whileHover={{ x: 4, backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+              whileHover={{ x: 4, backgroundColor: 'var(--bg-tertiary)' }}
               whileTap={{ scale: 0.98 }}
               className="w-full text-left px-2 py-2 rounded-lg transition-colors group"
             >
               <div className="flex items-start space-x-3">
-                <CurrentIcon className="w-4 h-4 text-os-text-secondary-dark group-hover:text-brand-aperol mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-os-text-primary-dark group-hover:text-brand-aperol">
+                <CurrentIcon className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] mt-0.5 flex-shrink-0" />
+                <span className="text-sm text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)]">
                   {suggestion}
                 </span>
               </div>

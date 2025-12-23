@@ -4,15 +4,17 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Plus, Check, Upload, FileText, ImageIcon, Palette, X } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Brandmark } from './Brandmark';
 import { Brand } from '@/types';
 
 // Default brands - can be extended
+// Note: logoPath will be dynamically selected based on theme
 const DEFAULT_BRANDS: Brand[] = [
   {
     id: 'open-session',
     name: 'Open Session',
-    logoPath: '/assets/logos/brandmark-vanilla.svg',
+    logoPath: '', // Will be set based on theme
     isDefault: true,
   },
 ];
@@ -86,7 +88,8 @@ interface BrandSelectorProps {
   onClick?: () => void;
 }
 
-export function BrandSelector({ size = 32, className = '', href = '/', onClick }: BrandSelectorProps) {
+export function BrandSelector({ size = 20, className = '', href = '/', onClick }: BrandSelectorProps) {
+  const { resolvedTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [brands, setBrands] = useState<Brand[]>(getStoredBrands());
@@ -95,11 +98,27 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
   const [newCompanyName, setNewCompanyName] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const selectedBrand = brands.find(b => b.id === selectedBrandId) || brands[0];
+
+  // Wait for theme to be resolved
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Get theme-aware logo path for default brand
+  const getLogoPath = (brand: Brand) => {
+    if (brand.isDefault && mounted) {
+      return resolvedTheme === 'dark'
+        ? '/assets/logos/brandmark-vanilla.svg'
+        : '/assets/logos/brandmark-charcoal.svg';
+    }
+    return brand.logoPath;
+  };
 
   // Load brands on mount
   useEffect(() => {
@@ -192,14 +211,16 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
             p-2
             border border-transparent
             rounded-lg
-            hover:bg-os-surface-dark/50
-            hover:border-brand-aperol/30
+            hover:bg-bg-tertiary
+            hover:border-border-brand
             transition-all duration-200
           "
           title={selectedBrand.name}
         >
           <div className="transition-transform duration-200 group-hover:scale-90">
-            {selectedBrand.logoPath ? (
+            {selectedBrand.isDefault ? (
+              <Brandmark size={size} />
+            ) : selectedBrand.logoPath ? (
               <Image
                 src={selectedBrand.logoPath}
                 alt={selectedBrand.name}
@@ -224,9 +245,9 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
             absolute -bottom-1 -right-1
             w-4 h-4
             flex items-center justify-center
-            bg-os-surface-dark border border-os-border-dark
+            bg-bg-secondary border border-border-secondary
             rounded-full
-            hover:bg-os-border-dark hover:border-brand-aperol/50
+            hover:bg-bg-tertiary hover:border-border-brand
             transition-all duration-200
             opacity-0 group-hover:opacity-100
             z-[71]
@@ -234,7 +255,7 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
           aria-label="Select brand"
           title="Select brand"
         >
-          <svg className="w-2.5 h-2.5 text-os-text-secondary-dark" viewBox="0 0 12 12" fill="none">
+          <svg className="w-2.5 h-2.5 text-fg-tertiary" viewBox="0 0 12 12" fill="none">
             <path d="M3 5L6 8L9 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
@@ -245,8 +266,8 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
             ref={dropdownRef}
             className="
               fixed
-              w-64 bg-os-surface-dark
-              rounded-lg border border-os-border-dark
+              w-64 bg-bg-secondary
+              rounded-lg border border-border-secondary
               shadow-lg z-[9999]
               max-h-[400px] overflow-y-auto
             "
@@ -256,7 +277,7 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
             }}
           >
             <div className="p-2">
-              <div className="px-3 py-2 text-xs font-semibold text-os-text-secondary-dark uppercase tracking-wider">
+              <div className="px-3 py-2 text-xs font-semibold text-fg-tertiary uppercase tracking-wider">
                 SELECT BRAND
               </div>
               
@@ -267,17 +288,17 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                   className={`
                     w-full flex items-center justify-between
                     px-3 py-2 rounded-lg
-                    hover:bg-os-bg-dark
+                    hover:bg-bg-tertiary
                     transition-colors duration-200
                     group
-                    ${selectedBrandId === brand.id ? 'bg-os-bg-dark' : ''}
+                    ${selectedBrandId === brand.id ? 'bg-bg-tertiary' : ''}
                   `}
                 >
-                  <span className="text-sm font-medium text-os-text-primary-dark truncate flex-1 min-w-0 text-left">
+                  <span className="text-sm font-medium text-fg-primary truncate flex-1 min-w-0 text-left">
                     {brand.name}
                   </span>
                   {selectedBrandId === brand.id && (
-                    <Check className="w-4 h-4 text-brand-aperol flex-shrink-0 ml-2" />
+                    <Check className="w-4 h-4 text-fg-brand-primary flex-shrink-0 ml-2" />
                   )}
                 </button>
               ))}
@@ -291,15 +312,15 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                 className="
                   w-full flex items-center space-x-3
                   px-3 py-2 mt-2 rounded-lg
-                  border border-os-border-dark
-                  hover:bg-os-bg-dark
-                  hover:border-brand-aperol/50
+                  border border-border-secondary
+                  hover:bg-bg-tertiary
+                  hover:border-border-brand
                   transition-all duration-200
                   group
                 "
               >
-                <Plus className="w-4 h-4 text-brand-aperol group-hover:text-brand-aperol/80" />
-                <span className="text-sm font-medium text-brand-aperol">
+                <Plus className="w-4 h-4 text-fg-brand-primary" />
+                <span className="text-sm font-medium text-fg-brand-primary">
                   Add New Brand
                 </span>
               </button>
@@ -311,7 +332,7 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
       {/* Add Brand Modal */}
       {showAddModal && (
         <div
-          className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-bg-overlay z-[70] flex items-center justify-center p-4"
           onClick={() => {
             setShowAddModal(false);
             setNewBrandName('');
@@ -321,18 +342,18 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
         >
           <div
             className="
-              bg-os-surface-dark rounded-lg border border-os-border-dark
+              bg-bg-secondary rounded-lg border border-border-secondary
               shadow-lg w-full max-w-md p-6
             "
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-os-text-primary-dark mb-4">
+            <h3 className="text-lg font-semibold text-fg-primary mb-4">
               Add New Brand
             </h3>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-os-text-secondary-dark mb-2">
+                <label className="block text-sm font-medium text-fg-secondary mb-2">
                   Your Name
                 </label>
                 <input
@@ -342,17 +363,17 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                   placeholder="Enter your name"
                   className="
                     w-full px-3 py-2
-                    bg-os-bg-dark border border-os-border-dark
-                    rounded-lg text-os-text-primary-dark
-                    focus:outline-none focus:ring-2 focus:ring-brand-aperol
-                    placeholder:text-os-text-secondary-dark
+                    bg-bg-tertiary border border-border-secondary
+                    rounded-lg text-fg-primary
+                    focus:outline-none focus:ring-2 focus:ring-brand
+                    placeholder:text-fg-tertiary
                   "
                   autoFocus
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-os-text-secondary-dark mb-2">
+                <label className="block text-sm font-medium text-fg-secondary mb-2">
                   Company Name
                 </label>
                 <input
@@ -362,38 +383,38 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                   placeholder="Enter company name"
                   className="
                     w-full px-3 py-2
-                    bg-os-bg-dark border border-os-border-dark
-                    rounded-lg text-os-text-primary-dark
-                    focus:outline-none focus:ring-2 focus:ring-brand-aperol
-                    placeholder:text-os-text-secondary-dark
+                    bg-bg-tertiary border border-border-secondary
+                    rounded-lg text-fg-primary
+                    focus:outline-none focus:ring-2 focus:ring-brand
+                    placeholder:text-fg-tertiary
                   "
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-os-text-secondary-dark mb-2">
+                <label className="block text-sm font-medium text-fg-secondary mb-2">
                   Upload Assets
                 </label>
                 <div
                   onClick={() => fileInputRef.current?.click()}
                   className="
                     w-full
-                    border-2 border-dashed border-os-border-dark
+                    border-2 border-dashed border-border-secondary
                     rounded-lg p-6
-                    bg-os-bg-dark/50
-                    hover:border-brand-aperol/50
-                    hover:bg-os-bg-dark
+                    bg-bg-tertiary
+                    hover:border-border-brand
+                    hover:bg-bg-quaternary
                     transition-all duration-200
                     cursor-pointer
                     flex flex-col items-center justify-center
                     text-center
                   "
                 >
-                  <Upload className="w-8 h-8 text-os-text-secondary-dark mb-2" />
-                  <p className="text-sm text-os-text-primary-dark mb-1">
+                  <Upload className="w-8 h-8 text-fg-tertiary mb-2" />
+                  <p className="text-sm text-fg-primary mb-1">
                     Click to upload or drag and drop
                   </p>
-                  <p className="text-xs text-os-text-secondary-dark">
+                  <p className="text-xs text-fg-tertiary">
                     SVG, PNG, JPG (max 10MB)
                   </p>
                   <input
@@ -415,16 +436,16 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                         className="
                           flex items-center justify-between
                           px-3 py-2
-                          bg-os-bg-dark rounded-lg
-                          border border-os-border-dark
+                          bg-bg-tertiary rounded-lg
+                          border border-border-secondary
                         "
                       >
                         <div className="flex items-center space-x-2 flex-1 min-w-0">
-                          <ImageIcon className="w-4 h-4 text-os-text-secondary-dark flex-shrink-0" />
-                          <span className="text-sm text-os-text-primary-dark truncate">
+                          <ImageIcon className="w-4 h-4 text-fg-tertiary flex-shrink-0" />
+                          <span className="text-sm text-fg-primary truncate">
                             {file.name}
                           </span>
-                          <span className="text-xs text-os-text-secondary-dark">
+                          <span className="text-xs text-fg-tertiary">
                             ({(file.size / 1024).toFixed(1)} KB)
                           </span>
                         </div>
@@ -432,8 +453,8 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                           onClick={() => handleRemoveFile(index)}
                           className="
                             ml-2 p-1
-                            text-os-text-secondary-dark
-                            hover:text-os-text-primary-dark
+                            text-fg-tertiary
+                            hover:text-fg-primary
                             transition-colors
                           "
                         >
@@ -445,26 +466,26 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                 )}
 
                 {/* Recommended Assets */}
-                <div className="mt-4 pt-4 border-t border-os-border-dark">
-                  <p className="text-xs font-medium text-os-text-secondary-dark mb-3 uppercase tracking-wider">
+                <div className="mt-4 pt-4 border-t border-border-secondary">
+                  <p className="text-xs font-medium text-fg-tertiary mb-3 uppercase tracking-wider">
                     Recommended Assets
                   </p>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center space-x-2 px-3 py-2 bg-os-bg-dark rounded-lg border border-os-border-dark">
-                      <FileText className="w-4 h-4 text-os-text-secondary-dark" />
-                      <span className="text-xs text-os-text-secondary-dark">Brand Guidelines</span>
+                    <div className="flex items-center space-x-2 px-3 py-2 bg-bg-tertiary rounded-lg border border-border-secondary">
+                      <FileText className="w-4 h-4 text-fg-tertiary" />
+                      <span className="text-xs text-fg-tertiary">Brand Guidelines</span>
                     </div>
-                    <div className="flex items-center space-x-2 px-3 py-2 bg-os-bg-dark rounded-lg border border-os-border-dark">
-                      <ImageIcon className="w-4 h-4 text-os-text-secondary-dark" />
-                      <span className="text-xs text-os-text-secondary-dark">Logos</span>
+                    <div className="flex items-center space-x-2 px-3 py-2 bg-bg-tertiary rounded-lg border border-border-secondary">
+                      <ImageIcon className="w-4 h-4 text-fg-tertiary" />
+                      <span className="text-xs text-fg-tertiary">Logos</span>
                     </div>
-                    <div className="flex items-center space-x-2 px-3 py-2 bg-os-bg-dark rounded-lg border border-os-border-dark">
-                      <Palette className="w-4 h-4 text-os-text-secondary-dark" />
-                      <span className="text-xs text-os-text-secondary-dark">Design Tokens</span>
+                    <div className="flex items-center space-x-2 px-3 py-2 bg-bg-tertiary rounded-lg border border-border-secondary">
+                      <Palette className="w-4 h-4 text-fg-tertiary" />
+                      <span className="text-xs text-fg-tertiary">Design Tokens</span>
                     </div>
-                    <div className="flex items-center space-x-2 px-3 py-2 bg-os-bg-dark rounded-lg border border-os-border-dark">
-                      <FileText className="w-4 h-4 text-os-text-secondary-dark" />
-                      <span className="text-xs text-os-text-secondary-dark">Typography</span>
+                    <div className="flex items-center space-x-2 px-3 py-2 bg-bg-tertiary rounded-lg border border-border-secondary">
+                      <FileText className="w-4 h-4 text-fg-tertiary" />
+                      <span className="text-xs text-fg-tertiary">Typography</span>
                     </div>
                   </div>
                 </div>
@@ -481,9 +502,9 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                 }}
                 className="
                   px-4 py-2 rounded-lg
-                  text-os-text-secondary-dark
-                  hover:text-os-text-primary-dark
-                  hover:bg-os-bg-dark
+                  text-fg-tertiary
+                  hover:text-fg-primary
+                  hover:bg-bg-tertiary
                   transition-colors duration-200
                 "
               >
@@ -493,8 +514,8 @@ export function BrandSelector({ size = 32, className = '', href = '/', onClick }
                 onClick={handleAddBrand}
                 className="
                   px-4 py-2 rounded-lg
-                  bg-brand-aperol text-white
-                  hover:bg-brand-aperol/90
+                  bg-bg-brand-solid text-fg-white
+                  hover:bg-bg-brand-solid_hover
                   transition-colors duration-200
                   font-medium
                 "

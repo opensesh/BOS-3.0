@@ -5,18 +5,30 @@ import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
 
 interface ThemeToggleProps {
+  /** When true, shows collapsed icon-only version for desktop sidebar */
   isCollapsed?: boolean;
+  /** When 'drawer', shows full-width mobile drawer style */
+  variant?: 'sidebar' | 'drawer';
 }
 
-export function ThemeToggle({ isCollapsed = false }: ThemeToggleProps) {
+export function ThemeToggle({ isCollapsed = false, variant = 'sidebar' }: ThemeToggleProps) {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) {
+    // Loading placeholder
+    if (variant === 'drawer') {
+      return (
+        <div className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg">
+          <div className="w-5 h-5 animate-pulse bg-[var(--bg-tertiary)] rounded" />
+          <div className="h-4 w-20 animate-pulse bg-[var(--bg-tertiary)] rounded" />
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col items-center justify-center py-2 px-2 min-h-[52px]">
         <div className="w-8 h-8 animate-pulse bg-[var(--bg-tertiary)] rounded-lg" />
@@ -24,8 +36,34 @@ export function ThemeToggle({ isCollapsed = false }: ThemeToggleProps) {
     );
   }
 
-  const isDark = theme === 'dark';
+  const isDark = resolvedTheme === 'dark';
 
+  // Mobile drawer variant - matches other drawer items
+  if (variant === 'drawer') {
+    return (
+      <button
+        onClick={() => setTheme(isDark ? 'light' : 'dark')}
+        className="
+          w-full flex items-center space-x-3 px-3 py-3 rounded-lg
+          text-[var(--fg-tertiary)]
+          hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]
+          transition-all duration-200
+        "
+        aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      >
+        {isDark ? (
+          <Sun className="w-5 h-5" />
+        ) : (
+          <Moon className="w-5 h-5" />
+        )}
+        <span className="font-medium">
+          {isDark ? 'Light Mode' : 'Dark Mode'}
+        </span>
+      </button>
+    );
+  }
+
+  // Desktop sidebar variant
   return (
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}

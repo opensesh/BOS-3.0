@@ -10,7 +10,6 @@ import {
   ScanFace,
   BrainCog,
   Bell,
-  ArrowUpRight,
   MessageSquare,
   Plus,
   ChevronDown,
@@ -91,13 +90,13 @@ export function Sidebar() {
           hidden lg:flex
           relative z-40
           w-[56px]
-          bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)]
+          bg-bg-secondary border-r border-border-secondary
           flex-col h-screen
         "
       >
         {/* Brand Selector */}
-        <div className="h-12 flex items-center justify-center border-b border-[var(--border-secondary)] relative z-[70]">
-          <BrandSelector size={24} href="/" onClick={handleHomeClick} />
+        <div className="h-12 flex items-center justify-center border-b border-border-secondary relative z-[70]">
+          <BrandSelector size={20} href="/" onClick={handleHomeClick} />
         </div>
 
         {/* New Chat Button */}
@@ -110,12 +109,12 @@ export function Sidebar() {
               py-1.5 px-2
               transition-colors duration-150
               group
-              text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+              text-fg-tertiary hover:text-fg-primary
             "
             title="New Chat"
           >
-            <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--bg-tertiary)] group-hover:bg-[var(--bg-quaternary)] border border-[var(--border-secondary)] transition-all duration-150">
-              <Plus className="w-[18px] h-[18px] text-[var(--fg-brand-primary)]" />
+            <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-tertiary group-hover:bg-bg-quaternary border border-border-secondary transition-all duration-150">
+              <Plus className="w-[18px] h-[18px] text-fg-brand-primary" />
             </div>
           </Link>
         </div>
@@ -242,29 +241,6 @@ export function Sidebar() {
             </span>
           </button>
 
-          <button
-            className="
-              flex flex-col items-center justify-center
-              py-2 px-2 min-h-[52px]
-              text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-              transition-colors duration-150 group
-            "
-            title="Upgrade"
-          >
-            <div className="w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-[var(--bg-tertiary)] transition-colors duration-150">
-              <ArrowUpRight className="w-[18px] h-[18px]" />
-            </div>
-            <span 
-              className="text-[9px] font-medium text-center mt-1 transition-all duration-200 ease-out"
-              style={{
-                opacity: isSidebarHovered ? 1 : 0,
-                transform: isSidebarHovered ? 'translateY(0)' : 'translateY(-2px)',
-                transitionDelay: isSidebarHovered ? '175ms' : '0ms',
-              }}
-            >
-              Upgrade
-            </span>
-          </button>
         </div>
       </aside>
 
@@ -375,8 +351,8 @@ export function Sidebar() {
               <motion.div variants={fadeInUp} className="border-t border-[var(--border-secondary)] my-4" />
 
               <motion.div variants={fadeInUp} className="px-3 space-y-1">
-                {/* Theme Toggle for Mobile */}
-                <ThemeToggle />
+                {/* Theme Toggle for Mobile - drawer variant */}
+                <ThemeToggle variant="drawer" />
                 
                 <button className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-all duration-200">
                   <Bell className="w-5 h-5" />
@@ -391,11 +367,6 @@ export function Sidebar() {
                     <p className="text-[var(--fg-primary)] font-medium text-sm">Account</p>
                     <p className="text-[var(--fg-tertiary)] text-xs">Manage settings</p>
                   </div>
-                </button>
-
-                <button className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-all duration-200">
-                  <ArrowUpRight className="w-5 h-5" />
-                  <span className="font-medium">Upgrade</span>
                 </button>
               </motion.div>
             </motion.div>

@@ -46,11 +46,11 @@ function CopyButton({ text, label, isLight }: { text: string; label: string; isL
   };
 
   const iconColor = isLight 
-    ? 'text-brand-charcoal/60 group-hover:text-brand-charcoal' 
-    : 'text-brand-vanilla/60 group-hover:text-brand-vanilla';
+    ? 'text-[var(--color-charcoal)]/60 group-hover:text-[var(--color-charcoal)]' 
+    : 'text-[var(--color-vanilla)]/60 group-hover:text-[var(--color-vanilla)]';
   const hoverBg = isLight 
-    ? 'hover:bg-brand-charcoal/10' 
-    : 'hover:bg-brand-vanilla/10';
+    ? 'hover:bg-[var(--color-charcoal)]/10' 
+    : 'hover:bg-[var(--color-vanilla)]/10';
 
   return (
     <button
@@ -60,7 +60,7 @@ function CopyButton({ text, label, isLight }: { text: string; label: string; isL
       aria-label={`Copy ${label}`}
     >
       {copied ? (
-        <Check className="w-3 h-3 text-green-500" />
+        <Check className="w-3 h-3 text-[var(--fg-success-primary)]" />
       ) : (
         <Copy className={`w-3 h-3 ${iconColor}`} />
       )}
@@ -70,8 +70,8 @@ function CopyButton({ text, label, isLight }: { text: string; label: string; isL
 
 function BrandColorCard({ color }: { color: ColorData }) {
   const isLight = color.name === 'Vanilla' || color.hex === '#FFFAEE';
-  const textColor = isLight ? 'text-brand-charcoal' : 'text-brand-vanilla';
-  const borderColor = isLight ? 'border-os-border-dark' : 'border-transparent';
+  const textColor = isLight ? 'text-[var(--color-charcoal)]' : 'text-[var(--color-vanilla)]';
+  const borderColor = isLight ? 'border-[var(--border-primary)]' : 'border-transparent';
 
   return (
     <div 
@@ -87,8 +87,8 @@ function BrandColorCard({ color }: { color: ColorData }) {
         {color.label && (
           <span className={`text-xs font-medium px-3 py-1 rounded-full ${
             isLight 
-              ? 'bg-brand-charcoal/10 text-brand-charcoal' 
-              : 'bg-brand-vanilla/10 text-brand-vanilla'
+              ? 'bg-[var(--color-charcoal)]/10 text-[var(--color-charcoal)]' 
+              : 'bg-[var(--color-vanilla)]/10 text-[var(--color-vanilla)]'
           }`}>
             {color.label}
           </span>
@@ -139,8 +139,8 @@ function MonoColorCard({ color }: { color: ColorData }) {
   
   // Choose the text color with better contrast
   const isLight = charcoalContrast > vanillaContrast;
-  const textColor = isLight ? 'text-brand-charcoal' : 'text-brand-vanilla';
-  const borderColor = isLight ? 'border-os-border-dark/50' : 'border-transparent';
+  const textColor = isLight ? 'text-[var(--color-charcoal)]' : 'text-[var(--color-vanilla)]';
+  const borderColor = isLight ? 'border-[var(--border-primary)]/50' : 'border-transparent';
   
   // Use the better contrast ratio for accessibility check
   const contrastRatio = Math.max(charcoalContrast, vanillaContrast);
@@ -184,7 +184,7 @@ function MonoColorCard({ color }: { color: ColorData }) {
 
 export default function ColorsPage() {
   return (
-    <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       <BrandHubLayout
         title="Color"
@@ -192,7 +192,7 @@ export default function ColorsPage() {
       >
         {/* Brand Colors Section */}
         <section className="mb-12">
-          <h2 className="text-xl font-display font-bold text-brand-vanilla mb-6">Brand</h2>
+          <h2 className="text-xl font-display font-bold text-[var(--fg-primary)] mb-6">Brand</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {brandColors.map((color) => (
               <BrandColorCard key={color.name} color={color} />
@@ -202,7 +202,7 @@ export default function ColorsPage() {
 
         {/* Mono Colors Section */}
         <section>
-          <h2 className="text-xl font-display font-bold text-brand-vanilla mb-6">Mono</h2>
+          <h2 className="text-xl font-display font-bold text-[var(--fg-primary)] mb-6">Mono</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5">
             {monoColors.map((color) => (
               <MonoColorCard key={color.name} color={color} />
@@ -213,4 +213,3 @@ export default function ColorsPage() {
     </div>
   );
 }
-

@@ -119,18 +119,18 @@ function Dropdown({
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-os-surface-dark hover:bg-os-surface-dark/80 transition-colors text-[11px] border border-os-border-dark/30 shadow-sm"
+        className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary-hover)] transition-colors text-[11px] border border-[var(--border-primary)]/30 shadow-sm"
         aria-label={hideLabel ? (Icon === Download ? 'Download logo' : 'Select option') : undefined}
       >
-        {Icon && <Icon className="w-3 h-3 text-brand-vanilla/70" />}
+        {Icon && <Icon className="w-3 h-3 text-[var(--fg-primary)]/70" />}
         {!hideLabel && selectedOption && (
-          <span className="text-brand-vanilla font-medium font-display">{selectedOption.label}</span>
+          <span className="text-[var(--fg-primary)] font-medium font-display">{selectedOption.label}</span>
         )}
-        <ChevronDown className={`w-2.5 h-2.5 text-brand-vanilla/70 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-2.5 h-2.5 text-[var(--fg-primary)]/70 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-24 rounded bg-os-surface-dark border border-os-border-dark shadow-xl z-30 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-24 rounded bg-[var(--bg-secondary)] border border-[var(--border-primary)] shadow-xl z-30 overflow-hidden">
           {options.map((option) => (
             <button
               key={option.value}
@@ -141,8 +141,8 @@ function Dropdown({
               }}
               className={`w-full px-2 py-1.5 text-left text-[11px] transition-colors ${
                 option.value === value
-                  ? 'bg-brand-aperol/20 text-brand-aperol font-medium'
-                  : 'text-brand-vanilla hover:bg-os-border-dark/20'
+                  ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] font-medium'
+                  : 'text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
               }`}
             >
               {option.label}
@@ -176,8 +176,8 @@ function LogoCard({
   // Charcoal logos are dark, so they go on light (vanilla) background
   // Vanilla/glass logos are light, so they go on dark (charcoal) background
   const bgClass = colorVariant === 'charcoal' 
-    ? 'bg-brand-vanilla'  // Charcoal logo on vanilla background
-    : 'bg-brand-charcoal'; // Vanilla/glass logos on charcoal background
+    ? 'bg-[var(--color-vanilla)]'  // Charcoal logo on vanilla background
+    : 'bg-[var(--color-charcoal)]'; // Vanilla/glass logos on charcoal background
   
   const handleDownload = async (format: DownloadFormat) => {
     try {
@@ -238,14 +238,14 @@ function LogoCard({
 
   return (
     <div 
-      className="group relative rounded-xl overflow-hidden border border-os-border-dark transition-all duration-300 hover:border-brand-vanilla bg-os-surface-dark"
+      className="group relative rounded-xl overflow-hidden border border-[var(--border-primary)] transition-all duration-300 hover:border-[var(--fg-primary)] bg-[var(--bg-secondary)]"
       role="article"
       aria-label={`${logo.name} logo - ${colorVariant} variant`}
     >
       {/* Header Row with Logo Name and Controls */}
-      <div className="bg-brand-charcoal px-3 py-2 rounded-t-xl border-b border-os-border-dark/30 flex items-center justify-between">
+      <div className="bg-[var(--color-charcoal)] px-3 py-2 rounded-t-xl border-b border-[var(--border-primary)]/30 flex items-center justify-between">
         {/* Logo Name Label */}
-        <span className="text-[11px] font-medium text-brand-vanilla font-display">{logo.name}</span>
+        <span className="text-[11px] font-medium text-[var(--color-vanilla)] font-display">{logo.name}</span>
         
         {/* Controls */}
         <div className="flex gap-1.5 items-center">
@@ -334,7 +334,7 @@ export default function LogoPage() {
   };
 
   return (
-    <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       <BrandHubLayout
         title="Logo"
@@ -343,7 +343,7 @@ export default function LogoPage() {
         {/* Header with Reset & Download All */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <span className="text-xs text-os-text-secondary-dark">
+            <span className="text-xs text-[var(--fg-tertiary)]">
               {allLogos.length} logo variants
             </span>
           </div>
@@ -389,14 +389,14 @@ export default function LogoPage() {
                   console.error('Failed to create zip file:', error);
                 }
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-os-surface-dark border border-os-border-dark hover:border-brand-aperol/50 transition-colors text-xs text-os-text-secondary-dark"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-xs text-[var(--fg-tertiary)]"
             >
               <Download className="w-3.5 h-3.5" />
               Download All
             </button>
             <button
               onClick={resetAllColors}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-os-surface-dark border border-os-border-dark hover:border-brand-aperol/50 transition-colors text-xs text-os-text-secondary-dark"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-xs text-[var(--fg-tertiary)]"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Reset All
@@ -406,7 +406,7 @@ export default function LogoPage() {
 
         {/* Main Logos Section */}
         <div className="mb-8">
-          <h2 className="text-sm font-medium text-os-text-primary-dark mb-4 font-display">
+          <h2 className="text-sm font-medium text-[var(--fg-primary)] mb-4 font-display">
             Main Logos
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -423,7 +423,7 @@ export default function LogoPage() {
 
         {/* Accessory Logos Section */}
         <div>
-          <h2 className="text-sm font-medium text-os-text-primary-dark mb-4 font-display">
+          <h2 className="text-sm font-medium text-[var(--fg-primary)] mb-4 font-display">
             Accessory Logos
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">

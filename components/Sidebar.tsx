@@ -15,9 +15,11 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { NavigationDrawer } from './NavigationDrawer';
-import { BrandSelector } from './BrandSelector';
 import { MobileHeader } from './MobileHeader';
+import { TopHeader } from './TopHeader';
+import { Breadcrumbs } from './Breadcrumbs';
 import { ThemeToggle } from './ThemeToggle';
+import { Tooltip, TooltipTrigger } from '@/components/ui/base/tooltip/tooltip';
 import { useChatContext } from '@/lib/chat-context';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { overlayFade, slideFromRight, staggerContainerFast, fadeInUp } from '@/lib/motion';
@@ -35,7 +37,6 @@ export function Sidebar() {
   const pathname = usePathname();
   const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [isChatsExpanded, setIsChatsExpanded] = useState(false);
   const railRef = useRef<HTMLElement>(null);
   const { chatHistory, triggerChatReset } = useChatContext();
@@ -64,7 +65,14 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Global Mobile Header */}
+      {/* Desktop Top Header */}
+      <div className="hidden lg:block">
+        <TopHeader>
+          <Breadcrumbs />
+        </TopHeader>
+      </div>
+
+      {/* Mobile Header */}
       <MobileHeader onBrandClick={handleHomeClick} />
 
       {/* Mobile Overlay */}
@@ -84,44 +92,41 @@ export function Sidebar() {
       {/* Desktop Navigation Rail */}
       <aside
         ref={railRef}
-        onMouseEnter={() => setIsSidebarHovered(true)}
-        onMouseLeave={() => setIsSidebarHovered(false)}
         className="
           hidden lg:flex
-          relative z-40
+          fixed top-12 left-0 z-40
           w-[56px]
           bg-bg-secondary border-r border-border-secondary
-          flex-col h-screen
+          flex-col
+          h-[calc(100vh-48px)]
         "
       >
-        {/* Brand Selector */}
-        <div className="h-12 flex items-center justify-center border-b border-border-secondary relative z-[70]">
-          <BrandSelector size={20} href="/" onClick={handleHomeClick} />
-        </div>
-
         {/* New Chat Button */}
-        <div className="flex justify-center pt-2 pb-1">
-          <Link
-            href="/"
-            onClick={handleNewChat}
-            className="
-              flex flex-col items-center justify-center
-              py-1.5 px-2
-              transition-colors duration-150
-              group
-              text-fg-tertiary hover:text-fg-primary
-            "
-            title="New Chat"
-          >
-            <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-tertiary group-hover:bg-bg-quaternary border border-border-secondary transition-all duration-150">
-              <Plus className="w-[18px] h-[18px] text-fg-brand-primary" />
-            </div>
-          </Link>
+        <div className="flex justify-center pt-3 pb-1">
+          <Tooltip title="New Chat" placement="right" delay={200}>
+            <TooltipTrigger>
+              <Link
+                href="/"
+                onClick={handleNewChat}
+                className="
+                  flex items-center justify-center
+                  p-1.5
+                  transition-colors duration-150
+                  group
+                  text-fg-tertiary hover:text-fg-primary
+                "
+              >
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-tertiary group-hover:bg-bg-quaternary border border-border-secondary transition-all duration-150">
+                  <Plus className="w-[18px] h-[18px] text-fg-brand-primary" />
+                </div>
+              </Link>
+            </TooltipTrigger>
+          </Tooltip>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex flex-col items-center">
-          {navItems.map((item, index) => {
+        <nav className="flex flex-col items-center gap-0.5 pt-1">
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || 
               (item.href === '/spaces' && pathname.startsWith('/spaces'));
@@ -133,52 +138,41 @@ export function Sidebar() {
                 onMouseEnter={() => setHoveredItem(item.label)}
                 onMouseLeave={() => {}}
               >
-                <Link
-                  data-nav-item={item.label}
-                  href={item.href}
-                  onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
-                  className={`
-                    flex flex-col items-center
-                    py-2 px-2 min-h-[52px]
-                    transition-colors duration-150
-                    group relative
-                    ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}
-                  `}
-                >
-                  <div className="relative">
-                    <div className={`
-                      absolute -left-2 top-1/2 -translate-y-1/2 w-[2px] rounded-r-full
-                      transition-all duration-150
-                      ${isActive ? 'h-5 bg-[var(--bg-brand-solid)]' : 'h-0 bg-transparent'}
-                    `} />
-                    
-                    <div className={`
-                      w-8 h-8 flex items-center justify-center rounded-lg
-                      transition-all duration-150
-                      ${isActive 
-                        ? 'bg-[var(--bg-brand-primary)]' 
-                        : 'group-hover:bg-[var(--bg-tertiary)]'
-                      }
-                    `}>
-                      <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
-                    </div>
-                  </div>
-                  
-                  <span 
-                    className={`
-                      text-[9px] font-medium text-center leading-tight mt-1
-                      transition-all duration-200 ease-out
-                      ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]'}
-                    `}
-                    style={{
-                      opacity: isSidebarHovered ? 1 : 0,
-                      transform: isSidebarHovered ? 'translateY(0)' : 'translateY(-2px)',
-                      transitionDelay: isSidebarHovered ? `${index * 25}ms` : '0ms',
-                    }}
-                  >
-                    {item.label}
-                  </span>
-                </Link>
+                <Tooltip title={item.label} placement="right" delay={200}>
+                  <TooltipTrigger>
+                    <Link
+                      data-nav-item={item.label}
+                      href={item.href}
+                      onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
+                      className={`
+                        flex items-center justify-center
+                        py-1.5 px-2
+                        transition-colors duration-150
+                        group relative
+                        ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}
+                      `}
+                    >
+                      <div className="relative">
+                        <div className={`
+                          absolute -left-2 top-1/2 -translate-y-1/2 w-[2px] rounded-r-full
+                          transition-all duration-150
+                          ${isActive ? 'h-5 bg-[var(--bg-brand-solid)]' : 'h-0 bg-transparent'}
+                        `} />
+                        
+                        <div className={`
+                          w-8 h-8 flex items-center justify-center rounded-lg
+                          transition-all duration-150
+                          ${isActive 
+                            ? 'bg-[var(--bg-brand-primary)]' 
+                            : 'group-hover:bg-[var(--bg-tertiary)]'
+                          }
+                        `}>
+                          <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                        </div>
+                      </div>
+                    </Link>
+                  </TooltipTrigger>
+                </Tooltip>
               </div>
             );
           })}
@@ -187,60 +181,45 @@ export function Sidebar() {
         <div className="flex-1" />
 
         {/* Bottom Section */}
-        <div className="flex flex-col items-center border-t border-[var(--border-secondary)] py-1">
+        <div className="flex flex-col items-center border-t border-[var(--border-secondary)] py-2 gap-0.5">
           {/* Theme Toggle */}
-          <ThemeToggle isCollapsed={!isSidebarHovered} />
+          <ThemeToggle isCollapsed={true} />
           
-          <button
-            className="
-              flex flex-col items-center justify-center
-              py-2 px-2 min-h-[52px]
-              text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-              transition-colors duration-150 group
-            "
-            title="Notifications"
-          >
-            <div className="w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-[var(--bg-tertiary)] transition-colors duration-150">
-              <Bell className="w-[18px] h-[18px]" />
-            </div>
-            <span 
-              className="text-[9px] font-medium text-center mt-1 transition-all duration-200 ease-out"
-              style={{
-                opacity: isSidebarHovered ? 1 : 0,
-                transform: isSidebarHovered ? 'translateY(0)' : 'translateY(-2px)',
-                transitionDelay: isSidebarHovered ? '125ms' : '0ms',
-              }}
-            >
-              Alerts
-            </span>
-          </button>
+          <Tooltip title="Notifications" placement="right" delay={200}>
+            <TooltipTrigger>
+              <button
+                className="
+                  flex items-center justify-center
+                  py-1.5 px-2
+                  text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+                  transition-colors duration-150 group
+                "
+              >
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-[var(--bg-tertiary)] transition-colors duration-150">
+                  <Bell className="w-[18px] h-[18px]" />
+                </div>
+              </button>
+            </TooltipTrigger>
+          </Tooltip>
 
-          <button
-            className="
-              flex flex-col items-center justify-center
-              py-2 px-2 min-h-[52px]
-              text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-              transition-colors duration-150 group
-            "
-            title="Account"
-          >
-            <div className="w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-[var(--bg-tertiary)] transition-colors duration-150">
-              <div className="w-5 h-5 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center">
-                <span className="text-white text-[8px] font-mono">A</span>
-              </div>
-            </div>
-            <span 
-              className="text-[9px] font-medium text-center mt-1 transition-all duration-200 ease-out"
-              style={{
-                opacity: isSidebarHovered ? 1 : 0,
-                transform: isSidebarHovered ? 'translateY(0)' : 'translateY(-2px)',
-                transitionDelay: isSidebarHovered ? '150ms' : '0ms',
-              }}
-            >
-              Account
-            </span>
-          </button>
-
+          <Tooltip title="Account" placement="right" delay={200}>
+            <TooltipTrigger>
+              <button
+                className="
+                  flex items-center justify-center
+                  py-1.5 px-2
+                  text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+                  transition-colors duration-150 group
+                "
+              >
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-[var(--bg-tertiary)] transition-colors duration-150">
+                  <div className="w-5 h-5 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center">
+                    <span className="text-white text-[8px] font-mono">A</span>
+                  </div>
+                </div>
+              </button>
+            </TooltipTrigger>
+          </Tooltip>
         </div>
       </aside>
 

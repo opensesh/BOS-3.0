@@ -40,29 +40,29 @@ export function MarkdownCodeViewer({ filename, content, className = '', maxLines
   }, [content, filename]);
 
   return (
-    <div className={`rounded-xl overflow-hidden bg-brand-charcoal border border-os-border-dark ${className}`}>
+    <div className={`rounded-xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-primary)] ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-os-surface-dark/50 border-b border-os-border-dark">
-        <span className="text-sm font-sans text-os-text-secondary-dark">
+      <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-tertiary)]/50 border-b border-[var(--border-primary)]">
+        <span className="text-sm font-sans text-[var(--fg-tertiary)]">
           {filename}
         </span>
         <div className="flex items-center gap-2">
           <button
             onClick={handleDownload}
-            className="p-2 rounded-lg hover:bg-os-border-dark/50 transition-colors group"
+            className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
             title="Download"
           >
-            <Download className="w-4 h-4 text-os-text-secondary-dark group-hover:text-brand-vanilla transition-colors" />
+            <Download className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
           </button>
           <button
             onClick={handleCopy}
-            className="p-2 rounded-lg hover:bg-os-border-dark/50 transition-colors group"
+            className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
             title={copied ? 'Copied!' : 'Copy'}
           >
             {copied ? (
-              <Check className="w-4 h-4 text-green-500" />
+              <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
             ) : (
-              <Copy className="w-4 h-4 text-os-text-secondary-dark group-hover:text-brand-vanilla transition-colors" />
+              <Copy className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
             )}
           </button>
         </div>
@@ -76,10 +76,10 @@ export function MarkdownCodeViewer({ filename, content, className = '', maxLines
         <div className="p-4 font-sans text-sm">
           {lines.map((line, index) => (
             <div key={index} className="flex leading-6">
-              <span className="w-10 flex-shrink-0 text-right pr-4 text-os-text-secondary-dark/50 select-none">
+              <span className="w-10 flex-shrink-0 text-right pr-4 text-[var(--fg-quaternary)]/50 select-none">
                 {index + 1}
               </span>
-              <span className="text-brand-vanilla/90 whitespace-pre-wrap break-words">
+              <span className="text-[var(--fg-primary)]/90 whitespace-pre-wrap break-words">
                 {renderMarkdownLine(line)}
               </span>
             </div>
@@ -94,55 +94,54 @@ export function MarkdownCodeViewer({ filename, content, className = '', maxLines
 function renderMarkdownLine(line: string): React.ReactNode {
   // Headers
   if (line.startsWith('# ')) {
-    return <span className="text-brand-aperol font-bold">{line}</span>;
+    return <span className="text-[var(--fg-brand-primary)] font-bold">{line}</span>;
   }
   if (line.startsWith('## ')) {
-    return <span className="text-brand-aperol font-semibold">{line}</span>;
+    return <span className="text-[var(--fg-brand-primary)] font-semibold">{line}</span>;
   }
   if (line.startsWith('### ') || line.startsWith('#### ')) {
-    return <span className="text-brand-aperol">{line}</span>;
+    return <span className="text-[var(--fg-brand-primary)]">{line}</span>;
   }
   
   // Code blocks
   if (line.startsWith('```')) {
-    return <span className="text-green-400">{line}</span>;
+    return <span className="text-[var(--fg-success-primary)]">{line}</span>;
   }
   
   // List items
   if (line.match(/^[-*]\s/)) {
-    return <span className="text-brand-vanilla/90">{line}</span>;
+    return <span className="text-[var(--fg-primary)]/90">{line}</span>;
   }
   
   // Numbered lists
   if (line.match(/^\d+\.\s/)) {
-    return <span className="text-brand-vanilla/90">{line}</span>;
+    return <span className="text-[var(--fg-primary)]/90">{line}</span>;
   }
   
   // Table rows
   if (line.includes('|')) {
-    return <span className="text-blue-300">{line}</span>;
+    return <span className="text-blue-400 dark:text-blue-300">{line}</span>;
   }
   
   // Bold text - highlight **text**
   if (line.includes('**')) {
-    return <span className="text-brand-vanilla/90">{line}</span>;
+    return <span className="text-[var(--fg-primary)]/90">{line}</span>;
   }
   
   // Links
   if (line.includes('[') && line.includes('](')) {
-    return <span className="text-cyan-400">{line}</span>;
+    return <span className="text-cyan-500 dark:text-cyan-400">{line}</span>;
   }
   
   // Comments/blockquotes
   if (line.startsWith('>')) {
-    return <span className="text-os-text-secondary-dark italic">{line}</span>;
+    return <span className="text-[var(--fg-tertiary)] italic">{line}</span>;
   }
   
   // Directory structure
   if (line.includes('├──') || line.includes('└──') || line.includes('│')) {
-    return <span className="text-yellow-300">{line}</span>;
+    return <span className="text-yellow-600 dark:text-yellow-300">{line}</span>;
   }
   
   return line || ' ';
 }
-

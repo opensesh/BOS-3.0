@@ -4,6 +4,7 @@ import './globals.css';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { ChatProvider } from '@/lib/chat-context';
 import { MobileMenuProvider } from '@/lib/mobile-menu-context';
+import { BreadcrumbProvider } from '@/lib/breadcrumb-context';
 import { VercelAnalytics } from '@/components/VercelAnalytics';
 
 const inter = Inter({
@@ -31,7 +32,9 @@ export default function RootLayout({
         >
           <ChatProvider>
             <MobileMenuProvider>
-              {children}
+              <BreadcrumbProvider>
+                {children}
+              </BreadcrumbProvider>
             </MobileMenuProvider>
           </ChatProvider>
         </ThemeProvider>

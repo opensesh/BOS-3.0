@@ -74,7 +74,7 @@ function ComponentsContent() {
   };
 
   return (
-    <div className="flex h-screen bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       
       {/* Component Navigation Drawer */}
@@ -101,7 +101,7 @@ function ComponentsContent() {
       />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-os-bg-dark pt-14 lg:pt-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-primary)] pt-14 lg:pt-12 lg:pl-14">
         <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
           {/* Back Button & Actions Row */}
           <MotionItem className="flex items-center justify-between mb-8">
@@ -110,7 +110,7 @@ function ComponentsContent() {
               {/* Back to Brain - always shown */}
               <Link
                 href="/brain"
-                className="group inline-flex items-center gap-2 text-os-text-secondary-dark hover:text-brand-aperol transition-colors"
+                className="group inline-flex items-center gap-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)] transition-colors"
               >
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                 <span className="text-sm font-medium">Back to Brain</span>
@@ -119,10 +119,10 @@ function ComponentsContent() {
               {/* All Components breadcrumb - shown when viewing a specific component */}
               {!showListView && (
                 <>
-                  <span className="text-os-text-secondary-dark/40">/</span>
+                  <span className="text-[var(--fg-tertiary)]/40">/</span>
                   <Link
                     href="/brain/components"
-                    className="text-os-text-secondary-dark hover:text-brand-aperol transition-colors"
+                    className="text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)] transition-colors"
                   >
                     <span className="text-sm font-medium">All Components</span>
                   </Link>
@@ -138,8 +138,8 @@ function ComponentsContent() {
                 className={cn(
                   "group relative p-3 rounded-xl border transition-colors",
                   showListView 
-                    ? "bg-brand-aperol/20 border-brand-aperol/50 text-brand-aperol" 
-                    : "bg-os-surface-dark hover:bg-os-border-dark border-os-border-dark text-os-text-secondary-dark hover:text-brand-vanilla"
+                    ? "bg-[var(--bg-brand-primary)] border-[var(--border-brand)] text-[var(--fg-brand-primary)]" 
+                    : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border-[var(--border-primary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
                 )}
                 title="All Components"
               >
@@ -152,8 +152,8 @@ function ComponentsContent() {
                 className={cn(
                   "group relative p-3 rounded-xl border transition-colors",
                   isDrawerOpen 
-                    ? "bg-brand-aperol/20 border-brand-aperol/50 text-brand-aperol" 
-                    : "bg-os-surface-dark hover:bg-os-border-dark border-os-border-dark text-os-text-secondary-dark hover:text-brand-vanilla"
+                    ? "bg-[var(--bg-brand-primary)] border-[var(--border-brand)] text-[var(--fg-brand-primary)]" 
+                    : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border-[var(--border-primary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
                 )}
                 title="Show Components"
               >
@@ -164,10 +164,10 @@ function ComponentsContent() {
 
           {/* Page Header */}
           <MotionItem className="flex flex-col gap-2 mb-10">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-brand-vanilla leading-tight">
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
               {showListView ? 'All Components' : (selectedComponent?.name || 'Components')}
             </h1>
-            <p className="text-base md:text-lg text-os-text-secondary-dark max-w-2xl">
+            <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               {showListView 
                 ? 'Browse all registered components with metadata including creation date, category, and usage statistics.'
                 : (selectedComponent?.description || 'Interactive component documentation and live preview. Select a component from the drawer to explore its props and variants.')}
@@ -216,8 +216,8 @@ export default function ComponentsPage() {
   return (
     <Suspense 
       fallback={
-        <div className="flex h-screen items-center justify-center bg-os-bg-dark text-os-text-primary-dark">
-          <Loader2 className="w-8 h-8 animate-spin text-brand-aperol" />
+        <div className="flex h-screen items-center justify-center bg-[var(--bg-primary)] text-[var(--fg-primary)]">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--fg-brand-primary)]" />
         </div>
       }
     >

@@ -137,17 +137,17 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
   };
 
   return (
-    <div className="rounded-brand-lg border border-os-border-dark bg-os-surface-dark/30 overflow-hidden">
+    <div className="rounded-brand-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 px-6 sm:px-10 py-6 sm:py-8 border-b border-os-border-dark">
+      <div className="flex items-center justify-between gap-4 px-6 sm:px-10 py-6 sm:py-8 border-b border-[var(--border-primary)]">
         {/* Left side - Section Label & Reset */}
         <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-          <span className="text-base sm:text-lg font-display font-medium text-brand-vanilla">
+          <span className="text-base sm:text-lg font-display font-medium text-[var(--fg-primary)]">
             {section.label}
           </span>
           <button
             onClick={resetText}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-os-bg-dark border border-os-border-dark hover:border-brand-aperol/50 transition-colors text-xs sm:text-sm text-os-text-secondary-dark"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-xs sm:text-sm text-[var(--fg-tertiary)]"
           >
             <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Reset</span>
@@ -160,14 +160,14 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-os-bg-dark border border-os-border-dark hover:border-brand-aperol/50 transition-colors text-xs sm:text-sm text-os-text-secondary-dark"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-xs sm:text-sm text-[var(--fg-tertiary)]"
             >
               {selectedStyle.name}
               <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
             
             {isDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 w-36 sm:w-40 rounded-xl bg-os-surface-dark border border-os-border-dark shadow-xl z-10 overflow-hidden">
+              <div className="absolute top-full right-0 mt-2 w-36 sm:w-40 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] shadow-xl z-10 overflow-hidden">
                 {section.styles.map((style) => (
                   <button
                     key={style.value}
@@ -177,8 +177,8 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
                     }}
                     className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 text-left text-xs sm:text-sm transition-colors ${
                       style.value === selectedStyle.value
-                        ? 'bg-brand-aperol/20 text-brand-aperol'
-                        : 'text-os-text-secondary-dark hover:bg-os-border-dark/50'
+                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
+                        : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)]'
                     }`}
                   >
                     {style.name}
@@ -189,13 +189,13 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
           </div>
 
           {/* Format Toggle - Desktop/Web */}
-          <div className="flex items-center rounded-full bg-os-bg-dark border border-os-border-dark p-0.5 sm:p-1">
+          <div className="flex items-center rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] p-0.5 sm:p-1">
             <button
               onClick={() => setSelectedFormat('desktop')}
               className={`flex items-center justify-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm transition-colors ${
                 selectedFormat === 'desktop'
-                  ? 'bg-brand-aperol text-brand-vanilla'
-                  : 'text-os-text-secondary-dark hover:text-brand-vanilla'
+                  ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)]'
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'
               }`}
               title="Desktop fonts (TTF/OTF)"
             >
@@ -206,8 +206,8 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
               onClick={() => setSelectedFormat('web')}
               className={`flex items-center justify-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm transition-colors ${
                 selectedFormat === 'web'
-                  ? 'bg-brand-aperol text-brand-vanilla'
-                  : 'text-os-text-secondary-dark hover:text-brand-vanilla'
+                  ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)]'
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'
               }`}
               title="Web fonts (WOFF2)"
             >
@@ -219,7 +219,7 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
           {/* Download All Button */}
           <button
             onClick={handleDownloadAll}
-            className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-os-bg-dark border border-os-border-dark hover:border-brand-aperol hover:bg-brand-aperol/10 transition-colors text-os-text-secondary-dark hover:text-brand-aperol"
+            className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-brand-primary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)]"
             title={`Download all ${section.label} fonts (${selectedFormat === 'desktop' ? 'TTF/OTF' : 'WOFF2'})`}
           >
             <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -235,10 +235,10 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
           value={text}
           onChange={(e) => setText(e.target.value)}
           className={`
-            w-full bg-os-bg-dark/50 border border-os-border-dark 
+            w-full bg-[var(--bg-primary)]/50 border border-[var(--border-primary)] 
             outline-none resize-none rounded-brand-lg
-            text-brand-vanilla ${section.fontClass}
-            placeholder:text-os-text-secondary-dark
+            text-[var(--fg-primary)] ${section.fontClass}
+            placeholder:text-[var(--fg-tertiary)]
             px-4 py-4 overflow-hidden
           `}
           style={{
@@ -252,7 +252,7 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
 
       {/* Style Info */}
       <div className="px-10 pb-8">
-        <div className="flex flex-wrap gap-4 text-xs text-os-text-secondary-dark font-mono">
+        <div className="flex flex-wrap gap-4 text-xs text-[var(--fg-tertiary)] font-mono">
           <span>Family: {selectedStyle.fontFamily}</span>
           <span>Size: {selectedStyle.fontSize}</span>
           <span>Weight: {selectedStyle.fontWeight}</span>
@@ -321,7 +321,7 @@ Note: In production, this would download a ZIP file containing all font files.
   };
 
   return (
-    <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       <BrandHubLayout
         title="Typography"
@@ -330,21 +330,21 @@ Note: In production, this would download a ZIP file containing all font files.
         {/* Header with Reset All & Download All */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <span className="text-xs text-os-text-secondary-dark">
+            <span className="text-xs text-[var(--fg-tertiary)]">
               {typographySections.length} font families
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownloadAll}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-os-surface-dark border border-os-border-dark hover:border-brand-aperol/50 transition-colors text-xs text-os-text-secondary-dark"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-xs text-[var(--fg-tertiary)]"
             >
               <Download className="w-3.5 h-3.5" />
               Download All
             </button>
             <button
               onClick={resetAllSections}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-os-surface-dark border border-os-border-dark hover:border-brand-aperol/50 transition-colors text-xs text-os-text-secondary-dark"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-xs text-[var(--fg-tertiary)]"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Reset All

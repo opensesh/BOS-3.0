@@ -33,35 +33,35 @@ export default function BrandIdentityPage() {
   const activeFile = brandGuidelines.find(g => g.id === activeTab);
 
   return (
-    <div className="flex h-screen bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-os-bg-dark pt-14 lg:pt-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-primary)] pt-14 lg:pt-12 lg:pl-14">
         <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
           {/* Back Button & Settings Row */}
           <MotionItem className="flex items-center justify-between mb-8">
             <Link
               href="/brain"
-              className="group inline-flex items-center gap-2 text-os-text-secondary-dark hover:text-brand-aperol transition-colors"
+              className="group inline-flex items-center gap-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)] transition-colors"
             >
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               <span className="text-sm font-medium">Back to Brain</span>
             </Link>
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-3 rounded-xl bg-os-surface-dark hover:bg-os-border-dark border border-os-border-dark transition-colors group"
+              className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)] transition-colors group"
               title="Brain Settings"
             >
-              <Settings className="w-5 h-5 text-os-text-secondary-dark group-hover:text-brand-vanilla transition-colors" />
+              <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
             </button>
           </MotionItem>
 
           {/* Page Header */}
           <MotionItem className="flex flex-col gap-2 mb-10">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-brand-vanilla leading-tight">
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
               Brand Identity
             </h1>
-            <p className="text-base md:text-lg text-os-text-secondary-dark max-w-2xl">
+            <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               Core brand documentation that defines our identity, messaging, and visual direction.
               These files help AI understand and maintain brand consistency across all content.
             </p>

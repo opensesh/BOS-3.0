@@ -78,19 +78,19 @@ function ResourceCard({
       href={resource.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex items-center gap-3 p-3 rounded-xl bg-os-surface-dark/50 border border-os-border-dark hover:border-brand-aperol/50 hover:bg-os-surface-dark transition-all"
+      className="group relative flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary)] transition-all"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
       <div className="min-w-0 flex-1">
-        <h4 className="text-sm font-display font-medium text-brand-vanilla group-hover:text-brand-aperol transition-colors">
+        <h4 className="text-sm font-display font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
           {resource.name}
         </h4>
-        <p className="text-xs text-os-text-secondary-dark truncate">
+        <p className="text-xs text-[var(--fg-tertiary)] truncate">
           {new URL(resource.url).hostname}
         </p>
       </div>
-      <ExternalLink className="w-3.5 h-3.5 text-os-text-secondary-dark opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+      <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
       
       {showActions && (
         <div className="absolute -top-2 -right-2 flex gap-1">
@@ -100,7 +100,7 @@ function ResourceCard({
               e.stopPropagation();
               onEdit(resource);
             }}
-            className="p-1.5 rounded-full bg-os-surface-dark border border-os-border-dark hover:bg-brand-aperol hover:border-brand-aperol text-os-text-secondary-dark hover:text-white transition-all shadow-lg"
+            className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-brand-solid)] hover:border-[var(--border-brand-solid)] text-[var(--fg-tertiary)] hover:text-white transition-all shadow-lg"
             aria-label="Edit resource"
           >
             <Pencil className="w-3 h-3" />
@@ -111,7 +111,7 @@ function ResourceCard({
               e.stopPropagation();
               onDelete(resource.id);
             }}
-            className="p-1.5 rounded-full bg-os-surface-dark border border-os-border-dark hover:bg-red-600 hover:border-red-600 text-os-text-secondary-dark hover:text-white transition-all shadow-lg"
+            className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-error-solid)] hover:border-[var(--border-error-solid)] text-[var(--fg-tertiary)] hover:text-white transition-all shadow-lg"
             aria-label="Delete resource"
           >
             <Trash2 className="w-3 h-3" />
@@ -127,10 +127,10 @@ function AddResourceCard({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="group flex items-center justify-center p-3 rounded-xl border-2 border-dashed border-os-border-dark bg-os-surface-dark/30 hover:border-brand-aperol hover:bg-os-surface-dark/50 transition-all"
+      className="group flex items-center justify-center p-3 rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all"
       title="Add Resource"
     >
-      <Plus className="w-5 h-5 text-os-text-secondary-dark group-hover:text-brand-aperol transition-colors" />
+      <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
     </button>
   );
 }
@@ -147,23 +147,23 @@ function BentoCard({ item }: { item: typeof brainPages[0] }) {
     >
       <Link
         href={item.href}
-        className="group relative h-full flex flex-col p-6 md:p-8 gap-6 md:gap-8 rounded-2xl bg-os-surface-dark border border-os-border-dark hover:border-brand-aperol/50 hover:bg-os-surface-dark/80 transition-all duration-300 ease-out"
+        className="group relative h-full flex flex-col p-6 md:p-8 gap-6 md:gap-8 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary-hover)] transition-all duration-300 ease-out"
       >
         {/* Top Section: Icon and Arrow */}
         <div className="flex items-start justify-between">
-          <div className="p-3 rounded-xl bg-os-bg-dark/50 border border-os-border-dark">
-            <Icon className="w-6 h-6 text-brand-vanilla" />
+          <div className="p-3 rounded-xl bg-[var(--bg-primary)]/50 border border-[var(--border-primary)]">
+            <Icon className="w-6 h-6 text-[var(--fg-primary)]" />
           </div>
-          <ArrowUpRight className="w-5 h-5 text-os-text-secondary-dark opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-2 translate-x-2 group-hover:translate-y-0 group-hover:translate-x-0" />
+          <ArrowUpRight className="w-5 h-5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-2 translate-x-2 group-hover:translate-y-0 group-hover:translate-x-0" />
         </div>
         
         {/* Bottom Section: Text */}
         <div className="space-y-2">
-          <h3 className="text-xl md:text-2xl font-display font-bold text-brand-vanilla group-hover:text-brand-aperol transition-colors">
+          <h3 className="text-xl md:text-2xl font-display font-bold text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
             {item.title}
           </h3>
           <div className="h-10">
-            <p className="text-sm md:text-base text-os-text-secondary-dark line-clamp-2">
+            <p className="text-sm md:text-base text-[var(--fg-tertiary)] line-clamp-2">
               {item.description}
             </p>
           </div>
@@ -191,29 +191,29 @@ export default function BrainPage() {
   };
 
   return (
-    <div className="flex h-screen bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       
-      <main className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-0">
+      <main className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-12 lg:pl-14">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
             {/* Page Header */}
             <MotionItem className="flex flex-col gap-2 mb-10">
               <div className="flex items-start justify-between w-full">
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-brand-vanilla">
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)]">
                   Brain
                 </h1>
                 <motion.button
                   onClick={() => setIsSettingsOpen(true)}
-                  className="p-3 rounded-xl bg-os-surface-dark hover:bg-os-border-dark border border-os-border-dark transition-colors group"
+                  className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)] transition-colors group"
                   title="Brain Settings"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Settings className="w-5 h-5 text-os-text-secondary-dark group-hover:text-brand-vanilla transition-colors" />
+                  <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
                 </motion.button>
               </div>
-              <p className="text-base md:text-lg text-os-text-secondary-dark max-w-2xl">
+              <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
                 Your brand&apos;s AI knowledge center. Configure Claude with your brand identity, 
                 messaging, and writing styles for consistent, on-brand content generation.
               </p>
@@ -236,7 +236,7 @@ export default function BrainPage() {
             {/* Claude Resources Section */}
             <MotionItem>
               <section>
-                <h2 className="text-xl font-display font-semibold text-brand-vanilla mb-4">
+                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)] mb-4">
                   Resources
                 </h2>
                 <motion.div 

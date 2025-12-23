@@ -13,15 +13,17 @@ import {
   MessageSquare,
   Plus,
   ChevronDown,
+  PanelLeft,
+  PanelLeftClose,
+  Sidebar as SidebarIcon,
 } from 'lucide-react';
-// NavigationDrawer disabled for now with label-based navigation
-// import { NavigationDrawer } from './NavigationDrawer';
+import { NavigationDrawer } from './NavigationDrawer';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
 import { Breadcrumbs } from './Breadcrumbs';
-import { ThemeToggle } from './ThemeToggle';
 import { useChatContext } from '@/lib/chat-context';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
+import { useSidebar, SidebarMode } from '@/lib/sidebar-context';
 import { overlayFade, slideFromRight, staggerContainerFast, fadeInUp } from '@/lib/motion';
 
 const navItems = [
@@ -33,13 +35,116 @@ const navItems = [
 
 const VISIBLE_CHAT_COUNT = 3;
 
+// Sidebar control component
+function SidebarControl() {
+  const { sidebarMode, setSidebarMode, isExpanded } = useSidebar();
+  const [isOpen, setIsOpen] = useState(false);
+  const controlRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (controlRef.current && !controlRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const options: { mode: SidebarMode; label: string; icon: typeof PanelLeft }[] = [
+    { mode: 'expanded', label: 'Expanded', icon: PanelLeft },
+    { mode: 'collapsed', label: 'Collapsed', icon: PanelLeftClose },
+    { mode: 'hover', label: 'Expand on hover', icon: SidebarIcon },
+  ];
+
+  return (
+    <div ref={controlRef} className="relative w-full">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="
+          w-full flex items-center justify-center
+          p-1.5
+          text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+          hover:bg-[var(--bg-tertiary)]
+          transition-colors duration-150
+          rounded-md
+        "
+        title="Sidebar control"
+      >
+        <SidebarIcon className="w-4 h-4" />
+      </button>
+
+      {/* Dropdown */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.15 }}
+            className="
+              absolute bottom-full left-0 mb-1
+              w-44 bg-[var(--bg-secondary)]
+              rounded-lg border border-[var(--border-secondary)]
+              shadow-lg z-[100]
+              overflow-hidden
+            "
+          >
+            <div className="px-3 py-2 border-b border-[var(--border-secondary)]">
+              <span className="text-xs text-[var(--fg-tertiary)]">Sidebar control</span>
+            </div>
+            <div className="py-1">
+              {options.map((option) => {
+                const Icon = option.icon;
+                const isSelected = sidebarMode === option.mode;
+                return (
+                  <button
+                    key={option.mode}
+                    onClick={() => {
+                      setSidebarMode(option.mode);
+                      setIsOpen(false);
+                    }}
+                    className={`
+                      w-full flex items-center gap-2
+                      px-3 py-1.5
+                      text-xs text-left
+                      hover:bg-[var(--bg-tertiary)]
+                      transition-colors duration-100
+                      ${isSelected ? 'text-[var(--fg-primary)]' : 'text-[var(--fg-secondary)]'}
+                    `}
+                  >
+                    {isSelected && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-brand-primary)]" />
+                    )}
+                    {!isSelected && <span className="w-1.5 h-1.5" />}
+                    <span>{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu();
-  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const { sidebarMode, isExpanded, setIsSidebarHovered } = useSidebar();
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isChatsExpanded, setIsChatsExpanded] = useState(false);
   const railRef = useRef<HTMLElement>(null);
   const { chatHistory, triggerChatReset } = useChatContext();
+
+  const handleDrawerClose = useCallback(() => {
+    setHoveredItem(null);
+  }, []);
 
   const handleNewChat = useCallback(() => {
     triggerChatReset();
@@ -58,6 +163,9 @@ export function Sidebar() {
       setIsChatsExpanded(false);
     }
   }, [isMobileMenuOpen]);
+
+  // Determine if labels should be shown
+  const showLabels = sidebarMode === 'expanded' || (sidebarMode === 'hover' && isExpanded);
 
   return (
     <>
@@ -132,6 +240,8 @@ export function Sidebar() {
               <div
                 key={item.href}
                 className="relative w-full flex justify-center"
+                onMouseEnter={() => sidebarMode !== 'collapsed' && setHoveredItem(item.label)}
+                onMouseLeave={() => {}}
               >
                 <Link
                   data-nav-item={item.label}
@@ -171,9 +281,9 @@ export function Sidebar() {
                       ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]'}
                     `}
                     style={{
-                      opacity: isActive || isSidebarHovered ? 1 : 0,
-                      transform: isActive || isSidebarHovered ? 'translateY(0)' : 'translateY(-2px)',
-                      transitionDelay: isSidebarHovered ? `${index * 25}ms` : '0ms',
+                      opacity: isActive || showLabels ? 1 : 0,
+                      transform: isActive || showLabels ? 'translateY(0)' : 'translateY(-2px)',
+                      transitionDelay: showLabels ? `${index * 25}ms` : '0ms',
                     }}
                   >
                     {item.label}
@@ -187,59 +297,9 @@ export function Sidebar() {
         <div className="flex-1" />
 
         {/* Bottom Section */}
-        <div className="flex flex-col items-center border-t border-[var(--border-secondary)] py-1.5">
-          {/* Theme Toggle */}
-          <ThemeToggle isCollapsed={!isSidebarHovered} />
-          
-          <button
-            className="
-              flex flex-col items-center justify-center
-              py-1.5 px-1.5 min-h-[44px]
-              text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-              transition-colors duration-150 group
-            "
-            title="Notifications"
-          >
-            <div className="w-7 h-7 flex items-center justify-center rounded-md group-hover:bg-[var(--bg-tertiary)] transition-colors duration-150">
-              <Bell className="w-4 h-4" />
-            </div>
-            <span 
-              className="text-[9px] font-medium text-center mt-0.5 transition-all duration-200 ease-out"
-              style={{
-                opacity: isSidebarHovered ? 1 : 0,
-                transform: isSidebarHovered ? 'translateY(0)' : 'translateY(-2px)',
-                transitionDelay: isSidebarHovered ? '100ms' : '0ms',
-              }}
-            >
-              Alerts
-            </span>
-          </button>
-
-          <button
-            className="
-              flex flex-col items-center justify-center
-              py-1.5 px-1.5 min-h-[44px]
-              text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-              transition-colors duration-150 group
-            "
-            title="Account"
-          >
-            <div className="w-7 h-7 flex items-center justify-center rounded-md group-hover:bg-[var(--bg-tertiary)] transition-colors duration-150">
-              <div className="w-[18px] h-[18px] bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center">
-                <span className="text-white text-[7px] font-mono">A</span>
-              </div>
-            </div>
-            <span 
-              className="text-[9px] font-medium text-center mt-0.5 transition-all duration-200 ease-out"
-              style={{
-                opacity: isSidebarHovered ? 1 : 0,
-                transform: isSidebarHovered ? 'translateY(0)' : 'translateY(-2px)',
-                transitionDelay: isSidebarHovered ? '125ms' : '0ms',
-              }}
-            >
-              Account
-            </span>
-          </button>
+        <div className="flex flex-col items-center border-t border-[var(--border-secondary)] py-1.5 gap-0.5">
+          {/* Sidebar Control */}
+          <SidebarControl />
         </div>
       </aside>
 
@@ -350,9 +410,6 @@ export function Sidebar() {
               <motion.div variants={fadeInUp} className="border-t border-[var(--border-secondary)] my-4" />
 
               <motion.div variants={fadeInUp} className="px-3 space-y-1">
-                {/* Theme Toggle for Mobile - drawer variant */}
-                <ThemeToggle variant="drawer" />
-                
                 <button className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-all duration-200">
                   <Bell className="w-5 h-5" />
                   <span className="font-medium">Notifications</span>
@@ -373,15 +430,13 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* Navigation Drawer - Desktop Only - Disabled for now with label-based navigation */}
-      {/* 
+      {/* Navigation Drawer - Desktop Only */}
       <NavigationDrawer
-        isOpen={hoveredItem !== null}
+        isOpen={hoveredItem !== null && sidebarMode !== 'collapsed'}
         item={hoveredItem}
         onClose={handleDrawerClose}
         railRef={railRef}
       />
-      */}
     </>
   );
 }

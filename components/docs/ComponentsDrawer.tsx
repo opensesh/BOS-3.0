@@ -180,15 +180,15 @@ export function ComponentsDrawer({
           onClick={handleClick}
           className={cn(
             'w-full flex items-center gap-2 py-2 pr-3 text-left transition-colors',
-            item.type === 'category' && 'text-[11px] font-semibold uppercase tracking-wider text-os-text-secondary-dark hover:text-brand-vanilla',
-            item.type === 'page' && 'text-sm font-medium text-brand-vanilla hover:bg-os-surface-dark',
-            item.type === 'component' && 'text-sm text-os-text-secondary-dark hover:text-brand-vanilla hover:bg-os-surface-dark',
-            isSelected && 'bg-brand-aperol/10 text-brand-aperol hover:bg-brand-aperol/15',
+            item.type === 'category' && 'text-[11px] font-semibold uppercase tracking-wider text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]',
+            item.type === 'page' && 'text-sm font-medium text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]',
+            item.type === 'component' && 'text-sm text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]',
+            isSelected && 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] hover:bg-[var(--bg-brand-primary)]',
           )}
           style={{ paddingLeft }}
         >
           {hasChildren && (
-            <span className="flex-shrink-0 text-os-text-secondary-dark">
+            <span className="flex-shrink-0 text-[var(--fg-secondary)]">
               {isExpanded ? (
                 <ChevronDown className="w-3 h-3" />
               ) : (
@@ -201,7 +201,7 @@ export function ComponentsDrawer({
           )}
           <span className={cn(
             'flex-shrink-0',
-            isSelected ? 'text-brand-aperol' : 'text-os-text-secondary-dark'
+            isSelected ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-secondary)]'
           )}>
             {getIcon()}
           </span>
@@ -265,12 +265,12 @@ export function ComponentsDrawer({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed top-14 lg:top-0 right-0 bottom-0 z-50 w-[280px] max-w-[85vw] bg-os-bg-darker border-l border-os-border-dark flex flex-col"
+              className="fixed top-14 lg:top-0 right-0 bottom-0 z-50 w-[280px] max-w-[85vw] bg-[var(--bg-primary)] border-l border-[var(--border-primary)] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header with close button - h-12 to match Sidebar header */}
-              <div className="flex items-center justify-between px-3 h-12 border-b border-os-border-dark shrink-0">
-                <span className="font-display font-semibold text-brand-vanilla text-sm">Components</span>
+              <div className="flex items-center justify-between px-3 h-12 border-b border-[var(--border-primary)] shrink-0">
+                <span className="font-display font-semibold text-[var(--fg-primary)] text-sm">Components</span>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -278,18 +278,18 @@ export function ComponentsDrawer({
                     e.stopPropagation();
                     onToggle();
                   }}
-                  className="p-1.5 rounded-lg hover:bg-os-border-dark transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
                   aria-label="Close drawer"
                 >
-                  <X className="w-4 h-4 text-os-text-secondary-dark" />
+                  <X className="w-4 h-4 text-[var(--fg-secondary)]" />
                 </button>
               </div>
 
               {/* Search Bar */}
-              <div className="p-3 border-b border-os-border-dark shrink-0">
+              <div className="p-3 border-b border-[var(--border-primary)] shrink-0">
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-os-text-secondary-dark pointer-events-none" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-secondary)] pointer-events-none" />
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -298,24 +298,24 @@ export function ComponentsDrawer({
                       onChange={handleSearchChange}
                       onKeyDown={handleSearchKeyDown}
                       autoComplete="off"
-                      className="w-full pl-9 pr-8 py-2 text-sm bg-os-bg-dark border border-os-border-dark rounded-lg text-brand-vanilla placeholder:text-os-text-secondary-dark focus:outline-none focus:border-brand-aperol/50 transition-colors"
+                      className="w-full pl-9 pr-8 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--fg-primary)] placeholder:text-[var(--fg-placeholder)] focus:outline-none focus:border-[var(--border-brand)]/50 transition-colors"
                     />
                     {localSearchQuery && (
                       <button
                         type="button"
                         onClick={handleClearSearch}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-os-surface-dark transition-colors"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--bg-tertiary)] transition-colors"
                       >
-                        <X className="w-3 h-3 text-os-text-secondary-dark" />
+                        <X className="w-3 h-3 text-[var(--fg-secondary)]" />
                       </button>
                     )}
                   </div>
                   <button
                     type="button"
-                    className="p-2 rounded-lg border border-os-border-dark bg-os-bg-dark hover:bg-os-surface-dark transition-colors"
+                    className="p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                     aria-label="Add component"
                   >
-                    <Plus className="w-4 h-4 text-os-text-secondary-dark" />
+                    <Plus className="w-4 h-4 text-[var(--fg-secondary)]" />
                   </button>
                 </div>
               </div>
@@ -323,7 +323,7 @@ export function ComponentsDrawer({
               {/* Navigation Tree */}
               <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
                 {filteredTree.length === 0 ? (
-                  <div className="px-4 py-8 text-center text-os-text-secondary-dark text-sm">
+                  <div className="px-4 py-8 text-center text-[var(--fg-secondary)] text-sm">
                     No components found
                   </div>
                 ) : (

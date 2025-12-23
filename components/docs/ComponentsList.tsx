@@ -90,9 +90,9 @@ const getComponentIcon = (component: ComponentDoc) => {
   return Layers;
 };
 
-// Get icon color - standardized vanilla with aperol on hover (handled via group-hover)
+// Get icon color - standardized with brand accent on hover (handled via group-hover)
 const getIconColor = () => {
-  return 'text-os-text-secondary-dark group-hover:text-brand-aperol transition-colors';
+  return 'text-[var(--fg-secondary)] group-hover:text-[var(--fg-brand-primary)] transition-colors';
 };
 
 export function ComponentsList({ onSelectComponent, onClose }: ComponentsListProps) {
@@ -203,30 +203,30 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
         exit={{ opacity: 0, y: -4 }}
         transition={{ duration: 0.15 }}
         onClick={() => handleSelect(component.id)}
-        className="w-full flex items-center gap-4 px-4 py-3 hover:bg-os-surface-dark transition-colors text-left border-b border-os-border-dark/30 last:border-b-0 group"
+        className="w-full flex items-center gap-4 px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors text-left border-b border-[var(--border-primary)]/30 last:border-b-0 group"
       >
-        {/* Icon with vanilla default, aperol on hover */}
+        {/* Icon with default, brand on hover */}
         <div className={cn(
           "p-2 rounded-lg transition-colors",
-          "bg-os-surface-dark/50 group-hover:bg-os-surface-dark border border-os-border-dark/50"
+          "bg-[var(--bg-tertiary)]/50 group-hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)]/50"
         )}>
           <IconComponent className={cn("w-4 h-4", getIconColor())} />
         </div>
 
         {/* Name & Description */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-brand-vanilla truncate group-hover:text-brand-aperol transition-colors">
+          <h3 className="text-sm font-medium text-[var(--fg-primary)] truncate group-hover:text-[var(--fg-brand-primary)] transition-colors">
             {component.name}
           </h3>
-          <p className="text-xs text-os-text-secondary-dark truncate">
+          <p className="text-xs text-[var(--fg-secondary)] truncate">
             {component.description}
           </p>
         </div>
 
         {/* Variants count */}
         {variantCount > 0 && (
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-os-surface-dark/50 border border-os-border-dark/30">
-            <span className="text-xs text-os-text-secondary-dark">
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md bg-[var(--bg-tertiary)]/50 border border-[var(--border-primary)]/30">
+            <span className="text-xs text-[var(--fg-secondary)]">
               {variantCount} variant{variantCount !== 1 ? 's' : ''}
             </span>
           </div>
@@ -234,16 +234,16 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
 
         {/* Props/Controls count */}
         {controlCount > 0 && (
-          <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-md bg-os-surface-dark/50 border border-os-border-dark/30">
-            <SlidersHorizontal className="w-3 h-3 text-os-text-secondary-dark" />
-            <span className="text-xs text-os-text-secondary-dark">
+          <div className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-md bg-[var(--bg-tertiary)]/50 border border-[var(--border-primary)]/30">
+            <SlidersHorizontal className="w-3 h-3 text-[var(--fg-secondary)]" />
+            <span className="text-xs text-[var(--fg-secondary)]">
               {controlCount} prop{controlCount !== 1 ? 's' : ''}
             </span>
           </div>
         )}
 
         {/* Arrow indicator on hover */}
-        <ChevronRight className="w-4 h-4 text-os-text-secondary-dark opacity-0 group-hover:opacity-100 group-hover:text-brand-aperol transition-all" />
+        <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)] opacity-0 group-hover:opacity-100 group-hover:text-[var(--fg-brand-primary)] transition-all" />
       </motion.button>
     );
   };
@@ -262,20 +262,20 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
     return (
       <button
         onClick={() => toggleSection(sectionId)}
-        className="w-full flex items-center justify-between px-4 py-3 border-b border-os-border-dark bg-os-bg-darker hover:bg-os-surface-dark/30 transition-colors group"
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-[var(--border-primary)] bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)]/30 transition-colors group"
       >
         <div className="flex items-center gap-3">
           <motion.div
             animate={{ rotate: isExpanded ? 0 : -90 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="w-4 h-4 text-os-text-secondary-dark group-hover:text-brand-aperol transition-colors" />
+            <ChevronDown className="w-4 h-4 text-[var(--fg-secondary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
           </motion.div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-brand-vanilla group-hover:text-brand-aperol transition-colors">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
             {title}
           </h2>
         </div>
-        <span className="text-xs text-os-text-secondary-dark px-2 py-0.5 rounded-full bg-os-surface-dark/50">
+        <span className="text-xs text-[var(--fg-secondary)] px-2 py-0.5 rounded-full bg-[var(--bg-tertiary)]/50">
           {count} component{count !== 1 ? 's' : ''}
         </span>
       </button>
@@ -298,7 +298,7 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
       {/* Search Bar */}
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-os-text-secondary-dark pointer-events-none" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-secondary)] pointer-events-none" />
           <input
             ref={searchRef}
             type="text"
@@ -313,9 +313,9 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
             placeholder="Search components..."
             className={cn(
               "w-full pl-11 pr-10 py-3 rounded-xl",
-              "bg-os-surface-dark border border-os-border-dark",
-              "text-sm text-brand-vanilla placeholder:text-os-text-secondary-dark",
-              "focus:outline-none focus:border-brand-aperol/50 focus:ring-1 focus:ring-brand-aperol/20",
+              "bg-[var(--bg-secondary)] border border-[var(--border-primary)]",
+              "text-sm text-[var(--fg-primary)] placeholder:text-[var(--fg-placeholder)]",
+              "focus:outline-none focus:border-[var(--border-brand)]/50 focus:ring-1 focus:ring-[var(--border-brand)]/20",
               "transition-colors"
             )}
           />
@@ -326,9 +326,9 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
                 setShowAutocomplete(false);
                 searchRef.current?.focus();
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-os-border-dark transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors"
             >
-              <X className="w-4 h-4 text-os-text-secondary-dark" />
+              <X className="w-4 h-4 text-[var(--fg-secondary)]" />
             </button>
           )}
         </div>
@@ -342,7 +342,7 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full left-0 right-0 mt-2 bg-os-surface-dark border border-os-border-dark rounded-xl shadow-xl overflow-hidden z-50"
+              className="absolute top-full left-0 right-0 mt-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl shadow-xl overflow-hidden z-50"
             >
               {autocompleteSuggestions.map((component, index) => {
                 const IconComponent = getComponentIcon(component);
@@ -354,30 +354,30 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
                     className={cn(
                       "w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors group/item",
                       index === selectedAutocompleteIndex 
-                        ? "bg-brand-aperol/10 text-brand-aperol" 
-                        : "hover:bg-os-surface-dark/80 text-os-text-secondary-dark hover:text-brand-vanilla"
+                        ? "bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]" 
+                        : "hover:bg-[var(--bg-tertiary)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]"
                     )}
                   >
                     <IconComponent className={cn(
                       "w-4 h-4 transition-colors",
                       index === selectedAutocompleteIndex 
-                        ? "text-brand-aperol" 
-                        : "text-os-text-secondary-dark group-hover/item:text-brand-aperol"
+                        ? "text-[var(--fg-brand-primary)]" 
+                        : "text-[var(--fg-secondary)] group-hover/item:text-[var(--fg-brand-primary)]"
                     )} />
                     <div className="flex-1 min-w-0">
                       <span className={cn(
                         "text-sm font-medium",
-                        index === selectedAutocompleteIndex ? "text-brand-vanilla" : ""
+                        index === selectedAutocompleteIndex ? "text-[var(--fg-primary)]" : ""
                       )}>{component.name}</span>
-                      <span className="text-xs text-os-text-secondary-dark ml-2">
+                      <span className="text-xs text-[var(--fg-secondary)] ml-2">
                         {component.category === 'design-system' ? 'Design System' : component.page}
                       </span>
                     </div>
                     <ChevronRight className={cn(
                       "w-3 h-3 transition-colors",
                       index === selectedAutocompleteIndex 
-                        ? "text-brand-aperol" 
-                        : "text-os-text-secondary-dark group-hover/item:text-brand-aperol"
+                        ? "text-[var(--fg-brand-primary)]" 
+                        : "text-[var(--fg-secondary)] group-hover/item:text-[var(--fg-brand-primary)]"
                     )} />
                   </button>
                 );
@@ -389,10 +389,10 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
 
       {/* No Results State */}
       {!hasResults && (
-        <div className="text-center py-12 bg-os-surface-dark rounded-xl border border-os-border-dark">
-          <Search className="w-10 h-10 text-os-text-secondary-dark mx-auto mb-3 opacity-50" />
-          <h3 className="text-base font-medium text-brand-vanilla mb-1">No components found</h3>
-          <p className="text-sm text-os-text-secondary-dark">
+        <div className="text-center py-12 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)]">
+          <Search className="w-10 h-10 text-[var(--fg-secondary)] mx-auto mb-3 opacity-50" />
+          <h3 className="text-base font-medium text-[var(--fg-primary)] mb-1">No components found</h3>
+          <p className="text-sm text-[var(--fg-secondary)]">
             Try a different search term
           </p>
         </div>
@@ -400,7 +400,7 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
 
       {/* Design System Section */}
       {(filteredDesignSystem.length > 0 || !searchQuery) && (
-        <div className="bg-os-surface-dark rounded-xl border border-os-border-dark overflow-hidden">
+        <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] overflow-hidden">
           <SectionHeader 
             title="Design System" 
             count={filteredDesignSystem.length}
@@ -419,7 +419,7 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
                     <ComponentRow key={component.id} component={component} />
                   ))
                 ) : (
-                  <div className="px-4 py-6 text-center text-os-text-secondary-dark text-sm">
+                  <div className="px-4 py-6 text-center text-[var(--fg-secondary)] text-sm">
                     No design system components match your search
                   </div>
                 )}
@@ -439,7 +439,7 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
         if (searchQuery && pageComponents.length === 0) return null;
 
         return (
-          <div key={page} className="bg-os-surface-dark rounded-xl border border-os-border-dark overflow-hidden">
+          <div key={page} className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] overflow-hidden">
             <SectionHeader 
               title={page} 
               count={pageComponents.length}
@@ -458,7 +458,7 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
                       <ComponentRow key={component.id} component={component} />
                     ))
                   ) : (
-                    <div className="px-4 py-6 text-center text-os-text-secondary-dark text-sm">
+                    <div className="px-4 py-6 text-center text-[var(--fg-secondary)] text-sm">
                       No {page.toLowerCase()} components match your search
                     </div>
                   )}
@@ -471,10 +471,10 @@ export function ComponentsList({ onSelectComponent, onClose }: ComponentsListPro
 
       {/* Empty State - No Components Registered */}
       {allComponents.length === 0 && (
-        <div className="text-center py-12 bg-os-surface-dark rounded-xl border border-os-border-dark">
-          <Layers className="w-12 h-12 text-os-text-secondary-dark mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-brand-vanilla mb-2">No Components</h3>
-          <p className="text-os-text-secondary-dark">
+        <div className="text-center py-12 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)]">
+          <Layers className="w-12 h-12 text-[var(--fg-secondary)] mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-[var(--fg-primary)] mb-2">No Components</h3>
+          <p className="text-[var(--fg-secondary)]">
             No components have been registered yet.
           </p>
         </div>

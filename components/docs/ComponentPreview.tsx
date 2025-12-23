@@ -166,8 +166,8 @@ export default function Example() {
 
   if (!component) {
     return (
-      <div className="flex items-center justify-center h-64 bg-os-surface-dark rounded-xl border border-os-border-dark">
-        <p className="text-os-text-secondary-dark">Select a component to preview</p>
+      <div className="flex items-center justify-center h-64 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)]">
+        <p className="text-[var(--fg-secondary)]">Select a component to preview</p>
       </div>
     );
   }
@@ -175,10 +175,10 @@ export default function Example() {
   const Component = component.component;
   const buttonClass = cn(
     'p-2 rounded-lg transition-colors',
-    'text-os-text-secondary-dark hover:text-brand-vanilla hover:bg-os-surface-dark',
+    'text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   );
-  const activeButtonClass = cn(buttonClass, 'bg-os-surface-dark text-brand-aperol');
+  const activeButtonClass = cn(buttonClass, 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]');
 
   // Get all variants including default
   const allVariants = [
@@ -189,30 +189,30 @@ export default function Example() {
   return (
     <div className="space-y-6">
       {/* Preview Container */}
-      <div className="bg-os-surface-dark rounded-xl border border-os-border-dark overflow-hidden">
+      <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-1 px-4 py-2 border-b border-os-border-dark bg-os-bg-darker">
+        <div className="flex items-center gap-1 px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]">
           <button onClick={handleReset} className={buttonClass} title="Reset">
             <RotateCcw className="w-4 h-4" />
           </button>
-          <div className="w-px h-5 bg-os-border-dark mx-1" />
+          <div className="w-px h-5 bg-[var(--border-primary)] mx-1" />
           <button onClick={handleZoomIn} disabled={zoom >= 2} className={buttonClass} title="Zoom in">
             <ZoomIn className="w-4 h-4" />
           </button>
           <button onClick={handleZoomOut} disabled={zoom <= 0.25} className={buttonClass} title="Zoom out">
             <ZoomOut className="w-4 h-4" />
           </button>
-          <span className="text-xs text-os-text-secondary-dark min-w-[40px] text-center">
+          <span className="text-xs text-[var(--fg-secondary)] min-w-[40px] text-center">
             {Math.round(zoom * 100)}%
           </span>
-          <div className="w-px h-5 bg-os-border-dark mx-1" />
+          <div className="w-px h-5 bg-[var(--border-primary)] mx-1" />
           <button onClick={handleCopyCode} className={codeCopied ? activeButtonClass : buttonClass} title="Copy code">
-            {codeCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+            {codeCopied ? <Check className="w-4 h-4 text-[var(--fg-success-primary)]" /> : <Copy className="w-4 h-4" />}
           </button>
           <button onClick={handleDownload} className={buttonClass} title="Download">
             <Download className="w-4 h-4" />
           </button>
-          <div className="w-px h-5 bg-os-border-dark mx-1" />
+          <div className="w-px h-5 bg-[var(--border-primary)] mx-1" />
           <button onClick={handleToggleGrid} className={showGrid ? activeButtonClass : buttonClass} title="Toggle grid">
             <Grid3X3 className="w-4 h-4" />
           </button>
@@ -239,8 +239,8 @@ export default function Example() {
 
         {/* Variant Selector */}
         {allVariants.length > 1 && (
-          <div className="flex items-center gap-2 px-4 py-3 border-t border-os-border-dark bg-os-bg-darker">
-            <span className="text-xs text-os-text-secondary-dark uppercase tracking-wider font-medium">Variant:</span>
+          <div className="flex items-center gap-2 px-4 py-3 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]">
+            <span className="text-xs text-[var(--fg-secondary)] uppercase tracking-wider font-medium">Variant:</span>
             <div className="flex gap-1.5 flex-wrap">
               {allVariants.map((variant) => (
                 <button
@@ -249,8 +249,8 @@ export default function Example() {
                   className={cn(
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     selectedVariant === variant.id
-                      ? 'bg-brand-aperol text-white border-brand-aperol'
-                      : 'bg-os-bg-dark border-os-border-dark text-os-text-secondary-dark hover:text-brand-vanilla hover:border-os-border-dark/80'
+                      ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)] border-[var(--border-brand-solid)]'
+                      : 'bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] hover:border-[var(--border-secondary)]'
                   )}
                 >
                   {variant.name}
@@ -262,21 +262,21 @@ export default function Example() {
       </div>
 
       {/* Props / Controls Tabs */}
-      <div className="bg-os-surface-dark rounded-xl border border-os-border-dark overflow-hidden">
+      <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] overflow-hidden">
         {/* Tab Headers */}
-        <div className="flex border-b border-os-border-dark">
+        <div className="flex border-b border-[var(--border-primary)]">
           <button
             onClick={() => setActiveTab('props')}
             className={cn(
               'px-6 py-3 text-sm font-medium transition-colors relative',
               activeTab === 'props'
-                ? 'text-brand-aperol'
-                : 'text-os-text-secondary-dark hover:text-brand-vanilla'
+                ? 'text-[var(--fg-brand-primary)]'
+                : 'text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]'
             )}
           >
             Props
             {activeTab === 'props' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-aperol" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--bg-brand-solid)]" />
             )}
           </button>
           <button
@@ -284,13 +284,13 @@ export default function Example() {
             className={cn(
               'px-6 py-3 text-sm font-medium transition-colors relative',
               activeTab === 'controls'
-                ? 'text-brand-aperol'
-                : 'text-os-text-secondary-dark hover:text-brand-vanilla'
+                ? 'text-[var(--fg-brand-primary)]'
+                : 'text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]'
             )}
           >
             Controls
             {activeTab === 'controls' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-aperol" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--bg-brand-solid)]" />
             )}
           </button>
         </div>
@@ -302,32 +302,32 @@ export default function Example() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-os-border-dark">
-                    <th className="text-left py-2 pr-4 text-os-text-secondary-dark font-medium">Name</th>
-                    <th className="text-left py-2 pr-4 text-os-text-secondary-dark font-medium">Description</th>
-                    <th className="text-left py-2 pr-4 text-os-text-secondary-dark font-medium">Default</th>
-                    <th className="text-left py-2 text-os-text-secondary-dark font-medium">Type</th>
+                  <tr className="border-b border-[var(--border-primary)]">
+                    <th className="text-left py-2 pr-4 text-[var(--fg-secondary)] font-medium">Name</th>
+                    <th className="text-left py-2 pr-4 text-[var(--fg-secondary)] font-medium">Description</th>
+                    <th className="text-left py-2 pr-4 text-[var(--fg-secondary)] font-medium">Default</th>
+                    <th className="text-left py-2 text-[var(--fg-secondary)] font-medium">Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   {component.controls.map(control => (
-                    <tr key={control.name} className="border-b border-os-border-dark/50">
+                    <tr key={control.name} className="border-b border-[var(--border-primary)]/50">
                       <td className="py-3 pr-4">
-                        <code className="text-brand-aperol">
+                        <code className="text-[var(--fg-brand-primary)]">
                           {control.name}
-                          {control.required && <span className="text-red-400">*</span>}
+                          {control.required && <span className="text-[var(--fg-error-primary)]">*</span>}
                         </code>
                       </td>
-                      <td className="py-3 pr-4 text-os-text-secondary-dark">
+                      <td className="py-3 pr-4 text-[var(--fg-secondary)]">
                         {control.description || '-'}
                       </td>
-                      <td className="py-3 pr-4 text-os-text-secondary-dark">
+                      <td className="py-3 pr-4 text-[var(--fg-secondary)]">
                         {control.defaultValue !== undefined 
                           ? String(control.defaultValue) 
                           : '-'}
                       </td>
-                      <td className="py-3 text-os-text-secondary-dark">
-                        <code className="text-xs bg-os-bg-dark px-2 py-1 rounded">
+                      <td className="py-3 text-[var(--fg-secondary)]">
+                        <code className="text-xs bg-[var(--bg-tertiary)] px-2 py-1 rounded">
                           {control.type}
                         </code>
                       </td>
@@ -336,7 +336,7 @@ export default function Example() {
                 </tbody>
               </table>
               {component.controls.length === 0 && (
-                <p className="text-os-text-secondary-dark text-center py-4">
+                <p className="text-[var(--fg-secondary)] text-center py-4">
                   No props defined for this component
                 </p>
               )}
@@ -354,7 +354,7 @@ export default function Example() {
                   />
                 ))
               ) : (
-                <p className="text-os-text-secondary-dark text-center py-4">
+                <p className="text-[var(--fg-secondary)] text-center py-4">
                   No controls available for this component
                 </p>
               )}

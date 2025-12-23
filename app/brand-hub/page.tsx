@@ -205,7 +205,7 @@ export default function BrandHubPage() {
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
-      <main className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-12 lg:pl-14">
+      <main className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-10 lg:pl-12">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
             {/* Page Header */}

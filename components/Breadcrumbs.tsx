@@ -2,13 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ChevronDown, ChevronRight, Plus, Check } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { ChevronDown, Plus, Check, Search } from 'lucide-react';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 import { Brand } from '@/types';
 
-// Default brands - shared with BrandSelector
+// Default brands
 const DEFAULT_BRANDS: Brand[] = [
   {
     id: 'open-session',
@@ -68,21 +66,31 @@ function saveSelectedBrand(brandId: string): void {
 
 export function Breadcrumbs() {
   const { breadcrumbs } = useBreadcrumbs();
-  const { resolvedTheme } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [brands, setBrands] = useState<Brand[]>(DEFAULT_BRANDS);
   const [selectedBrandId, setSelectedBrandId] = useState<string>(DEFAULT_BRANDS[0].id);
-  const [mounted, setMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const selectedBrand = brands.find(b => b.id === selectedBrandId) || brands[0];
+  
+  const filteredBrands = brands.filter(b => 
+    b.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
-    setMounted(true);
     setBrands(getStoredBrands());
     setSelectedBrandId(getSelectedBrandId());
   }, []);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (isDropdownOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isDropdownOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -96,6 +104,7 @@ export function Breadcrumbs() {
         !triggerRef.current.contains(event.target as Node)
       ) {
         setIsDropdownOpen(false);
+        setSearchQuery('');
       }
     };
 
@@ -107,30 +116,31 @@ export function Breadcrumbs() {
     setSelectedBrandId(brandId);
     saveSelectedBrand(brandId);
     setIsDropdownOpen(false);
-    // Optionally trigger a page reload or context update
+    setSearchQuery('');
   }, []);
 
   return (
-    <nav className="flex items-center text-sm" aria-label="Breadcrumb">
+    <nav className="flex items-center text-xs" aria-label="Breadcrumb">
       {/* Separator after brand icon */}
-      <ChevronRight className="w-4 h-4 mx-1 text-fg-quaternary" />
+      <span className="mx-1.5 text-fg-quaternary">/</span>
       
-      {/* Brand/Organization Selector - First breadcrumb */}
+      {/* Brand/Organization Selector */}
       <div className="relative">
         <button
           ref={triggerRef}
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="
-            flex items-center gap-1.5
-            px-2 py-1
-            rounded-md
-            text-fg-secondary hover:text-fg-primary
+          className={`
+            flex items-center gap-1
+            px-1.5 py-0.5
+            rounded
+            text-fg-primary hover:text-fg-primary
             hover:bg-bg-tertiary
             transition-all duration-150
-          "
+            ${isDropdownOpen ? 'bg-bg-tertiary' : ''}
+          `}
         >
-          <span className="font-medium">{selectedBrand.name}</span>
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          <span className="font-medium text-xs">{selectedBrand.name}</span>
+          <ChevronDown className={`w-3 h-3 text-fg-tertiary transition-transform duration-150 ${isDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {/* Brand Dropdown */}
@@ -139,61 +149,72 @@ export function Breadcrumbs() {
             ref={dropdownRef}
             className="
               absolute top-full left-0 mt-1
-              w-56 bg-bg-secondary
-              rounded-lg border border-border-secondary
+              w-52 bg-bg-secondary
+              rounded-md border border-border-secondary
               shadow-lg z-[100]
-              py-1
+              overflow-hidden
             "
           >
-            {/* Search field placeholder */}
-            <div className="px-3 py-2 border-b border-border-secondary">
-              <input
-                type="text"
-                placeholder="Find organization..."
-                className="
-                  w-full px-2 py-1.5
-                  text-sm
-                  bg-bg-tertiary border border-border-secondary
-                  rounded-md
-                  text-fg-primary
-                  placeholder:text-fg-tertiary
-                  focus:outline-none focus:ring-1 focus:ring-border-brand
-                "
-              />
+            {/* Search field */}
+            <div className="p-2 border-b border-border-secondary">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-quaternary" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Find organization..."
+                  className="
+                    w-full pl-7 pr-2 py-1.5
+                    text-xs
+                    bg-bg-tertiary border border-border-secondary
+                    rounded
+                    text-fg-primary
+                    placeholder:text-fg-quaternary
+                    focus:outline-none focus:border-border-brand
+                  "
+                />
+              </div>
             </div>
             
             {/* Brand list */}
-            <div className="py-1">
-              {brands.map((brand) => (
+            <div className="py-1 max-h-48 overflow-y-auto">
+              {filteredBrands.map((brand) => (
                 <button
                   key={brand.id}
                   onClick={() => handleSelectBrand(brand.id)}
                   className={`
                     w-full flex items-center justify-between
-                    px-3 py-2
-                    text-sm text-left
+                    px-3 py-1.5
+                    text-xs text-left
                     hover:bg-bg-tertiary
-                    transition-colors duration-150
+                    transition-colors duration-100
                     ${selectedBrandId === brand.id ? 'bg-bg-tertiary' : ''}
                   `}
                 >
                   <span className="text-fg-primary">{brand.name}</span>
                   {selectedBrandId === brand.id && (
-                    <Check className="w-4 h-4 text-fg-brand-primary" />
+                    <Check className="w-3.5 h-3.5 text-fg-brand-primary" />
                   )}
                 </button>
               ))}
+              {filteredBrands.length === 0 && (
+                <div className="px-3 py-2 text-xs text-fg-tertiary">
+                  No organizations found
+                </div>
+              )}
             </div>
 
             {/* All Organizations link */}
-            <div className="border-t border-border-secondary py-1">
+            <div className="border-t border-border-secondary">
               <button
                 className="
                   w-full flex items-center
-                  px-3 py-2
-                  text-sm text-fg-secondary hover:text-fg-primary
+                  px-3 py-1.5
+                  text-xs text-fg-secondary hover:text-fg-primary
                   hover:bg-bg-tertiary
-                  transition-colors duration-150
+                  transition-colors duration-100
                 "
               >
                 All Organizations
@@ -201,17 +222,17 @@ export function Breadcrumbs() {
             </div>
 
             {/* Add new brand */}
-            <div className="border-t border-border-secondary py-1">
+            <div className="border-t border-border-secondary">
               <button
                 className="
-                  w-full flex items-center gap-2
-                  px-3 py-2
-                  text-sm text-fg-secondary hover:text-fg-primary
+                  w-full flex items-center gap-1.5
+                  px-3 py-1.5
+                  text-xs text-fg-secondary hover:text-fg-primary
                   hover:bg-bg-tertiary
-                  transition-colors duration-150
+                  transition-colors duration-100
                 "
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
                 <span>New organization</span>
               </button>
             </div>
@@ -222,13 +243,13 @@ export function Breadcrumbs() {
       {/* Page breadcrumbs */}
       {breadcrumbs.map((crumb, index) => (
         <div key={index} className="flex items-center">
-          <ChevronRight className="w-4 h-4 mx-1 text-fg-quaternary" />
+          <span className="mx-1.5 text-fg-quaternary">/</span>
           {crumb.href ? (
             <Link
               href={crumb.href}
               className="
-                px-2 py-1
-                rounded-md
+                px-1.5 py-0.5
+                rounded
                 text-fg-secondary hover:text-fg-primary
                 hover:bg-bg-tertiary
                 transition-all duration-150
@@ -237,7 +258,7 @@ export function Breadcrumbs() {
               {crumb.label}
             </Link>
           ) : (
-            <span className="px-2 py-1 text-fg-primary font-medium">
+            <span className="px-1.5 py-0.5 text-fg-primary">
               {crumb.label}
             </span>
           )}
@@ -246,4 +267,3 @@ export function Breadcrumbs() {
     </nav>
   );
 }
-

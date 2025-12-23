@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import JSZip from 'jszip';
+import { useTheme } from 'next-themes';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
 import { RefreshCw, Download, Palette, ChevronDown } from 'lucide-react';
@@ -238,14 +239,14 @@ function LogoCard({
 
   return (
     <div 
-      className="group relative rounded-xl overflow-hidden border border-[var(--border-primary)] transition-all duration-300 hover:border-[var(--fg-primary)] bg-[var(--bg-secondary)]"
+      className="group relative rounded-xl border border-[var(--border-primary)] transition-all duration-300 hover:border-[var(--fg-primary)] bg-[var(--bg-secondary)]"
       role="article"
       aria-label={`${logo.name} logo - ${colorVariant} variant`}
     >
       {/* Header Row with Logo Name and Controls */}
-      <div className="bg-[var(--color-charcoal)] px-3 py-2 rounded-t-xl border-b border-[var(--border-primary)]/30 flex items-center justify-between">
+      <div className="bg-[var(--bg-tertiary)] px-3 py-2 rounded-t-xl border-b border-[var(--border-primary)]/30 flex items-center justify-between">
         {/* Logo Name Label */}
-        <span className="text-[11px] font-medium text-[var(--color-vanilla)] font-display">{logo.name}</span>
+        <span className="text-[11px] font-medium text-[var(--fg-primary)] font-display">{logo.name}</span>
         
         {/* Controls */}
         <div className="flex gap-1.5 items-center">
@@ -267,7 +268,7 @@ function LogoCard({
       </div>
       
       {/* Logo Preview - Square aspect ratio */}
-      <div className={`aspect-square ${bgClass} relative flex items-center justify-center p-3`}>
+      <div className={`aspect-square ${bgClass} relative flex items-center justify-center p-3 rounded-b-xl`}>
         <Image
           src={imagePath}
           alt={`${logo.name} logo in ${colorVariant} variant`}
@@ -281,6 +282,16 @@ function LogoCard({
 }
 
 export default function LogoPage() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  // Get the default color based on the current theme
+  // Light mode: use charcoal logos (dark on light background)
+  // Dark mode: use vanilla logos (light on dark background)
+  const getDefaultColor = (): ColorVariant => {
+    return resolvedTheme === 'light' ? 'charcoal' : 'vanilla';
+  };
+
   const [mainColors, setMainColors] = useState<Record<string, ColorVariant>>({
     brandmark: 'vanilla',
     combo: 'vanilla',
@@ -294,17 +305,41 @@ export default function LogoPage() {
     filled: 'vanilla',
   });
 
+  // Set mounted state and initialize colors based on theme
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Update default colors when theme changes
+  useEffect(() => {
+    if (mounted) {
+      const defaultColor = getDefaultColor();
+      setMainColors({
+        brandmark: defaultColor,
+        combo: defaultColor,
+        stacked: defaultColor,
+        horizontal: defaultColor,
+      });
+      setAccessoryColors({
+        core: defaultColor,
+        outline: defaultColor,
+        filled: defaultColor,
+      });
+    }
+  }, [resolvedTheme, mounted]);
+
   const resetAllColors = () => {
+    const defaultColor = getDefaultColor();
     setMainColors({
-      brandmark: 'vanilla',
-      combo: 'vanilla',
-      stacked: 'vanilla',
-      horizontal: 'vanilla',
+      brandmark: defaultColor,
+      combo: defaultColor,
+      stacked: defaultColor,
+      horizontal: defaultColor,
     });
     setAccessoryColors({
-      core: 'vanilla',
-      outline: 'vanilla',
-      filled: 'vanilla',
+      core: defaultColor,
+      outline: defaultColor,
+      filled: defaultColor,
     });
   };
 

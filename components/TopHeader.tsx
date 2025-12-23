@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, Bell, HelpCircle, Sparkles, User } from 'lucide-react';
+import { Search, Bell, HelpCircle, Sparkles } from 'lucide-react';
 import { Brandmark } from './Brandmark';
-import { Tooltip, TooltipTrigger } from '@/components/ui/base/tooltip/tooltip';
 
 interface TopHeaderProps {
   children?: React.ReactNode; // For breadcrumbs
@@ -11,26 +10,23 @@ interface TopHeaderProps {
 
 export function TopHeader({ children }: TopHeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-bg-secondary border-b border-border-secondary">
-      <div className="flex items-center justify-between h-full px-3">
-        {/* Left Section: Brand Icon */}
-        <div className="flex items-center gap-3">
-          <Tooltip title="Home" placement="bottom" delay={300}>
-            <TooltipTrigger>
-              <Link
-                href="/"
-                className="
-                  flex items-center justify-center
-                  p-1.5
-                  rounded-lg
-                  hover:bg-bg-tertiary
-                  transition-all duration-200
-                "
-              >
-                <Brandmark size={20} />
-              </Link>
-            </TooltipTrigger>
-          </Tooltip>
+    <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-bg-secondary border-b border-border-secondary">
+      <div className="flex items-center justify-between h-full px-2">
+        {/* Left Section: Brand Icon + Breadcrumbs */}
+        <div className="flex items-center gap-0">
+          <Link
+            href="/"
+            className="
+              flex items-center justify-center
+              p-1.5
+              rounded-md
+              hover:bg-bg-tertiary
+              transition-all duration-150
+            "
+            title="Home"
+          >
+            <Brandmark size={18} />
+          </Link>
           
           {/* Breadcrumbs slot */}
           {children && (
@@ -41,102 +37,86 @@ export function TopHeader({ children }: TopHeaderProps) {
         </div>
 
         {/* Right Section: Utility Actions */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           {/* Search */}
-          <Tooltip title="Search" description="⌘K" placement="bottom" delay={300}>
-            <TooltipTrigger>
-              <button
-                className="
-                  flex items-center justify-center
-                  p-2
-                  rounded-lg
-                  text-fg-tertiary hover:text-fg-primary
-                  hover:bg-bg-tertiary
-                  transition-all duration-200
-                "
-              >
-                <Search className="w-[18px] h-[18px]" />
-              </button>
-            </TooltipTrigger>
-          </Tooltip>
+          <button
+            className="
+              flex items-center justify-center gap-1.5
+              px-2 py-1
+              rounded-md
+              text-fg-tertiary hover:text-fg-primary
+              hover:bg-bg-tertiary
+              transition-all duration-150
+              text-xs
+            "
+            title="Search (⌘K)"
+          >
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline text-fg-quaternary">⌘K</span>
+          </button>
 
           {/* Notifications */}
-          <Tooltip title="Notifications" placement="bottom" delay={300}>
-            <TooltipTrigger>
-              <button
-                className="
-                  relative flex items-center justify-center
-                  p-2
-                  rounded-lg
-                  text-fg-tertiary hover:text-fg-primary
-                  hover:bg-bg-tertiary
-                  transition-all duration-200
-                "
-              >
-                <Bell className="w-[18px] h-[18px]" />
-                {/* Notification badge - can be conditionally rendered */}
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--color-aperol)] rounded-full" />
-              </button>
-            </TooltipTrigger>
-          </Tooltip>
+          <button
+            className="
+              relative flex items-center justify-center
+              p-1.5
+              rounded-md
+              text-fg-tertiary hover:text-fg-primary
+              hover:bg-bg-tertiary
+              transition-all duration-150
+            "
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+          </button>
 
           {/* Help Center */}
-          <Tooltip title="Help" placement="bottom" delay={300}>
-            <TooltipTrigger>
-              <button
-                className="
-                  flex items-center justify-center
-                  p-2
-                  rounded-lg
-                  text-fg-tertiary hover:text-fg-primary
-                  hover:bg-bg-tertiary
-                  transition-all duration-200
-                "
-              >
-                <HelpCircle className="w-[18px] h-[18px]" />
-              </button>
-            </TooltipTrigger>
-          </Tooltip>
+          <button
+            className="
+              flex items-center justify-center
+              p-1.5
+              rounded-md
+              text-fg-tertiary hover:text-fg-primary
+              hover:bg-bg-tertiary
+              transition-all duration-150
+            "
+            title="Help"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
 
           {/* AI Assistant */}
-          <Tooltip title="AI Assistant" placement="bottom" delay={300}>
-            <TooltipTrigger>
-              <button
-                className="
-                  flex items-center justify-center
-                  p-2
-                  rounded-lg
-                  text-fg-tertiary hover:text-fg-primary
-                  hover:bg-bg-tertiary
-                  transition-all duration-200
-                "
-              >
-                <Sparkles className="w-[18px] h-[18px]" />
-              </button>
-            </TooltipTrigger>
-          </Tooltip>
+          <button
+            className="
+              flex items-center justify-center
+              p-1.5
+              rounded-md
+              text-fg-tertiary hover:text-fg-primary
+              hover:bg-bg-tertiary
+              transition-all duration-150
+            "
+            title="AI Assistant"
+          >
+            <Sparkles className="w-4 h-4" />
+          </button>
 
           {/* Profile */}
-          <Tooltip title="Profile" placement="bottom" delay={300}>
-            <TooltipTrigger>
-              <button
-                className="
-                  flex items-center justify-center
-                  p-2
-                  rounded-lg
-                  hover:bg-bg-tertiary
-                  transition-all duration-200
-                "
-              >
-                <div className="w-6 h-6 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-border-secondary rounded-full flex items-center justify-center">
-                  <span className="text-white text-[10px] font-mono">A</span>
-                </div>
-              </button>
-            </TooltipTrigger>
-          </Tooltip>
+          <button
+            className="
+              flex items-center justify-center
+              p-1.5
+              rounded-md
+              hover:bg-bg-tertiary
+              transition-all duration-150
+            "
+            title="Profile"
+          >
+            <div className="w-5 h-5 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-border-secondary rounded-full flex items-center justify-center">
+              <span className="text-white text-[8px] font-mono">A</span>
+            </div>
+          </button>
         </div>
       </div>
     </header>
   );
 }
-

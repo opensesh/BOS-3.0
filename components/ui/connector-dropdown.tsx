@@ -109,7 +109,7 @@ export function ConnectorDropdown({
     <div
       ref={dropdownRef}
       onClick={(e) => e.stopPropagation()}
-      className="absolute bottom-full mb-2 bg-os-surface-dark rounded-xl border border-os-border-dark shadow-xl z-50"
+      className="absolute bottom-full mb-2 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] shadow-xl z-50"
       style={{
         right: position.right !== undefined ? position.right : undefined,
         left: position.left !== undefined ? position.left : undefined,
@@ -124,7 +124,7 @@ export function ConnectorDropdown({
             <div
               key={connector.id}
               onClick={() => onToggleConnector(connector.id)}
-              className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-os-bg-dark transition-colors group cursor-pointer"
+              className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group cursor-pointer"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -135,14 +135,14 @@ export function ConnectorDropdown({
               }}
             >
               <div className="flex-shrink-0 mt-0.5">
-                <Icon className="w-4 h-4 text-os-text-secondary-dark" />
+                <Icon className="w-4 h-4 text-[var(--fg-secondary)]" />
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <div className={`text-sm font-medium text-os-text-primary-dark`}>
+                <div className={`text-sm font-medium text-[var(--fg-primary)]`}>
                   {connector.title}
                 </div>
                 {connector.description && (
-                  <div className="text-xs text-os-text-secondary-dark mt-0.5">
+                  <div className="text-xs text-[var(--fg-secondary)] mt-0.5">
                     {connector.description}
                   </div>
                 )}
@@ -151,7 +151,7 @@ export function ConnectorDropdown({
                 <div
                   className={`
                     relative w-9 h-5 rounded-full transition-colors
-                    ${connector.enabled ? 'bg-brand-aperol' : 'bg-os-border-dark'}
+                    ${connector.enabled ? 'bg-[var(--bg-brand-solid)]' : 'bg-[var(--bg-tertiary)]'}
                   `}
                   aria-label={`Toggle ${connector.title}`}
                 >

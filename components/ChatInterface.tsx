@@ -252,7 +252,7 @@ export function ChatInterface() {
       
       try {
         const stored = sessionStorage.getItem('articleContext');
-        if (stored) {
+        if (stored && stored.trim() !== '') {
           storedArticleContext = JSON.parse(stored);
           // Clear it after reading
           sessionStorage.removeItem('articleContext');

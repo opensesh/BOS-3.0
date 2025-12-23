@@ -24,7 +24,7 @@ function getStoredBrands(): Brand[] {
   
   try {
     const stored = localStorage.getItem(BRANDS_STORAGE_KEY);
-    if (stored) {
+    if (stored && stored.trim() !== '') {
       const customBrands = JSON.parse(stored);
       return [...DEFAULT_BRANDS, ...customBrands];
     }
@@ -40,7 +40,7 @@ function getSelectedBrandId(): string {
   
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
+    if (stored && stored.trim() !== '') {
       const brandId = JSON.parse(stored);
       // Verify brand still exists
       const allBrands = getStoredBrands();
@@ -70,7 +70,7 @@ function saveCustomBrand(brand: Brand): void {
   
   try {
     const stored = localStorage.getItem(BRANDS_STORAGE_KEY);
-    const customBrands = stored ? JSON.parse(stored) : [];
+    const customBrands = (stored && stored.trim() !== '') ? JSON.parse(stored) : [];
     customBrands.push(brand);
     localStorage.setItem(BRANDS_STORAGE_KEY, JSON.stringify(customBrands));
   } catch (error) {

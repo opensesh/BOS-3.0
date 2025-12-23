@@ -1,0 +1,77 @@
+## Commit Spec and Process
+
+### Commit Message Format
+Use the Conventional Commit Messages specification to generate commit messages.
+
+The commit message should be structured as follows:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Commit Types
+- **fix:** patches a bug in your codebase (correlates with PATCH in Semantic Versioning)
+- **feat:** introduces a new feature to the codebase (correlates with MINOR in Semantic Versioning)
+- **BREAKING CHANGE:** introduces a breaking API change (correlates with MAJOR in Semantic Versioning)
+- Other types: build:, chore:, ci:, docs:, style:, refactor:, perf:, test:
+
+### Commit Process
+**IMPORTANT:** After completing each task or set of related changes, automatically commit the changes to git using the conventional commit message format specified above. Do not ask for permission to commit. Stage and commit all relevant changes immediately upon task completion.
+
+### Specification Details
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" are interpreted as described in RFC 2119.
+
+- Commits MUST be prefixed with a type (feat, fix, etc.), followed by OPTIONAL scope, OPTIONAL !, and REQUIRED colon and space
+- The type feat MUST be used when adding a new feature
+- The type fix MUST be used when representing a bug fix
+- A scope MAY be provided after a type, e.g., fix(parser):
+- A description MUST immediately follow the colon and space
+- A longer commit body MAY be provided after the short description
+- One or more footers MAY be provided one blank line after the body
+- Breaking changes MUST be indicated by ! before : or as BREAKING CHANGE: in footer
+- Types other than feat and fix MAY be used (docs, style, refactor, perf, test, etc.)
+- Units of information MUST NOT be treated as case sensitive, except BREAKING CHANGE which MUST be uppercase
+
+---
+
+## Figma MCP Integration Rules
+These rules define how to translate Figma inputs into code for this project and must be followed for every Figma-driven change.
+
+### Required flow (do not skip)
+1. Run get_code first to fetch the structured representation for the exact node(s).
+2. If the response is too large or truncated, run get_metadata to get the high‑level node map and then re‑fetch only the required node(s) with get_code.
+3. Run get_screenshot for a visual reference of the node variant being implemented.
+4. Only after you have both get_code and get_screenshot, download any assets needed and start implementation.
+5. Translate the output (usually React + Tailwind) into this project's conventions, styles and framework. Reuse the project's color tokens, components, and typography wherever possible.
+6. Validate against Figma for 1:1 look and behavior before marking complete.
+
+### Implementation rules
+- Treat the Figma MCP output (React + Tailwind) as a representation of design and behavior, not as final code style.
+- Replace Tailwind utility classes with the project's preferred utilities/design‑system tokens when applicable.
+- Reuse existing components (e.g., buttons, inputs, typography, icon wrappers) instead of duplicating functionality.
+- Use the project's color system, typography scale, and spacing tokens consistently.
+- Respect existing routing, state management, and data‑fetch patterns already adopted in the repo.
+- Strive for 1:1 visual parity with the Figma design. When conflicts arise, prefer design‑system tokens and adjust spacing or sizes minimally to match visuals.
+- Validate the final UI against the Figma screenshot for both look and behavior.
+- IMPORTANT: Always use components from `/path_to_your_design_system` when possible
+- Prioritize Figma fidelity to match designs exactly
+- Avoid hardcoded values, use design tokens from Figma where available
+- Follow WCAG requirements for accessibility
+- Add component documentation
+- Place UI components in `/path_to_your_design_system`; avoid inline styles unless truly necessary
+
+---
+
+## Communication Style
+I'm a UX designer learning to code. When helping me:
+- Explain code in terms of visual/interaction outcomes
+- Connect technical decisions to user experience impacts
+- Use analogies from design tools when relevant (layers, components, etc.)
+- Break complex logic into digestible steps
+- Suggest UI/UX best practices alongside code solutions
+- Explain CSS/styling in design terminology
+

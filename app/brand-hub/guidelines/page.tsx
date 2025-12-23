@@ -106,10 +106,10 @@ export default function GuidelinesPage() {
   // Upload Section Component to avoid duplication
   const UploadSection = ({ className = '' }: { className?: string }) => (
     <div className={`pt-6 space-y-4 ${className}`}>
-      <h3 className="text-lg font-display font-medium text-brand-vanilla">
+      <h3 className="text-lg font-display font-medium text-[var(--fg-primary)]">
         Upload Brand Guidelines
       </h3>
-      <p className="text-sm text-os-text-secondary-dark">
+      <p className="text-sm text-[var(--fg-tertiary)]">
         Add PDFs or PowerPoints to expand your brand knowledge base.
       </p>
       
@@ -121,8 +121,8 @@ export default function GuidelinesPage() {
         onClick={() => fileInputRef.current?.click()}
         className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer p-6 ${
           isDragging 
-            ? 'border-brand-aperol bg-brand-aperol/10' 
-            : 'border-os-border-dark hover:border-os-text-secondary-dark hover:bg-os-surface-dark/30'
+            ? 'border-[var(--border-brand-solid)] bg-[var(--bg-brand-primary)]' 
+            : 'border-[var(--border-primary)] hover:border-[var(--fg-tertiary)] hover:bg-[var(--bg-secondary)]/30'
         }`}
       >
         <input
@@ -135,17 +135,17 @@ export default function GuidelinesPage() {
         />
         <div className="flex flex-col items-center gap-3 text-center">
           <div className={`p-3 rounded-full transition-colors ${
-            isDragging ? 'bg-brand-aperol/20' : 'bg-os-surface-dark'
+            isDragging ? 'bg-[var(--bg-brand-secondary)]' : 'bg-[var(--bg-secondary)]'
           }`}>
             <Upload className={`w-6 h-6 ${
-              isDragging ? 'text-brand-aperol' : 'text-os-text-secondary-dark'
+              isDragging ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'
             }`} />
           </div>
           <div>
-            <p className="text-sm font-medium text-brand-vanilla">
+            <p className="text-sm font-medium text-[var(--fg-primary)]">
               Drop files here or click to upload
             </p>
-            <p className="text-xs text-os-text-secondary-dark mt-1">
+            <p className="text-xs text-[var(--fg-tertiary)] mt-1">
               PDF, PPT, PPTX up to 50MB
             </p>
           </div>
@@ -158,21 +158,21 @@ export default function GuidelinesPage() {
           {uploadedFiles.map(file => (
             <div 
               key={file.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-os-surface-dark/50 border border-os-border-dark"
+              className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)]"
             >
               <FileIcon type={file.type} />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-brand-vanilla truncate">
+                <p className="text-sm font-medium text-[var(--fg-primary)] truncate">
                   {file.name}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-os-text-secondary-dark">
+                  <span className="text-xs text-[var(--fg-tertiary)]">
                     {formatFileSize(file.size)}
                   </span>
                   {file.status === 'uploading' && (
-                    <div className="flex-1 h-1 bg-os-border-dark rounded-full overflow-hidden max-w-[100px]">
+                    <div className="flex-1 h-1 bg-[var(--border-primary)] rounded-full overflow-hidden max-w-[100px]">
                       <div 
-                        className="h-full bg-brand-aperol transition-all duration-200 rounded-full"
+                        className="h-full bg-[var(--bg-brand-solid)] transition-all duration-200 rounded-full"
                         style={{ width: `${file.progress}%` }}
                       />
                     </div>
@@ -180,19 +180,19 @@ export default function GuidelinesPage() {
                 </div>
               </div>
               {file.status === 'complete' && (
-                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                <CheckCircle2 className="w-5 h-5 text-[var(--fg-success-primary)] shrink-0" />
               )}
               {file.status === 'error' && (
-                <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
+                <AlertCircle className="w-5 h-5 text-[var(--fg-error-primary)] shrink-0" />
               )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   removeFile(file.id);
                 }}
-                className="p-1 rounded hover:bg-os-border-dark/50 transition-colors"
+                className="p-1 rounded hover:bg-[var(--bg-tertiary)]/50 transition-colors"
               >
-                <X className="w-4 h-4 text-os-text-secondary-dark" />
+                <X className="w-4 h-4 text-[var(--fg-tertiary)]" />
               </button>
             </div>
           ))}
@@ -202,7 +202,7 @@ export default function GuidelinesPage() {
   );
 
   return (
-    <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       <BrandHubLayout
         title="Guidelines"
@@ -215,35 +215,35 @@ export default function GuidelinesPage() {
               href={FIGMA_SOURCE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand-vanilla text-brand-charcoal font-medium hover:bg-brand-vanilla/90 transition-colors group"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--fg-primary)] text-[var(--bg-primary)] font-medium hover:opacity-90 transition-colors group"
             >
               Source
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
 
             <div className="pt-4 space-y-4">
-              <h3 className="text-lg font-display font-medium text-brand-vanilla">
+              <h3 className="text-lg font-display font-medium text-[var(--fg-primary)]">
                 What&apos;s Inside
               </h3>
-              <ul className="space-y-3 text-os-text-secondary-dark">
+              <ul className="space-y-3 text-[var(--fg-tertiary)]">
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-aperol mt-2 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-brand-solid)] mt-2 shrink-0" />
                   <span>Brand Identity & Visual Language</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-aperol mt-2 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-brand-solid)] mt-2 shrink-0" />
                   <span>Messaging Framework & Voice</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-aperol mt-2 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-brand-solid)] mt-2 shrink-0" />
                   <span>Art Direction Guidelines</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-aperol mt-2 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-brand-solid)] mt-2 shrink-0" />
                   <span>AI & Claude Integration</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-aperol mt-2 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-brand-solid)] mt-2 shrink-0" />
                   <span>Design System Documentation</span>
                 </li>
               </ul>
@@ -255,21 +255,21 @@ export default function GuidelinesPage() {
 
           {/* Right Column - Figma Embed */}
           <div className="lg:w-2/3">
-            <div className="relative rounded-2xl overflow-hidden bg-brand-charcoal border border-os-border-dark">
+            <div className="relative rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
               {/* Figma Embed Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-os-border-dark bg-os-surface-dark/50">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-primary)] bg-[var(--bg-secondary)]/50">
                 <div className="flex items-center gap-3">
-                  <Figma className="w-5 h-5 text-os-text-secondary-dark" />
-                  <span className="text-sm text-os-text-secondary-dark">OS Design System</span>
+                  <Figma className="w-5 h-5 text-[var(--fg-tertiary)]" />
+                  <span className="text-sm text-[var(--fg-tertiary)]">OS Design System</span>
                 </div>
                 <a
                   href={FIGMA_SOURCE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-lg hover:bg-os-border-dark/50 transition-colors"
+                  className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)]/50 transition-colors"
                   title="Open in Figma"
                 >
-                  <ExternalLink className="w-4 h-4 text-os-text-secondary-dark" />
+                  <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)]" />
                 </a>
               </div>
 
@@ -284,11 +284,11 @@ export default function GuidelinesPage() {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between px-4 py-3 border-t border-os-border-dark bg-os-surface-dark/50">
-                <span className="text-xs text-os-text-secondary-dark">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]/50">
+                <span className="text-xs text-[var(--fg-tertiary)]">
                   Interactive prototype - click to navigate
                 </span>
-                <span className="text-xs text-os-text-secondary-dark">
+                <span className="text-xs text-[var(--fg-tertiary)]">
                   Edited recently
                 </span>
               </div>

@@ -74,13 +74,13 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="p-1.5 rounded-md hover:bg-os-border-dark/50 transition-colors group"
+      className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)]/50 transition-colors group"
       title={`Copy ${label || text}`}
     >
       {copied ? (
-        <Check className="w-3.5 h-3.5 text-green-500" />
+        <Check className="w-3.5 h-3.5 text-[var(--fg-success-primary)]" />
       ) : (
-        <Copy className="w-3.5 h-3.5 text-os-text-secondary-dark group-hover:text-brand-vanilla" />
+        <Copy className="w-3.5 h-3.5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]" />
       )}
     </button>
   );
@@ -90,21 +90,21 @@ function ColorSwatch({ color }: { color: typeof brandColors[0] }) {
   const isLight = color.value === '#FFFAEE' || color.value === '#E8E8E8';
   
   return (
-    <div className="group flex items-center gap-4 p-3 rounded-xl bg-os-surface-dark/50 border border-os-border-dark hover:border-os-text-secondary-dark/30 transition-colors">
+    <div className="group flex items-center gap-4 p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]/30 transition-colors">
       <div 
-        className="w-12 h-12 rounded-lg border border-os-border-dark flex-shrink-0"
+        className="w-12 h-12 rounded-lg border border-[var(--border-primary)] flex-shrink-0"
         style={{ backgroundColor: color.value }}
       >
         {isLight && <div className="w-full h-full rounded-lg border border-black/10" />}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-brand-vanilla">{color.name}</span>
-          <code className="text-xs text-os-text-secondary-dark bg-os-bg-dark px-1.5 py-0.5 rounded">
+          <span className="font-medium text-[var(--fg-primary)]">{color.name}</span>
+          <code className="text-xs text-[var(--fg-tertiary)] bg-[var(--bg-primary)] px-1.5 py-0.5 rounded">
             {color.value}
           </code>
         </div>
-        <p className="text-xs text-os-text-secondary-dark mt-0.5 truncate">{color.description}</p>
+        <p className="text-xs text-[var(--fg-tertiary)] mt-0.5 truncate">{color.description}</p>
       </div>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <CopyButton text={color.value} label="hex" />
@@ -119,18 +119,18 @@ function TypographySample({ token }: { token: typeof typographyTokens[0] }) {
   const fontClass = token.tailwind === 'font-mono' ? 'font-mono' : 'font-display';
   
   return (
-    <div className="group p-4 rounded-xl bg-os-surface-dark/50 border border-os-border-dark hover:border-os-text-secondary-dark/30 transition-colors">
+    <div className="group p-4 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]/30 transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <span className="font-medium text-brand-vanilla">{token.name}</span>
-          <p className="text-xs text-os-text-secondary-dark mt-0.5">{token.usage}</p>
+          <span className="font-medium text-[var(--fg-primary)]">{token.name}</span>
+          <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">{token.usage}</p>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <CopyButton text={`var(${token.variable})`} label="CSS var" />
           <CopyButton text={token.tailwind} label="Tailwind" />
         </div>
       </div>
-      <p className={`${fontClass} text-2xl text-brand-vanilla`}>
+      <p className={`${fontClass} text-2xl text-[var(--fg-primary)]`}>
         {token.value}
       </p>
     </div>
@@ -139,10 +139,10 @@ function TypographySample({ token }: { token: typeof typographyTokens[0] }) {
 
 function TokenRow({ name, variable, tailwind, value }: { name: string; variable: string; tailwind: string; value: string }) {
   return (
-    <div className="group flex items-center justify-between py-2 px-3 rounded-lg hover:bg-os-surface-dark/50 transition-colors">
+    <div className="group flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[var(--bg-secondary)]/50 transition-colors">
       <div className="flex items-center gap-3">
-        <span className="text-sm text-brand-vanilla">{name}</span>
-        <code className="text-xs text-os-text-secondary-dark bg-os-bg-dark px-1.5 py-0.5 rounded">{value}</code>
+        <span className="text-sm text-[var(--fg-primary)]">{name}</span>
+        <code className="text-xs text-[var(--fg-tertiary)] bg-[var(--bg-primary)] px-1.5 py-0.5 rounded">{value}</code>
       </div>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <CopyButton text={`var(${variable})`} label="CSS var" />
@@ -212,7 +212,7 @@ export default function DesignTokensPage() {
   };
 
   return (
-    <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       <BrandHubLayout
         title="Tokens"
@@ -220,13 +220,13 @@ export default function DesignTokensPage() {
       >
         <div className="space-y-10">
           {/* Download Section */}
-          <section className="p-6 rounded-2xl bg-gradient-to-br from-os-surface-dark to-os-bg-dark border border-os-border-dark">
+          <section className="p-6 rounded-2xl bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-primary)] border border-[var(--border-primary)]">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h2 className="text-xl font-display font-semibold text-brand-vanilla mb-2">
+                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)] mb-2">
                   Download Styles Package
                 </h2>
-                <p className="text-sm text-os-text-secondary-dark max-w-lg">
+                <p className="text-sm text-[var(--fg-tertiary)] max-w-lg">
                   Get the complete portable styles folder with Tailwind config, CSS variables, 
                   design tokens, fonts, and AI context documentation.
                 </p>
@@ -234,7 +234,7 @@ export default function DesignTokensPage() {
               <button
                 onClick={handleDownload}
                 disabled={downloading}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand-aperol text-white font-medium hover:bg-brand-aperol/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--bg-brand-solid)] text-white font-medium hover:bg-[var(--bg-brand-solid)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
               >
                 <Download className="w-4 h-4" />
                 {downloading ? 'Preparing...' : 'Download ZIP'}
@@ -242,15 +242,15 @@ export default function DesignTokensPage() {
             </div>
             
             {/* File List */}
-            <div className="mt-6 pt-6 border-t border-os-border-dark">
-              <h3 className="text-sm font-medium text-os-text-secondary-dark mb-3">Package Contents</h3>
+            <div className="mt-6 pt-6 border-t border-[var(--border-primary)]">
+              <h3 className="text-sm font-medium text-[var(--fg-tertiary)] mb-3">Package Contents</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {styleFiles.map((file) => {
                   const Icon = file.icon;
                   return (
                     <div key={file.name} className="flex items-center gap-2 text-sm">
-                      <Icon className="w-4 h-4 text-os-text-secondary-dark" />
-                      <span className="text-brand-vanilla">{file.name}</span>
+                      <Icon className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                      <span className="text-[var(--fg-primary)]">{file.name}</span>
                     </div>
                   );
                 })}
@@ -261,14 +261,14 @@ export default function DesignTokensPage() {
           {/* Colors Section */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <Palette className="w-5 h-5 text-brand-aperol" />
-              <h2 className="text-xl font-display font-semibold text-brand-vanilla">Colors</h2>
+              <Palette className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+              <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Colors</h2>
             </div>
             
             <div className="space-y-6">
               {/* Brand Colors */}
               <div>
-                <h3 className="text-sm font-medium text-os-text-secondary-dark mb-3">Brand Colors</h3>
+                <h3 className="text-sm font-medium text-[var(--fg-tertiary)] mb-3">Brand Colors</h3>
                 <div className="space-y-2">
                   {brandColors.map((color) => (
                     <ColorSwatch key={color.name} color={color} />
@@ -278,7 +278,7 @@ export default function DesignTokensPage() {
               
               {/* OS Palette */}
               <div>
-                <h3 className="text-sm font-medium text-os-text-secondary-dark mb-3">OS Dark Theme Palette</h3>
+                <h3 className="text-sm font-medium text-[var(--fg-tertiary)] mb-3">OS Dark Theme Palette</h3>
                 <div className="space-y-2">
                   {osColors.map((color) => (
                     <ColorSwatch key={color.name} color={color} />
@@ -291,8 +291,8 @@ export default function DesignTokensPage() {
           {/* Typography Section */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <Type className="w-5 h-5 text-brand-aperol" />
-              <h2 className="text-xl font-display font-semibold text-brand-vanilla">Typography</h2>
+              <Type className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+              <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Typography</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {typographyTokens.map((token) => (
@@ -306,10 +306,10 @@ export default function DesignTokensPage() {
             {/* Border Radius */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Square className="w-5 h-5 text-brand-aperol" />
-                <h2 className="text-xl font-display font-semibold text-brand-vanilla">Border Radius</h2>
+                <Square className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Border Radius</h2>
               </div>
-              <div className="p-4 rounded-xl bg-os-surface-dark/50 border border-os-border-dark space-y-1">
+              <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] space-y-1">
                 {radiusTokens.map((token) => (
                   <TokenRow key={token.name} {...token} />
                 ))}
@@ -319,10 +319,10 @@ export default function DesignTokensPage() {
             {/* Shadows */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-brand-aperol" />
-                <h2 className="text-xl font-display font-semibold text-brand-vanilla">Shadows</h2>
+                <Sparkles className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Shadows</h2>
               </div>
-              <div className="p-4 rounded-xl bg-os-surface-dark/50 border border-os-border-dark space-y-1">
+              <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] space-y-1">
                 {shadowTokens.map((token) => (
                   <TokenRow key={token.name} {...token} />
                 ))}
@@ -331,22 +331,22 @@ export default function DesignTokensPage() {
           </section>
 
           {/* Usage Tips */}
-          <section className="p-6 rounded-2xl bg-os-surface-dark/30 border border-os-border-dark">
-            <h2 className="text-lg font-display font-semibold text-brand-vanilla mb-4">
+          <section className="p-6 rounded-2xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]">
+            <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-4">
               Quick Usage Guide
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
               <div>
-                <h3 className="font-medium text-brand-vanilla mb-2">CSS Variables</h3>
-                <pre className="p-3 rounded-lg bg-os-bg-dark text-os-text-secondary-dark overflow-x-auto">
+                <h3 className="font-medium text-[var(--fg-primary)] mb-2">CSS Variables</h3>
+                <pre className="p-3 rounded-lg bg-[var(--bg-primary)] text-[var(--fg-tertiary)] overflow-x-auto">
 {`color: var(--brand-charcoal);
 background: var(--brand-vanilla);
 border-radius: var(--radius-brand);`}
                 </pre>
               </div>
               <div>
-                <h3 className="font-medium text-brand-vanilla mb-2">Tailwind Classes</h3>
-                <pre className="p-3 rounded-lg bg-os-bg-dark text-os-text-secondary-dark overflow-x-auto">
+                <h3 className="font-medium text-[var(--fg-primary)] mb-2">Tailwind Classes</h3>
+                <pre className="p-3 rounded-lg bg-[var(--bg-primary)] text-[var(--fg-tertiary)] overflow-x-auto">
 {`<div class="bg-brand-vanilla text-brand-charcoal">
 <button class="bg-brand-aperol rounded-brand">
 <p class="font-display text-os-text-primary-dark">`}
@@ -359,10 +359,3 @@ border-radius: var(--radius-brand);`}
     </div>
   );
 }
-
-
-
-
-
-
-

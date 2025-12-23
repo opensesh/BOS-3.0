@@ -257,7 +257,7 @@ function ImageModal({
             </div>
             <button
               onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-brand-vanilla text-brand-charcoal font-medium text-sm hover:bg-brand-vanilla/90 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--color-vanilla)] text-[var(--color-charcoal)] font-medium text-sm hover:bg-[var(--color-vanilla)]/90 transition-colors"
             >
               <Download className="w-4 h-4" />
               Download
@@ -287,11 +287,11 @@ function CategoryDescription({ category }: { category: Category }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="mt-12 pt-10 border-t border-brand-vanilla/10"
+      className="mt-12 pt-10 border-t border-[var(--fg-primary)]/10"
     >
       {/* Subtitle - OffBit Font */}
       <motion.p 
-        className="font-accent text-xs tracking-[0.3em] text-brand-aperol mb-3"
+        className="font-accent text-xs tracking-[0.3em] text-[var(--fg-brand-primary)] mb-3"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.1 }}
@@ -301,7 +301,7 @@ function CategoryDescription({ category }: { category: Category }) {
       
       {/* Title */}
       <motion.h3 
-        className="font-display text-3xl md:text-4xl font-bold text-brand-vanilla mb-6"
+        className="font-display text-3xl md:text-4xl font-bold text-[var(--fg-primary)] mb-6"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
@@ -311,7 +311,7 @@ function CategoryDescription({ category }: { category: Category }) {
       
       {/* Description */}
       <motion.p 
-        className="text-brand-vanilla/70 text-base md:text-lg leading-relaxed max-w-3xl mb-8"
+        className="text-[var(--fg-primary)]/70 text-base md:text-lg leading-relaxed max-w-3xl mb-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -332,12 +332,12 @@ function CategoryDescription({ category }: { category: Category }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 + index * 0.05 }}
-              className="font-accent text-xs tracking-[0.15em] uppercase text-brand-vanilla/60"
+              className="font-accent text-xs tracking-[0.15em] uppercase text-[var(--fg-primary)]/60"
             >
               {tag}
             </motion.span>
             {index < content.tags.length - 1 && (
-              <span className="text-brand-vanilla/30 mx-2">•</span>
+              <span className="text-[var(--fg-primary)]/30 mx-2">•</span>
             )}
           </React.Fragment>
         ))}
@@ -411,7 +411,7 @@ export default function ArtDirectionPage() {
   };
 
   return (
-    <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       <BrandHubLayout
         title="Art Direction"
@@ -428,8 +428,8 @@ export default function ArtDirectionPage() {
                 className={`
                   px-3 py-2 rounded-full text-sm font-medium transition-all duration-200
                   ${isActive
-                    ? 'bg-brand-aperol text-brand-vanilla shadow-lg shadow-brand-aperol/20'
-                    : 'bg-brand-vanilla/10 text-brand-vanilla/70 hover:bg-brand-vanilla/20 hover:text-brand-vanilla'
+                    ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)] shadow-lg shadow-[var(--bg-brand-solid)]/20'
+                    : 'bg-[var(--fg-primary)]/10 text-[var(--fg-primary)]/70 hover:bg-[var(--fg-primary)]/20 hover:text-[var(--fg-primary)]'
                   }
                 `}
                 whileHover={{ scale: 1.05 }}
@@ -448,8 +448,8 @@ export default function ArtDirectionPage() {
             className={`
               w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center ml-auto
               ${isDownloading
-                ? 'bg-brand-vanilla/5 text-brand-vanilla/40 cursor-not-allowed'
-                : 'bg-brand-charcoal border border-brand-vanilla/20 text-brand-vanilla hover:bg-brand-vanilla/10'
+                ? 'bg-[var(--fg-primary)]/5 text-[var(--fg-primary)]/40 cursor-not-allowed'
+                : 'bg-[var(--bg-secondary)] border border-[var(--fg-primary)]/20 text-[var(--fg-primary)] hover:bg-[var(--fg-primary)]/10'
               }
             `}
             whileHover={!isDownloading ? { scale: 1.05 } : {}}
@@ -459,7 +459,7 @@ export default function ArtDirectionPage() {
           >
             {isDownloading ? (
               <motion.div 
-                className="w-4 h-4 border-2 border-brand-vanilla/40 border-t-brand-vanilla rounded-full"
+                className="w-4 h-4 border-2 border-[var(--fg-primary)]/40 border-t-[var(--fg-primary)] rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
@@ -592,7 +592,7 @@ export default function ArtDirectionPage() {
                 animate={{ opacity: 1 }}
                 className="w-full py-4 text-center"
               >
-                <p className="text-sm text-brand-vanilla/50 font-accent tracking-wider">
+                <p className="text-sm text-[var(--fg-primary)]/50 font-accent tracking-wider">
                   +{filteredImages.length - 10} more {filteredImages.length - 10 === 1 ? 'image' : 'images'}
                 </p>
               </motion.div>
@@ -607,7 +607,7 @@ export default function ArtDirectionPage() {
 
         {/* Empty State */}
         {filteredImages.length === 0 && (
-          <div className="text-center py-20 text-os-text-secondary-dark">
+          <div className="text-center py-20 text-[var(--fg-tertiary)]">
             No images found for {selectedCategory}.
           </div>
         )}

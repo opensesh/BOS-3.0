@@ -691,7 +691,7 @@ export function ChatInterface() {
   return (
     <>
       <BackgroundGradient fadeOut={hasMessages} />
-      {hasMessages && <div className="fixed inset-0 z-0 bg-os-bg-dark" />}
+      {hasMessages && <div className="fixed inset-0 z-0 bg-[var(--bg-primary)]" />}
 
       <div className={`fixed inset-0 z-10 flex flex-col ${hasMessages ? '' : 'items-center justify-center'}`}>
         {/* Chat Mode */}
@@ -753,7 +753,7 @@ export function ChatInterface() {
                 {activeTab === 'links' && (
                   <div className="py-6">
                     {/* Links view content */}
-                    <p className="text-os-text-secondary-dark text-sm">
+                    <p className="text-[var(--fg-tertiary)] text-sm">
                       {allSources.length > 0 
                         ? `${allSources.length} sources found`
                         : 'No links available'
@@ -765,7 +765,7 @@ export function ChatInterface() {
                 {activeTab === 'images' && (
                   <div className="py-6">
                     {/* Images view content */}
-                    <p className="text-os-text-secondary-dark text-sm">
+                    <p className="text-[var(--fg-tertiary)] text-sm">
                       {allImages.length > 0 
                         ? `${allImages.length} images found`
                         : 'No images available'
@@ -777,7 +777,7 @@ export function ChatInterface() {
                 {/* Error display - only show if no successful content was generated */}
                 {(error || submitError) && !parsedMessages.some(m => m.role === 'assistant' && m.content.length > 50) && (
                   <div className="py-4">
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm flex items-start gap-3">
+                    <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3">
                       <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium">Error</p>
@@ -793,8 +793,8 @@ export function ChatInterface() {
 
             {/* Follow-up input */}
             <div className="relative">
-              <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-os-bg-dark to-transparent pointer-events-none" />
-              <div className="bg-os-bg-dark px-4 py-4">
+              <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-[var(--bg-primary)] to-transparent pointer-events-none" />
+              <div className="bg-[var(--bg-primary)] px-4 py-4">
                 <FollowUpInput
                   onSubmit={handleFollowUpSubmit}
                   isLoading={isLoading}
@@ -819,13 +819,13 @@ export function ChatInterface() {
               className="w-full max-w-3xl px-4 mb-8 text-center"
               variants={fadeInUp}
             >
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-brand-vanilla mb-2 tracking-tight font-display">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[var(--fg-primary)] mb-2 tracking-tight font-display">
                 Brand Operating System
               </h1>
               <TypewriterText />
               
               {(error || submitError) && (
-                <div className="mt-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm flex items-start gap-3 text-left">
+                <div className="mt-4 bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
                   <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">Error</p>
@@ -855,13 +855,13 @@ export function ChatInterface() {
 
                   <div
                     className={`
-                      relative bg-os-surface-dark/80 backdrop-blur-xl rounded-xl
+                      relative bg-[var(--bg-secondary)]/80 backdrop-blur-xl rounded-xl
                       border transition-all duration-200
                       ${isDragging
-                        ? 'border-brand-aperol shadow-lg shadow-brand-aperol/20'
+                        ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20'
                         : isFocused
-                          ? 'border-brand-aperol shadow-lg shadow-brand-aperol/20'
-                          : 'border-os-border-dark hover:border-os-border-dark/60'
+                          ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20'
+                          : 'border-[var(--border-primary)] hover:border-[var(--border-primary)]/60'
                       }
                     `}
                     onDragOver={handleDragOver}
@@ -893,7 +893,7 @@ export function ChatInterface() {
                         onBlur={() => setIsFocused(false)}
                         onPaste={handlePaste}
                         placeholder={attachments.length > 0 ? "Add a message or send with images..." : "Ask anything. Type @ for mentions and / for shortcuts."}
-                        className="w-full px-4 py-4 bg-transparent text-os-text-primary-dark placeholder:text-os-text-secondary-dark resize-none focus:outline-none min-h-[60px] max-h-[300px]"
+                        className="w-full px-4 py-4 bg-transparent text-[var(--fg-primary)] placeholder:text-[var(--fg-tertiary)] resize-none focus:outline-none min-h-[60px] max-h-[300px]"
                         rows={1}
                         aria-label="Chat input"
                         disabled={isLoading}
@@ -901,7 +901,7 @@ export function ChatInterface() {
                     </div>
 
                     {/* Toolbar - always visible */}
-                    <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-os-border-dark gap-2 sm:gap-4">
+                    <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-[var(--border-primary)] gap-2 sm:gap-4">
                       <div className="flex items-center gap-2 sm:gap-3">
                         <SearchResearchToggle
                           onQueryClick={handleQueryClick}
@@ -917,7 +917,7 @@ export function ChatInterface() {
                           disabled={isLoading}
                         />
 
-                        <div className="hidden sm:block w-px h-5 bg-os-border-dark" />
+                        <div className="hidden sm:block w-px h-5 bg-[var(--border-primary)]" />
                         <div className="relative">
                           <button
                             ref={globeButtonRef}
@@ -928,8 +928,8 @@ export function ChatInterface() {
                             }}
                             className={`p-2 rounded-lg transition-all ${
                               showConnectorDropdown
-                                ? 'bg-brand-aperol/20 text-brand-aperol'
-                                : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-bg-dark'
+                                ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
+                                : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
                             }`}
                             aria-label="Connectors"
                             title="Connectors"
@@ -954,15 +954,15 @@ export function ChatInterface() {
                             }}
                             className={`p-2 rounded-lg transition-all ${
                               attachments.length > 0
-                                ? 'bg-brand-aperol/20 text-brand-aperol'
-                                : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-bg-dark'
+                                ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
+                                : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
                             }`}
                             aria-label="Attach images"
                             title="Attach images (or paste/drag & drop)"
                           >
                             <Paperclip className="w-5 h-5" />
                             {attachments.length > 0 && (
-                              <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-aperol text-white text-[10px] font-medium rounded-full flex items-center justify-center">
+                              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--bg-brand-solid)] text-white text-[10px] font-medium rounded-full flex items-center justify-center">
                                 {attachments.length}
                               </span>
                             )}
@@ -974,7 +974,7 @@ export function ChatInterface() {
                           {isListening && (
                             <>
                               <motion.div
-                                className="absolute inset-0 rounded-lg bg-brand-aperol/30"
+                                className="absolute inset-0 rounded-lg bg-[var(--bg-brand-solid)]/30"
                                 initial={{ scale: 1, opacity: 0.6 }}
                                 animate={{
                                   scale: [1, 1.8, 2.2],
@@ -987,7 +987,7 @@ export function ChatInterface() {
                                 }}
                               />
                               <motion.div
-                                className="absolute inset-0 rounded-lg bg-brand-aperol/20"
+                                className="absolute inset-0 rounded-lg bg-[var(--bg-brand-solid)]/20"
                                 initial={{ scale: 1, opacity: 0.4 }}
                                 animate={{
                                   scale: [1, 1.5, 1.8],
@@ -1007,8 +1007,8 @@ export function ChatInterface() {
                             onClick={handleMicClick}
                             className={`relative p-2 rounded-lg transition-colors ${
                               isListening
-                                ? 'bg-brand-aperol text-white'
-                                : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-bg-dark'
+                                ? 'bg-[var(--bg-brand-solid)] text-white'
+                                : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
                             }`}
                             aria-label="Voice input"
                             title={isListening ? 'Stop recording' : 'Start voice input'}
@@ -1038,7 +1038,7 @@ export function ChatInterface() {
                             <motion.span
                               initial={{ opacity: 0, y: 4 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs text-red-400 whitespace-nowrap bg-os-surface-dark px-2 py-1 rounded"
+                              className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs text-[var(--fg-error-primary)] whitespace-nowrap bg-[var(--bg-secondary)] px-2 py-1 rounded"
                             >
                               {voiceError}
                             </motion.span>
@@ -1050,8 +1050,8 @@ export function ChatInterface() {
                           disabled={(!input.trim() && attachments.length === 0) || isLoading}
                           className={`p-2 rounded-lg transition-all ${
                             (input.trim() || attachments.length > 0) && !isLoading
-                              ? 'bg-brand-aperol text-white hover:bg-brand-aperol/90'
-                              : 'text-os-text-secondary-dark/50 cursor-not-allowed'
+                              ? 'bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid)]/90'
+                              : 'text-[var(--fg-tertiary)]/50 cursor-not-allowed'
                           }`}
                           aria-label="Send message"
                           title="Send message"
@@ -1063,7 +1063,7 @@ export function ChatInterface() {
 
                     {/* Suggestions - inside container, below toolbar */}
                     {showSuggestions && (
-                      <div className="border-t border-os-border-dark">
+                      <div className="border-t border-[var(--border-primary)]">
                         <SearchResearchSuggestions
                           mode={suggestionsMode}
                           onQueryClick={handleQueryClick}

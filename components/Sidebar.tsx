@@ -14,7 +14,8 @@ import {
   Plus,
   ChevronDown,
 } from 'lucide-react';
-import { NavigationDrawer } from './NavigationDrawer';
+// NavigationDrawer disabled for now with label-based navigation
+// import { NavigationDrawer } from './NavigationDrawer';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -35,15 +36,10 @@ const VISIBLE_CHAT_COUNT = 3;
 export function Sidebar() {
   const pathname = usePathname();
   const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu();
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [isChatsExpanded, setIsChatsExpanded] = useState(false);
   const railRef = useRef<HTMLElement>(null);
   const { chatHistory, triggerChatReset } = useChatContext();
-
-  const handleDrawerClose = useCallback(() => {
-    setHoveredItem(null);
-  }, []);
 
   const handleNewChat = useCallback(() => {
     triggerChatReset();
@@ -136,8 +132,6 @@ export function Sidebar() {
               <div
                 key={item.href}
                 className="relative w-full flex justify-center"
-                onMouseEnter={() => setHoveredItem(item.label)}
-                onMouseLeave={() => {}}
               >
                 <Link
                   data-nav-item={item.label}
@@ -379,13 +373,15 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* Navigation Drawer - Desktop Only */}
+      {/* Navigation Drawer - Desktop Only - Disabled for now with label-based navigation */}
+      {/* 
       <NavigationDrawer
         isOpen={hoveredItem !== null}
         item={hoveredItem}
         onClose={handleDrawerClose}
         railRef={railRef}
       />
+      */}
     </>
   );
 }

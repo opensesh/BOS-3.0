@@ -61,22 +61,21 @@ export function TopHeader({ children }: TopHeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-bg-secondary border-b border-border-secondary">
-        <div className="flex items-center justify-between h-full px-3">
+        <div className="flex items-center justify-between h-full pl-[12px] pr-3">
           {/* Left Section: Brand Icon + Breadcrumbs */}
           <div className="flex items-center gap-1">
             <Link
               href="/"
               className="
                 flex items-center justify-center
-                p-2
-                rounded-md
+                w-9 h-9
+                rounded-lg
                 hover:bg-bg-tertiary
                 transition-all duration-150
-                min-w-[44px] min-h-[44px]
               "
               title="Home"
             >
-              <Brandmark size={22} />
+              <Brandmark size={20} />
             </Link>
             
             {/* Breadcrumbs slot */}

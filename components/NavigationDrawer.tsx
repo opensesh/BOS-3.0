@@ -126,12 +126,12 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Spaces':
         return (
           <motion.div 
-            className="py-2"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-4 py-2 mb-2">
+            <div className="px-3 py-2 mb-2">
               <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4">
                 <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Spaces</h3>
               </motion.div>
@@ -205,12 +205,12 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Home':
         return (
           <motion.div 
-            className="py-2"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-4 py-2">
+            <div className="px-3 py-2">
               <motion.div variants={fadeInUp} className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Home</h3>
               </motion.div>
@@ -257,12 +257,12 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         
         return (
           <motion.div 
-            className="py-2"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-4 py-2">
+            <div className="px-3 py-2">
               <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4">
                 <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Brand</h3>
               </motion.div>
@@ -320,12 +320,12 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         
         return (
           <motion.div 
-            className="py-2"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-4 py-2">
+            <div className="px-3 py-2">
               <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4">
                 <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Brain</h3>
               </motion.div>
@@ -374,12 +374,12 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Resources':
         return (
           <motion.div 
-            className="py-2"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-4 py-2">
+            <div className="px-3 py-2">
               <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4">
                 <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Resources</h3>
               </motion.div>

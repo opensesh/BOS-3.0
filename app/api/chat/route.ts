@@ -259,6 +259,9 @@ async function streamWithAnthropicNative(
   
   return new ReadableStream({
     async start(controller) {
+      // Accumulate sources from tool results
+      const collectedSources: SourceData[] = [];
+
       try {
         // Create stream with native Anthropic SDK
         const stream = await client.messages.stream({
@@ -340,6 +343,23 @@ async function streamWithAnthropicNative(
               content: result.success ? 'Tool completed successfully' : `Error: ${result.error}` 
             }));
 
+            // Extract sources from web_search tool results
+            if (toolCall.name === 'web_search' && result.success && result.data) {
+              const webSearchData = result.data as { sources?: Array<{ title: string; url: string }> };
+              if (webSearchData.sources && Array.isArray(webSearchData.sources)) {
+                for (const source of webSearchData.sources) {
+                  collectedSources.push({
+                    id: `web-search-${collectedSources.length}`,
+                    name: extractDomainName(source.url),
+                    url: source.url,
+                    title: source.title || extractDomainName(source.url),
+                    favicon: getFaviconUrl(source.url),
+                    type: 'external',
+                  });
+                }
+              }
+            }
+
             toolResults.push({
               type: 'tool_result',
               tool_use_id: toolCall.id,
@@ -371,6 +391,12 @@ async function streamWithAnthropicNative(
           });
 
           await continueStream.finalMessage();
+        }
+
+        // Send collected sources if we have any
+        if (collectedSources.length > 0) {
+          console.log('Web search sources found:', collectedSources.length);
+          controller.enqueue(sse.encode({ type: 'sources', sources: collectedSources }));
         }
 
         controller.enqueue(sse.encode({ type: 'done' }));

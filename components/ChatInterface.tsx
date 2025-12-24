@@ -688,15 +688,21 @@ export function ChatInterface() {
 
   // Parse messages into our format
   const parsedMessages: ParsedMessage[] = useMemo(() => {
-    return messages.map((message) => ({
-      id: message.id,
-      role: message.role as 'user' | 'assistant',
-      content: getMessageContent(message),
-      sources: [],
-      images: [],
-      modelUsed,
-    }));
-  }, [messages, modelUsed]);
+    return messages.map((message) => {
+      // Extract sources from the message if available
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const messageSources = (message as any).sources as SourceInfo[] | undefined;
+      
+      return {
+        id: message.id,
+        role: message.role as 'user' | 'assistant',
+        content: getMessageContent(message),
+        sources: messageSources || [],
+        images: [],
+        modelUsed,
+      };
+    });
+  }, [messages, modelUsed, getMessageContent]);
 
   // Get all sources and images from messages
   const allSources = useMemo(() => {

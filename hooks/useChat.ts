@@ -6,6 +6,17 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 // TYPE DEFINITIONS
 // ============================================
 
+// Source info for citations
+export interface SourceInfo {
+  id: string;
+  name: string;
+  url: string;
+  title?: string;
+  snippet?: string;
+  favicon?: string;
+  type?: 'external' | 'brand-doc' | 'asset' | 'discover';
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -15,6 +26,7 @@ export interface ChatMessage {
   // Extended features
   thinking?: string;
   toolCalls?: ToolCall[];
+  sources?: SourceInfo[];
 }
 
 export interface ToolCall {
@@ -40,12 +52,13 @@ export type ChatStatus = 'ready' | 'submitted' | 'streaming' | 'error';
 
 // Stream chunk types from our API
 interface StreamChunk {
-  type: 'thinking' | 'text' | 'tool_use' | 'tool_result' | 'done' | 'error';
+  type: 'thinking' | 'text' | 'tool_use' | 'tool_result' | 'sources' | 'done' | 'error';
   content?: string;
   toolName?: string;
   toolInput?: Record<string, unknown>;
   toolResult?: unknown;
   error?: string;
+  sources?: SourceInfo[];
 }
 
 // ============================================
@@ -242,6 +255,20 @@ export function useChat(options: UseChatOptions = {}) {
                       toolCalls,
                     };
                   }
+                }
+                return newMessages;
+              });
+            } else if (chunk.type === 'sources' && chunk.sources) {
+              // Add sources/citations to assistant message
+              setMessages(prev => {
+                const newMessages = [...prev];
+                const lastIndex = newMessages.length - 1;
+                if (newMessages[lastIndex]?.role === 'assistant') {
+                  const existingSources = newMessages[lastIndex].sources || [];
+                  newMessages[lastIndex] = {
+                    ...newMessages[lastIndex],
+                    sources: [...existingSources, ...chunk.sources!],
+                  };
                 }
                 return newMessages;
               });

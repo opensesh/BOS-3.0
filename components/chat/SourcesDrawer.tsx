@@ -54,14 +54,14 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop - top-12 aligns with bottom of chat header */}
       <div
-        className="fixed inset-0 bg-black/40 z-40"
+        className="fixed inset-0 top-12 bg-black/40 z-40"
         onClick={onClose}
       />
 
-      {/* Drawer */}
-      <div className="fixed right-0 top-0 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] border-l border-[var(--border-primary)] z-50 flex flex-col animate-slide-in-right">
+      {/* Drawer - top-12 aligns with bottom of chat header */}
+      <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] border-l border-[var(--border-primary)] z-50 flex flex-col animate-slide-in-right">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-primary)]">
           <div className="flex items-center gap-2">

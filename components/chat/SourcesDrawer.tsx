@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { X, Globe, ExternalLink, Hexagon, ArrowRight, Compass, Rss } from 'lucide-react';
+import { X, Globe, ExternalLink, Hexagon, ArrowRight, Compass, Rss, Search } from 'lucide-react';
 import { SourceInfo } from './AnswerView';
 import { BrandResourceCardProps } from './BrandResourceCard';
 
@@ -11,6 +11,7 @@ interface SourcesDrawerProps {
   onClose: () => void;
   sources: SourceInfo[];
   resourceCards?: BrandResourceCardProps[];
+  query?: string;
 }
 
 // Category display names and colors
@@ -23,7 +24,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
   'startup-business': { label: 'Business', color: 'text-amber-400' },
 };
 
-export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [] }: SourcesDrawerProps) {
+export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], query = '' }: SourcesDrawerProps) {
   // Separate sources by type
   const { discoverSources, webSources } = useMemo(() => {
     const discover: SourceInfo[] = [];
@@ -46,6 +47,10 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [] }: 
   const hasDiscoverSources = discoverSources.length > 0;
   const hasWebSources = webSources.length > 0;
   const hasBrandResources = resourceCards.length > 0;
+  const hasAnySources = hasDiscoverSources || hasWebSources || hasBrandResources;
+  
+  // Generate search query for external links
+  const searchQuery = encodeURIComponent(query || 'related topics');
 
   return (
     <>
@@ -270,6 +275,49 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [] }: 
                     </div>
                   </a>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Empty state with search links */}
+          {!hasAnySources && (
+            <div className="px-5 py-8">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-6 h-6 text-[var(--fg-tertiary)]" />
+                </div>
+                <h3 className="text-[15px] font-medium text-[var(--fg-primary)] mb-2">
+                  No sources for this response
+                </h3>
+                <p className="text-[13px] text-[var(--fg-tertiary)] mb-6">
+                  This response was generated from the AI&apos;s knowledge. Find more information on the web:
+                </p>
+                <div className="space-y-2">
+                  <a
+                    href={`https://www.google.com/search?q=${searchQuery}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 transition-colors group"
+                  >
+                    <img src="https://www.google.com/favicon.ico" alt="" className="w-4 h-4" />
+                    <span className="text-[14px] text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-1 text-left">
+                      Search on Google
+                    </span>
+                    <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                  </a>
+                  <a
+                    href={`https://www.perplexity.ai/search?q=${searchQuery}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 transition-colors group"
+                  >
+                    <Globe className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                    <span className="text-[14px] text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-1 text-left">
+                      Search on Perplexity
+                    </span>
+                    <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                  </a>
+                </div>
               </div>
             </div>
           )}

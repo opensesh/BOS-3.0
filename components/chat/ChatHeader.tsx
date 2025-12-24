@@ -54,7 +54,7 @@ export function ChatHeader({
   ];
 
   return (
-    <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]/50">
+    <div className="sticky top-0 z-30 bg-[var(--bg-primary)]">
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex items-center justify-between h-12">
           {/* Left side - Back button and tabs */}

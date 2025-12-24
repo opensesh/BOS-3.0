@@ -22,7 +22,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 const STORAGE_KEY = 'sidebar-mode';
 
 function getStoredMode(): SidebarMode {
-  if (typeof window === 'undefined') return 'hover';
+  if (typeof window === 'undefined') return 'collapsed';
   
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -33,7 +33,7 @@ function getStoredMode(): SidebarMode {
     console.error('Error loading sidebar mode:', error);
   }
   
-  return 'hover';
+  return 'collapsed';
 }
 
 function saveMode(mode: SidebarMode): void {
@@ -51,7 +51,7 @@ interface SidebarProviderProps {
 }
 
 export function SidebarProvider({ children }: SidebarProviderProps) {
-  const [sidebarMode, setSidebarModeState] = useState<SidebarMode>('hover');
+  const [sidebarMode, setSidebarModeState] = useState<SidebarMode>('collapsed');
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -71,6 +71,13 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
 
   // Compute sidebar width based on mode
   const sidebarWidth = sidebarMode === 'expanded' ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED;
+
+  // Set CSS variable for fixed-positioned elements to use
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
+    }
+  }, [sidebarWidth]);
 
   // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {

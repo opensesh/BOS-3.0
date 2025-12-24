@@ -61,22 +61,25 @@ export function TopHeader({ children }: TopHeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-bg-secondary border-b border-border-secondary">
-        <div className="flex items-center justify-between h-full pl-[12px] pr-3">
+        <div className="flex items-center justify-between h-full pr-3">
           {/* Left Section: Brand Icon + Breadcrumbs */}
-          <div className="flex items-center gap-1">
-            <Link
-              href="/"
-              className="
-                flex items-center justify-center
-                w-9 h-9
-                rounded-lg
-                hover:bg-bg-tertiary
-                transition-all duration-150
-              "
-              title="Home"
-            >
-              <Brandmark size={20} />
-            </Link>
+          <div className="flex items-center">
+            {/* Brandmark container - matches sidebar rail width (48px) */}
+            <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+              <Link
+                href="/"
+                className="
+                  flex items-center justify-center
+                  w-8 h-8
+                  rounded-lg
+                  hover:bg-bg-tertiary
+                  transition-all duration-150
+                "
+                title="Home"
+              >
+                <Brandmark size={18} />
+              </Link>
+            </div>
             
             {/* Breadcrumbs slot */}
             {children && (
@@ -88,23 +91,44 @@ export function TopHeader({ children }: TopHeaderProps) {
 
           {/* Right Section: Utility Actions */}
           <div className="flex items-center gap-1">
-            {/* Search */}
+            {/* Search - Supabase style search box */}
             <button
               onClick={() => setIsSearchOpen(true)}
               className="
-                flex items-center justify-center gap-2
-                px-3 py-2
+                hidden sm:flex items-center gap-2
+                px-3 py-1.5
+                rounded-md
+                bg-bg-tertiary/50
+                border border-border-secondary
+                text-fg-quaternary
+                hover:bg-bg-tertiary hover:border-border-primary hover:text-fg-tertiary
+                transition-all duration-150
+                text-sm
+                min-w-[180px]
+              "
+              title="Search (⌘K)"
+            >
+              <Search className="w-4 h-4" />
+              <span className="flex-1 text-left">Search...</span>
+              <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono bg-bg-secondary rounded border border-border-secondary text-fg-quaternary">
+                ⌘K
+              </kbd>
+            </button>
+            {/* Mobile search icon */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="
+                sm:hidden flex items-center justify-center
+                p-2
                 rounded-md
                 text-fg-tertiary hover:text-fg-primary
                 hover:bg-bg-tertiary
                 transition-all duration-150
-                text-sm
-                min-h-[44px]
+                min-w-[44px] min-h-[44px]
               "
-              title="Search (⌘K)"
+              title="Search"
             >
               <Search className="w-5 h-5" />
-              <span className="hidden sm:inline text-fg-quaternary">⌘K</span>
             </button>
 
             {/* Notifications */}

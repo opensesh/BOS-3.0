@@ -126,14 +126,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Spaces':
         return (
           <motion.div 
-            className="py-3"
+            className="pt-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-3 py-2 mb-2">
-              <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4">
-                <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Spaces</h3>
+            {/* Header aligned with New Chat button in sidebar */}
+            <div className="px-3 mb-2">
+              <motion.div variants={fadeInUp} className="flex items-center gap-2 py-2 px-3 mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Spaces</h3>
               </motion.div>
               
               <motion.button 
@@ -205,14 +206,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Home':
         return (
           <motion.div 
-            className="py-3"
+            className="pt-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-3 py-2">
-              <motion.div variants={fadeInUp} className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Home</h3>
+            {/* Header aligned with New Chat button in sidebar */}
+            <div className="px-3">
+              <motion.div variants={fadeInUp} className="flex items-center justify-between py-2 px-3 mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Home</h3>
               </motion.div>
               
               <motion.div variants={fadeInUp} className="mb-4">
@@ -257,14 +259,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         
         return (
           <motion.div 
-            className="py-3"
+            className="pt-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-3 py-2">
-              <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4">
-                <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Brand</h3>
+            {/* Header aligned with New Chat button in sidebar */}
+            <div className="px-3">
+              <motion.div variants={fadeInUp} className="flex items-center gap-2 py-2 px-3 mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Brand</h3>
               </motion.div>
               
               <div className="space-y-1">
@@ -320,14 +323,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         
         return (
           <motion.div 
-            className="py-3"
+            className="pt-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-3 py-2">
-              <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4">
-                <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Brain</h3>
+            {/* Header aligned with New Chat button in sidebar */}
+            <div className="px-3">
+              <motion.div variants={fadeInUp} className="flex items-center gap-2 py-2 px-3 mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Brain</h3>
               </motion.div>
               
               <div className="space-y-1">
@@ -374,17 +378,18 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Resources':
         return (
           <motion.div 
-            className="py-3"
+            className="pt-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            <div className="px-3 py-2">
-              <motion.div variants={fadeInUp} className="flex items-center gap-2 mb-4">
-                <h3 className="text-lg font-semibold text-[var(--fg-primary)]">Resources</h3>
+            {/* Header aligned with New Chat button in sidebar */}
+            <div className="px-3">
+              <motion.div variants={fadeInUp} className="flex items-center gap-2 py-2 px-3 mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Resources</h3>
               </motion.div>
               
-              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)]">
+              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)] px-3">
                 Resources and documentation coming soon
               </motion.div>
             </div>

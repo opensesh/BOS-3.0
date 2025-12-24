@@ -111,9 +111,9 @@ function SidebarControl({ isExpanded }: { isExpanded: boolean }) {
   }, [isOpen]);
 
   const options: { mode: SidebarMode; label: string; description: string }[] = [
-    { mode: 'expanded', label: 'Expanded', description: 'Full sidebar with labels' },
-    { mode: 'collapsed', label: 'Collapsed', description: 'Icons only' },
     { mode: 'hover', label: 'Expand on hover', description: 'Opens drawer on hover' },
+    { mode: 'collapsed', label: 'Collapsed', description: 'Icons only, flyout on hover' },
+    { mode: 'expanded', label: 'Pinned open', description: 'Always show full sidebar' },
   ];
 
   return (
@@ -152,7 +152,7 @@ function SidebarControl({ isExpanded }: { isExpanded: boolean }) {
               absolute bottom-full mb-1
               w-48 bg-[var(--bg-secondary)]
               rounded-lg border border-[var(--border-secondary)]
-              shadow-lg z-[100]
+              shadow-xl z-[200]
               overflow-hidden
               ${isExpanded ? 'left-0' : 'left-full ml-2'}
             `}
@@ -623,7 +623,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Items */}
-        <nav className={`flex flex-col gap-0.5 ${isExpandedMode ? 'px-2' : 'items-center px-1'}`}>
+        <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-2 items-center px-1'}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = isItemActive(item);

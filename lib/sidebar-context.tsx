@@ -22,7 +22,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 const STORAGE_KEY = 'sidebar-mode';
 
 function getStoredMode(): SidebarMode {
-  if (typeof window === 'undefined') return 'collapsed';
+  if (typeof window === 'undefined') return 'hover';
   
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -33,7 +33,7 @@ function getStoredMode(): SidebarMode {
     console.error('Error loading sidebar mode:', error);
   }
   
-  return 'collapsed';
+  return 'hover';
 }
 
 function saveMode(mode: SidebarMode): void {
@@ -51,7 +51,7 @@ interface SidebarProviderProps {
 }
 
 export function SidebarProvider({ children }: SidebarProviderProps) {
-  const [sidebarMode, setSidebarModeState] = useState<SidebarMode>('collapsed');
+  const [sidebarMode, setSidebarModeState] = useState<SidebarMode>('hover');
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [mounted, setMounted] = useState(false);
 

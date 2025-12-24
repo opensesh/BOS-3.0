@@ -249,8 +249,12 @@ function CollapsedFlyout({
             ref={drawerRef}
             initial={{ opacity: 0, x: -4, scale: 0.98 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -4, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ 
+              duration: 0.2, 
+              ease: [0.4, 0, 0.2, 1],
+              exit: { duration: 0.3, ease: [0.4, 0, 1, 1] }
+            }}
             className="fixed z-[60] w-[220px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
               left: SIDEBAR_WIDTH_COLLAPSED + 8,
@@ -307,8 +311,12 @@ function CollapsedFlyout({
             ref={drawerRef}
             initial={{ opacity: 0, x: -4, scale: 0.98 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -4, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ 
+              duration: 0.2, 
+              ease: [0.4, 0, 0.2, 1],
+              exit: { duration: 0.3, ease: [0.4, 0, 1, 1] }
+            }}
             className="fixed z-[60] w-[220px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
               left: SIDEBAR_WIDTH_COLLAPSED + 8,
@@ -373,8 +381,12 @@ function CollapsedFlyout({
             ref={drawerRef}
             initial={{ opacity: 0, x: -4, scale: 0.98 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -4, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ 
+              duration: 0.2, 
+              ease: [0.4, 0, 0.2, 1],
+              exit: { duration: 0.3, ease: [0.4, 0, 1, 1] }
+            }}
             className="fixed z-[60] w-[220px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
               left: SIDEBAR_WIDTH_COLLAPSED + 8,
@@ -510,13 +522,13 @@ export function Sidebar() {
 
   const handleMouseLeaveItem = () => {
     if (shouldShowFlyout) {
-      // Longer delay for better accessibility - allows time to move to flyout
+      // Long delay for better accessibility - gives user plenty of time to reach flyout
       hoverTimeoutRef.current = setTimeout(() => {
         if (!isFlyoutHovered) {
           setHoveredItem(null);
           setHoveredAnchorRect(null);
         }
-      }, 300);
+      }, 600);
     }
     // Note: NavigationDrawer handles its own mouse leave behavior
   };
@@ -532,11 +544,11 @@ export function Sidebar() {
 
   const handleFlyoutMouseLeave = () => {
     setIsFlyoutHovered(false);
-    // Longer delay for better UX - user can re-enter
+    // Much longer delay for better UX - user can easily re-enter
     hoverTimeoutRef.current = setTimeout(() => {
       setHoveredItem(null);
       setHoveredAnchorRect(null);
-    }, 400);
+    }, 800);
   };
 
   const handleFlyoutClose = () => {

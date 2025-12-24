@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
+import { MainContent } from '@/components/MainContent';
 import { ComponentsDrawer } from '@/components/docs/ComponentsDrawer';
 import { ComponentPreview } from '@/components/docs/ComponentPreview';
 import { ComponentsList } from '@/components/docs/ComponentsList';
@@ -101,7 +102,7 @@ function ComponentsContent() {
       />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-primary)] pt-14 lg:pt-12 lg:pl-[60px]">
+      <MainContent className="overflow-y-auto custom-scrollbar">
         <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
           {/* Back Button & Actions Row */}
           <MotionItem className="flex items-center justify-between mb-8">
@@ -207,7 +208,7 @@ function ComponentsContent() {
             )}
           </MotionItem>
         </PageTransition>
-      </div>
+      </MainContent>
     </div>
   );
 }

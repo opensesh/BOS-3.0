@@ -1,12 +1,13 @@
-import { anthropic } from '@ai-sdk/anthropic';
-import { perplexity } from '@ai-sdk/perplexity';
-import Anthropic from '@anthropic-ai/sdk';
+// Note: SDKs are imported dynamically to avoid issues during static generation
+// These types help with TypeScript inference
+type AnthropicClient = InstanceType<typeof import('@anthropic-ai/sdk').default>;
+type PerplexityClientClass = Awaited<ReturnType<typeof import('@perplexity-ai/perplexity_ai')>>['Perplexity'];
 
 // ============================================
 // MODEL CONFIGURATION
 // ============================================
 
-export type ModelId = 'auto' | 'claude-sonnet' | 'claude-opus' | 'claude-haiku' | 'sonar' | 'sonar-pro';
+export type ModelId = 'auto' | 'claude-sonnet' | 'claude-opus' | 'sonar' | 'sonar-pro';
 
 export interface ModelConfig {
   id: ModelId;
@@ -14,7 +15,7 @@ export interface ModelConfig {
   version?: string;
   description: string;
   provider: 'anthropic' | 'perplexity' | 'auto';
-  tier: 'fast' | 'balanced' | 'capable' | 'search' | 'smart';
+  tier: 'balanced' | 'capable' | 'search' | 'smart';
   supportsThinking?: boolean;
   supportsTools?: boolean;
   maxOutputTokens?: number;
@@ -55,18 +56,6 @@ export const models: Record<ModelId, ModelConfig> = {
     maxOutputTokens: 16000,
     contextWindow: 200000,
   },
-  'claude-haiku': {
-    id: 'claude-haiku',
-    name: 'Haiku',
-    version: '3.5',
-    description: 'Fastest for quick answers',
-    provider: 'anthropic',
-    tier: 'fast',
-    supportsThinking: false, // Haiku doesn't support extended thinking
-    supportsTools: true,
-    maxOutputTokens: 8192,
-    contextWindow: 200000,
-  },
   sonar: {
     id: 'sonar',
     name: 'Sonar',
@@ -91,48 +80,37 @@ export const models: Record<ModelId, ModelConfig> = {
 export const ANTHROPIC_MODEL_IDS: Record<string, string> = {
   'claude-opus': 'claude-opus-4-20250514',
   'claude-sonnet': 'claude-sonnet-4-20250514',
-  'claude-haiku': 'claude-3-5-haiku-20241022',
 };
 
 // ============================================
-// VERCEL AI SDK PROVIDERS (Basic streaming)
+// PERPLEXITY MODEL IDS
 // ============================================
 
-export function getModelInstance(modelId: ModelId) {
-  switch (modelId) {
-    case 'claude-opus':
-      return anthropic('claude-opus-4-20250514');
-    case 'claude-sonnet':
-      return anthropic('claude-sonnet-4-20250514');
-    case 'claude-haiku':
-      return anthropic('claude-3-5-haiku-20241022');
-    case 'sonar':
-      return perplexity('sonar');
-    case 'sonar-pro':
-      return perplexity('sonar-pro');
-    default:
-      // Default to Claude Sonnet for 'auto' or unknown models
-      return anthropic('claude-sonnet-4-20250514');
-  }
-}
+export const PERPLEXITY_MODEL_IDS: Record<string, string> = {
+  'sonar': 'sonar',
+  'sonar-pro': 'sonar-pro',
+};
 
 // ============================================
 // NATIVE ANTHROPIC SDK CLIENT
 // For extended thinking, tool use, and advanced features
 // ============================================
 
-let anthropicClient: Anthropic | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let anthropicClient: any = null;
 
 /**
  * Get the native Anthropic SDK client
  * Use this for extended thinking, tool use, and other advanced features
+ * Note: Returns a promise because the SDK is dynamically imported
  */
-export function getAnthropicClient(): Anthropic {
+export async function getAnthropicClient(): Promise<AnthropicClient> {
   if (!anthropicClient) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       throw new Error('ANTHROPIC_API_KEY is not configured');
     }
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
     anthropicClient = new Anthropic({
       apiKey,
     });
@@ -166,6 +144,47 @@ export function supportsToolUse(modelId: ModelId): boolean {
  */
 export function isAnthropicModel(modelId: ModelId): boolean {
   return models[modelId]?.provider === 'anthropic' || modelId === 'auto';
+}
+
+// ============================================
+// NATIVE PERPLEXITY SDK CLIENT
+// For web-grounded AI responses
+// ============================================
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let perplexityClient: any = null;
+
+/**
+ * Get the native Perplexity SDK client
+ * Use this for Sonar models with web search capabilities
+ * Note: Returns a promise because the SDK is dynamically imported
+ */
+export async function getPerplexityClient(): Promise<InstanceType<PerplexityClient>> {
+  if (!perplexityClient) {
+    const apiKey = process.env.PERPLEXITY_API_KEY;
+    if (!apiKey) {
+      throw new Error('PERPLEXITY_API_KEY is not configured');
+    }
+    const { Perplexity } = await import('@perplexity-ai/perplexity_ai');
+    perplexityClient = new Perplexity({
+      apiKey,
+    });
+  }
+  return perplexityClient;
+}
+
+/**
+ * Get the Perplexity model ID for a given ModelId
+ */
+export function getPerplexityModelId(modelId: ModelId): string {
+  return PERPLEXITY_MODEL_IDS[modelId] || PERPLEXITY_MODEL_IDS['sonar'];
+}
+
+/**
+ * Check if a model is from Perplexity
+ */
+export function isPerplexityModel(modelId: ModelId): boolean {
+  return models[modelId]?.provider === 'perplexity';
 }
 
 // ============================================

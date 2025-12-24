@@ -4,12 +4,17 @@ import { createContext, useContext, useState, useCallback, useEffect, ReactNode 
 
 export type SidebarMode = 'expanded' | 'collapsed' | 'hover';
 
+// Sidebar width constants
+export const SIDEBAR_WIDTH_EXPANDED = 220;
+export const SIDEBAR_WIDTH_COLLAPSED = 48;
+
 interface SidebarContextType {
   sidebarMode: SidebarMode;
   setSidebarMode: (mode: SidebarMode) => void;
   isSidebarHovered: boolean;
   setIsSidebarHovered: (hovered: boolean) => void;
   isExpanded: boolean; // Computed: true when expanded OR (hover mode AND hovered)
+  sidebarWidth: number; // Current width based on mode
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -64,6 +69,9 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
   // Compute isExpanded based on mode and hover state
   const isExpanded = sidebarMode === 'expanded' || (sidebarMode === 'hover' && isSidebarHovered);
 
+  // Compute sidebar width based on mode
+  const sidebarWidth = sidebarMode === 'expanded' ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED;
+
   // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {
     return (
@@ -73,7 +81,8 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
           setSidebarMode, 
           isSidebarHovered: false, 
           setIsSidebarHovered,
-          isExpanded: false 
+          isExpanded: false,
+          sidebarWidth: SIDEBAR_WIDTH_COLLAPSED
         }}
       >
         {children}
@@ -88,7 +97,8 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
         setSidebarMode, 
         isSidebarHovered, 
         setIsSidebarHovered,
-        isExpanded 
+        isExpanded,
+        sidebarWidth
       }}
     >
       {children}

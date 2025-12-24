@@ -1,5 +1,4 @@
-import { generateText } from 'ai';
-import { getModelInstance } from '@/lib/ai/providers';
+import { getAnthropicClient, getAnthropicModelId } from '@/lib/ai/providers';
 import { createClient } from '@/lib/supabase/server';
 
 export const maxDuration = 10; // Fast responses for autocomplete
@@ -204,15 +203,21 @@ Rules:
 - Do not repeat the same suggestion with minor variations`;
 
   try {
-    // Use a fast model for autocomplete
-    const model = getModelInstance('claude-sonnet');
+    // Use native Anthropic SDK for autocomplete
+    const client = await getAnthropicClient();
+    const modelId = getAnthropicModelId('claude-sonnet');
     
-    const { text } = await generateText({
-      model,
-      prompt,
-      maxOutputTokens: 300,
-      temperature: 0.7,
+    const response = await client.messages.create({
+      model: modelId,
+      max_tokens: 300,
+      messages: [{ role: 'user', content: prompt }],
     });
+    
+    // Extract text from response
+    const text = response.content
+      .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
+      .map(block => block.text)
+      .join('');
     
     // Parse suggestions from response
     const suggestions = text

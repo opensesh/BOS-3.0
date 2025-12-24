@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { useChat } from '@/hooks/useChat';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
+import { MainContent } from '@/components/MainContent';
 import { SpaceReferenceCard } from '@/components/spaces/SpaceReferenceCard';
 import { SpaceResourceCards } from '@/components/spaces/SpaceResourceCards';
 import { useSpaces } from '@/hooks/useSpaces';
@@ -67,16 +67,9 @@ export default function SpaceChatPage() {
   // Current discussion
   const discussion = getDiscussion(threadId);
 
-  // Chat transport
-  const chatTransport = useRef(
-    new DefaultChatTransport({
-      api: '/api/chat',
-    })
-  ).current;
-
-  // AI SDK useChat hook
+  // Custom useChat hook for native SDK streaming
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: chatTransport,
+    api: '/api/chat',
     onError: (err) => {
       console.error('Chat error:', err);
       setSubmitError(err.message || 'An error occurred while sending your message');
@@ -284,7 +277,7 @@ export default function SpaceChatPage() {
     <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans overflow-hidden">
       <Sidebar />
 
-      <main className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-12 lg:pl-[60px]">
+      <MainContent className="overflow-hidden">
         {/* Chat Header */}
         <ChatHeader
           activeTab={activeTab}
@@ -401,7 +394,7 @@ export default function SpaceChatPage() {
             />
           </div>
         </div>
-      </main>
+      </MainContent>
     </div>
   );
 }

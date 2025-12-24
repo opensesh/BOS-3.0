@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Sidebar } from '@/components/Sidebar';
+import { MainContent } from '@/components/MainContent';
 import { useResources } from '@/hooks/useResources';
 import { AddResourceModal, ResourceIconPreview } from '@/components/brand-hub/AddResourceModal';
 import { BrandResource } from '@/types';
@@ -205,7 +206,7 @@ export default function BrandHubPage() {
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
-      <main className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-12 lg:pl-[60px]">
+      <MainContent className="overflow-hidden">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
             {/* Page Header */}
@@ -266,7 +267,7 @@ export default function BrandHubPage() {
             </MotionItem>
           </PageTransition>
         </div>
-      </main>
+      </MainContent>
 
       {/* Add/Edit Resource Modal */}
       <AddResourceModal

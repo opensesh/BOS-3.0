@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { PageTransition, MotionItem } from '@/lib/motion';
+import { useSidebar } from '@/lib/sidebar-context';
 
 interface BrandHubLayoutProps {
   children: React.ReactNode;
@@ -18,8 +19,23 @@ export function BrandHubLayout({
   description,
   showBackButton = true
 }: BrandHubLayoutProps) {
+  const { sidebarWidth } = useSidebar();
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+
   return (
-    <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-primary)] pt-14 lg:pt-12 lg:pl-[60px]">
+    <div 
+      className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-primary)] pt-14 lg:pt-12 transition-[padding-left] duration-200 ease-out"
+      style={{ paddingLeft: isDesktop ? `${sidebarWidth}px` : 0 }}
+    >
       <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
         {/* Back Button */}
         {showBackButton && (

@@ -1,13 +1,14 @@
-import { streamText, convertToModelMessages } from 'ai';
 import { 
   ModelId, 
-  getModelInstance, 
   models,
   getAnthropicClient,
   getAnthropicModelId,
+  getPerplexityClient,
+  getPerplexityModelId,
   supportsExtendedThinking,
   supportsToolUse,
   isAnthropicModel,
+  isPerplexityModel,
   DEFAULT_THINKING_BUDGET,
 } from '@/lib/ai/providers';
 import { autoSelectModel } from '@/lib/ai/auto-router';
@@ -224,7 +225,7 @@ async function streamWithAnthropicNative(
   selectedModel: ModelId,
   options: ChatOptions
 ): Promise<ReadableStream> {
-  const client = getAnthropicClient();
+  const client = await getAnthropicClient();
   const modelId = getAnthropicModelId(selectedModel);
   const sse = createSSEEncoder();
   
@@ -375,6 +376,75 @@ async function streamWithAnthropicNative(
 }
 
 // ============================================
+// NATIVE PERPLEXITY STREAMING (Web Search)
+// ============================================
+
+async function streamWithPerplexityNative(
+  messages: ClientMessage[],
+  systemPrompt: string,
+  selectedModel: ModelId
+): Promise<ReadableStream> {
+  const client = await getPerplexityClient();
+  const modelId = getPerplexityModelId(selectedModel);
+  const sse = createSSEEncoder();
+
+  // Convert messages to Perplexity format
+  const perplexityMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+    { role: 'system', content: systemPrompt },
+    ...messages.map(msg => ({
+      role: msg.role as 'user' | 'assistant',
+      content: typeof msg.content === 'string' ? msg.content : '',
+    })),
+  ];
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        // Create streaming request with Perplexity SDK
+        const stream = await client.chat.completions.create({
+          model: modelId,
+          messages: perplexityMessages,
+          stream: true,
+        });
+
+        // Process streamed chunks
+        for await (const chunk of stream) {
+          const deltaContent = chunk.choices?.[0]?.delta?.content;
+          if (deltaContent) {
+            // Handle both string and array content types
+            let textContent: string;
+            if (typeof deltaContent === 'string') {
+              textContent = deltaContent;
+            } else if (Array.isArray(deltaContent)) {
+              // Extract text from content array
+              textContent = deltaContent
+                .filter((c): c is { type: 'text'; text: string } => c.type === 'text' && 'text' in c)
+                .map(c => c.text)
+                .join('');
+            } else {
+              continue;
+            }
+            if (textContent) {
+              controller.enqueue(sse.encode({ type: 'text', content: textContent }));
+            }
+          }
+        }
+
+        controller.enqueue(sse.encode({ type: 'done' }));
+        controller.close();
+      } catch (error) {
+        console.error('Error in Perplexity streaming:', error);
+        controller.enqueue(sse.encode({ 
+          type: 'error', 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        }));
+        controller.close();
+      }
+    },
+  });
+}
+
+// ============================================
 // MAIN API HANDLER
 // ============================================
 
@@ -404,11 +474,11 @@ export async function POST(req: Request) {
       discover: true,
     };
     
-    // Default options - enable thinking for capable models
+    // Default options - tools enabled by default for web search capability
     const chatOptions: ChatOptions = {
       enableThinking: options.enableThinking ?? false, // Disabled by default until UI is ready
       thinkingBudget: options.thinkingBudget ?? DEFAULT_THINKING_BUDGET,
-      enableTools: options.enableTools ?? false, // Disabled by default until UI is ready
+      enableTools: options.enableTools ?? true, // Enabled by default for web search
     };
     
     console.log('Active connectors:', activeConnectors);
@@ -483,18 +553,15 @@ export async function POST(req: Request) {
     console.log('Thinking enabled:', chatOptions.enableThinking && supportsExtendedThinking(selectedModel));
     console.log('Tools enabled:', chatOptions.enableTools && supportsToolUse(selectedModel));
 
-    // Use native Anthropic SDK for extended features
-    const useNativeAnthropicApi = isAnthropicModel(selectedModel) && 
-      (chatOptions.enableThinking || chatOptions.enableTools);
-
-    if (useNativeAnthropicApi) {
-      console.log('Using native Anthropic API for extended features');
+    // Route to appropriate streaming handler based on provider
+    if (isPerplexityModel(selectedModel)) {
+      // Use Perplexity SDK for Sonar models (web search)
+      console.log('Using native Perplexity API for web search');
       
-      const stream = await streamWithAnthropicNative(
+      const stream = await streamWithPerplexityNative(
         validatedMessages,
         systemPrompt,
-        selectedModel,
-        chatOptions
+        selectedModel
       );
 
       return new Response(stream, {
@@ -503,33 +570,31 @@ export async function POST(req: Request) {
           'Cache-Control': 'no-cache',
           'Connection': 'keep-alive',
           'X-Model-Used': selectedModel,
-          'X-Features': JSON.stringify({
-            thinking: chatOptions.enableThinking && supportsExtendedThinking(selectedModel),
-            tools: chatOptions.enableTools && supportsToolUse(selectedModel),
-          }),
+          'X-Features': JSON.stringify({ webSearch: true }),
         },
       });
     }
 
-    // Fall back to Vercel AI SDK for basic streaming
-    console.log('Using Vercel AI SDK for basic streaming');
+    // Use native Anthropic SDK for all Claude models
+    console.log('Using native Anthropic API');
     
-    const modelInstance = getModelInstance(selectedModel);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const modelMessages = convertToModelMessages(validatedMessages as any);
+    const stream = await streamWithAnthropicNative(
+      validatedMessages,
+      systemPrompt,
+      selectedModel,
+      chatOptions
+    );
 
-    const result = streamText({
-      model: modelInstance,
-      messages: modelMessages,
-      system: systemPrompt,
-      maxOutputTokens: 4096,
-    });
-
-    return result.toUIMessageStreamResponse({
+    return new Response(stream, {
       headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
         'X-Model-Used': selectedModel,
-        'X-Brand-Sources': JSON.stringify(BRAND_SOURCES),
-        'X-Active-Connectors': JSON.stringify(activeConnectors),
+        'X-Features': JSON.stringify({
+          thinking: chatOptions.enableThinking && supportsExtendedThinking(selectedModel),
+          tools: chatOptions.enableTools && supportsToolUse(selectedModel),
+        }),
       },
     });
   } catch (error) {

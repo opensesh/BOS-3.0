@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useChat } from '@ai-sdk/react';
+import { useChat } from '@/hooks/useChat';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { DefaultChatTransport } from 'ai';
 import { motion } from 'framer-motion';
 import {
   Mic,
@@ -120,14 +119,9 @@ export function ChatInterface() {
     }
   }, [localInput, showSuggestions, fetchSuggestions]);
 
-  // Create transport once - stable reference
-  const chatTransport = useRef(new DefaultChatTransport({
-    api: '/api/chat',
-  })).current;
-
-  // AI SDK useChat hook (v5 API)
+  // Custom useChat hook for native SDK streaming
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: chatTransport,
+    api: '/api/chat',
     onError: (err) => {
       console.error('Chat error:', err);
       setSubmitError(err.message || 'An error occurred while sending your message');

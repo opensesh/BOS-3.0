@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Sidebar } from '@/components/Sidebar';
+import { MainContent } from '@/components/MainContent';
 import { MarkdownCodeViewer } from '@/components/brain/MarkdownCodeViewer';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { PageTransition, MotionItem } from '@/lib/motion';
@@ -23,7 +24,7 @@ export default function ArchitecturePage() {
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar bg-[var(--bg-primary)] pt-14 lg:pt-12 lg:pl-[60px]">
+      <MainContent className="overflow-y-auto custom-scrollbar">
         <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
           {/* Back Button & Settings Row */}
           <MotionItem className="flex items-center justify-between mb-8">
@@ -69,7 +70,7 @@ export default function ArchitecturePage() {
             />
           </MotionItem>
         </PageTransition>
-      </div>
+      </MainContent>
 
       {/* Settings Modal - Opens with architecture section (which is automatic) */}
       <BrainSettingsModal

@@ -99,7 +99,7 @@ export function autoSelectModel(messages: UIMessage[]): ModelId {
   const isSimpleQuery = SIMPLE_QUERY_PATTERNS.some((pattern) => pattern.test(query));
 
   if (isSimpleQuery || queryLength < 50) {
-    return 'claude-haiku';
+    return 'claude-sonnet'; // Use Sonnet for all queries (Haiku deprecated)
   }
 
   // Medium complexity - use balanced model
@@ -121,7 +121,7 @@ export function getAutoRouterExplanation(query: string): string {
     return 'Using advanced model for in-depth analysis';
   }
   if (query.length < 50 || SIMPLE_QUERY_PATTERNS.some((p) => p.test(q))) {
-    return 'Using fast model for quick response';
+    return 'Using balanced model for quick response';
   }
   return 'Using balanced model for this query';
 }

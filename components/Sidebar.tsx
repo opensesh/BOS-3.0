@@ -593,7 +593,7 @@ export function Sidebar() {
             handleMouseLeaveItem();
           }
         }}
-        className="hidden lg:flex fixed top-12 left-0 z-40 bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] flex-col h-[calc(100vh-48px)] transition-all duration-200 ease-out"
+        className="hidden lg:flex fixed top-12 left-0 z-50 bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] flex-col h-[calc(100vh-48px)] transition-all duration-200 ease-out"
         style={{ width: sidebarWidth }}
         role="navigation"
         aria-label="Main navigation"

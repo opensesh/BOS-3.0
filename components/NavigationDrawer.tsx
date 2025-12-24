@@ -126,15 +126,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Spaces':
         return (
           <motion.div 
-            className="pt-2 pb-3"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            {/* Header - py-3 + p-2 matches sidebar New Chat structure for vertical alignment */}
             <div className="px-2 mb-2">
-              <motion.div variants={fadeInUp} className="mb-3">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Spaces</h3>
+              <motion.div variants={fadeInUp} className="mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] p-2">Spaces</h3>
               </motion.div>
               
               <motion.button 
@@ -206,15 +206,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Home':
         return (
           <motion.div 
-            className="pt-2 pb-3"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            {/* Header - py-3 + p-2 matches sidebar New Chat structure for vertical alignment */}
             <div className="px-2">
-              <motion.div variants={fadeInUp} className="mb-3">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Home</h3>
+              <motion.div variants={fadeInUp} className="mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] p-2">Home</h3>
               </motion.div>
               
               <motion.div variants={fadeInUp} className="mb-4">
@@ -259,15 +259,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         
         return (
           <motion.div 
-            className="pt-2 pb-3"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            {/* Header - py-3 + p-2 matches sidebar New Chat structure for vertical alignment */}
             <div className="px-2">
-              <motion.div variants={fadeInUp} className="mb-3">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Brand</h3>
+              <motion.div variants={fadeInUp} className="mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] p-2">Brand</h3>
               </motion.div>
               
               <div className="space-y-1">
@@ -323,15 +323,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         
         return (
           <motion.div 
-            className="pt-2 pb-3"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            {/* Header - py-3 + p-2 matches sidebar New Chat structure for vertical alignment */}
             <div className="px-2">
-              <motion.div variants={fadeInUp} className="mb-3">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Brain</h3>
+              <motion.div variants={fadeInUp} className="mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] p-2">Brain</h3>
               </motion.div>
               
               <div className="space-y-1">
@@ -378,18 +378,18 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Resources':
         return (
           <motion.div 
-            className="pt-2 pb-3"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            {/* Header - py-3 + p-2 matches sidebar New Chat structure for vertical alignment */}
             <div className="px-2">
-              <motion.div variants={fadeInUp} className="mb-3">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Resources</h3>
+              <motion.div variants={fadeInUp} className="mb-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] p-2">Resources</h3>
               </motion.div>
               
-              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)] px-2">
+              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)] p-2">
                 Resources and documentation coming soon
               </motion.div>
             </div>

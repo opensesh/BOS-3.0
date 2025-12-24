@@ -200,3 +200,4 @@ export function ThinkingIndicator({ isThinking }: { isThinking: boolean }) {
 export default ThinkingDisplay;
 
 
+

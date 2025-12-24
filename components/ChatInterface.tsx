@@ -98,6 +98,9 @@ export function ChatInterface() {
     addToHistory, 
     setCurrentSessionId,
     currentSessionId,
+    sessionToLoad,
+    acknowledgeSessionLoad,
+    getSessionMessages,
   } = useChatContext();
 
   // Search suggestions hook for autocomplete

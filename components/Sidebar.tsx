@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Plus,
   ChevronDown,
+  ChevronRight,
   PanelLeft,
   PanelLeftClose,
   Sidebar as SidebarIcon,
@@ -276,9 +277,13 @@ function HoverFlyout({
               top: top,
             }}
           >
-            <div className="px-3 py-2 border-b border-[var(--border-secondary)]">
+            <Link 
+              href="/spaces"
+              className="px-3 py-2 border-b border-[var(--border-secondary)] flex items-center justify-between group hover:bg-[var(--bg-tertiary)] transition-colors"
+            >
               <span className="text-sm font-medium text-[var(--fg-primary)]">Spaces</span>
-            </div>
+              <ChevronRight className="w-3.5 h-3.5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+            </Link>
             <div className="py-2 max-h-[300px] overflow-y-auto">
               <button className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors">
                 <FolderPlus className="w-3.5 h-3.5" />
@@ -331,9 +336,13 @@ function HoverFlyout({
               top: top,
             }}
           >
-            <div className="px-3 py-2 border-b border-[var(--border-secondary)]">
+            <Link 
+              href={item.href}
+              className="px-3 py-2 border-b border-[var(--border-secondary)] flex items-center justify-between group hover:bg-[var(--bg-tertiary)] transition-colors"
+            >
               <span className="text-sm font-medium text-[var(--fg-primary)]">{item.label}</span>
-            </div>
+              <ChevronRight className="w-3.5 h-3.5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+            </Link>
             <div className="py-2">
               {item.subItems.map((subItem) => {
                 const SubIcon = subItem.icon;
@@ -404,8 +413,11 @@ export function Sidebar() {
     );
   };
 
+  // Enable flyout for both collapsed and hover modes
+  const shouldShowFlyout = sidebarMode === 'hover' || sidebarMode === 'collapsed';
+
   const handleMouseEnterItem = (item: typeof navItems[0], event: React.MouseEvent) => {
-    if (sidebarMode !== 'hover') return;
+    if (!shouldShowFlyout) return;
     
     // Clear any pending close timeout
     if (hoverTimeoutRef.current) {
@@ -419,7 +431,7 @@ export function Sidebar() {
   };
 
   const handleMouseLeaveItem = () => {
-    if (sidebarMode !== 'hover') return;
+    if (!shouldShowFlyout) return;
     
     // Delay closing to allow moving to flyout
     hoverTimeoutRef.current = setTimeout(() => {
@@ -475,7 +487,7 @@ export function Sidebar() {
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => {
           setIsSidebarHovered(false);
-          if (sidebarMode === 'hover') {
+          if (shouldShowFlyout) {
             handleMouseLeaveItem();
           }
         }}
@@ -631,6 +643,14 @@ export function Sidebar() {
                                   {spacesLoaded && userSpaces.length === 0 && (
                                     <p className="px-2 py-1.5 text-xs text-[var(--fg-quaternary)]">No spaces yet</p>
                                   )}
+                                  {/* View all Spaces link */}
+                                  <Link
+                                    href="/spaces"
+                                    className="w-full flex items-center gap-2 px-2 py-1.5 mt-1 pt-1 rounded text-xs text-[var(--fg-brand-primary)] hover:text-[var(--fg-brand-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors border-t border-[var(--border-secondary)]"
+                                  >
+                                    <span>View all Spaces</span>
+                                    <ChevronRight className="w-3 h-3 ml-auto" />
+                                  </Link>
                                 </>
                               )}
                               
@@ -655,29 +675,50 @@ export function Sidebar() {
                                   </Link>
                                 );
                               })}
+                              
+                              {/* View all link for sections with sub-items */}
+                              {(item.subItems && item.subItems.length > 0) && (
+                                <Link
+                                  href={item.href}
+                                  className="w-full flex items-center gap-2 px-2 py-1.5 mt-1 pt-1 rounded text-xs text-[var(--fg-brand-primary)] hover:text-[var(--fg-brand-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors border-t border-[var(--border-secondary)]"
+                                >
+                                  <span>View all {item.label}</span>
+                                  <ChevronRight className="w-3 h-3 ml-auto" />
+                                </Link>
+                              )}
                             </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
                   ) : (
-                    // Collapsed/Hover mode - just icons
+                    // Collapsed/Hover mode - icons with label for active item
                     <Link
                       data-nav-item={item.label}
                       href={item.href}
                       onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
                       className={`
-                        flex items-center justify-center
-                        w-10 h-10 mx-auto rounded-md
+                        flex flex-col items-center justify-center
+                        w-full py-1.5 mx-auto rounded-md
                         transition-colors duration-150
                         ${isActive 
-                          ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
+                          ? 'text-[var(--fg-brand-primary)]' 
                           : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
                         }
                       `}
                       title={item.label}
                     >
-                      <Icon className="w-5 h-5" />
+                      <div className={`
+                        flex items-center justify-center w-8 h-8 rounded-md
+                        ${isActive ? 'bg-[var(--bg-brand-primary)]' : ''}
+                      `}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      {isActive && (
+                        <span className="text-[10px] mt-0.5 font-medium truncate max-w-[40px]">
+                          {item.label}
+                        </span>
+                      )}
                     </Link>
                   )}
                 </div>
@@ -694,8 +735,8 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Hover Flyout - Only for hover mode */}
-      {sidebarMode === 'hover' && (
+      {/* Hover Flyout - For collapsed and hover modes */}
+      {shouldShowFlyout && (
         <HoverFlyout 
           item={hoveredItem} 
           isOpen={hoveredItem !== null} 

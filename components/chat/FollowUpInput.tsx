@@ -220,14 +220,14 @@ export function FollowUpInput({
 
         <div
           className={`
-            relative bg-os-surface-dark/80 backdrop-blur-xl rounded-xl
+            relative bg-[var(--bg-secondary)]/80 backdrop-blur-xl rounded-xl
             border transition-all duration-200
             ${
               isDragging
-                ? 'border-brand-aperol shadow-lg shadow-brand-aperol/20'
+                ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20'
                 : isFocused
-                  ? 'border-brand-aperol shadow-lg shadow-brand-aperol/20'
-                  : 'border-os-border-dark hover:border-os-border-dark/60'
+                  ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20'
+                  : 'border-[var(--border-primary)] hover:border-[var(--border-primary)]/60'
             }
           `}
           onDragOver={handleDragOver}
@@ -261,7 +261,7 @@ export function FollowUpInput({
               onBlur={() => setIsFocused(false)}
               onPaste={handlePaste}
               placeholder={attachments.length > 0 ? "Add a message or send with images..." : placeholder}
-              className="w-full px-4 py-4 bg-transparent text-os-text-primary-dark placeholder:text-os-text-secondary-dark resize-none focus:outline-none min-h-[60px] max-h-[300px]"
+              className="w-full px-4 py-4 bg-transparent text-[var(--fg-primary)] placeholder:text-[var(--fg-tertiary)] resize-none focus:outline-none min-h-[60px] max-h-[300px]"
               rows={1}
               aria-label="Follow-up input"
               disabled={isLoading}
@@ -269,7 +269,7 @@ export function FollowUpInput({
           </div>
 
           {/* Toolbar - matching homepage layout */}
-          <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-os-border-dark gap-2 sm:gap-4">
+          <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-[var(--border-primary)] gap-2 sm:gap-4">
             {/* Left side - Search/Research Toggle */}
             <div className="flex items-center gap-2 sm:gap-3">
               <SearchResearchToggle
@@ -288,7 +288,7 @@ export function FollowUpInput({
                 disabled={isLoading}
               />
 
-              <div className="hidden sm:block w-px h-5 bg-os-border-dark" />
+              <div className="hidden sm:block w-px h-5 bg-[var(--border-primary)]" />
 
               {/* Connectors dropdown */}
               <div className="relative">
@@ -301,8 +301,8 @@ export function FollowUpInput({
                   }}
                   className={`p-2 rounded-lg transition-all ${
                     showConnectorDropdown
-                      ? 'bg-brand-aperol/20 text-brand-aperol'
-                      : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-bg-dark'
+                      ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
+                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
                   }`}
                   aria-label="Connectors"
                   title="Connectors"
@@ -328,15 +328,15 @@ export function FollowUpInput({
                   }}
                   className={`p-2 rounded-lg transition-all ${
                     attachments.length > 0
-                      ? 'bg-brand-aperol/20 text-brand-aperol'
-                      : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-bg-dark'
+                      ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
+                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
                   }`}
                   aria-label="Attach images"
                   title="Attach images (or paste/drag & drop)"
                 >
                   <Paperclip className="w-5 h-5" />
                   {attachments.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-aperol text-white text-[10px] font-medium rounded-full flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--bg-brand-solid)] text-white text-[10px] font-medium rounded-full flex items-center justify-center">
                       {attachments.length}
                     </span>
                   )}
@@ -349,7 +349,7 @@ export function FollowUpInput({
                 {isListening && (
                   <>
                     <motion.div
-                      className="absolute inset-0 rounded-lg bg-brand-aperol/30"
+                      className="absolute inset-0 rounded-lg bg-[var(--bg-brand-solid)]/30"
                       initial={{ scale: 1, opacity: 0.6 }}
                       animate={{
                         scale: [1, 1.8, 2.2],
@@ -362,7 +362,7 @@ export function FollowUpInput({
                       }}
                     />
                     <motion.div
-                      className="absolute inset-0 rounded-lg bg-brand-aperol/20"
+                      className="absolute inset-0 rounded-lg bg-[var(--bg-brand-solid)]/20"
                       initial={{ scale: 1, opacity: 0.4 }}
                       animate={{
                         scale: [1, 1.5, 1.8],
@@ -382,8 +382,8 @@ export function FollowUpInput({
                   onClick={handleMicClick}
                   className={`relative p-2 rounded-lg transition-colors ${
                     isListening
-                      ? 'bg-brand-aperol text-white'
-                      : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-bg-dark'
+                      ? 'bg-[var(--bg-brand-solid)] text-white'
+                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
                   }`}
                   aria-label="Voice input"
                   title={isListening ? 'Stop recording' : 'Start voice input'}
@@ -413,7 +413,7 @@ export function FollowUpInput({
                   <motion.span
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs text-red-400 whitespace-nowrap bg-os-surface-dark px-2 py-1 rounded"
+                    className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs text-[var(--fg-error-primary)] whitespace-nowrap bg-[var(--bg-secondary)] px-2 py-1 rounded"
                   >
                     {voiceError}
                   </motion.span>
@@ -426,8 +426,8 @@ export function FollowUpInput({
                 disabled={(!input.trim() && attachments.length === 0) || isLoading}
                 className={`p-2 rounded-lg transition-all ${
                   (input.trim() || attachments.length > 0) && !isLoading
-                    ? 'bg-brand-aperol text-white hover:bg-brand-aperol/90'
-                    : 'text-os-text-secondary-dark/50 cursor-not-allowed'
+                    ? 'bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid)]/90'
+                    : 'text-[var(--fg-tertiary)]/50 cursor-not-allowed'
                 }`}
                 aria-label="Send message"
                 title="Send message"

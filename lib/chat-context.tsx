@@ -24,6 +24,10 @@ interface ChatContextValue {
   isLoadingHistory: boolean;
   currentSessionId: string | null;
   setCurrentSessionId: (id: string | null) => void;
+  // For loading a past session into the chat
+  sessionToLoad: string | null;
+  loadSession: (id: string) => void;
+  acknowledgeSessionLoad: () => void;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -34,6 +38,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
+  const [sessionToLoad, setSessionToLoad] = useState<string | null>(null);
 
   // Load chat history from Supabase on mount
   const loadHistory = useCallback(async () => {
@@ -155,6 +160,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setShouldResetChat(false);
   }, []);
 
+  const loadSession = useCallback((id: string) => {
+    setSessionToLoad(id);
+    setCurrentSessionId(id);
+  }, []);
+
+  const acknowledgeSessionLoad = useCallback(() => {
+    setSessionToLoad(null);
+  }, []);
+
   return (
     <ChatContext.Provider value={{
       chatHistory,
@@ -169,6 +183,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       isLoadingHistory,
       currentSessionId,
       setCurrentSessionId,
+      sessionToLoad,
+      loadSession,
+      acknowledgeSessionLoad,
     }}>
       {children}
     </ChatContext.Provider>

@@ -94,7 +94,7 @@ export function NotificationsDropdown({ isOpen, onClose, triggerRef }: Notificat
           exit={{ opacity: 0, y: -4, scale: 0.95 }}
           transition={{ duration: 0.15 }}
           className="
-            absolute top-full right-0 mt-1
+            absolute top-full right-0 mt-3
             w-80
             bg-[var(--bg-secondary)]
             rounded-lg

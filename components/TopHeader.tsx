@@ -61,7 +61,7 @@ export function TopHeader({ children }: TopHeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-bg-secondary border-b border-border-secondary">
-        <div className="flex items-center justify-between h-full pr-3">
+        <div className="flex items-center justify-between h-full px-2">
           {/* Left Section: Brand Icon + Breadcrumbs */}
           <div className="flex items-center">
             {/* Brandmark container - matches sidebar rail width (48px) */}
@@ -71,13 +71,15 @@ export function TopHeader({ children }: TopHeaderProps) {
                 className="
                   flex items-center justify-center
                   w-8 h-8
-                  rounded-lg
-                  hover:bg-bg-tertiary
+                  rounded-md
+                  bg-bg-tertiary
+                  border border-border-secondary
+                  hover:bg-bg-quaternary
                   transition-all duration-150
                 "
                 title="Home"
               >
-                <Brandmark size={18} />
+                <Brandmark size={16} />
               </Link>
             </div>
             
@@ -90,27 +92,27 @@ export function TopHeader({ children }: TopHeaderProps) {
           </div>
 
           {/* Right Section: Utility Actions */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             {/* Search - Supabase style search box */}
             <button
               onClick={() => setIsSearchOpen(true)}
               className="
                 hidden sm:flex items-center gap-2
-                px-3 py-1.5
+                px-2.5 py-1
                 rounded-md
                 bg-bg-tertiary/50
                 border border-border-secondary
                 text-fg-quaternary
                 hover:bg-bg-tertiary hover:border-border-primary hover:text-fg-tertiary
                 transition-all duration-150
-                text-sm
-                min-w-[180px]
+                text-xs
+                h-8
               "
               title="Search (⌘K)"
             >
-              <Search className="w-4 h-4" />
-              <span className="flex-1 text-left">Search...</span>
-              <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono bg-bg-secondary rounded border border-border-secondary text-fg-quaternary">
+              <Search className="w-3.5 h-3.5" />
+              <span className="text-left min-w-[60px]">Search...</span>
+              <kbd className="hidden md:inline-flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-mono bg-bg-secondary rounded border border-border-secondary text-fg-quaternary">
                 ⌘K
               </kbd>
             </button>
@@ -119,16 +121,15 @@ export function TopHeader({ children }: TopHeaderProps) {
               onClick={() => setIsSearchOpen(true)}
               className="
                 sm:hidden flex items-center justify-center
-                p-2
+                w-8 h-8
                 rounded-md
                 text-fg-tertiary hover:text-fg-primary
                 hover:bg-bg-tertiary
                 transition-all duration-150
-                min-w-[44px] min-h-[44px]
               "
               title="Search"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4" />
             </button>
 
             {/* Notifications */}
@@ -138,17 +139,16 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleNotificationsClick}
                 className={`
                   relative flex items-center justify-center
-                  p-2
+                  w-8 h-8
                   rounded-md
                   text-fg-tertiary hover:text-fg-primary
                   hover:bg-bg-tertiary
                   transition-all duration-150
-                  min-w-[44px] min-h-[44px]
                   ${isNotificationsOpen ? 'bg-bg-tertiary text-fg-primary' : ''}
                 `}
                 title="Notifications"
               >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-4 h-4" />
               </button>
               <NotificationsDropdown
                 isOpen={isNotificationsOpen}
@@ -164,17 +164,16 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleHelpClick}
                 className={`
                   flex items-center justify-center
-                  p-2
+                  w-8 h-8
                   rounded-md
                   text-fg-tertiary hover:text-fg-primary
                   hover:bg-bg-tertiary
                   transition-all duration-150
-                  min-w-[44px] min-h-[44px]
                   ${isHelpOpen ? 'bg-bg-tertiary text-fg-primary' : ''}
                 `}
                 title="Help"
               >
-                <HelpCircle className="w-5 h-5" />
+                <HelpCircle className="w-4 h-4" />
               </button>
               <HelpDropdown
                 isOpen={isHelpOpen}
@@ -190,17 +189,16 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleProfileClick}
                 className={`
                   flex items-center justify-center
-                  p-2
+                  w-8 h-8
                   rounded-md
                   hover:bg-bg-tertiary
                   transition-all duration-150
-                  min-w-[44px] min-h-[44px]
                   ${isProfileOpen ? 'bg-bg-tertiary' : ''}
                 `}
                 title="Profile"
               >
-                <div className="w-7 h-7 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-border-secondary rounded-full flex items-center justify-center">
-                  <span className="text-white text-[10px] font-mono">A</span>
+                <div className="w-6 h-6 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-border-secondary rounded-full flex items-center justify-center">
+                  <span className="text-white text-[9px] font-mono">A</span>
                 </div>
               </button>
               <ProfileDropdown

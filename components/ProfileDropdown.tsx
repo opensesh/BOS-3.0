@@ -86,7 +86,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
           exit={{ opacity: 0, y: -4, scale: 0.95 }}
           transition={{ duration: 0.15 }}
           className="
-            absolute top-full right-0 mt-1
+            absolute top-full right-0 mt-3
             w-56
             bg-[var(--bg-secondary)]
             rounded-lg

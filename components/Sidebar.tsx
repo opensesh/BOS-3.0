@@ -94,7 +94,19 @@ function getActiveSectionFromPathname(pathname: string): string | null {
 function SidebarControl({ isExpanded }: { isExpanded: boolean }) {
   const { sidebarMode, setSidebarMode } = useSidebar();
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ bottom: 0, left: 0 });
   const controlRef = useRef<HTMLDivElement>(null);
+
+  // Update dropdown position when opening
+  useEffect(() => {
+    if (isOpen && controlRef.current) {
+      const rect = controlRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        bottom: window.innerHeight - rect.top + 4,
+        left: isExpanded ? rect.left : rect.right + 8,
+      });
+    }
+  }, [isOpen, isExpanded]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -111,9 +123,9 @@ function SidebarControl({ isExpanded }: { isExpanded: boolean }) {
   }, [isOpen]);
 
   const options: { mode: SidebarMode; label: string; description: string }[] = [
-    { mode: 'hover', label: 'Expand on hover', description: 'Opens drawer on hover' },
+    { mode: 'hover', label: 'Expand', description: 'Opens drawer on hover' },
     { mode: 'collapsed', label: 'Collapsed', description: 'Icons only, flyout on hover' },
-    { mode: 'expanded', label: 'Pinned open', description: 'Always show full sidebar' },
+    { mode: 'expanded', label: 'Pinned', description: 'Always show full sidebar' },
   ];
 
   return (
@@ -140,7 +152,7 @@ function SidebarControl({ isExpanded }: { isExpanded: boolean }) {
         )}
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown - using fixed positioning to ensure visibility */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -148,14 +160,11 @@ function SidebarControl({ isExpanded }: { isExpanded: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
-            className={`
-              absolute bottom-full mb-1
-              w-48 bg-[var(--bg-secondary)]
-              rounded-lg border border-[var(--border-secondary)]
-              shadow-xl z-[200]
-              overflow-hidden
-              ${isExpanded ? 'left-0' : 'left-full ml-2'}
-            `}
+            className="fixed w-48 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-secondary)] shadow-xl z-[9999] overflow-hidden"
+            style={{
+              bottom: `${dropdownPosition.bottom}px`,
+              left: `${dropdownPosition.left}px`,
+            }}
             role="menu"
             aria-label="Sidebar mode options"
           >
@@ -640,27 +649,22 @@ export function Sidebar() {
                   onMouseLeave={handleMouseLeaveItem}
                 >
                   {isExpandedMode ? (
-                    // Expanded mode - split control: icon+label link to page, chevron toggles
+                    // Expanded/Pinned mode - unified row with consistent styling
                     <div className="flex flex-col">
-                      <div className={`
-                        flex items-center rounded-md transition-colors duration-150
-                        ${isActive 
-                          ? 'text-[var(--fg-brand-primary)]' 
-                          : 'text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]'
-                        }
-                      `}>
-                        {/* Main link to the page */}
+                      <div 
+                        className={`
+                          flex items-center rounded-md transition-colors duration-150
+                          ${isActive || isOnMainPage
+                            ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                            : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                          }
+                        `}
+                      >
+                        {/* Main link to the page - takes most of the row */}
                         <Link
                           href={item.href}
                           onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
-                          className={`
-                            flex-1 flex items-center gap-2 px-2 py-2 rounded-l-md
-                            transition-colors duration-150
-                            ${isOnMainPage 
-                              ? 'bg-[var(--bg-brand-primary)]' 
-                              : 'hover:bg-[var(--bg-tertiary)]'
-                            }
-                          `}
+                          className="flex-1 flex items-center gap-2 px-2 py-2"
                           aria-current={isOnMainPage ? 'page' : undefined}
                         >
                           <Icon className="w-4 h-4 flex-shrink-0" />
@@ -670,11 +674,12 @@ export function Sidebar() {
                         {/* Toggle button for sections with sub-items */}
                         {(hasSubItems || item.label === 'Spaces' || item.label === 'Home') && (
                           <button
-                            onClick={() => toggleSection(item.label)}
-                            className={`
-                              p-2 rounded-r-md transition-colors duration-150
-                              hover:bg-[var(--bg-tertiary)]
-                            `}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleSection(item.label);
+                            }}
+                            className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
                             aria-expanded={isSectionExpanded}
                             aria-label={`${isSectionExpanded ? 'Collapse' : 'Expand'} ${item.label} section`}
                           >
@@ -682,7 +687,7 @@ export function Sidebar() {
                               animate={{ rotate: isSectionExpanded ? 180 : 0 }}
                               transition={{ duration: 0.2 }}
                             >
-                              <ChevronDown className="w-3 h-3 text-[var(--fg-tertiary)]" />
+                              <ChevronDown className="w-3 h-3" />
                             </motion.div>
                           </button>
                         )}

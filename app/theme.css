@@ -163,6 +163,9 @@
   --fg-brand-secondary_hover: var(--color-brand-600);
   --fg-brand-secondary_alt: var(--color-brand-600);
   
+  /* True Aperol - consistent brand accent for both themes */
+  --fg-brand-aperol: var(--color-brand-500);
+  
   /* Error Foreground */
   --fg-error-primary: var(--color-error-600);
   --fg-error-secondary: var(--color-error-500);
@@ -343,6 +346,9 @@
   --fg-brand-secondary_hover: var(--color-brand-400);
   --fg-brand-secondary_alt: var(--color-brand-400);
   
+  /* True Aperol - consistent brand accent for both themes */
+  --fg-brand-aperol: var(--color-brand-500);
+  
   /* Error Foreground (dark) */
   --fg-error-primary: var(--color-error-400);
   --fg-error-secondary: var(--color-error-300);
@@ -478,6 +484,7 @@
 .text-fg-disabled { color: var(--fg-disabled); }
 .text-fg-placeholder { color: var(--fg-placeholder); }
 .text-fg-brand-primary { color: var(--fg-brand-primary); }
+.text-fg-brand-aperol { color: var(--fg-brand-aperol); }
 .text-fg-error-primary { color: var(--fg-error-primary); }
 .text-fg-warning-primary { color: var(--fg-warning-primary); }
 .text-fg-success-primary { color: var(--fg-success-primary); }

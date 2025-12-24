@@ -74,7 +74,7 @@ export function TypewriterText() {
     <div className="text-base md:text-lg text-fg-secondary font-accent mt-2">
       <span>Made to help you </span>
       <div 
-        className="inline whitespace-pre-wrap tracking-tight text-fg-brand-primary"
+        className="inline whitespace-pre-wrap tracking-tight text-fg-brand-aperol"
         suppressHydrationWarning
       >
         <span suppressHydrationWarning>{text}</span>

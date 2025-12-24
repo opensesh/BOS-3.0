@@ -186,6 +186,34 @@ export function ChatInterface() {
     }
   }, [shouldResetChat, acknowledgeChatReset, resetChat, messages, addToHistory, getMessageContent, setCurrentSessionId]);
 
+  // Listen for session load signals from context (e.g., clicking chat history)
+  useEffect(() => {
+    if (sessionToLoad) {
+      const loadSessionMessages = async () => {
+        try {
+          const sessionMessages = await getSessionMessages(sessionToLoad);
+          if (sessionMessages && sessionMessages.length > 0) {
+            // Convert ChatMessage[] to the format expected by useChat
+            const formattedMessages = sessionMessages.map((msg, idx) => ({
+              id: msg.id || `msg-${idx}`,
+              role: msg.role as 'user' | 'assistant',
+              content: msg.content,
+            }));
+            setMessages(formattedMessages);
+            setActiveTab('answer');
+            setLocalInput('');
+            setSubmitError(null);
+          }
+        } catch (error) {
+          console.error('Error loading session:', error);
+        } finally {
+          acknowledgeSessionLoad();
+        }
+      };
+      loadSessionMessages();
+    }
+  }, [sessionToLoad, getSessionMessages, acknowledgeSessionLoad, setMessages]);
+
   // Auto-save session when streaming completes (status changes from streaming to ready)
   const prevStatusRef = useRef(status);
   useEffect(() => {

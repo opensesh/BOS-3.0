@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Home,
@@ -196,9 +196,10 @@ function HoverFlyout({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { spaces: userSpaces } = useSpaces();
-  const { chatHistory } = useChatContext();
+  const { chatHistory, loadSession } = useChatContext();
 
   // Handle click outside
   useEffect(() => {
@@ -244,6 +245,13 @@ function HoverFlyout({
                 chatHistory.slice(0, 5).map((chat) => (
                   <button
                     key={chat.id}
+                    onClick={() => {
+                      loadSession(chat.id);
+                      if (pathname !== '/') {
+                        router.push('/');
+                      }
+                      onClose();
+                    }}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
                   >
                     <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
@@ -384,7 +392,8 @@ export function Sidebar() {
   const [expandedSections, setExpandedSections] = useState<string[]>(['Brand', 'Brain']);
   const railRef = useRef<HTMLElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { chatHistory, triggerChatReset } = useChatContext();
+  const { chatHistory, triggerChatReset, loadSession } = useChatContext();
+  const router = useRouter();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
 
   const handleNewChat = useCallback(() => {
@@ -605,6 +614,12 @@ export function Sidebar() {
                                   {chatHistory.slice(0, 3).map((chat) => (
                                     <button
                                       key={chat.id}
+                                      onClick={() => {
+                                        loadSession(chat.id);
+                                        if (pathname !== '/') {
+                                          router.push('/');
+                                        }
+                                      }}
                                       className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                                     >
                                       <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
@@ -809,6 +824,13 @@ export function Sidebar() {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.2, ease: 'easeInOut' }}
+                          onClick={() => {
+                            loadSession(chat.id);
+                            if (pathname !== '/') {
+                              router.push('/');
+                            }
+                            closeMobileMenu();
+                          }}
                           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
                         >
                           <MessageSquare className="w-4 h-4 flex-shrink-0" />

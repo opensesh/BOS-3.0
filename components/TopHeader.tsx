@@ -61,10 +61,10 @@ export function TopHeader({ children }: TopHeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-bg-secondary border-b border-border-secondary">
-        <div className="flex items-center justify-between h-full px-2">
+        <div className="flex items-center justify-between h-full pr-2">
           {/* Left Section: Brand Icon + Breadcrumbs */}
           <div className="flex items-center">
-            {/* Brandmark container - matches sidebar rail width (48px) */}
+            {/* Brandmark container - matches sidebar rail exactly (48px width, centered content) */}
             <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
               <Link
                 href="/"
@@ -72,14 +72,14 @@ export function TopHeader({ children }: TopHeaderProps) {
                   flex items-center justify-center
                   w-8 h-8
                   rounded-md
-                  bg-bg-tertiary
-                  border border-border-secondary
-                  hover:bg-bg-quaternary
+                  bg-[var(--bg-tertiary)]
+                  border border-[var(--border-secondary)]
+                  hover:bg-[var(--bg-quaternary)]
                   transition-all duration-150
                 "
                 title="Home"
               >
-                <Brandmark size={16} />
+                <Brandmark size={18} />
               </Link>
             </div>
             

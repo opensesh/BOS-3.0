@@ -632,7 +632,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Items */}
-        <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-2 items-center px-1'}`}>
+        <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-0 items-center px-1'}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = isItemActive(item);
@@ -785,10 +785,11 @@ export function Sidebar() {
                       </AnimatePresence>
                     </div>
                   ) : (
-                    // Collapsed/Hover mode - icons with label for active item
+                    // Collapsed/Hover mode - fixed height items with label for active item
                     (() => {
                       const isDrawerActive = shouldShowDrawer && isDrawerOpen && drawerItem === item.label;
                       const showHighlight = isActive || isDrawerActive;
+                      const showLabel = isActive || isDrawerActive;
                       
                       return (
                         <Link
@@ -796,8 +797,8 @@ export function Sidebar() {
                           href={item.href}
                           onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
                           className={`
-                            flex flex-col items-center justify-center
-                            w-full py-1.5 mx-auto rounded-md
+                            flex flex-col items-center justify-start
+                            w-full h-14 py-1 mx-auto rounded-md
                             transition-colors duration-150
                             ${showHighlight 
                               ? 'text-[var(--fg-brand-primary)]' 
@@ -814,11 +815,13 @@ export function Sidebar() {
                           `}>
                             <Icon className="w-5 h-5" />
                           </div>
-                          {(isActive || isDrawerActive) && (
-                            <span className="text-[10px] mt-0.5 font-medium truncate max-w-[40px]">
-                              {item.label}
-                            </span>
-                          )}
+                          <span className={`
+                            text-[10px] mt-0.5 font-medium truncate max-w-[40px] h-3
+                            transition-opacity duration-150
+                            ${showLabel ? 'opacity-100' : 'opacity-0'}
+                          `}>
+                            {item.label}
+                          </span>
                         </Link>
                       );
                     })()

@@ -131,10 +131,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar */}
-            <div className="px-4 mb-2">
+            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
+            <div className="px-3 mb-2">
               <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)]">Spaces</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Spaces</h3>
               </motion.div>
               
               <motion.button 
@@ -211,10 +211,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar */}
-            <div className="px-4">
+            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
+            <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)]">Home</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Home</h3>
               </motion.div>
               
               <motion.div variants={fadeInUp} className="mb-4">
@@ -264,10 +264,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar */}
-            <div className="px-4">
+            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
+            <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)]">Brand</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Brand</h3>
               </motion.div>
               
               <div className="space-y-1">
@@ -328,10 +328,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar */}
-            <div className="px-4">
+            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
+            <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)]">Brain</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Brain</h3>
               </motion.div>
               
               <div className="space-y-1">
@@ -383,13 +383,13 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar */}
-            <div className="px-4">
+            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
+            <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)]">Resources</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Resources</h3>
               </motion.div>
               
-              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)]">
+              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)] px-3">
                 Resources and documentation coming soon
               </motion.div>
             </div>
@@ -407,7 +407,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         <motion.div
           ref={drawerRef}
           data-navigation-drawer
-          className="hidden lg:block fixed z-50 w-[220px] bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] shadow-[var(--shadow-lg)] overflow-y-auto"
+          className="hidden lg:block fixed z-40 w-[220px] bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] shadow-[var(--shadow-lg)] overflow-y-auto"
           style={{
             top: `${position.top}px`,
             left: `${position.left}px`,

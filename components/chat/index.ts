@@ -17,3 +17,7 @@ export { ChatHeader } from './ChatHeader';
 export { ChatContent } from './ChatContent';
 export { SourcesDrawer } from './SourcesDrawer';
 
+// Extended features - Claude Desktop parity
+export { ThinkingDisplay, ThinkingIndicator } from './ThinkingDisplay';
+export { ToolExecutionCard, ToolExecutionList, ToolUseIndicator } from './ToolExecutionCard';
+export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRenderer';

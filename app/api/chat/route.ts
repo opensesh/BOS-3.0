@@ -1,11 +1,28 @@
 import { streamText, convertToModelMessages } from 'ai';
-import { ModelId, getModelInstance, models } from '@/lib/ai/providers';
+import { 
+  ModelId, 
+  getModelInstance, 
+  models,
+  getAnthropicClient,
+  getAnthropicModelId,
+  supportsExtendedThinking,
+  supportsToolUse,
+  isAnthropicModel,
+  DEFAULT_THINKING_BUDGET,
+} from '@/lib/ai/providers';
 import { autoSelectModel } from '@/lib/ai/auto-router';
 import { buildBrandSystemPrompt, shouldIncludeFullDocs, BRAND_SOURCES, type PageContext } from '@/lib/brand-knowledge';
+import { getToolsForAnthropic } from '@/lib/ai/tools';
+import { executeTool } from '@/lib/ai/tools/executors';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import type Anthropic from '@anthropic-ai/sdk';
 
-export const maxDuration = 60; // Allow streaming responses up to 60 seconds
+export const maxDuration = 120; // Allow streaming responses up to 120 seconds for extended thinking
+
+// ============================================
+// TYPE DEFINITIONS
+// ============================================
 
 // Connector settings from client
 interface ConnectorSettings {
@@ -15,6 +32,45 @@ interface ConnectorSettings {
   discover: boolean;
 }
 
+// Chat options from client
+interface ChatOptions {
+  enableThinking?: boolean;
+  thinkingBudget?: number;
+  enableTools?: boolean;
+}
+
+// Interface for file attachments from client
+interface FileAttachment {
+  type: 'image';
+  data: string; // Base64 data URL
+  mimeType: string;
+}
+
+// Message type from client
+interface ClientMessage {
+  id?: string;
+  role: 'user' | 'assistant' | 'system';
+  content?: string;
+  parts?: Array<{ type: string; text?: string }>;
+  files?: FileAttachment[];
+  experimental_attachments?: FileAttachment[];
+}
+
+// Streaming response data for extended features
+interface StreamChunk {
+  type: 'thinking' | 'text' | 'tool_use' | 'tool_result' | 'done' | 'error';
+  content?: string;
+  toolName?: string;
+  toolInput?: Record<string, unknown>;
+  toolResult?: unknown;
+  thinkingSignature?: string;
+  error?: string;
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
 // Fetch article content from pre-generated JSON files
 async function fetchArticleContent(slug: string): Promise<{ summary: string; sections: string[] } | null> {
   try {
@@ -22,7 +78,6 @@ async function fetchArticleContent(slug: string): Promise<{ summary: string; sec
     const data = await readFile(articlePath, 'utf-8');
     const article = JSON.parse(data);
     
-    // Extract paragraph content from sections
     const paragraphs: string[] = [];
     const sectionTitles: string[] = [];
     
@@ -37,15 +92,7 @@ async function fetchArticleContent(slug: string): Promise<{ summary: string; sec
       }
     }
     
-    // Take first 5 paragraphs as summary (enough context without being too long)
     const summary = paragraphs.slice(0, 5).join('\n\n');
-    
-    console.log('Fetched article content:', { 
-      slug, 
-      paragraphCount: paragraphs.length,
-      summaryLength: summary.length,
-      sections: sectionTitles 
-    });
     
     return { summary, sections: sectionTitles };
   } catch (error) {
@@ -54,35 +101,14 @@ async function fetchArticleContent(slug: string): Promise<{ summary: string; sec
   }
 }
 
-
-// Interface for file attachments from client
-interface FileAttachment {
-  type: 'image';
-  data: string; // Base64 data URL
-  mimeType: string;
-}
-
-// Message type from client (flexible to handle various formats)
-interface ClientMessage {
-  id?: string;
-  role: 'user' | 'assistant' | 'system';
-  content?: string;
-  parts?: Array<{ type: string; text?: string }>;
-  files?: FileAttachment[];
-  experimental_attachments?: FileAttachment[];
-}
-
 // Process messages to handle image attachments
 function processMessagesWithImages(messages: ClientMessage[]): ClientMessage[] {
   return messages.map(msg => {
-    // Check if this message has file attachments
     const imageFiles = msg.experimental_attachments || msg.files;
 
     if (msg.role === 'user' && imageFiles && imageFiles.length > 0) {
-      // Convert to multimodal message format with parts
       const parts: Array<{ type: 'text'; text: string } | { type: 'image'; image: string }> = [];
 
-      // Add text content if present
       const textContent = typeof msg.content === 'string'
         ? msg.content
         : msg.parts
@@ -93,19 +119,17 @@ function processMessagesWithImages(messages: ClientMessage[]): ClientMessage[] {
         parts.push({ type: 'text', text: textContent });
       }
 
-      // Add image parts
       for (const file of imageFiles) {
         if (file.type === 'image' && file.data) {
           parts.push({ type: 'image', image: file.data });
         }
       }
 
-      // Return message with parts array as content for multimodal
       if (parts.length > 0) {
         return {
           ...msg,
-          content: parts as unknown as string, // Type cast for compatibility
-          files: undefined, // Remove processed files
+          content: parts as unknown as string,
+          files: undefined,
           experimental_attachments: undefined,
         };
       }
@@ -127,33 +151,252 @@ function hasRequiredApiKey(modelId: ModelId): { valid: boolean; error?: string }
   if (provider === 'anthropic' || provider === 'auto') {
     const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
     if (!apiKey) {
-      return { valid: false, error: 'ANTHROPIC_API_KEY is not configured. Please add it to your .env.local file.' };
+      return { valid: false, error: 'ANTHROPIC_API_KEY is not configured.' };
     }
   }
   
   if (provider === 'perplexity') {
     const apiKey = process.env.PERPLEXITY_API_KEY?.trim();
     if (!apiKey) {
-      return { valid: false, error: 'PERPLEXITY_API_KEY is not configured. Please add it to your .env.local file.' };
+      return { valid: false, error: 'PERPLEXITY_API_KEY is not configured.' };
     }
   }
 
   return { valid: true };
 }
 
+// Convert client messages to Anthropic format
+function convertToAnthropicMessages(messages: ClientMessage[]): Anthropic.Messages.MessageParam[] {
+  return messages.map(msg => {
+    // Handle multipart messages (with images)
+    if (Array.isArray(msg.content)) {
+      const content: Anthropic.Messages.ContentBlockParam[] = [];
+      
+      for (const part of msg.content as unknown as Array<{ type: string; text?: string; image?: string }>) {
+        if (part.type === 'text' && part.text) {
+          content.push({ type: 'text', text: part.text });
+        } else if (part.type === 'image' && part.image) {
+          // Extract base64 data from data URL
+          const matches = part.image.match(/^data:([^;]+);base64,(.+)$/);
+          if (matches) {
+            content.push({
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: matches[1] as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+                data: matches[2],
+              },
+            });
+          }
+        }
+      }
+      
+      return {
+        role: msg.role as 'user' | 'assistant',
+        content,
+      };
+    }
+    
+    // Simple text message
+    return {
+      role: msg.role as 'user' | 'assistant',
+      content: typeof msg.content === 'string' ? msg.content : '',
+    };
+  });
+}
+
+// Create SSE stream encoder
+function createSSEEncoder() {
+  const encoder = new TextEncoder();
+  return {
+    encode: (data: StreamChunk) => encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
+    encodeDone: () => encoder.encode('data: [DONE]\n\n'),
+  };
+}
+
+// ============================================
+// NATIVE ANTHROPIC STREAMING (Extended Thinking + Tools)
+// ============================================
+
+async function streamWithAnthropicNative(
+  messages: ClientMessage[],
+  systemPrompt: string,
+  selectedModel: ModelId,
+  options: ChatOptions
+): Promise<ReadableStream> {
+  const client = getAnthropicClient();
+  const modelId = getAnthropicModelId(selectedModel);
+  const sse = createSSEEncoder();
+  
+  // Prepare tools if enabled
+  const tools = options.enableTools && supportsToolUse(selectedModel) 
+    ? getToolsForAnthropic() 
+    : undefined;
+  
+  // Prepare thinking config if enabled
+  const thinkingConfig = options.enableThinking && supportsExtendedThinking(selectedModel)
+    ? {
+        type: 'enabled' as const,
+        budget_tokens: options.thinkingBudget || DEFAULT_THINKING_BUDGET,
+      }
+    : undefined;
+
+  // Convert messages
+  const anthropicMessages = convertToAnthropicMessages(messages);
+  
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        // Create stream with native Anthropic SDK
+        const stream = await client.messages.stream({
+          model: modelId,
+          max_tokens: 16000,
+          system: systemPrompt,
+          messages: anthropicMessages,
+          ...(tools ? { tools } : {}),
+          ...(thinkingConfig ? { thinking: thinkingConfig } : {}),
+        });
+
+        let currentToolUse: { id: string; name: string; input: string } | null = null;
+        let pendingToolCalls: Array<{ id: string; name: string; input: Record<string, unknown> }> = [];
+
+        // Process text events
+        stream.on('text', (text: string) => {
+          controller.enqueue(sse.encode({ type: 'text', content: text }));
+        });
+
+        // Handle content blocks (thinking, tool use) via raw events
+        stream.on('contentBlock', (block: { type: string; id?: string; name?: string; thinking?: string }) => {
+          if (block.type === 'thinking' && block.thinking) {
+            controller.enqueue(sse.encode({ 
+              type: 'thinking', 
+              content: block.thinking 
+            }));
+          } else if (block.type === 'tool_use' && block.id && block.name) {
+            currentToolUse = { id: block.id, name: block.name, input: '' };
+            controller.enqueue(sse.encode({ 
+              type: 'tool_use', 
+              toolName: block.name,
+              content: `Using tool: ${block.name}` 
+            }));
+          }
+        });
+
+        // Handle input JSON deltas for tool use
+        stream.on('inputJson', (json: string) => {
+          if (currentToolUse) {
+            currentToolUse.input += json;
+          }
+        });
+
+        // Process complete messages for tool calls
+        stream.on('message', (message) => {
+          for (const block of message.content || []) {
+            if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
+              pendingToolCalls.push({
+                id: block.id,
+                name: block.name,
+                input: (block as { input?: Record<string, unknown> }).input || {},
+              });
+            }
+          }
+        });
+
+        // Wait for initial response
+        const response = await stream.finalMessage();
+
+        // Handle tool calls if any
+        if (response.stop_reason === 'tool_use' && pendingToolCalls.length > 0) {
+          const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
+
+          for (const toolCall of pendingToolCalls) {
+            controller.enqueue(sse.encode({ 
+              type: 'tool_use', 
+              toolName: toolCall.name,
+              toolInput: toolCall.input,
+              content: `Executing ${toolCall.name}...` 
+            }));
+
+            // Execute the tool
+            const result = await executeTool(toolCall.name, toolCall.input, {});
+            
+            controller.enqueue(sse.encode({ 
+              type: 'tool_result', 
+              toolName: toolCall.name,
+              toolResult: result.data || result.error,
+              content: result.success ? 'Tool completed successfully' : `Error: ${result.error}` 
+            }));
+
+            toolResults.push({
+              type: 'tool_result',
+              tool_use_id: toolCall.id,
+              content: JSON.stringify(result.success ? result.data : { error: result.error }),
+            });
+          }
+
+          // Continue conversation with tool results
+          const continueStream = await client.messages.stream({
+            model: modelId,
+            max_tokens: 16000,
+            system: systemPrompt,
+            messages: [
+              ...anthropicMessages,
+              { role: 'assistant', content: response.content },
+              { role: 'user', content: toolResults },
+            ],
+            ...(thinkingConfig ? { thinking: thinkingConfig } : {}),
+          });
+
+          continueStream.on('text', (text: string) => {
+            controller.enqueue(sse.encode({ type: 'text', content: text }));
+          });
+
+          continueStream.on('contentBlock', (block: { type: string; thinking?: string }) => {
+            if (block.type === 'thinking' && block.thinking) {
+              controller.enqueue(sse.encode({ type: 'thinking', content: block.thinking }));
+            }
+          });
+
+          await continueStream.finalMessage();
+        }
+
+        controller.enqueue(sse.encode({ type: 'done' }));
+        controller.close();
+      } catch (error) {
+        console.error('Error in Anthropic streaming:', error);
+        controller.enqueue(sse.encode({ 
+          type: 'error', 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        }));
+        controller.close();
+      }
+    },
+  });
+}
+
+// ============================================
+// MAIN API HANDLER
+// ============================================
+
 export async function POST(req: Request) {
   console.log('=== Chat API called ===');
   try {
     const body = await req.json();
-    console.log('Request body keys:', Object.keys(body));
-    const { messages, model = 'auto', context, connectors } = body as {
+    const { 
+      messages, 
+      model = 'auto', 
+      context, 
+      connectors,
+      options = {},
+    } = body as {
       messages: ClientMessage[];
       model?: string;
       context?: PageContext;
       connectors?: ConnectorSettings;
+      options?: ChatOptions;
     };
     
-    // Default connector settings (all enabled by default)
+    // Default connector settings
     const activeConnectors: ConnectorSettings = connectors || {
       web: true,
       brand: true,
@@ -161,20 +404,19 @@ export async function POST(req: Request) {
       discover: true,
     };
     
+    // Default options - enable thinking for capable models
+    const chatOptions: ChatOptions = {
+      enableThinking: options.enableThinking ?? false, // Disabled by default until UI is ready
+      thinkingBudget: options.thinkingBudget ?? DEFAULT_THINKING_BUDGET,
+      enableTools: options.enableTools ?? false, // Disabled by default until UI is ready
+    };
+    
     console.log('Active connectors:', activeConnectors);
+    console.log('Chat options:', chatOptions);
     
-    // Log context for debugging
-    console.log('Page context received:', context?.type || 'none', {
-      hasArticle: !!context?.article,
-      articleSlug: context?.article?.slug,
-      hasSummary: !!context?.article?.summary,
-      summaryLength: context?.article?.summary?.length || 0,
-    });
-    
-    // Enrich article context by fetching content if we have slug but no summary
+    // Enrich article context
     let enrichedContext = context;
     if (context?.type === 'article' && context.article?.slug && !context.article.summary) {
-      console.log('Fetching article content for slug:', context.article.slug);
       const articleContent = await fetchArticleContent(context.article.slug);
       if (articleContent) {
         enrichedContext = {
@@ -185,7 +427,6 @@ export async function POST(req: Request) {
             sections: articleContent.sections,
           },
         };
-        console.log('Article context enriched with content, summary length:', articleContent.summary.length);
       }
     }
 
@@ -200,31 +441,28 @@ export async function POST(req: Request) {
     // Process messages to handle image attachments
     const processedMessages = processMessagesWithImages(messages as ClientMessage[]);
 
-    // Ensure messages alternate properly (filter out consecutive messages of same role)
+    // Ensure messages alternate properly
     const validatedMessages = processedMessages.reduce((acc: ClientMessage[], msg, idx) => {
       if (idx === 0) {
         acc.push(msg);
       } else {
         const prevRole = acc[acc.length - 1]?.role;
-        // Only add if role alternates or it's a different type
         if (msg.role !== prevRole) {
           acc.push(msg);
         } else if (msg.role === 'user') {
-          // Merge consecutive user messages into one
           const prev = acc[acc.length - 1];
           const prevContent = typeof prev.content === 'string' ? prev.content : '';
           const msgContent = typeof msg.content === 'string' ? msg.content : '';
           acc[acc.length - 1] = { ...prev, content: `${prevContent}\n\n${msgContent}` };
         }
-        // Skip consecutive assistant messages
       }
       return acc;
     }, []);
 
-    // Select model (auto-route if needed)
+    // Select model
     const selectedModel: ModelId = model === 'auto' ? autoSelectModel(validatedMessages) : (model as ModelId) || 'claude-sonnet';
 
-    // Validate API key is available for selected model
+    // Validate API key
     const keyCheck = hasRequiredApiKey(selectedModel);
     if (!keyCheck.valid) {
       console.error('API key missing:', keyCheck.error);
@@ -234,59 +472,69 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get the model instance
-    const modelInstance = getModelInstance(selectedModel);
-
-    // Convert UI messages to model messages (AI SDK 5.x requirement)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const modelMessages = convertToModelMessages(validatedMessages as any);
-
-    // Build brand-aware system prompt with page context (use enriched context)
+    // Build system prompt
     const systemPrompt = buildBrandSystemPrompt({
       includeFullDocs: shouldIncludeFullDocs(messages),
       context: enrichedContext,
     });
-    
-    // Log system prompt details for debugging
-    console.log('=== SYSTEM PROMPT DEBUG ===');
-    console.log('Context type:', enrichedContext?.type || 'none');
-    console.log('Prompt length:', systemPrompt.length);
-    console.log('Has article summary:', !!enrichedContext?.article?.summary);
-    console.log('Article summary preview:', enrichedContext?.article?.summary?.slice(0, 200) || 'none');
+
     console.log('Selected model:', selectedModel);
-    console.log('Message count:', modelMessages.length);
-    console.log('=== END DEBUG ===');
+    console.log('Message count:', validatedMessages.length);
+    console.log('Thinking enabled:', chatOptions.enableThinking && supportsExtendedThinking(selectedModel));
+    console.log('Tools enabled:', chatOptions.enableTools && supportsToolUse(selectedModel));
 
-    // Stream the response with error handling
-    try {
-      const result = streamText({
-        model: modelInstance,
-        messages: modelMessages,
-        system: systemPrompt,
-        // Add reasonable limits
-        maxOutputTokens: 4096,
-      });
+    // Use native Anthropic SDK for extended features
+    const useNativeAnthropicApi = isAnthropicModel(selectedModel) && 
+      (chatOptions.enableThinking || chatOptions.enableTools);
 
-      console.log('Stream created successfully, returning response...');
+    if (useNativeAnthropicApi) {
+      console.log('Using native Anthropic API for extended features');
+      
+      const stream = await streamWithAnthropicNative(
+        validatedMessages,
+        systemPrompt,
+        selectedModel,
+        chatOptions
+      );
 
-      // Return streaming response in format useChat expects (AI SDK 5.x)
-      // Must use toUIMessageStreamResponse() for useChat hook to parse correctly
-      // Include brand sources in headers for client-side rendering
-      return result.toUIMessageStreamResponse({
+      return new Response(stream, {
         headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
           'X-Model-Used': selectedModel,
-          'X-Brand-Sources': JSON.stringify(BRAND_SOURCES),
-          'X-Active-Connectors': JSON.stringify(activeConnectors),
+          'X-Features': JSON.stringify({
+            thinking: chatOptions.enableThinking && supportsExtendedThinking(selectedModel),
+            tools: chatOptions.enableTools && supportsToolUse(selectedModel),
+          }),
         },
       });
-    } catch (streamError) {
-      console.error('Error creating stream:', streamError);
-      throw streamError;
     }
+
+    // Fall back to Vercel AI SDK for basic streaming
+    console.log('Using Vercel AI SDK for basic streaming');
+    
+    const modelInstance = getModelInstance(selectedModel);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const modelMessages = convertToModelMessages(validatedMessages as any);
+
+    const result = streamText({
+      model: modelInstance,
+      messages: modelMessages,
+      system: systemPrompt,
+      maxOutputTokens: 4096,
+    });
+
+    return result.toUIMessageStreamResponse({
+      headers: {
+        'X-Model-Used': selectedModel,
+        'X-Brand-Sources': JSON.stringify(BRAND_SOURCES),
+        'X-Active-Connectors': JSON.stringify(activeConnectors),
+      },
+    });
   } catch (error) {
     console.error('Error in chat API:', error);
     
-    // Provide more specific error messages
     const errorMessage = error instanceof Error ? error.message : 'An error occurred';
     const isAuthError = errorMessage.includes('api-key') || errorMessage.includes('authentication') || errorMessage.includes('401');
     

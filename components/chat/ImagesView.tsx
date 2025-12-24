@@ -25,7 +25,7 @@ export function ImagesView({ query, images }: ImagesViewProps) {
 
   if (images.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-os-text-secondary-dark">
+      <div className="flex flex-col items-center justify-center py-12 text-[var(--fg-tertiary)]">
         <ImageIcon className="w-12 h-12 mb-4 opacity-40" />
         <p className="text-sm">No images available for this search</p>
       </div>
@@ -36,8 +36,8 @@ export function ImagesView({ query, images }: ImagesViewProps) {
     <>
       <div className="space-y-4">
         {/* Search query header */}
-        <p className="text-sm text-os-text-secondary-dark">
-          Image results for: <span className="font-medium text-os-text-primary-dark">{query}</span>
+        <p className="text-sm text-[var(--fg-tertiary)]">
+          Image results for: <span className="font-medium text-[var(--fg-primary)]">{query}</span>
         </p>
 
         {/* Image grid */}
@@ -74,8 +74,8 @@ function ImageCard({
 
   if (error) {
     return (
-      <div className="aspect-square rounded-lg bg-os-surface-dark flex items-center justify-center">
-        <ImageIcon className="w-8 h-8 text-os-text-secondary-dark/40" />
+      <div className="aspect-square rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center">
+        <ImageIcon className="w-8 h-8 text-[var(--fg-tertiary)]/40" />
       </div>
     );
   }
@@ -83,7 +83,7 @@ function ImageCard({
   return (
     <button
       onClick={onClick}
-      className="group relative aspect-square rounded-lg overflow-hidden bg-os-surface-dark hover:ring-2 hover:ring-brand-aperol/50 transition-all"
+      className="group relative aspect-square rounded-lg overflow-hidden bg-[var(--bg-secondary)] hover:ring-2 hover:ring-[var(--border-brand-solid)]/50 transition-all"
     >
       <Image
         src={image.thumbnailUrl || image.url}

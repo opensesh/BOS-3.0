@@ -439,7 +439,7 @@ export function FollowUpInput({
 
           {/* Suggestions - inside container, below toolbar (matching homepage) */}
           {showSuggestions && (
-            <div className="border-t border-os-border-dark">
+            <div className="border-t border-[var(--border-primary)]">
               <SearchResearchSuggestions 
                 mode={suggestionsMode} 
                 onQueryClick={handleQueryClick}

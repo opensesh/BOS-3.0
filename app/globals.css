@@ -178,7 +178,7 @@ button,
 .chat-content {
   font-size: 15px;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--fg-primary);
 }
 
 .chat-content h1,
@@ -186,7 +186,7 @@ button,
 .chat-content h3 {
   font-family: 'Neue Haas Grotesk Display Pro', system-ui, sans-serif;
   font-weight: 600;
-  color: #FFFAEE;
+  color: var(--fg-primary);
   margin-top: 1.5em;
   margin-bottom: 0.5em;
 }
@@ -220,13 +220,13 @@ button,
 .chat-content code {
   font-family: 'SF Mono', Monaco, 'Courier New', monospace;
   font-size: 0.875em;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-tertiary);
   padding: 0.125em 0.375em;
   border-radius: 4px;
 }
 
 .chat-content pre {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-tertiary);
   padding: 1em;
   border-radius: 8px;
   overflow-x: auto;

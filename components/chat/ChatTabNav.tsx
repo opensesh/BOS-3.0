@@ -45,7 +45,7 @@ export function ChatTabNav({
   ];
 
   return (
-    <div className="flex items-center gap-1 border-b border-os-border-dark">
+    <div className="flex items-center gap-1 border-b border-[var(--border-primary)]">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -60,23 +60,23 @@ export function ChatTabNav({
               flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all relative
               ${
                 isActive
-                  ? 'text-os-text-primary-dark'
+                  ? 'text-[var(--fg-primary)]'
                   : isAvailable
-                  ? 'text-os-text-secondary-dark hover:text-os-text-primary-dark'
-                  : 'text-os-text-secondary-dark/40 cursor-not-allowed'
+                  ? 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'
+                  : 'text-[var(--fg-tertiary)]/40 cursor-not-allowed'
               }
             `}
           >
             <Icon className="w-4 h-4" />
             <span>{tab.label}</span>
             {tab.count !== undefined && tab.count > 0 && (
-              <span className="text-xs text-os-text-secondary-dark">
+              <span className="text-xs text-[var(--fg-tertiary)]">
                 ({tab.count})
               </span>
             )}
             {/* Active indicator */}
             {isActive && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-aperol" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--bg-brand-solid)]" />
             )}
           </button>
         );

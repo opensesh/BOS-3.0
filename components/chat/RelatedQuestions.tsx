@@ -44,7 +44,7 @@ export function RelatedQuestions({
   if (isLoading) {
     return (
       <div className="mt-6">
-        <div className="flex items-center gap-2 text-os-text-secondary-dark text-sm">
+        <div className="flex items-center gap-2 text-[var(--fg-tertiary)] text-sm">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span>Generating related questions...</span>
         </div>
@@ -56,18 +56,18 @@ export function RelatedQuestions({
 
   return (
     <div className="mt-6">
-      <h3 className="text-[15px] font-semibold text-os-text-primary-dark mb-3">
+      <h3 className="text-[15px] font-semibold text-[var(--fg-primary)] mb-3">
         Related
       </h3>
-      <div className="divide-y divide-os-border-dark/50">
+      <div className="divide-y divide-[var(--border-primary)]/50">
         {questions.map((question, idx) => (
           <button
             key={idx}
             onClick={() => onQuestionClick(question)}
-            className="w-full flex items-start gap-3 py-3 text-left hover:bg-os-surface-dark/30 transition-colors group -mx-2 px-2 rounded"
+            className="w-full flex items-start gap-3 py-3 text-left hover:bg-[var(--bg-secondary)]/30 transition-colors group -mx-2 px-2 rounded"
           >
-            <CornerDownRight className="w-4 h-4 text-os-text-secondary-dark mt-0.5 flex-shrink-0" />
-            <span className="text-[14px] text-os-text-primary-dark/80 group-hover:text-os-text-primary-dark transition-colors">
+            <CornerDownRight className="w-4 h-4 text-[var(--fg-tertiary)] mt-0.5 flex-shrink-0" />
+            <span className="text-[14px] text-[var(--fg-primary)]/80 group-hover:text-[var(--fg-primary)] transition-colors">
               {question}
             </span>
           </button>

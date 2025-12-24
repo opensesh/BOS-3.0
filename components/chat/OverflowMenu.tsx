@@ -153,8 +153,8 @@ export function OverflowMenu({
           p-2 rounded-lg transition-all
           ${
             isOpen
-              ? 'bg-os-surface-dark text-os-text-primary-dark'
-              : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark/50'
+              ? 'bg-[var(--bg-secondary)] text-[var(--fg-primary)]'
+              : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]/50'
           }
         `}
         aria-label="More options"
@@ -163,13 +163,13 @@ export function OverflowMenu({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-os-surface-dark rounded-xl border border-os-border-dark shadow-xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 w-64 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] shadow-xl z-50 overflow-hidden">
           {/* Thread info header */}
-          <div className="px-4 py-3 border-b border-os-border-dark">
-            <p className="text-sm font-medium text-os-text-primary-dark truncate">
+          <div className="px-4 py-3 border-b border-[var(--border-primary)]">
+            <p className="text-sm font-medium text-[var(--fg-primary)] truncate">
               {threadTitle}
             </p>
-            <div className="flex items-center gap-4 mt-1 text-xs text-os-text-secondary-dark">
+            <div className="flex items-center gap-4 mt-1 text-xs text-[var(--fg-tertiary)]">
               <span>Created by You</span>
               <span>Last Updated Today</span>
             </div>
@@ -182,7 +182,7 @@ export function OverflowMenu({
                 return (
                   <div
                     key={idx}
-                    className="my-1 border-t border-os-border-dark"
+                    className="my-1 border-t border-[var(--border-primary)]"
                   />
                 );
               }
@@ -198,8 +198,8 @@ export function OverflowMenu({
                     w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors
                     ${
                       isDanger
-                        ? 'text-red-400 hover:bg-red-500/10'
-                        : 'text-os-text-primary-dark hover:bg-os-bg-dark'
+                        ? 'text-[var(--fg-error-primary)] hover:bg-[var(--bg-error-primary)]'
+                        : 'text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
                     }
                   `}
                 >

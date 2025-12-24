@@ -39,7 +39,7 @@ function Tooltip({ children, label }: { children: React.ReactNode; label: string
   return (
     <div className="relative group/tooltip">
       {children}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-os-surface-dark border border-os-border-dark rounded text-xs text-os-text-primary-dark whitespace-nowrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all pointer-events-none z-50 shadow-lg">
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded text-xs text-[var(--fg-primary)] whitespace-nowrap opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all pointer-events-none z-50 shadow-lg">
         {label}
       </div>
     </div>
@@ -179,8 +179,8 @@ export function ResponseActions({
               className={`
                 p-2 rounded-lg transition-colors
                 ${shared 
-                  ? 'text-green-400' 
-                  : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark'
+                  ? 'text-[var(--fg-success-primary)]' 
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]'
                 }
               `}
             >
@@ -196,8 +196,8 @@ export function ResponseActions({
                 className={`
                   p-2 rounded-lg transition-colors
                   ${showExportMenu 
-                    ? 'text-os-text-primary-dark bg-os-surface-dark' 
-                    : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark'
+                    ? 'text-[var(--fg-primary)] bg-[var(--bg-secondary)]' 
+                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]'
                   }
                 `}
               >
@@ -206,24 +206,24 @@ export function ResponseActions({
             </Tooltip>
 
             {showExportMenu && (
-              <div className="absolute left-0 top-full mt-1 w-40 bg-os-surface-dark rounded-lg border border-os-border-dark shadow-xl z-50 py-1">
+              <div className="absolute left-0 top-full mt-1 w-40 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] shadow-xl z-50 py-1">
                 <button
                   onClick={() => handleExport('pdf')}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-os-text-primary-dark hover:bg-os-bg-dark transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--fg-primary)] hover:bg-[var(--bg-primary)] transition-colors"
                 >
                   <FileText className="w-4 h-4" />
                   <span>PDF</span>
                 </button>
                 <button
                   onClick={() => handleExport('markdown')}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-os-text-primary-dark hover:bg-os-bg-dark transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--fg-primary)] hover:bg-[var(--bg-primary)] transition-colors"
                 >
                   <FileCode className="w-4 h-4" />
                   <span>Markdown</span>
                 </button>
                 <button
                   onClick={() => handleExport('docx')}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-os-text-primary-dark hover:bg-os-bg-dark transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--fg-primary)] hover:bg-[var(--bg-primary)] transition-colors"
                 >
                   <FileDown className="w-4 h-4" />
                   <span>DOCX</span>
@@ -236,7 +236,7 @@ export function ResponseActions({
           <Tooltip label="Regenerate">
             <button
               onClick={onRegenerate}
-              className="p-2 text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark rounded-lg transition-colors"
+              className="p-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
             </button>
@@ -246,7 +246,7 @@ export function ResponseActions({
           <Tooltip label="Save as shortcut">
             <button
               onClick={() => setShowShortcutModal(true)}
-              className="p-2 text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark rounded-lg transition-colors"
+              className="p-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
             >
               <SquareSlash className="w-4 h-4" />
             </button>
@@ -256,7 +256,7 @@ export function ResponseActions({
           {hasAnySourcesData && (
             <button
               onClick={() => setShowSourcesDrawer(true)}
-              className="flex items-center gap-2 ml-2 px-2.5 py-1.5 rounded-full bg-os-surface-dark/80 hover:bg-os-surface-dark border border-os-border-dark/50 transition-colors group"
+              className="flex items-center gap-2 ml-2 px-2.5 py-1.5 rounded-full bg-[var(--bg-secondary)]/80 hover:bg-[var(--bg-secondary)] border border-[var(--border-primary)]/50 transition-colors group"
             >
               {/* Stacked source icons - show up to 4 icons representing different source types */}
               <div className="flex -space-x-1">
@@ -273,23 +273,23 @@ export function ResponseActions({
                 {webSources.slice(0, hasDiscoverSources ? 1 : (hasBrandResources ? 2 : 3)).map((source, idx) => (
                   <div
                     key={source.id || `web-${idx}`}
-                    className="w-5 h-5 rounded-full bg-os-bg-dark border border-os-border-dark flex items-center justify-center"
+                    className="w-5 h-5 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center"
                   >
                     {source.favicon ? (
                       <img src={source.favicon} alt="" className="w-3 h-3 rounded" />
                     ) : (
-                      <Globe className="w-2.5 h-2.5 text-os-text-secondary-dark" />
+                      <Globe className="w-2.5 h-2.5 text-[var(--fg-tertiary)]" />
                     )}
                   </div>
                 ))}
                 {/* Show brand icon if we have brand resources */}
                 {hasBrandResources && (
-                  <div className="w-5 h-5 rounded-full bg-brand-aperol/20 border border-brand-aperol/30 flex items-center justify-center">
-                    <Hexagon className="w-2.5 h-2.5 text-brand-aperol" />
+                  <div className="w-5 h-5 rounded-full bg-[var(--bg-brand-primary)] border border-[var(--border-brand)]/30 flex items-center justify-center">
+                    <Hexagon className="w-2.5 h-2.5 text-[var(--fg-brand-primary)]" />
                   </div>
                 )}
               </div>
-              <span className="text-[13px] text-os-text-secondary-dark group-hover:text-os-text-primary-dark transition-colors">
+              <span className="text-[13px] text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors">
                 {totalSourcesCount} {totalSourcesCount === 1 ? 'source' : 'sources'}
               </span>
             </button>
@@ -305,8 +305,8 @@ export function ResponseActions({
                 p-2 rounded-lg transition-colors
                 ${
                   feedback === 'up'
-                    ? 'text-brand-aperol bg-brand-aperol/10'
-                    : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark'
+                    ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]'
+                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]'
                 }
               `}
             >
@@ -321,8 +321,8 @@ export function ResponseActions({
                 p-2 rounded-lg transition-colors
                 ${
                   feedback === 'down'
-                    ? 'text-red-400 bg-red-400/10'
-                    : 'text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark'
+                    ? 'text-[var(--fg-error-primary)] bg-[var(--bg-error-primary)]'
+                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]'
                 }
               `}
             >
@@ -333,10 +333,10 @@ export function ResponseActions({
           <Tooltip label={copied ? 'Copied!' : 'Copy'}>
             <button
               onClick={handleCopy}
-              className="p-2 text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark rounded-lg transition-colors"
+              className="p-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
             >
               {copied ? (
-                <Check className="w-4 h-4 text-green-400" />
+                <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
               ) : (
                 <Copy className="w-4 h-4" />
               )}
@@ -347,9 +347,9 @@ export function ResponseActions({
 
       {/* Share toast notification */}
       {shared && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-os-surface-dark border border-os-border-dark rounded-lg px-4 py-3 shadow-xl animate-fade-in">
-          <Check className="w-4 h-4 text-green-400" />
-          <span className="text-sm text-os-text-primary-dark">Link copied. Paste to share</span>
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-xl animate-fade-in">
+          <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
+          <span className="text-sm text-[var(--fg-primary)]">Link copied. Paste to share</span>
         </div>
       )}
 

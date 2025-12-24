@@ -54,7 +54,7 @@ export function ChatResponse({
   return (
     <div className="flex flex-col h-full">
       {/* Sticky Header with tabs and actions */}
-      <div className="sticky top-0 z-10 bg-os-bg-dark/95 backdrop-blur-sm border-b border-os-border-dark/50">
+      <div className="sticky top-0 z-10 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)]/50">
         <div className="max-w-3xl mx-auto px-4">
           <div className="flex items-center justify-between py-2">
             <ChatTabNav

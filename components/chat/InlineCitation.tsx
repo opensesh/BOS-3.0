@@ -82,8 +82,8 @@ export function InlineCitation({
         className={`
           inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs cursor-pointer transition-colors font-mono
           ${isBrandSource
-            ? 'bg-brand-aperol/10 text-brand-aperol hover:bg-brand-aperol/20'
-            : 'bg-os-surface-dark/80 text-os-text-secondary-dark hover:text-brand-aperol'
+            ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] hover:bg-[var(--bg-brand-primary_alt)]'
+            : 'bg-[var(--bg-secondary)]/80 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)]'
           }
         `}
       >
@@ -96,7 +96,7 @@ export function InlineCitation({
         )}
         <span className="lowercase">{primarySource}</span>
         {additionalCount > 0 && (
-          <span className={`text-[10px] ${isBrandSource ? 'opacity-70' : 'text-os-text-secondary-dark/70'}`}>
+          <span className={`text-[10px] ${isBrandSource ? 'opacity-70' : 'text-[var(--fg-tertiary)]/70'}`}>
             +{additionalCount}
           </span>
         )}

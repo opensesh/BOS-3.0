@@ -23,7 +23,7 @@ export function AttachmentPreview({
   if (attachments.length === 0 && !error) return null;
 
   return (
-    <div className={`${compact ? 'px-3 py-2' : 'px-4 py-3'} border-b border-os-border-dark`}>
+    <div className={`${compact ? 'px-3 py-2' : 'px-4 py-3'} border-b border-[var(--border-primary)]`}>
       {/* Error message */}
       <AnimatePresence>
         {error && (
@@ -64,7 +64,7 @@ export function AttachmentPreview({
               >
                 <div
                   className={`
-                    relative overflow-hidden rounded-lg border border-os-border-dark bg-os-bg-dark
+                    relative overflow-hidden rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]
                     ${compact ? 'w-16 h-16' : 'w-20 h-20'}
                   `}
                 >
@@ -76,7 +76,7 @@ export function AttachmentPreview({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="w-6 h-6 text-os-text-secondary-dark" />
+                      <ImageIcon className="w-6 h-6 text-[var(--fg-tertiary)]" />
                     </div>
                   )}
                 </div>
@@ -87,8 +87,8 @@ export function AttachmentPreview({
                   onClick={() => onRemove(attachment.id)}
                   className="
                     absolute -top-1.5 -right-1.5 p-1
-                    bg-os-surface-dark border border-os-border-dark rounded-full
-                    text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-bg-dark
+                    bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full
+                    text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]
                     opacity-0 group-hover:opacity-100 transition-opacity
                     shadow-lg
                   "
@@ -129,14 +129,14 @@ export function DragOverlay({ isDragging }: DragOverlayProps) {
           exit={{ opacity: 0 }}
           className="
             absolute inset-0 z-10
-            bg-brand-aperol/10 border-2 border-dashed border-brand-aperol
+            bg-[var(--bg-brand-primary)] border-2 border-dashed border-[var(--border-brand-solid)]
             rounded-xl flex items-center justify-center
             pointer-events-none
           "
         >
           <div className="text-center">
-            <ImageIcon className="w-8 h-8 text-brand-aperol mx-auto mb-2" />
-            <p className="text-sm text-brand-aperol font-medium">Drop images here</p>
+            <ImageIcon className="w-8 h-8 text-[var(--fg-brand-primary)] mx-auto mb-2" />
+            <p className="text-sm text-[var(--fg-brand-primary)] font-medium">Drop images here</p>
           </div>
         </motion.div>
       )}

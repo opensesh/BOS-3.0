@@ -13,7 +13,7 @@ interface LinksViewProps {
 export function LinksView({ query, sources }: LinksViewProps) {
   if (sources.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-os-text-secondary-dark">
+      <div className="flex flex-col items-center justify-center py-12 text-[var(--fg-tertiary)]">
         <Globe className="w-12 h-12 mb-4 opacity-40" />
         <p className="text-sm">No links available for this search</p>
       </div>
@@ -23,8 +23,8 @@ export function LinksView({ query, sources }: LinksViewProps) {
   return (
     <div className="space-y-4">
       {/* Search query header */}
-      <p className="text-sm text-os-text-secondary-dark">
-        Search results for: <span className="font-medium text-os-text-primary-dark">{query}</span>
+      <p className="text-sm text-[var(--fg-tertiary)]">
+        Search results for: <span className="font-medium text-[var(--fg-primary)]">{query}</span>
       </p>
 
       {/* Links list */}
@@ -36,7 +36,7 @@ export function LinksView({ query, sources }: LinksViewProps) {
 
       {/* See more button */}
       {sources.length >= 5 && (
-        <button className="text-sm text-brand-aperol hover:underline">
+        <button className="text-sm text-[var(--fg-brand-primary)] hover:underline">
           See more links
         </button>
       )}
@@ -69,29 +69,29 @@ function LinkCard({ source }: { source: SourceInfo }) {
                 unoptimized
               />
             ) : (
-              <div className="w-4 h-4 rounded bg-os-surface-dark flex items-center justify-center">
-                <Globe className="w-2.5 h-2.5 text-os-text-secondary-dark" />
+              <div className="w-4 h-4 rounded bg-[var(--bg-secondary)] flex items-center justify-center">
+                <Globe className="w-2.5 h-2.5 text-[var(--fg-tertiary)]" />
               </div>
             )}
-            <span className="text-xs text-os-text-secondary-dark">{source.name}</span>
-            <span className="text-xs text-os-text-secondary-dark/60 truncate">{domain}</span>
+            <span className="text-xs text-[var(--fg-tertiary)]">{source.name}</span>
+            <span className="text-xs text-[var(--fg-tertiary)]/60 truncate">{domain}</span>
           </div>
 
           {/* Title */}
-          <h3 className="text-brand-aperol font-medium text-[15px] mb-1 group-hover:underline line-clamp-2">
+          <h3 className="text-[var(--fg-brand-primary)] font-medium text-[15px] mb-1 group-hover:underline line-clamp-2">
             {source.title || source.name}
           </h3>
 
           {/* Snippet */}
           {source.snippet && (
-            <p className="text-sm text-os-text-secondary-dark line-clamp-2">
+            <p className="text-sm text-[var(--fg-tertiary)] line-clamp-2">
               {source.snippet}
             </p>
           )}
         </div>
 
         {/* External link icon */}
-        <ExternalLink className="w-4 h-4 text-os-text-secondary-dark opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+        <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
       </div>
     </a>
   );

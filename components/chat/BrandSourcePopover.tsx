@@ -25,10 +25,10 @@ export function BrandSourcePopover({ sources }: BrandSourcePopoverProps) {
 
   // Using span-based elements to avoid hydration errors when rendered inside <p> tags
   return (
-    <span className="absolute left-0 bottom-full mb-2 w-80 bg-os-surface-dark rounded-lg border border-os-border-dark shadow-xl z-50 overflow-hidden block">
+    <span className="absolute left-0 bottom-full mb-2 w-80 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] shadow-xl z-50 overflow-hidden block">
       {/* Header */}
-      <span className="px-3 py-2 border-b border-os-border-dark flex">
-        <span className="text-xs font-semibold text-os-text-secondary-dark">
+      <span className="px-3 py-2 border-b border-[var(--border-primary)] flex">
+        <span className="text-xs font-semibold text-[var(--fg-tertiary)]">
           Brand Sources • {sources.length}
         </span>
       </span>
@@ -57,11 +57,11 @@ function BrandSourceItem({ source }: { source: BrandSourceInfo }) {
   };
 
   return (
-    <span className="flex items-start gap-3 px-3 py-2.5 hover:bg-os-bg-dark transition-colors group">
+    <span className="flex items-start gap-3 px-3 py-2.5 hover:bg-[var(--bg-primary)] transition-colors group">
       {/* Icon or Thumbnail */}
       <span className="flex-shrink-0 mt-0.5">
         {isAsset && isImage && source.thumbnail ? (
-          <span className="w-10 h-10 rounded-lg overflow-hidden bg-os-border-dark block">
+          <span className="w-10 h-10 rounded-lg overflow-hidden bg-[var(--border-primary)] block">
             <Image
               src={source.thumbnail}
               alt={source.title}
@@ -72,7 +72,7 @@ function BrandSourceItem({ source }: { source: BrandSourceInfo }) {
             />
           </span>
         ) : isAsset && isImage ? (
-          <span className="w-10 h-10 rounded-lg overflow-hidden bg-os-border-dark block">
+          <span className="w-10 h-10 rounded-lg overflow-hidden bg-[var(--border-primary)] block">
             <Image
               src={source.path}
               alt={source.title}
@@ -83,28 +83,28 @@ function BrandSourceItem({ source }: { source: BrandSourceInfo }) {
             />
           </span>
         ) : isAsset ? (
-          <span className="w-8 h-8 rounded-lg bg-brand-aperol/10 flex items-center justify-center">
-            <ImageIcon className="w-4 h-4 text-brand-aperol" />
+          <span className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)] flex items-center justify-center">
+            <ImageIcon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
           </span>
         ) : (
-          <span className="w-8 h-8 rounded-lg bg-brand-aperol/10 flex items-center justify-center">
-            <FileText className="w-4 h-4 text-brand-aperol" />
+          <span className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)] flex items-center justify-center">
+            <FileText className="w-4 h-4 text-[var(--fg-brand-primary)]" />
           </span>
         )}
       </span>
 
       {/* Content */}
       <span className="flex-1 min-w-0 flex flex-col">
-        <span className="text-sm font-medium text-os-text-primary-dark line-clamp-1">
+        <span className="text-sm font-medium text-[var(--fg-primary)] line-clamp-1">
           {source.title || source.name}
         </span>
         {source.snippet && (
-          <span className="text-xs text-os-text-secondary-dark mt-0.5 line-clamp-2">
+          <span className="text-xs text-[var(--fg-tertiary)] mt-0.5 line-clamp-2">
             {source.snippet}
           </span>
         )}
         {isAsset && (
-          <code className="text-[10px] text-brand-aperol/80 font-mono mt-1 block truncate">
+          <code className="text-[10px] text-[var(--fg-brand-primary)]/80 font-mono mt-1 block truncate">
             {source.path}
           </code>
         )}
@@ -115,13 +115,13 @@ function BrandSourceItem({ source }: { source: BrandSourceInfo }) {
         {isAsset && (
           <button
             onClick={handleCopyPath}
-            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-os-border-dark transition-all"
+            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-[var(--border-primary)] transition-all"
             title="Copy path"
           >
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-green-400" />
+              <Check className="w-3.5 h-3.5 text-[var(--fg-success-primary)]" />
             ) : (
-              <Copy className="w-3.5 h-3.5 text-os-text-secondary-dark" />
+              <Copy className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
             )}
           </button>
         )}
@@ -130,10 +130,10 @@ function BrandSourceItem({ source }: { source: BrandSourceInfo }) {
             href={source.path}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-os-border-dark transition-all"
+            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-[var(--border-primary)] transition-all"
             title="Open document"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-os-text-secondary-dark" />
+            <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
           </a>
         )}
       </span>

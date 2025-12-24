@@ -32,7 +32,7 @@ export function ShareButton({ threadUrl = '' }: { threadUrl?: string }) {
     <div className="relative" ref={modalRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-brand-aperol text-white rounded-lg hover:bg-brand-aperol/90 transition-colors text-sm font-medium"
+        className="flex items-center gap-2 px-4 py-2 bg-[var(--bg-brand-solid)] text-white rounded-lg hover:bg-[var(--bg-brand-solid)]/90 transition-colors text-sm font-medium"
       >
         <Share2 className="w-4 h-4" />
         <span>Share</span>
@@ -70,17 +70,17 @@ function ShareModalContent({
   };
 
   return (
-    <div className="absolute right-0 top-full mt-2 w-80 bg-os-surface-dark rounded-xl border border-os-border-dark shadow-xl z-50 overflow-hidden">
+    <div className="absolute right-0 top-full mt-2 w-80 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] shadow-xl z-50 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-os-border-dark">
-        <h3 className="text-sm font-semibold text-os-text-primary-dark">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-primary)]">
+        <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
           Share this Thread
         </h3>
         <button
           onClick={onClose}
-          className="p-1 rounded hover:bg-os-bg-dark transition-colors"
+          className="p-1 rounded hover:bg-[var(--bg-primary)] transition-colors"
         >
-          <X className="w-4 h-4 text-os-text-secondary-dark" />
+          <X className="w-4 h-4 text-[var(--fg-tertiary)]" />
         </button>
       </div>
 
@@ -92,22 +92,22 @@ function ShareModalContent({
             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
             ${
               visibility === 'private'
-                ? 'bg-os-bg-dark'
-                : 'hover:bg-os-bg-dark/50'
+                ? 'bg-[var(--bg-primary)]'
+                : 'hover:bg-[var(--bg-primary)]/50'
             }
           `}
         >
-          <Lock className="w-4 h-4 text-os-text-secondary-dark" />
+          <Lock className="w-4 h-4 text-[var(--fg-tertiary)]" />
           <div className="text-left">
-            <p className="text-sm font-medium text-os-text-primary-dark">
+            <p className="text-sm font-medium text-[var(--fg-primary)]">
               Private
             </p>
-            <p className="text-xs text-os-text-secondary-dark">
+            <p className="text-xs text-[var(--fg-tertiary)]">
               Only the author can view
             </p>
           </div>
           {visibility === 'private' && (
-            <Check className="w-4 h-4 text-brand-aperol ml-auto" />
+            <Check className="w-4 h-4 text-[var(--fg-brand-primary)] ml-auto" />
           )}
         </button>
 
@@ -117,29 +117,29 @@ function ShareModalContent({
             w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
             ${
               visibility === 'anyone'
-                ? 'bg-os-bg-dark'
-                : 'hover:bg-os-bg-dark/50'
+                ? 'bg-[var(--bg-primary)]'
+                : 'hover:bg-[var(--bg-primary)]/50'
             }
           `}
         >
-          <Share2 className="w-4 h-4 text-brand-aperol" />
+          <Share2 className="w-4 h-4 text-[var(--fg-brand-primary)]" />
           <div className="text-left">
-            <p className="text-sm font-medium text-brand-aperol">
+            <p className="text-sm font-medium text-[var(--fg-brand-primary)]">
               Anyone with the link
             </p>
-            <p className="text-xs text-os-text-secondary-dark">
+            <p className="text-xs text-[var(--fg-tertiary)]">
               Anyone with the link
             </p>
           </div>
           {visibility === 'anyone' && (
-            <Check className="w-4 h-4 text-brand-aperol ml-auto" />
+            <Check className="w-4 h-4 text-[var(--fg-brand-primary)] ml-auto" />
           )}
         </button>
       </div>
 
       {/* Copy confirmation */}
       {copied && (
-        <div className="px-4 py-2 flex items-center gap-2 text-brand-aperol text-sm">
+        <div className="px-4 py-2 flex items-center gap-2 text-[var(--fg-brand-primary)] text-sm">
           <Check className="w-4 h-4" />
           <span>Link copied. Paste to share</span>
         </div>
@@ -147,12 +147,12 @@ function ShareModalContent({
 
       {/* Share section */}
       <div className="px-4 pb-4 pt-2">
-        <p className="text-xs font-semibold text-os-text-secondary-dark uppercase tracking-wider mb-2">
+        <p className="text-xs font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider mb-2">
           Share
         </p>
         <button
           onClick={handleCopyLink}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-os-bg-dark hover:bg-os-bg-dark/80 rounded-lg transition-colors text-sm font-medium text-os-text-primary-dark"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--bg-primary)] hover:bg-[var(--bg-primary)]/80 rounded-lg transition-colors text-sm font-medium text-[var(--fg-primary)]"
         >
           <Link2 className="w-4 h-4" />
           <span>Copy Link</span>

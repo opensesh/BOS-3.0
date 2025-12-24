@@ -60,8 +60,8 @@ export function AnswerView({
     <div>
       {/* User Query Display - Right aligned bubble */}
       <div className="flex justify-end mb-6">
-        <div className="bg-os-surface-dark/50 rounded-2xl px-4 py-2.5 max-w-[85%]">
-          <p className="text-[15px] text-os-text-primary-dark">{query}</p>
+        <div className="bg-[var(--bg-secondary)]/50 rounded-2xl px-4 py-2.5 max-w-[85%]">
+          <p className="text-[15px] text-[var(--fg-primary)]">{query}</p>
         </div>
       </div>
 
@@ -70,7 +70,7 @@ export function AnswerView({
         {sections.map((section, idx) => {
           if (section.type === 'heading') {
             const level = section.level || 2;
-            const className = `font-bold text-os-text-primary-dark ${
+            const className = `font-bold text-[var(--fg-primary)] ${
               level === 1 ? 'text-[18px] mt-5 mb-1' : ''
             } ${
               level === 2 ? 'text-[17px] mt-4 mb-1' : ''
@@ -85,9 +85,9 @@ export function AnswerView({
 
           if (section.type === 'list' && section.items) {
             return (
-              <ul key={idx} className="space-y-0.5 pl-5 list-disc marker:text-os-text-secondary-dark">
+              <ul key={idx} className="space-y-0.5 pl-5 list-disc marker:text-[var(--fg-tertiary)]">
                 {section.items.map((item, itemIdx) => (
-                  <li key={itemIdx} className="text-[15px] leading-[1.6] text-os-text-primary-dark/90 pl-1">
+                  <li key={itemIdx} className="text-[15px] leading-[1.6] text-[var(--fg-primary)]/90 pl-1">
                     {item}
                   </li>
                 ))}
@@ -101,7 +101,7 @@ export function AnswerView({
           return (
             <p
               key={idx}
-              className="text-[15px] leading-[1.6] text-os-text-primary-dark/90"
+              className="text-[15px] leading-[1.6] text-[var(--fg-primary)]/90"
             >
               {section.content}
               {showCitations && sectionSources.length > 0 && (

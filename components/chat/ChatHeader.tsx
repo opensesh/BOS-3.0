@@ -54,7 +54,7 @@ export function ChatHeader({
   ];
 
   return (
-    <div className="sticky top-0 z-30 bg-os-bg-dark border-b border-os-border-dark/50">
+    <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]/50">
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex items-center justify-between h-12">
           {/* Left side - Back button and tabs */}
@@ -63,7 +63,7 @@ export function ChatHeader({
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-1.5 -ml-1.5 rounded-lg text-os-text-secondary-dark hover:text-os-text-primary-dark hover:bg-os-surface-dark transition-colors"
+                className="p-1.5 -ml-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
                 title="Back to home"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -86,10 +86,10 @@ export function ChatHeader({
                       flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-all relative
                       ${
                         isActive
-                          ? 'text-os-text-primary-dark'
+                          ? 'text-[var(--fg-primary)]'
                           : isAvailable
-                          ? 'text-os-text-secondary-dark hover:text-os-text-primary-dark'
-                          : 'text-os-text-secondary-dark/40 cursor-not-allowed'
+                          ? 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'
+                          : 'text-[var(--fg-tertiary)]/40 cursor-not-allowed'
                       }
                     `}
                   >
@@ -97,7 +97,7 @@ export function ChatHeader({
                     <span>{tab.label}</span>
                     {/* Active indicator */}
                     {isActive && (
-                      <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-brand-aperol rounded-full" />
+                      <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-[var(--bg-brand-solid)] rounded-full" />
                     )}
                   </button>
                 );

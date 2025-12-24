@@ -29,10 +29,6 @@ const nextConfig: NextConfig = {
     // Temporarily ignore build errors to work around next/types.js issue
     ignoreBuildErrors: true,
   },
-  eslint: {
-    // Don't fail build on ESLint errors during deployment
-    ignoreDuringBuilds: true,
-  },
 };
 
 export default nextConfig;

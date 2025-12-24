@@ -65,7 +65,7 @@ export function AddTasksModal({
   // Common input styles
   const inputStyles = `
     w-full px-3 py-2.5 rounded-xl
-    bg-[var(--bg-primary_alt)] border border-[var(--border-primary)]
+    bg-primary-alt border border-[var(--border-primary)]
     text-[var(--fg-primary)] placeholder:text-[var(--fg-placeholder)]
     focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent
     transition-colors

@@ -147,3 +147,4 @@ CREATE POLICY "chat_artifacts_select" ON storage.objects
 -- All have public access for demo mode
 -- ============================================
 
+

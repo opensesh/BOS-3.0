@@ -245,3 +245,4 @@ CREATE TRIGGER artifact_updated_at
 -- All tables have public access for demo mode
 -- ============================================
 
+

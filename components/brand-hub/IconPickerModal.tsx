@@ -107,7 +107,7 @@ export function IconPickerModal({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search icons..."
-              className="w-full pl-10 pr-3 py-2.5 rounded-lg bg-[var(--bg-primary_alt)] border border-[var(--border-primary)] text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-colors"
+              className="w-full pl-10 pr-3 py-2.5 rounded-lg bg-primary-alt border border-[var(--border-primary)] text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-colors"
             />
           </div>
 

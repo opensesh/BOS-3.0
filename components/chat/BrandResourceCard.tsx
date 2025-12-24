@@ -57,7 +57,7 @@ export function BrandResourceCard({
         group inline-flex items-center gap-1.5
         px-3 py-1.5
         rounded-full
-        bg-[var(--bg-brand-primary)] hover:bg-[var(--bg-brand-primary_alt)]
+        bg-bg-brand-primary hover:bg-bg-brand-primary-alt
         border border-[var(--border-brand)]/20 hover:border-[var(--border-brand)]/40
         transition-colors
       "

@@ -82,7 +82,7 @@ export function InlineCitation({
         className={`
           inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs cursor-pointer transition-colors font-mono
           ${isBrandSource
-            ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] hover:bg-[var(--bg-brand-primary_alt)]'
+            ? 'bg-bg-brand-primary text-fg-brand-primary hover:bg-bg-brand-primary-alt'
             : 'bg-[var(--bg-secondary)]/80 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)]'
           }
         `}

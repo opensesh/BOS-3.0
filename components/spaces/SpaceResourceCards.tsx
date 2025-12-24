@@ -170,7 +170,7 @@ export function SpaceResourceCards({
               group relative flex items-center gap-2 p-2 rounded-lg border transition-all min-w-0
               ${isCompleted 
                 ? 'bg-[var(--bg-success-primary)] border-[var(--border-success)] hover:border-[var(--border-success)]' 
-                : 'bg-[var(--bg-primary)] border-[var(--border-tertiary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-primary_hover)]'
+                : 'bg-[var(--bg-primary)] border-[var(--border-tertiary)] hover:border-[var(--border-brand)] hover:bg-primary-hover'
               }
             `;
 

@@ -88,7 +88,7 @@ export function AddBrainResourceModal({
   // Common input styles using UUI theme tokens
   const inputStyles = `
     w-full px-3 py-2.5 rounded-lg
-    bg-[var(--bg-primary_alt)] border border-[var(--border-primary)]
+    bg-primary-alt border border-[var(--border-primary)]
     text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)]
     focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent
     transition-colors

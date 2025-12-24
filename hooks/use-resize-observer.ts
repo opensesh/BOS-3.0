@@ -56,3 +56,4 @@ export function useResizeObserver<T extends HTMLElement = HTMLElement>(
 }
 
 export default useResizeObserver;
+

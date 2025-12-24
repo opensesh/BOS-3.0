@@ -98,6 +98,7 @@ export default {
         // Brand background variants
         'bg-brand': {
           primary: 'var(--bg-brand-primary)',
+          'primary-alt': 'var(--bg-brand-primary_alt)',
           secondary: 'var(--bg-brand-secondary)',
           solid: 'var(--bg-brand-solid)',
           'solid-hover': 'var(--bg-brand-solid_hover)',

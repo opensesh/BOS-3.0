@@ -97,7 +97,7 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
             disabled={isCreating}
             className={`
               w-full px-4 py-2.5 rounded-lg
-              bg-[var(--bg-primary_alt)]
+              bg-primary-alt
               border
               text-[var(--fg-primary)] placeholder:text-[var(--fg-placeholder)]
               focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent
@@ -132,7 +132,7 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
             disabled={isCreating}
             className="
               w-full px-4 py-2.5 rounded-lg
-              bg-[var(--bg-primary_alt)]
+              bg-primary-alt
               border border-[var(--border-primary)]
               text-[var(--fg-primary)] placeholder:text-[var(--fg-placeholder)]
               focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent

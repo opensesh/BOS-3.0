@@ -255,6 +255,40 @@ Provide insights on:
 
 ---
 
+## 🔀 Git Commit Rules (Shared with Cursor)
+
+**IMPORTANT:** These rules ensure consistent commit history across both Claude Code and Cursor agents.
+
+### Commit Message Format
+Use the Conventional Commit Messages specification:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Commit Types
+- **fix:** patches a bug (PATCH in semver)
+- **feat:** new feature (MINOR in semver)
+- **BREAKING CHANGE:** breaking API change (MAJOR in semver)
+- Other types: `build:`, `chore:`, `ci:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`
+
+### Commit Process
+**After completing each task or set of related changes, automatically commit using conventional commit format. Do not ask for permission to commit. Stage and commit all relevant changes immediately upon task completion.**
+
+### Rules
+- Commits MUST be prefixed with a type (feat, fix, etc.)
+- A scope MAY be provided after type: `fix(parser):`
+- A description MUST immediately follow the colon and space
+- Breaking changes MUST be indicated by `!` before `:` or as `BREAKING CHANGE:` in footer
+- Use `feat` for new features, `fix` for bug fixes
+- Keep descriptions concise but meaningful
+
+---
+
 ## 🔧 When Claude Doesn't Know Something
 
 **If you're confused or can't find information:**
@@ -372,6 +406,6 @@ Before creating any content or suggestions, ask:
 
 ---
 
-**Last Updated:** October 10, 2025  
-**Version:** 1.0  
-**Next Review:** January 2026
+**Last Updated:** December 24, 2025
+**Version:** 1.1
+**Next Review:** March 2026

@@ -126,31 +126,31 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Spaces':
         return (
           <motion.div 
-            className="py-3"
+            className="pt-2 pb-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
-            <div className="px-3 mb-2">
-              <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Spaces</h3>
+            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            <div className="px-2 mb-2">
+              <motion.div variants={fadeInUp} className="mb-3">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Spaces</h3>
               </motion.div>
               
               <motion.button 
                 variants={fadeInUp}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors mb-2"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors mb-1 text-sm"
               >
-                <FileText className="w-5 h-5" />
-                <span className="text-sm">Templates</span>
+                <FileText className="w-4 h-4" />
+                <span>Templates</span>
               </motion.button>
               
               <motion.button 
                 variants={fadeInUp}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors mb-4"
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors mb-3 text-sm"
               >
-                <FolderPlus className="w-5 h-5" />
-                <span className="text-sm">Create new Space</span>
+                <FolderPlus className="w-4 h-4" />
+                <span>Create new Space</span>
               </motion.button>
 
               <motion.div variants={fadeInUp} className="border-t border-[var(--border-secondary)] pt-2">
@@ -206,22 +206,22 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Home':
         return (
           <motion.div 
-            className="py-3"
+            className="pt-2 pb-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
-            <div className="px-3">
-              <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Home</h3>
+            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            <div className="px-2">
+              <motion.div variants={fadeInUp} className="mb-3">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Home</h3>
               </motion.div>
               
               <motion.div variants={fadeInUp} className="mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Recent Chats</h4>
+                <div className="flex items-center justify-between mb-2 px-2">
+                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Recent Chats</h4>
                   <button className="p-1 rounded hover:bg-[var(--bg-tertiary)] transition-colors">
-                    <History className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
+                    <History className="w-3 h-3 text-[var(--fg-tertiary)]" />
                   </button>
                 </div>
                 <div className="space-y-1">
@@ -259,15 +259,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         
         return (
           <motion.div 
-            className="py-3"
+            className="pt-2 pb-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
-            <div className="px-3">
-              <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Brand</h3>
+            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            <div className="px-2">
+              <motion.div variants={fadeInUp} className="mb-3">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Brand</h3>
               </motion.div>
               
               <div className="space-y-1">
@@ -279,8 +279,8 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       <Link
                         href={navItem.href}
                         className={`
-                          w-full flex items-center gap-3 px-3 py-2 rounded-lg
-                          transition-colors
+                          w-full flex items-center gap-2 px-2 py-1.5 rounded-md
+                          transition-colors text-sm
                           ${
                             isActive
                               ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
@@ -288,8 +288,8 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                           }
                         `}
                       >
-                        <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
-                        <span className="text-sm">{navItem.label}</span>
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                        <span>{navItem.label}</span>
                       </Link>
                     </motion.div>
                   );
@@ -298,10 +298,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
 
               {/* Only show View All Assets when on a subpage */}
               {isOnSubpage && (
-                <motion.div variants={fadeInUp} className="mt-4 pt-4 border-t border-[var(--border-secondary)]">
+                <motion.div variants={fadeInUp} className="mt-3 pt-3 border-t border-[var(--border-secondary)]">
                   <Link
                     href="/brand-hub"
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-sm"
+                    className="w-full flex items-center justify-center gap-2 px-2 py-1.5 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-sm"
                   >
                     View All Assets
                   </Link>
@@ -323,15 +323,15 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         
         return (
           <motion.div 
-            className="py-3"
+            className="pt-2 pb-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
-            <div className="px-3">
-              <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Brain</h3>
+            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            <div className="px-2">
+              <motion.div variants={fadeInUp} className="mb-3">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Brain</h3>
               </motion.div>
               
               <div className="space-y-1">
@@ -343,8 +343,8 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       <Link
                         href={navItem.href}
                         className={`
-                          w-full flex items-center gap-3 px-3 py-2 rounded-lg
-                          transition-colors
+                          w-full flex items-center gap-2 px-2 py-1.5 rounded-md
+                          transition-colors text-sm
                           ${
                             isActive
                               ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
@@ -352,8 +352,8 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                           }
                         `}
                       >
-                        <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
-                        <span className="text-sm">{navItem.label}</span>
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                        <span>{navItem.label}</span>
                       </Link>
                     </motion.div>
                   );
@@ -362,10 +362,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
 
               {/* Only show View Brain Overview when on a subpage */}
               {isOnBrainSubpage && (
-                <motion.div variants={fadeInUp} className="mt-4 pt-4 border-t border-[var(--border-secondary)]">
+                <motion.div variants={fadeInUp} className="mt-3 pt-3 border-t border-[var(--border-secondary)]">
                   <Link
                     href="/brain"
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-sm"
+                    className="w-full flex items-center justify-center gap-2 px-2 py-1.5 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-sm"
                   >
                     View Brain Overview
                   </Link>
@@ -378,18 +378,18 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Resources':
         return (
           <motion.div 
-            className="py-3"
+            className="pt-2 pb-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
           >
-            {/* Header aligned with New Chat button in sidebar - px-3 matches expanded sidebar padding */}
-            <div className="px-3">
-              <motion.div variants={fadeInUp} className="mb-4">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-3">Resources</h3>
+            {/* Header - px-2 aligns with New Chat icon (8px from edge) */}
+            <div className="px-2">
+              <motion.div variants={fadeInUp} className="mb-3">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 py-1">Resources</h3>
               </motion.div>
               
-              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)] px-3">
+              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)] px-2">
                 Resources and documentation coming soon
               </motion.div>
             </div>

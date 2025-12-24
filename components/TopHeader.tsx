@@ -61,7 +61,7 @@ export function TopHeader({ children }: TopHeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-bg-secondary border-b border-border-secondary">
-        <div className="flex items-center justify-between h-full pr-2">
+        <div className="flex items-center justify-between h-full pr-3">
           {/* Left Section: Brand Icon + Breadcrumbs */}
           <div className="flex items-center">
             {/* Brandmark container - matches sidebar rail exactly (48px width, centered content) */}
@@ -72,9 +72,7 @@ export function TopHeader({ children }: TopHeaderProps) {
                   flex items-center justify-center
                   w-8 h-8
                   rounded-md
-                  bg-[var(--bg-tertiary)]
-                  border border-[var(--border-secondary)]
-                  hover:bg-[var(--bg-quaternary)]
+                  hover:bg-[var(--bg-tertiary)]
                   transition-all duration-150
                 "
                 title="Home"
@@ -92,13 +90,13 @@ export function TopHeader({ children }: TopHeaderProps) {
           </div>
 
           {/* Right Section: Utility Actions */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             {/* Search - Supabase style search box */}
             <button
               onClick={() => setIsSearchOpen(true)}
               className="
-                hidden sm:flex items-center gap-2
-                px-2.5 py-1
+                hidden sm:flex items-center gap-1.5
+                pl-2 pr-1.5 py-1
                 rounded-md
                 bg-bg-tertiary/50
                 border border-border-secondary
@@ -106,13 +104,13 @@ export function TopHeader({ children }: TopHeaderProps) {
                 hover:bg-bg-tertiary hover:border-border-primary hover:text-fg-tertiary
                 transition-all duration-150
                 text-xs
-                h-8
+                h-7
               "
               title="Search (⌘K)"
             >
               <Search className="w-3.5 h-3.5" />
-              <span className="text-left min-w-[60px]">Search...</span>
-              <kbd className="hidden md:inline-flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-mono bg-bg-secondary rounded border border-border-secondary text-fg-quaternary">
+              <span className="text-left">Search...</span>
+              <kbd className="hidden md:inline-flex items-center px-1 py-0.5 text-[9px] font-mono bg-bg-secondary/80 rounded text-fg-quaternary ml-1">
                 ⌘K
               </kbd>
             </button>

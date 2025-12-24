@@ -235,23 +235,26 @@ function CollapsedFlyout({
 
   if (!item || !anchorRect) return null;
 
-  const top = anchorRect.top;
+  // Calculate flyout position - vertically centered with icon button
+  // Icon is 40px tall, flyout title row is ~40px, so align centers
+  const iconCenter = anchorRect.top + anchorRect.height / 2;
+  const flyoutTop = Math.max(iconCenter - 20, 60); // 20px is half of header height
   
   // Special content for Home
   if (item.label === 'Home') {
     return (
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
             ref={drawerRef}
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -8 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, x: -4, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -4, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="fixed z-[60] w-[220px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
               left: SIDEBAR_WIDTH_COLLAPSED + 8,
-              top: Math.max(top - 8, 60),
+              top: flyoutTop,
             }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
@@ -298,18 +301,18 @@ function CollapsedFlyout({
   // Special content for Spaces
   if (item.label === 'Spaces') {
     return (
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
             ref={drawerRef}
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -8 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, x: -4, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -4, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="fixed z-[60] w-[220px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
               left: SIDEBAR_WIDTH_COLLAPSED + 8,
-              top: Math.max(top - 8, 60),
+              top: flyoutTop,
             }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
@@ -364,18 +367,18 @@ function CollapsedFlyout({
   // Standard subItems flyout for Brand/Brain
   if (item.subItems && item.subItems.length > 0) {
     return (
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
             ref={drawerRef}
-            initial={{ opacity: 0, x: -8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -8 }}
-            transition={{ duration: 0.15 }}
+            initial={{ opacity: 0, x: -4, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -4, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="fixed z-[60] w-[220px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
               left: SIDEBAR_WIDTH_COLLAPSED + 8,
-              top: Math.max(top - 8, 60),
+              top: flyoutTop,
             }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
@@ -529,11 +532,11 @@ export function Sidebar() {
 
   const handleFlyoutMouseLeave = () => {
     setIsFlyoutHovered(false);
-    // Close flyout after delay
+    // Longer delay for better UX - user can re-enter
     hoverTimeoutRef.current = setTimeout(() => {
       setHoveredItem(null);
       setHoveredAnchorRect(null);
-    }, 150);
+    }, 400);
   };
 
   const handleFlyoutClose = () => {
@@ -632,7 +635,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Items */}
-        <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-0 items-center px-1'}`}>
+        <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-1 items-center px-1'}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = isItemActive(item);
@@ -785,11 +788,10 @@ export function Sidebar() {
                       </AnimatePresence>
                     </div>
                   ) : (
-                    // Collapsed/Hover mode - fixed height items with label for active item
+                    // Collapsed/Hover mode - clean icon buttons
                     (() => {
                       const isDrawerActive = shouldShowDrawer && isDrawerOpen && drawerItem === item.label;
                       const showHighlight = isActive || isDrawerActive;
-                      const showLabel = isActive || isDrawerActive;
                       
                       return (
                         <Link
@@ -797,11 +799,11 @@ export function Sidebar() {
                           href={item.href}
                           onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
                           className={`
-                            flex flex-col items-center justify-start
-                            w-full h-14 py-1 mx-auto rounded-md
+                            flex items-center justify-center
+                            w-10 h-10 mx-auto rounded-md
                             transition-colors duration-150
                             ${showHighlight 
-                              ? 'text-[var(--fg-brand-primary)]' 
+                              ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
                               : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
                             }
                           `}
@@ -809,19 +811,7 @@ export function Sidebar() {
                           aria-label={item.label}
                           aria-current={isActive ? 'page' : undefined}
                         >
-                          <div className={`
-                            flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-150
-                            ${showHighlight ? 'bg-[var(--bg-brand-primary)]' : ''}
-                          `}>
-                            <Icon className="w-5 h-5" />
-                          </div>
-                          <span className={`
-                            text-[10px] mt-0.5 font-medium truncate max-w-[40px] h-3
-                            transition-opacity duration-150
-                            ${showLabel ? 'opacity-100' : 'opacity-0'}
-                          `}>
-                            {item.label}
-                          </span>
+                          <Icon className="w-5 h-5" />
                         </Link>
                       );
                     })()

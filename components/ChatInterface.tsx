@@ -735,8 +735,10 @@ export function ChatInterface() {
             />
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="max-w-3xl mx-auto px-4">
+            <div className="flex-1 overflow-y-auto relative">
+              {/* Top gradient - mirrors the bottom gradient for seamless transition */}
+              <div className="sticky top-0 left-0 right-0 h-8 bg-gradient-to-b from-[var(--bg-primary)] to-transparent pointer-events-none z-10" />
+              <div className="max-w-3xl mx-auto px-4 -mt-8">
                 {activeTab === 'answer' && (
                   <>
                     {parsedMessages.map((message, idx) => {

@@ -62,8 +62,11 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [] }: 
           <div className="flex items-center gap-2">
             <Globe className="w-5 h-5 text-[var(--fg-tertiary)]" />
             <h2 className="text-[15px] font-semibold text-[var(--fg-primary)]">
-              {totalCount} {totalCount === 1 ? 'source' : 'sources'}
+              Sources & Context
             </h2>
+            <span className="text-xs text-[var(--fg-tertiary)]">
+              ({totalCount})
+            </span>
           </div>
           <button
             onClick={onClose}
@@ -75,14 +78,17 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [] }: 
 
         {/* Sources List */}
         <div className="flex-1 overflow-y-auto">
-          {/* Brand Resources Section */}
+          {/* Brand Context Section - internal knowledge that informed the response */}
           {hasBrandResources && (
             <div className="border-b border-[var(--border-primary)]/50">
               <div className="px-5 py-3 bg-[var(--bg-brand-primary)]">
                 <div className="flex items-center gap-2">
                   <Hexagon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
                   <span className="text-xs font-semibold text-[var(--fg-brand-primary)] uppercase tracking-wider">
-                    Brand Resources
+                    Brand Context
+                  </span>
+                  <span className="text-[10px] text-[var(--fg-brand-primary)]/60 ml-auto">
+                    Internal Knowledge
                   </span>
                 </div>
               </div>
@@ -197,22 +203,20 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [] }: 
             </div>
           )}
 
-          {/* Web Sources Section */}
+          {/* Web Sources Section - actual citations from AI response */}
           {hasWebSources && (
             <div>
-              {(hasBrandResources || hasDiscoverSources) && (
-                <div className="px-5 py-3 bg-[var(--bg-secondary)]/30">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                    <span className="text-xs font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider">
-                      Web Sources
-                    </span>
-                    <span className="text-[10px] text-[var(--fg-tertiary)]/60 ml-auto">
-                      Internet Search
-                    </span>
-                  </div>
+              <div className="px-5 py-3 bg-[var(--bg-secondary)]/30">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                  <span className="text-xs font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider">
+                    Citations
+                  </span>
+                  <span className="text-[10px] text-[var(--fg-tertiary)]/60 ml-auto">
+                    External Sources
+                  </span>
                 </div>
-              )}
+              </div>
               <div className="divide-y divide-[var(--border-primary)]/50">
                 {webSources.map((source, idx) => (
                   <a

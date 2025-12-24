@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { InlineCitation } from './InlineCitation';
-import { BrandResourceCards, BrandResourceCardProps } from './BrandResourceCard';
+import { BrandResourceCardProps } from './BrandResourceCard';
 import { ThinkingDotFlow } from '@/components/ui/dot-flow';
 import {
   BRAND_PAGE_ROUTES,
@@ -123,11 +123,6 @@ export function AnswerView({
           <div className="py-2">
             <ThinkingDotFlow />
           </div>
-        )}
-
-        {/* Brand Resource Cards */}
-        {!isStreaming && resourceCards.length > 0 && (
-          <BrandResourceCards cards={resourceCards} />
         )}
       </div>
     </div>

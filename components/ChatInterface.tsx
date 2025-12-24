@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { BackgroundGradient } from './BackgroundGradient';
-import { TypewriterText } from './TypewriterText';
+import { WelcomeHeader, PrePromptGrid } from './home';
 import { SearchResearchToggle, SearchResearchSuggestions } from './ui/search-research-toggle';
 import { ConnectorDropdown } from './ui/connector-dropdown';
 import { ModelSelector } from './ui/model-selector';
@@ -842,25 +842,24 @@ export function ChatInterface() {
             animate="visible"
             className="contents"
           >
-            <motion.div 
-              className="w-full max-w-3xl px-4 mb-8 text-center"
-              variants={fadeInUp}
-            >
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[var(--fg-primary)] mb-2 tracking-tight font-display">
-                Brand Operating System
-              </h1>
-              <TypewriterText />
-              
-              {(error || submitError) && (
-                <div className="mt-4 bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
+            {/* Welcome Header */}
+            <WelcomeHeader userName="User" />
+            
+            {/* Error display */}
+            {(error || submitError) && (
+              <motion.div 
+                className="w-full max-w-3xl px-4 mb-4"
+                variants={fadeInUp}
+              >
+                <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
                   <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">Error</p>
                     <p className="mt-1">{error?.message || submitError}</p>
                   </div>
                 </div>
-              )}
-            </motion.div>
+              </motion.div>
+            )}
 
             <motion.div className="w-full" variants={fadeInUp}>
               <div className="max-w-3xl mx-auto px-4">
@@ -1104,6 +1103,11 @@ export function ChatInterface() {
                 </form>
               </div>
             </motion.div>
+
+            {/* Pre-prompt Cards Grid */}
+            <PrePromptGrid 
+              onPromptSubmit={(prompt) => handleQueryClick(prompt, true)} 
+            />
           </motion.div>
         )}
       </div>

@@ -57,15 +57,27 @@ interface ClientMessage {
   experimental_attachments?: FileAttachment[];
 }
 
+// Source info for citations
+interface SourceData {
+  id: string;
+  name: string;
+  url: string;
+  title?: string;
+  snippet?: string;
+  favicon?: string;
+  type?: 'external' | 'brand-doc' | 'asset' | 'discover';
+}
+
 // Streaming response data for extended features
 interface StreamChunk {
-  type: 'thinking' | 'text' | 'tool_use' | 'tool_result' | 'done' | 'error';
+  type: 'thinking' | 'text' | 'tool_use' | 'tool_result' | 'sources' | 'done' | 'error';
   content?: string;
   toolName?: string;
   toolInput?: Record<string, unknown>;
   toolResult?: unknown;
   thinkingSignature?: string;
   error?: string;
+  sources?: SourceData[];
 }
 
 // ============================================
@@ -379,6 +391,27 @@ async function streamWithAnthropicNative(
 // NATIVE PERPLEXITY STREAMING (Web Search)
 // ============================================
 
+// Helper to extract domain name from URL for source naming
+function extractDomainName(url: string): string {
+  try {
+    const hostname = new URL(url).hostname;
+    // Remove 'www.' prefix and get domain name
+    return hostname.replace(/^www\./, '').split('.')[0];
+  } catch {
+    return 'Source';
+  }
+}
+
+// Helper to get favicon URL from domain
+function getFaviconUrl(url: string): string {
+  try {
+    const hostname = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+  } catch {
+    return '';
+  }
+}
+
 async function streamWithPerplexityNative(
   messages: ClientMessage[],
   systemPrompt: string,
@@ -400,34 +433,43 @@ async function streamWithPerplexityNative(
   return new ReadableStream({
     async start(controller) {
       try {
-        // Create streaming request with Perplexity SDK
-        const stream = await client.chat.completions.create({
+        // First, make a non-streaming request to get citations
+        // Perplexity only returns citations in non-streaming responses
+        const citationResponse = await client.chat.completions.create({
           model: modelId,
           messages: perplexityMessages,
-          stream: true,
+          stream: false,
         });
 
-        // Process streamed chunks
-        for await (const chunk of stream) {
-          const deltaContent = chunk.choices?.[0]?.delta?.content;
-          if (deltaContent) {
-            // Handle both string and array content types
-            let textContent: string;
-            if (typeof deltaContent === 'string') {
-              textContent = deltaContent;
-            } else if (Array.isArray(deltaContent)) {
-              // Extract text from content array
-              textContent = deltaContent
-                .filter((c): c is { type: 'text'; text: string } => c.type === 'text' && 'text' in c)
-                .map(c => c.text)
-                .join('');
-            } else {
-              continue;
-            }
-            if (textContent) {
-              controller.enqueue(sse.encode({ type: 'text', content: textContent }));
-            }
-          }
+        // Extract citations from the response
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rawCitations = (citationResponse as any).citations || [];
+        const sources: SourceData[] = rawCitations.map((url: string, index: number) => ({
+          id: `perplexity-${index}`,
+          name: extractDomainName(url),
+          url: url,
+          title: extractDomainName(url),
+          favicon: getFaviconUrl(url),
+          type: 'external' as const,
+        }));
+
+        // Get the full response content
+        const fullContent = citationResponse.choices?.[0]?.message?.content || '';
+
+        // Stream the content character by character for smooth UX
+        // We'll send it in chunks for better performance
+        const chunkSize = 20;
+        for (let i = 0; i < fullContent.length; i += chunkSize) {
+          const chunk = fullContent.slice(i, i + chunkSize);
+          controller.enqueue(sse.encode({ type: 'text', content: chunk }));
+          // Small delay to simulate streaming (optional, can be removed for faster delivery)
+          await new Promise(resolve => setTimeout(resolve, 5));
+        }
+
+        // Send sources if we have any
+        if (sources.length > 0) {
+          console.log('Perplexity citations found:', sources.length);
+          controller.enqueue(sse.encode({ type: 'sources', sources }));
         }
 
         controller.enqueue(sse.encode({ type: 'done' }));

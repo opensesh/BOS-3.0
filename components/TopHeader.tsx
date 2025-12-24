@@ -60,22 +60,23 @@ export function TopHeader({ children }: TopHeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 h-10 bg-bg-secondary border-b border-border-secondary">
-        <div className="flex items-center justify-between h-full px-2">
+      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-bg-secondary border-b border-border-secondary">
+        <div className="flex items-center justify-between h-full px-3">
           {/* Left Section: Brand Icon + Breadcrumbs */}
-          <div className="flex items-center gap-0">
+          <div className="flex items-center gap-1">
             <Link
               href="/"
               className="
                 flex items-center justify-center
-                p-1.5
+                p-2
                 rounded-md
                 hover:bg-bg-tertiary
                 transition-all duration-150
+                min-w-[44px] min-h-[44px]
               "
               title="Home"
             >
-              <Brandmark size={18} />
+              <Brandmark size={22} />
             </Link>
             
             {/* Breadcrumbs slot */}
@@ -87,22 +88,23 @@ export function TopHeader({ children }: TopHeaderProps) {
           </div>
 
           {/* Right Section: Utility Actions */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             {/* Search */}
             <button
               onClick={() => setIsSearchOpen(true)}
               className="
-                flex items-center justify-center gap-1.5
-                px-2 py-1
+                flex items-center justify-center gap-2
+                px-3 py-2
                 rounded-md
                 text-fg-tertiary hover:text-fg-primary
                 hover:bg-bg-tertiary
                 transition-all duration-150
-                text-xs
+                text-sm
+                min-h-[44px]
               "
               title="Search (⌘K)"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-5 h-5" />
               <span className="hidden sm:inline text-fg-quaternary">⌘K</span>
             </button>
 
@@ -113,16 +115,17 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleNotificationsClick}
                 className={`
                   relative flex items-center justify-center
-                  p-1.5
+                  p-2
                   rounded-md
                   text-fg-tertiary hover:text-fg-primary
                   hover:bg-bg-tertiary
                   transition-all duration-150
+                  min-w-[44px] min-h-[44px]
                   ${isNotificationsOpen ? 'bg-bg-tertiary text-fg-primary' : ''}
                 `}
                 title="Notifications"
               >
-                <Bell className="w-4 h-4" />
+                <Bell className="w-5 h-5" />
               </button>
               <NotificationsDropdown
                 isOpen={isNotificationsOpen}
@@ -138,16 +141,17 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleHelpClick}
                 className={`
                   flex items-center justify-center
-                  p-1.5
+                  p-2
                   rounded-md
                   text-fg-tertiary hover:text-fg-primary
                   hover:bg-bg-tertiary
                   transition-all duration-150
+                  min-w-[44px] min-h-[44px]
                   ${isHelpOpen ? 'bg-bg-tertiary text-fg-primary' : ''}
                 `}
                 title="Help"
               >
-                <HelpCircle className="w-4 h-4" />
+                <HelpCircle className="w-5 h-5" />
               </button>
               <HelpDropdown
                 isOpen={isHelpOpen}
@@ -163,16 +167,17 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleProfileClick}
                 className={`
                   flex items-center justify-center
-                  p-1.5
+                  p-2
                   rounded-md
                   hover:bg-bg-tertiary
                   transition-all duration-150
+                  min-w-[44px] min-h-[44px]
                   ${isProfileOpen ? 'bg-bg-tertiary' : ''}
                 `}
                 title="Profile"
               >
-                <div className="w-5 h-5 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-border-secondary rounded-full flex items-center justify-center">
-                  <span className="text-white text-[8px] font-mono">A</span>
+                <div className="w-7 h-7 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-border-secondary rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] font-mono">A</span>
                 </div>
               </button>
               <ProfileDropdown

@@ -284,7 +284,7 @@ export default function SpaceChatPage() {
     <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans overflow-hidden">
       <Sidebar />
 
-      <main className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-10 lg:pl-12">
+      <main className="flex-1 flex flex-col overflow-hidden pt-14 lg:pt-12 lg:pl-[60px]">
         {/* Chat Header */}
         <ChatHeader
           activeTab={activeTab}

@@ -67,15 +67,16 @@ function SidebarControl() {
         onClick={() => setIsOpen(!isOpen)}
         className="
           w-full flex items-center justify-center
-          p-1.5
+          p-2.5
           text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
           hover:bg-[var(--bg-tertiary)]
           transition-colors duration-150
           rounded-md
+          min-h-[44px]
         "
         title="Sidebar control"
       >
-        <SidebarIcon className="w-4 h-4" />
+        <SidebarIcon className="w-5 h-5" />
       </button>
 
       {/* Dropdown */}
@@ -87,7 +88,7 @@ function SidebarControl() {
             exit={{ opacity: 0, x: -4 }}
             transition={{ duration: 0.15 }}
             className="
-              fixed bottom-12 left-12
+              fixed bottom-14 left-[60px]
               w-44 bg-[var(--bg-secondary)]
               rounded-lg border border-[var(--border-secondary)]
               shadow-lg z-[100]
@@ -200,35 +201,36 @@ export function Sidebar() {
         onMouseLeave={() => setIsSidebarHovered(false)}
         className="
           hidden lg:flex
-          fixed top-10 left-0 z-40
-          w-[48px]
+          fixed top-12 left-0 z-40
+          w-[60px]
           bg-bg-secondary border-r border-border-secondary
           flex-col
-          h-[calc(100vh-40px)]
+          h-[calc(100vh-48px)]
         "
       >
         {/* New Chat Button */}
-        <div className="flex justify-center py-2">
+        <div className="flex justify-center py-3">
           <Link
             href="/"
             onClick={handleNewChat}
             className="
               flex flex-col items-center justify-center
-              py-1 px-1.5
+              py-1.5 px-2
               transition-colors duration-150
               group
               text-fg-tertiary hover:text-fg-primary
+              min-w-[44px] min-h-[44px]
             "
             title="New Chat"
           >
-            <div className="w-7 h-7 flex items-center justify-center rounded-md bg-bg-tertiary group-hover:bg-bg-quaternary border border-border-secondary transition-all duration-150">
-              <Plus className="w-4 h-4 text-fg-brand-primary" />
+            <div className="w-9 h-9 flex items-center justify-center rounded-md bg-bg-tertiary group-hover:bg-bg-quaternary border border-border-secondary transition-all duration-150">
+              <Plus className="w-5 h-5 text-fg-brand-primary" />
             </div>
           </Link>
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex flex-col items-center">
+        <nav className="flex flex-col items-center gap-1">
           {navItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || 
@@ -249,7 +251,7 @@ export function Sidebar() {
                   onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
                   className={`
                     flex flex-col items-center
-                    py-1.5 px-1.5 min-h-[44px]
+                    py-2 px-2 min-h-[52px] min-w-[44px]
                     transition-colors duration-150
                     group relative
                     ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}
@@ -257,26 +259,26 @@ export function Sidebar() {
                 >
                   <div className="relative">
                     <div className={`
-                      absolute -left-1.5 top-1/2 -translate-y-1/2 w-[2px] rounded-r-full
+                      absolute -left-2 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full
                       transition-all duration-150
-                      ${isActive ? 'h-4 bg-[var(--bg-brand-solid)]' : 'h-0 bg-transparent'}
+                      ${isActive ? 'h-5 bg-[var(--bg-brand-solid)]' : 'h-0 bg-transparent'}
                     `} />
                     
                     <div className={`
-                      w-7 h-7 flex items-center justify-center rounded-md
+                      w-9 h-9 flex items-center justify-center rounded-lg
                       transition-all duration-150
                       ${isActive 
                         ? 'bg-[var(--bg-brand-primary)]' 
                         : 'group-hover:bg-[var(--bg-tertiary)]'
                       }
                     `}>
-                      <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                      <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
                     </div>
                   </div>
                   
                   <span 
                     className={`
-                      text-[9px] font-medium text-center leading-tight mt-0.5
+                      text-[10px] font-medium text-center leading-tight mt-1
                       transition-all duration-200 ease-out
                       ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]'}
                     `}
@@ -297,7 +299,7 @@ export function Sidebar() {
         <div className="flex-1" />
 
         {/* Bottom Section */}
-        <div className="flex flex-col items-center border-t border-[var(--border-secondary)] py-1.5 gap-0.5">
+        <div className="flex flex-col items-center border-t border-[var(--border-secondary)] py-2 gap-1">
           {/* Sidebar Control */}
           <SidebarControl />
         </div>

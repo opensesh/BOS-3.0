@@ -59,10 +59,10 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
           <Link
             href="/"
             onClick={onBrandClick}
-            className="flex items-center justify-center p-1"
+            className="flex items-center justify-center p-2 min-w-[44px] min-h-[44px]"
             title="Home"
           >
-            <Brandmark size={24} />
+            <Brandmark size={26} />
           </Link>
 
           {/* Right: Utility Actions */}
@@ -72,11 +72,12 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
               onClick={() => setIsSearchOpen(true)}
               className="
                 flex items-center justify-center
-                p-2
+                p-2.5
                 rounded-md
                 text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
                 hover:bg-[var(--bg-tertiary)]
                 transition-all duration-150
+                min-w-[44px] min-h-[44px]
               "
               title="Search"
             >
@@ -90,11 +91,12 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
                 onClick={handleNotificationsClick}
                 className={`
                   flex items-center justify-center
-                  p-2
+                  p-2.5
                   rounded-md
                   text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
                   hover:bg-[var(--bg-tertiary)]
                   transition-all duration-150
+                  min-w-[44px] min-h-[44px]
                   ${isNotificationsOpen ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' : ''}
                 `}
                 title="Notifications"
@@ -115,11 +117,12 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
                 onClick={handleHelpClick}
                 className={`
                   flex items-center justify-center
-                  p-2
+                  p-2.5
                   rounded-md
                   text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
                   hover:bg-[var(--bg-tertiary)]
                   transition-all duration-150
+                  min-w-[44px] min-h-[44px]
                   ${isHelpOpen ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' : ''}
                 `}
                 title="Help"
@@ -144,12 +147,13 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
                   rounded-md
                   hover:bg-[var(--bg-tertiary)]
                   transition-all duration-150
+                  min-w-[44px] min-h-[44px]
                   ${isProfileOpen ? 'bg-[var(--bg-tertiary)]' : ''}
                 `}
                 title="Profile"
               >
-                <div className="w-6 h-6 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center">
-                  <span className="text-white text-[9px] font-mono">A</span>
+                <div className="w-7 h-7 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] font-mono">A</span>
                 </div>
               </button>
               <ProfileDropdown
@@ -166,7 +170,7 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
               onHoverEnd={() => setIsHovered(false)}
               animate={isHovered && !isMobileMenuOpen ? { rotate: [0, -3, 3, -3, 0] } : { rotate: 0 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="p-2 ml-1"
+              className="p-2 ml-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Toggle menu"
             >
               <div className="w-6 h-6 relative flex items-center justify-center">

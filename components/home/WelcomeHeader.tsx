@@ -1,20 +1,62 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/lib/motion';
 
-// Fun, friendly greetings playing on "BOS" = "BOSS"
-const GREETINGS = [
-  "HELLO",
-  "HOWDY",
-  "HEY THERE",
-  "LET'S GET COOKIN'",
-  "LET'S DESIGN",
-  "LET'S CREATE",
-  "WHAT'S GOOD",
-  "READY TO BUILD",
+// Storage keys matching BrandSelector
+const STORAGE_KEY = 'selected-brand';
+const BRANDS_STORAGE_KEY = 'custom-brands';
+
+interface Brand {
+  id: string;
+  name: string;
+  logoPath: string;
+  isDefault?: boolean;
+}
+
+const DEFAULT_BRANDS: Brand[] = [
+  {
+    id: 'open-session',
+    name: 'Open Session',
+    logoPath: '',
+    isDefault: true,
+  },
 ];
+
+function getStoredBrands(): Brand[] {
+  if (typeof window === 'undefined') return DEFAULT_BRANDS;
+  
+  try {
+    const stored = localStorage.getItem(BRANDS_STORAGE_KEY);
+    if (stored && stored.trim() !== '') {
+      const customBrands = JSON.parse(stored);
+      return [...DEFAULT_BRANDS, ...customBrands];
+    }
+  } catch (error) {
+    console.error('Error loading stored brands:', error);
+  }
+  
+  return DEFAULT_BRANDS;
+}
+
+function getSelectedBrand(): Brand {
+  if (typeof window === 'undefined') return DEFAULT_BRANDS[0];
+  
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && stored.trim() !== '') {
+      const brandId = JSON.parse(stored);
+      const allBrands = getStoredBrands();
+      const found = allBrands.find(b => b.id === brandId);
+      if (found) return found;
+    }
+  } catch (error) {
+    console.error('Error loading selected brand:', error);
+  }
+  
+  return DEFAULT_BRANDS[0];
+}
 
 // BOS Logo SVG component
 function BOSLogo({ className }: { className?: string }) {
@@ -35,23 +77,23 @@ function BOSLogo({ className }: { className?: string }) {
 
 export function WelcomeHeader() {
   const [mounted, setMounted] = useState(false);
-  
-  // Pick a random greeting on mount (only once)
-  const greeting = useMemo(() => {
-    return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-  }, []);
+  const [userName, setUserName] = useState('Sam');
 
   useEffect(() => {
     setMounted(true);
+    // Could fetch actual user name here
   }, []);
 
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <div className="w-full max-w-4xl px-4 mb-6">
-        <div className="flex flex-col items-center text-center gap-2">
-          <div className="h-12 mb-1" />
-          <div className="h-8" />
+      <div className="w-full max-w-3xl px-4 mb-6">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <div className="h-10 mb-1" />
+            <div className="h-8" />
+          </div>
+          <div className="h-8 w-20" />
         </div>
       </div>
     );
@@ -59,17 +101,17 @@ export function WelcomeHeader() {
 
   return (
     <motion.div 
-      className="w-full max-w-4xl px-4 mb-6"
+      className="w-full max-w-3xl px-4 mb-6"
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
     >
-      {/* Centered content */}
-      <div className="flex flex-col items-center text-center gap-2">
-        {/* Main greeting with BOS logo */}
-        <div className="flex items-center gap-3">
+      {/* Row layout: Text left, Logo right */}
+      <div className="flex items-end justify-between gap-4">
+        {/* Left side - Greeting */}
+        <div>
           <h1 
-            className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight"
+            className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight"
             style={{
               background: 'linear-gradient(135deg, var(--color-brand-400) 0%, var(--color-brand-500) 50%, var(--color-brand-600) 100%)',
               WebkitBackgroundClip: 'text',
@@ -77,15 +119,15 @@ export function WelcomeHeader() {
               backgroundClip: 'text',
             }}
           >
-            {greeting}
+            Hello, {userName}
           </h1>
-          <BOSLogo className="h-8 md:h-10 lg:h-12 w-auto text-[var(--fg-primary)]" />
+          <p className="text-xl md:text-2xl lg:text-3xl text-[var(--fg-tertiary)] font-medium mt-1">
+            How can I help you today?
+          </p>
         </div>
 
-        {/* Secondary question */}
-        <p className="text-xl md:text-2xl lg:text-3xl text-[var(--fg-tertiary)] font-medium">
-          What Are We Making Today?
-        </p>
+        {/* Right side - BOS Logo accent */}
+        <BOSLogo className="h-8 md:h-10 w-auto text-[var(--fg-quaternary)] opacity-60 flex-shrink-0" />
       </div>
     </motion.div>
   );

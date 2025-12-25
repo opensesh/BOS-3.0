@@ -46,10 +46,10 @@ export function IconHover3D({
         {/* Spacer to push icon to bottom */}
         <div className="flex-1" />
 
-        {/* Icon Container - BOTTOM - 44x44 size to match folder */}
+        {/* Icon Container - BOTTOM - compact size to match folder */}
         <div className="relative">
           <motion.div
-            className="w-11 h-11 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
+            className="w-10 h-8 rounded-md border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
             animate={{
               scale: isHovered ? 1.05 : 1,
             }}
@@ -60,7 +60,7 @@ export function IconHover3D({
             }}
           >
             <Icon 
-              className="w-5 h-5 transition-colors duration-300"
+              className="w-4 h-4 transition-colors duration-300"
               style={{
                 stroke: isHovered ? 'var(--color-brand-500)' : 'var(--fg-tertiary)',
                 strokeWidth: 1.5,

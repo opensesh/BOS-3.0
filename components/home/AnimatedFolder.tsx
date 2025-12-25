@@ -64,14 +64,14 @@ export function AnimatedFolder({
         {/* Spacer to push folder to bottom */}
         <div className="flex-1" />
 
-        {/* 3D Folder - BOTTOM - 44x44 size (10% smaller) */}
+        {/* 3D Folder - BOTTOM - compact size */}
         <div 
-          className="relative w-11 h-11"
+          className="relative w-10 h-8"
           style={{ perspective: '1000px' }}
         >
           {/* Back Panel */}
           <motion.div
-            className="absolute inset-0 rounded-lg"
+            className="absolute inset-0 rounded-md"
             style={{
               background: colors.dark,
               transformStyle: 'preserve-3d',
@@ -80,7 +80,7 @@ export function AnimatedFolder({
 
           {/* Folder Tab */}
           <motion.div
-            className="absolute -top-1 left-1 w-5 h-1.5 rounded-t-sm"
+            className="absolute -top-1 left-1 w-4 h-1 rounded-t-sm"
             style={{
               background: colors.main,
             }}
@@ -88,7 +88,7 @@ export function AnimatedFolder({
 
           {/* Front Panel (opens on hover) */}
           <motion.div
-            className="absolute inset-0 rounded-lg origin-bottom"
+            className="absolute inset-0 rounded-md origin-bottom"
             style={{
               background: `linear-gradient(180deg, ${colors.light} 0%, ${colors.main} 100%)`,
               transformStyle: 'preserve-3d',
@@ -104,7 +104,7 @@ export function AnimatedFolder({
           >
             {/* Shine effect */}
             <div 
-              className="absolute inset-0 rounded-lg opacity-30"
+              className="absolute inset-0 rounded-md opacity-30"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)',
               }}
@@ -116,15 +116,15 @@ export function AnimatedFolder({
             {isHovered && (
               <div className="absolute inset-0 flex items-center justify-center overflow-visible">
                 <motion.div
-                  initial={{ y: 10, opacity: 0, scale: 0.8 }}
-                  animate={{ y: -8, opacity: 1, scale: 1 }}
-                  exit={{ y: 10, opacity: 0, scale: 0.8 }}
+                  initial={{ y: 8, opacity: 0, scale: 0.8 }}
+                  animate={{ y: -6, opacity: 1, scale: 1 }}
+                  exit={{ y: 8, opacity: 0, scale: 0.8 }}
                   transition={{ 
                     type: 'spring',
                     stiffness: 400,
                     damping: 25,
                   }}
-                  className="w-5 h-5 rounded-sm shadow-lg bg-white flex items-center justify-center p-0.5"
+                  className="w-4 h-4 rounded-sm shadow-lg bg-white flex items-center justify-center p-0.5"
                   style={{ zIndex: 10 }}
                 >
                   <Icon 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, Loader2, Globe, Brain, Wrench, Calculator, Clock, FileText, Code, CheckCircle } from 'lucide-react';
 import { ThinkingDotFlow } from '@/components/ui/dot-flow';
@@ -15,7 +15,7 @@ const toolConfig: Record<string, {
   'web_search': {
     icon: Globe,
     label: 'Web Search',
-    getDescription: (input) => input?.query ? `"${input.query}"` : 'Searching the web...',
+    getDescription: (input) => input?.query ? `"${input.query}"` : '',
   },
   'search_brand_knowledge': {
     icon: Brain,
@@ -102,10 +102,19 @@ export function InlineStreamingDisplay({
 }: InlineStreamingDisplayProps) {
   // ALL HOOKS MUST BE CALLED FIRST - before any conditional returns
   const [isExpanded, setIsExpanded] = useState(false);
+  const prevHasContent = useRef(hasContent);
   
   const hasThinking = thinking && thinking.length > 0;
   const hasToolCalls = toolCalls && toolCalls.length > 0;
   const hasSources = sources.length > 0;
+  
+  // Auto-close dropdown when content starts arriving (saves viewport space)
+  useEffect(() => {
+    if (hasContent && !prevHasContent.current && isExpanded) {
+      setIsExpanded(false);
+    }
+    prevHasContent.current = hasContent;
+  }, [hasContent, isExpanded]);
   
   // De-duplicate tools by name - keep the most recent one (with latest input)
   const uniqueTools = useMemo(() => {
@@ -181,21 +190,19 @@ export function InlineStreamingDisplay({
                 return <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isComplete ? 'text-[var(--fg-tertiary)]' : 'text-[var(--fg-brand-primary)]'}`} />;
               })()}
               
-              {/* Tool label and description */}
+              {/* Tool label and query (if available) */}
               <span className={`text-xs ${isComplete ? 'text-[var(--fg-tertiary)]' : 'text-[var(--fg-secondary)]'}`}>
                 {primaryTool ? getToolLabel(primaryTool) : 'Processing'}
-                {primaryTool && (
-                  <span className="text-[var(--fg-tertiary)] ml-1">
-                    {getToolDescription(primaryTool)}
-                  </span>
-                )}
               </span>
+              {primaryTool && getToolDescription(primaryTool) && (
+                <span className="text-xs text-[var(--fg-tertiary)]">
+                  {getToolDescription(primaryTool)}
+                </span>
+              )}
               
               {/* Status indicator */}
-              {isComplete ? (
+              {isComplete && (
                 <CheckCircle className="w-3 h-3 text-[var(--fg-success-primary)] flex-shrink-0" />
-              ) : (
-                <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin flex-shrink-0" />
               )}
               
               {/* Show source count if we have sources */}
@@ -218,10 +225,10 @@ export function InlineStreamingDisplay({
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="pl-6 pt-2 pb-1 space-y-1">
+              <div className="pl-6 pt-2 pb-1">
                 {/* Show sources as they're collected */}
                 {sources.length > 0 ? (
-                  <div className="space-y-1">
+                  <div className="divide-y divide-[var(--border-primary)]">
                     {sources.map((source, idx) => (
                       <motion.a
                         key={source.id || idx}
@@ -231,7 +238,7 @@ export function InlineStreamingDisplay({
                         initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.15, delay: idx * 0.03 }}
-                        className="flex items-center gap-2 text-xs hover:text-[var(--fg-primary)] transition-colors group"
+                        className="flex items-center gap-2 text-xs py-1.5 first:pt-0 last:pb-0 hover:text-[var(--fg-primary)] transition-colors group"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] truncate">
@@ -247,10 +254,10 @@ export function InlineStreamingDisplay({
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="flex items-center gap-2 text-xs text-[var(--fg-tertiary)]"
+                        className="flex items-center gap-2 text-xs text-[var(--fg-tertiary)] py-1.5"
                       >
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>Searching for more...</span>
+                        <span>Searching...</span>
                       </motion.div>
                     )}
                   </div>

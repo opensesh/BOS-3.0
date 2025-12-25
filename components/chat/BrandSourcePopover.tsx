@@ -45,7 +45,7 @@ export function BrandSourcePopover({ sources, position = 'above' }: BrandSourceP
       {/* Sources list */}
       <span className="max-h-64 overflow-y-auto block p-1.5">
         {sources.map((source, idx) => (
-          <BrandSourceItem key={source.id || idx} source={source} />
+          <BrandSourceItem key={`brand-popover-${idx}-${source.id || source.path}`} source={source} />
         ))}
       </span>
     </span>

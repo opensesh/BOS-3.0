@@ -263,7 +263,7 @@ export function ResponseActions({
                 {/* Show discover source icons first (cyan) */}
                 {discoverSources.slice(0, hasWebSources || hasBrandResources ? 1 : 2).map((source, idx) => (
                   <div
-                    key={source.id || `discover-${idx}`}
+                    key={`action-discover-${idx}-${source.id || source.url}`}
                     className="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center"
                   >
                     <Rss className="w-2.5 h-2.5 text-cyan-400" />
@@ -272,7 +272,7 @@ export function ResponseActions({
                 {/* Show web source favicons */}
                 {webSources.slice(0, hasDiscoverSources ? 1 : (hasBrandResources ? 2 : 3)).map((source, idx) => (
                   <div
-                    key={source.id || `web-${idx}`}
+                    key={`action-web-${idx}-${source.id || source.url}`}
                     className="w-5 h-5 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center"
                   >
                     {source.favicon ? (

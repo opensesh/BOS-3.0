@@ -259,15 +259,21 @@ export function useChat(options: UseChatOptions = {}) {
                 return newMessages;
               });
             } else if (chunk.type === 'sources' && chunk.sources) {
-              // Add sources/citations to assistant message
+              // Add sources/citations to assistant message (with deduplication)
               setMessages(prev => {
                 const newMessages = [...prev];
                 const lastIndex = newMessages.length - 1;
                 if (newMessages[lastIndex]?.role === 'assistant') {
                   const existingSources = newMessages[lastIndex].sources || [];
+                  const existingIds = new Set(existingSources.map(s => s.id));
+                  const existingUrls = new Set(existingSources.map(s => s.url));
+                  // Filter out duplicates by ID or URL
+                  const newSources = chunk.sources!.filter(
+                    s => !existingIds.has(s.id) && !existingUrls.has(s.url)
+                  );
                   newMessages[lastIndex] = {
                     ...newMessages[lastIndex],
-                    sources: [...existingSources, ...chunk.sources!],
+                    sources: [...existingSources, ...newSources],
                   };
                 }
                 return newMessages;

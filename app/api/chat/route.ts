@@ -434,10 +434,10 @@ async function streamWithAnthropicNative(
           }
         }
 
-        // Send collected sources if we have any
+        // Note: Sources are already streamed individually above (lines 366-369)
+        // for a smooth "finding sources" feel. No need to send them again here.
         if (collectedSources.length > 0) {
-          console.log('Web search sources found:', collectedSources.length);
-          controller.enqueue(sse.encode({ type: 'sources', sources: collectedSources }));
+          console.log('Web search sources streamed:', collectedSources.length);
         }
 
         controller.enqueue(sse.encode({ type: 'done' }));

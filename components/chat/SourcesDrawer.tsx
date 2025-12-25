@@ -141,7 +141,7 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
                   
                   return (
                     <a
-                      key={source.id || `discover-${idx}`}
+                      key={`drawer-discover-${idx}-${source.id || source.url}`}
                       href={source.url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -205,7 +205,7 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
               <div className="px-3 space-y-1">
                 {webSources.map((source, idx) => (
                   <a
-                    key={source.id || idx}
+                    key={`drawer-web-${idx}-${source.id || source.url}`}
                     href={source.url}
                     target="_blank"
                     rel="noopener noreferrer"

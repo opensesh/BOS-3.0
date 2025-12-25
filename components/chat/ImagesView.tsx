@@ -44,7 +44,7 @@ export function ImagesView({ query, images }: ImagesViewProps) {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {images.map((image, idx) => (
             <ImageCard
-              key={image.id || idx}
+              key={`image-${idx}-${image.id || image.url}`}
               image={image}
               onClick={() => setSelectedImage(image)}
             />

@@ -238,7 +238,7 @@ export function InlineStreamingDisplay({
                   <div className="divide-y divide-[var(--border-primary)]">
                     {sources.map((source, idx) => (
                       <motion.a
-                        key={source.id || idx}
+                        key={`inline-source-${idx}-${source.id || source.url}`}
                         href={source.url}
                         target="_blank"
                         rel="noopener noreferrer"

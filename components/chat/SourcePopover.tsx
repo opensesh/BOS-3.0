@@ -34,7 +34,7 @@ export function SourcePopover({ sources, position = 'above' }: SourcePopoverProp
       {/* Sources list */}
       <span className="max-h-64 overflow-y-auto block p-1.5">
         {sources.map((source, idx) => (
-          <SourceItem key={source.id || idx} source={source} />
+          <SourceItem key={`popover-${idx}-${source.id || source.url}`} source={source} />
         ))}
       </span>
     </span>

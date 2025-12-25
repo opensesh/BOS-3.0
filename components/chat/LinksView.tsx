@@ -214,7 +214,7 @@ export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps
           <div className="-mx-1">
             {webSources.map((source, idx) => (
               <a
-                key={source.id || idx}
+                key={`web-${idx}-${source.id || source.url}`}
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"

@@ -375,6 +375,8 @@ async function streamWithAnthropicNative(
           }
 
           // Continue conversation with tool results
+          console.log('Continuing with tool results:', toolResults.length, 'results');
+          
           const continueStream = await client.messages.stream({
             model: modelId,
             max_tokens: 16000,
@@ -387,7 +389,10 @@ async function streamWithAnthropicNative(
             ...(thinkingConfig ? { thinking: thinkingConfig } : {}),
           });
 
+          let continuationTextCount = 0;
+          
           continueStream.on('text', (text: string) => {
+            continuationTextCount++;
             controller.enqueue(sse.encode({ type: 'text', content: text }));
           });
 
@@ -397,7 +402,21 @@ async function streamWithAnthropicNative(
             }
           });
 
-          await continueStream.finalMessage();
+          const continueResponse = await continueStream.finalMessage();
+          console.log('Continuation complete:', {
+            textChunks: continuationTextCount,
+            stopReason: continueResponse.stop_reason,
+            contentBlocks: continueResponse.content?.length || 0,
+          });
+          
+          // If continuation didn't produce text but has content blocks, extract them
+          if (continuationTextCount === 0 && continueResponse.content) {
+            for (const block of continueResponse.content) {
+              if (block.type === 'text' && 'text' in block) {
+                controller.enqueue(sse.encode({ type: 'text', content: block.text }));
+              }
+            }
+          }
         }
 
         // Send collected sources if we have any

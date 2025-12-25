@@ -736,9 +736,9 @@ export function ChatInterface() {
   return (
     <>
       <BackgroundGradient fadeOut={hasMessages} />
-      {hasMessages && <div className="fixed inset-0 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)]" />}
+      {hasMessages && <div className="fixed inset-x-0 bottom-0 top-14 lg:top-12 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)]" />}
 
-      <div className={`fixed inset-0 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left] duration-200 ease-out ${hasMessages ? '' : 'items-center justify-center lg:justify-start pt-24 lg:pt-[120px] pb-[430px] lg:pb-0'}`}>
+      <div className={`fixed inset-x-0 bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,top] duration-200 ease-out ${hasMessages ? '' : 'items-center justify-center lg:justify-start pt-10 lg:pt-[72px] pb-[430px] lg:pb-0'}`}>
         {/* Chat Mode */}
         {hasMessages && (
           <div className="flex flex-col h-full">

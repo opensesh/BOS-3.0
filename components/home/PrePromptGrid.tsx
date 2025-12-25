@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { BookOpen, MessageSquare } from 'lucide-react';
+import { BookOpen, MessageSquare, Palette, Type, Image } from 'lucide-react';
 import { AnimatedFolder } from './AnimatedFolder';
 import { IconHover3D } from './IconHover3D';
 import { staggerContainer, fadeInUp } from '@/lib/motion';
@@ -17,19 +17,17 @@ const quickLinks = [
     title: 'Brand Assets',
     subtitle: 'Explore your brand hub',
     href: '/brand-hub',
-    previewImages: [
-      '/assets/logos/brandmark-vanilla.svg',
-      '/assets/logos/brandmark-charcoal.svg',
-    ],
     color: 'aperol' as const,
+    variant: 'icons' as const,
+    icons: [Palette, Type, Image],
   },
   {
     id: 'design-spaces',
     title: 'Design Spaces',
     subtitle: 'Find conversations',
     href: '/spaces',
-    previewImages: [],
     color: 'purple' as const,
+    variant: 'squares' as const,
   },
 ];
 
@@ -57,34 +55,27 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="w-full max-w-3xl mx-auto px-4 mt-8"
+      className="w-full max-w-4xl mx-auto px-4 mt-6"
     >
-      {/* Section Label */}
-      <motion.p 
-        variants={fadeInUp}
-        className="text-xs uppercase tracking-wider text-[var(--fg-quaternary)] mb-4 text-center"
-      >
-        Get started
-      </motion.p>
-
-      {/* 2x2 Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* 4-column Grid like Gemini */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Quick Link Cards (Folders) */}
         {quickLinks.map((link) => (
-          <motion.div key={link.id} variants={fadeInUp}>
+          <motion.div key={link.id} variants={fadeInUp} className="min-h-[140px]">
             <AnimatedFolder
               title={link.title}
               subtitle={link.subtitle}
               href={link.href}
-              previewImages={link.previewImages}
               color={link.color}
+              variant={link.variant}
+              icons={link.icons}
             />
           </motion.div>
         ))}
 
         {/* Example Prompt Cards (Icon 3D) */}
         {examplePrompts.map((prompt) => (
-          <motion.div key={prompt.id} variants={fadeInUp}>
+          <motion.div key={prompt.id} variants={fadeInUp} className="min-h-[140px]">
             <IconHover3D
               icon={prompt.icon}
               title={prompt.title}

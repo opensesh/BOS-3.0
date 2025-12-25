@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FC, type SVGProps } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { Palette, Type, Image, LayoutGrid } from 'lucide-react';
 
 interface AnimatedFolderProps {
   title: string;
   subtitle?: string;
   href: string;
-  previewImages?: string[];
   color?: 'aperol' | 'blue' | 'green' | 'purple';
+  variant?: 'icons' | 'squares';
+  icons?: FC<SVGProps<SVGSVGElement>>[];
 }
 
 const colorVariants = {
@@ -17,30 +19,38 @@ const colorVariants = {
     main: 'var(--color-brand-500)',
     light: 'var(--color-brand-400)',
     dark: 'var(--color-brand-600)',
+    hex: '#fe5102',
   },
   blue: {
     main: '#3B82F6',
     light: '#60A5FA',
     dark: '#2563EB',
+    hex: '#3B82F6',
   },
   green: {
     main: '#10B981',
     light: '#34D399',
     dark: '#059669',
+    hex: '#10B981',
   },
   purple: {
     main: '#8B5CF6',
     light: '#A78BFA',
     dark: '#7C3AED',
+    hex: '#8B5CF6',
   },
 };
+
+// Default icons for brand assets
+const defaultBrandIcons = [Palette, Type, Image];
 
 export function AnimatedFolder({
   title,
   subtitle,
   href,
-  previewImages = [],
   color = 'aperol',
+  variant = 'icons',
+  icons = defaultBrandIcons,
 }: AnimatedFolderProps) {
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
@@ -55,20 +65,19 @@ export function AnimatedFolder({
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative w-full rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-6 cursor-pointer text-left transition-all duration-300 hover:border-[var(--border-brand)] hover:shadow-lg"
-      whileHover={{ scale: 1.02 }}
+      className="group relative w-full h-full rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-all duration-300 hover:border-[var(--border-brand)]"
       whileTap={{ scale: 0.98 }}
     >
       {/* Folder Container */}
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col">
         {/* 3D Folder */}
         <div 
-          className="relative w-32 h-24 mb-4"
+          className="relative w-20 h-14 mb-3"
           style={{ perspective: '1000px' }}
         >
           {/* Back Panel */}
           <motion.div
-            className="absolute inset-0 rounded-lg"
+            className="absolute inset-0 rounded-md"
             style={{
               background: colors.dark,
               transformStyle: 'preserve-3d',
@@ -77,7 +86,7 @@ export function AnimatedFolder({
 
           {/* Folder Tab */}
           <motion.div
-            className="absolute -top-2 left-4 w-12 h-4 rounded-t-md"
+            className="absolute -top-1.5 left-2 w-8 h-3 rounded-t-sm"
             style={{
               background: colors.main,
             }}
@@ -85,7 +94,7 @@ export function AnimatedFolder({
 
           {/* Front Panel (opens on hover) */}
           <motion.div
-            className="absolute inset-0 rounded-lg origin-bottom"
+            className="absolute inset-0 rounded-md origin-bottom"
             style={{
               background: `linear-gradient(180deg, ${colors.light} 0%, ${colors.main} 100%)`,
               transformStyle: 'preserve-3d',
@@ -101,44 +110,42 @@ export function AnimatedFolder({
           >
             {/* Shine effect */}
             <div 
-              className="absolute inset-0 rounded-lg opacity-30"
+              className="absolute inset-0 rounded-md opacity-30"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)',
               }}
             />
           </motion.div>
 
-          {/* Preview Images that pop out */}
+          {/* Icons that pop out */}
           <AnimatePresence>
-            {isHovered && previewImages.length > 0 && (
-              <div className="absolute inset-0 flex items-center justify-center gap-1 overflow-visible">
-                {previewImages.slice(0, 3).map((img, index) => (
+            {isHovered && variant === 'icons' && (
+              <div className="absolute inset-0 flex items-center justify-center gap-0.5 overflow-visible">
+                {icons.slice(0, 3).map((Icon, index) => (
                   <motion.div
                     key={index}
-                    initial={{ y: 20, opacity: 0, scale: 0.8 }}
+                    initial={{ y: 15, opacity: 0, scale: 0.8 }}
                     animate={{ 
-                      y: -10 - (index * 5), 
+                      y: -8 - (index * 3), 
                       opacity: 1, 
                       scale: 1,
-                      rotate: (index - 1) * 5,
+                      rotate: (index - 1) * 6,
                     }}
-                    exit={{ y: 20, opacity: 0, scale: 0.8 }}
+                    exit={{ y: 15, opacity: 0, scale: 0.8 }}
                     transition={{ 
-                      delay: index * 0.05,
+                      delay: index * 0.04,
                       type: 'spring',
                       stiffness: 400,
                       damping: 25,
                     }}
-                    className="w-8 h-8 rounded-md shadow-lg overflow-hidden border border-white/20"
+                    className="w-6 h-6 rounded-sm shadow-lg bg-white flex items-center justify-center p-1"
                     style={{
                       zIndex: 10 + index,
                     }}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={img} 
-                      alt="" 
-                      className="w-full h-full object-cover"
+                    <Icon 
+                      className="w-full h-full"
+                      style={{ color: colors.hex, strokeWidth: 1.5 }}
                     />
                   </motion.div>
                 ))}
@@ -146,45 +153,37 @@ export function AnimatedFolder({
             )}
           </AnimatePresence>
 
-          {/* Fallback icons when no images */}
+          {/* Four squares that pop out */}
           <AnimatePresence>
-            {isHovered && previewImages.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center gap-1 overflow-visible">
-                {[0, 1, 2].map((index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ y: 20, opacity: 0, scale: 0.8 }}
-                    animate={{ 
-                      y: -10 - (index * 5), 
-                      opacity: 1, 
-                      scale: 1,
-                      rotate: (index - 1) * 8,
-                    }}
-                    exit={{ y: 20, opacity: 0, scale: 0.8 }}
-                    transition={{ 
-                      delay: index * 0.05,
-                      type: 'spring',
-                      stiffness: 400,
-                      damping: 25,
-                    }}
-                    className="w-7 h-7 rounded-md shadow-lg bg-white/90 flex items-center justify-center"
-                    style={{
-                      zIndex: 10 + index,
-                    }}
-                  >
-                    <div 
-                      className="w-4 h-4 rounded-sm"
-                      style={{ background: colors.main }}
-                    />
-                  </motion.div>
-                ))}
+            {isHovered && variant === 'squares' && (
+              <div className="absolute inset-0 flex items-center justify-center overflow-visible">
+                <motion.div
+                  initial={{ y: 15, opacity: 0, scale: 0.8 }}
+                  animate={{ y: -10, opacity: 1, scale: 1 }}
+                  exit={{ y: 15, opacity: 0, scale: 0.8 }}
+                  transition={{ 
+                    type: 'spring',
+                    stiffness: 400,
+                    damping: 25,
+                  }}
+                  className="w-7 h-7 rounded-sm shadow-lg bg-white flex items-center justify-center p-1"
+                  style={{ zIndex: 10 }}
+                >
+                  <LayoutGrid 
+                    className="w-full h-full"
+                    style={{ color: colors.hex, strokeWidth: 1.5 }}
+                  />
+                </motion.div>
               </div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Title */}
-        <h3 className="text-lg font-semibold text-[var(--fg-primary)] mb-1">
+        {/* Title - colored to match folder */}
+        <h3 
+          className="text-base font-semibold mb-0.5"
+          style={{ color: colors.hex }}
+        >
           {title}
         </h3>
 
@@ -194,14 +193,6 @@ export function AnimatedFolder({
             {subtitle}
           </p>
         )}
-
-        {/* Hover hint */}
-        <motion.p 
-          className="text-xs text-[var(--fg-quaternary)] mt-2"
-          animate={{ opacity: isHovered ? 0 : 0.7 }}
-        >
-          Hover to explore
-        </motion.p>
       </div>
     </motion.button>
   );

@@ -64,15 +64,12 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
       <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] border-l border-[var(--border-primary)] z-50 flex flex-col animate-slide-in-right">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-primary)]">
-          <div className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-[var(--fg-tertiary)]" />
-            <h2 className="text-[15px] font-semibold text-[var(--fg-primary)]">
-              Sources & Context
-            </h2>
-            <span className="text-xs text-[var(--fg-tertiary)]">
+          <h2 className="text-[15px] font-semibold text-[var(--fg-primary)]">
+            Sources
+            <span className="text-xs text-[var(--fg-tertiary)] font-normal ml-2">
               ({totalCount})
             </span>
-          </div>
+          </h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"

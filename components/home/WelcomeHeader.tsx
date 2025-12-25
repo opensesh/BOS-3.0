@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/lib/motion';
 
@@ -58,13 +58,35 @@ function getSelectedBrand(): Brand {
   return DEFAULT_BRANDS[0];
 }
 
-interface WelcomeHeaderProps {
-  userName?: string;
+// Typewriter effect for brand name
+function useTypewriter(text: string, speed: number = 80) {
+  const [displayText, setDisplayText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    if (isComplete) return;
+    
+    const timer = setInterval(() => {
+      if (indexRef.current < text.length) {
+        setDisplayText(text.slice(0, indexRef.current + 1));
+        indexRef.current += 1;
+      } else {
+        setIsComplete(true);
+        clearInterval(timer);
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [text, speed, isComplete]);
+
+  return { displayText, isComplete };
 }
 
-export function WelcomeHeader({ userName = 'User' }: WelcomeHeaderProps) {
+export function WelcomeHeader() {
   const [mounted, setMounted] = useState(false);
   const [brandName, setBrandName] = useState('Open Session');
+  const { displayText, isComplete } = useTypewriter(brandName, 80);
 
   useEffect(() => {
     setMounted(true);
@@ -75,9 +97,8 @@ export function WelcomeHeader({ userName = 'User' }: WelcomeHeaderProps) {
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <div className="text-center mb-10">
-        <div className="h-8 mb-2" />
-        <div className="h-14 mb-3" />
+      <div className="w-full max-w-4xl px-4 mb-8">
+        <div className="h-16 mb-3" />
         <div className="h-6" />
       </div>
     );
@@ -85,14 +106,14 @@ export function WelcomeHeader({ userName = 'User' }: WelcomeHeaderProps) {
 
   return (
     <motion.div 
-      className="text-center mb-10"
+      className="w-full max-w-4xl px-4 mb-8"
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
     >
-      {/* Personalized greeting with gradient */}
-      <motion.p 
-        className="text-lg md:text-xl font-medium mb-2"
+      {/* Main headline - Gemini style */}
+      <h1 
+        className="text-4xl md:text-5xl font-medium mb-3 tracking-tight"
         style={{
           background: 'linear-gradient(135deg, var(--color-brand-400) 0%, var(--color-brand-500) 50%, var(--color-brand-600) 100%)',
           WebkitBackgroundClip: 'text',
@@ -100,21 +121,18 @@ export function WelcomeHeader({ userName = 'User' }: WelcomeHeaderProps) {
           backgroundClip: 'text',
         }}
       >
-        Hello, {userName}
-      </motion.p>
-
-      {/* Main headline */}
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--fg-primary)] mb-3 tracking-tight font-display">
-        Ask The Boss
+        Hello, how can I help you today?
       </h1>
 
-      {/* Session context with emphasized brand name */}
-      <p className="text-base md:text-lg text-[var(--fg-tertiary)]">
-        Your Brand Operating System for{' '}
+      {/* Session context with typewriter brand name */}
+      <p className="text-xl md:text-2xl text-[var(--fg-tertiary)] font-normal">
+        Welcome to your brand operating system for{' '}
         <span 
-          className="text-[var(--fg-primary)] font-medium underline decoration-[var(--color-brand-500)] decoration-2 underline-offset-4"
+          className="font-bold font-accent text-[var(--fg-primary)]"
+          style={{ fontFamily: 'Offbit, monospace' }}
         >
-          {brandName}
+          {displayText}
+          {!isComplete && <span className="animate-pulse">|</span>}
         </span>
       </p>
     </motion.div>

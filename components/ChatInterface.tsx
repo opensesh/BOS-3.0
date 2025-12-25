@@ -849,12 +849,12 @@ export function ChatInterface() {
             className="contents"
           >
             {/* Welcome Header */}
-            <WelcomeHeader userName="User" />
+            <WelcomeHeader />
             
             {/* Error display */}
             {(error || submitError) && (
               <motion.div 
-                className="w-full max-w-3xl px-4 mb-4"
+                className="w-full max-w-4xl px-4 mb-4"
                 variants={fadeInUp}
               >
                 <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
@@ -867,8 +867,13 @@ export function ChatInterface() {
               </motion.div>
             )}
 
-            <motion.div className="w-full" variants={fadeInUp}>
-              <div className="max-w-3xl mx-auto px-4">
+            {/* Pre-prompt Cards Grid - above input like Gemini */}
+            <PrePromptGrid 
+              onPromptSubmit={(prompt) => handleQueryClick(prompt, true)} 
+            />
+
+            <motion.div className="w-full mt-auto" variants={fadeInUp}>
+              <div className="max-w-4xl mx-auto px-4">
                 <form onSubmit={handleSubmit} className="relative">
                   {/* Hidden file input */}
                   <input
@@ -1109,11 +1114,6 @@ export function ChatInterface() {
                 </form>
               </div>
             </motion.div>
-
-            {/* Pre-prompt Cards Grid */}
-            <PrePromptGrid 
-              onPromptSubmit={(prompt) => handleQueryClick(prompt, true)} 
-            />
           </motion.div>
         )}
       </div>

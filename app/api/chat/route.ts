@@ -350,9 +350,9 @@ async function streamWithAnthropicNative(
                 for (const source of webSearchData.sources) {
                   collectedSources.push({
                     id: `web-search-${collectedSources.length}`,
-                    name: extractDomainName(source.url),
+                    name: extractHostname(source.url),
                     url: source.url,
-                    title: source.title || extractDomainName(source.url),
+                    title: source.title || extractTitleFromUrl(source.url),
                     favicon: getFaviconUrl(source.url),
                     type: 'external',
                   });
@@ -417,14 +417,59 @@ async function streamWithAnthropicNative(
 // NATIVE PERPLEXITY STREAMING (Web Search)
 // ============================================
 
-// Helper to extract domain name from URL for source naming
-function extractDomainName(url: string): string {
+// Helper to extract full hostname from URL (e.g., "figma.com")
+function extractHostname(url: string): string {
   try {
     const hostname = new URL(url).hostname;
-    // Remove 'www.' prefix and get domain name
-    return hostname.replace(/^www\./, '').split('.')[0];
+    // Remove 'www.' prefix
+    return hostname.replace(/^www\./, '');
   } catch {
-    return 'Source';
+    return 'Unknown';
+  }
+}
+
+// Helper to extract a readable title from URL path
+function extractTitleFromUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname;
+    
+    // If path is just "/" or empty, use the hostname
+    if (!pathname || pathname === '/') {
+      return extractHostname(url);
+    }
+    
+    // Get the last meaningful segment of the path
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments.length === 0) {
+      return extractHostname(url);
+    }
+    
+    // Take the last segment and clean it up
+    let title = segments[segments.length - 1];
+    
+    // Remove file extensions
+    title = title.replace(/\.(html?|php|aspx?|jsp)$/i, '');
+    
+    // Replace hyphens and underscores with spaces
+    title = title.replace(/[-_]/g, ' ');
+    
+    // Decode URL encoding
+    title = decodeURIComponent(title);
+    
+    // Capitalize first letter of each word
+    title = title.replace(/\b\w/g, c => c.toUpperCase());
+    
+    // If title is too short, include more of the path
+    if (title.length < 10 && segments.length > 1) {
+      title = segments.slice(-2).join(' / ').replace(/[-_]/g, ' ');
+      title = decodeURIComponent(title);
+      title = title.replace(/\b\w/g, c => c.toUpperCase());
+    }
+    
+    return title || extractHostname(url);
+  } catch {
+    return 'Web Page';
   }
 }
 
@@ -472,9 +517,9 @@ async function streamWithPerplexityNative(
         const rawCitations = (citationResponse as any).citations || [];
         const sources: SourceData[] = rawCitations.map((url: string, index: number) => ({
           id: `perplexity-${index}`,
-          name: extractDomainName(url),
+          name: extractHostname(url),
           url: url,
-          title: extractDomainName(url),
+          title: extractTitleFromUrl(url),
           favicon: getFaviconUrl(url),
           type: 'external' as const,
         }));

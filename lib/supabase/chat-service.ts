@@ -1,7 +1,7 @@
 'use client';
 
 import { createClient } from './client';
-import type { ChatSession, ChatMessage, DbChat, DbMessage, ChatInsert, MessageInsert } from './types';
+import type { ChatSession, ChatMessage, DbChat, DbMessage, ChatInsert, MessageInsert, MessageMetadata, StoredSourceInfo } from './types';
 
 // Track if tables are available (to avoid repeated error logs)
 let tablesChecked = false;
@@ -55,12 +55,28 @@ async function checkTablesAvailable(): Promise<boolean> {
  * Convert database message to app message format
  */
 function dbMessageToAppMessage(msg: DbMessage): ChatMessage {
+  // Extract sources from metadata if present
+  const metadata = msg.metadata as MessageMetadata | null;
+  const sources = metadata?.sources?.map((s: StoredSourceInfo) => ({
+    title: s.title || s.name,
+    url: s.url,
+    snippet: s.snippet,
+    // Include full source info for proper display
+    id: s.id,
+    name: s.name,
+    favicon: s.favicon,
+    type: s.type,
+    category: s.category,
+    publishedAt: s.publishedAt,
+  }));
+
   return {
     id: msg.id,
     role: msg.role as 'user' | 'assistant',
     content: msg.content,
     model: msg.model || undefined,
     timestamp: msg.created_at,
+    sources: sources && sources.length > 0 ? sources : undefined,
   };
 }
 
@@ -109,12 +125,32 @@ export const chatService = {
         const newMessages = messages.filter(m => !existingIds.has(m.id));
 
         if (newMessages.length > 0) {
-          const messagesToInsert: MessageInsert[] = newMessages.map(m => ({
-            chat_id: existingId,
-            role: m.role,
-            content: m.content,
-            model: m.model,
-          }));
+          const messagesToInsert: MessageInsert[] = newMessages.map(m => {
+            // Build metadata with sources if present
+            const metadata: MessageMetadata | undefined = m.sources && m.sources.length > 0 
+              ? { 
+                  sources: m.sources.map(s => ({
+                    id: (s as StoredSourceInfo).id || s.url,
+                    name: (s as StoredSourceInfo).name || s.title || '',
+                    url: s.url,
+                    title: s.title,
+                    snippet: s.snippet,
+                    favicon: (s as StoredSourceInfo).favicon,
+                    type: (s as StoredSourceInfo).type,
+                    category: (s as StoredSourceInfo).category,
+                    publishedAt: (s as StoredSourceInfo).publishedAt,
+                  }))
+                }
+              : undefined;
+
+            return {
+              chat_id: existingId,
+              role: m.role,
+              content: m.content,
+              model: m.model,
+              metadata,
+            };
+          });
 
           const { error: msgError } = await supabase
             .from('messages')
@@ -151,12 +187,32 @@ export const chatService = {
 
       // Insert all messages
       if (messages.length > 0) {
-        const messagesToInsert: MessageInsert[] = messages.map(m => ({
-          chat_id: chat.id,
-          role: m.role,
-          content: m.content,
-          model: m.model,
-        }));
+        const messagesToInsert: MessageInsert[] = messages.map(m => {
+          // Build metadata with sources if present
+          const metadata: MessageMetadata | undefined = m.sources && m.sources.length > 0 
+            ? { 
+                sources: m.sources.map(s => ({
+                  id: (s as StoredSourceInfo).id || s.url,
+                  name: (s as StoredSourceInfo).name || s.title || '',
+                  url: s.url,
+                  title: s.title,
+                  snippet: s.snippet,
+                  favicon: (s as StoredSourceInfo).favicon,
+                  type: (s as StoredSourceInfo).type,
+                  category: (s as StoredSourceInfo).category,
+                  publishedAt: (s as StoredSourceInfo).publishedAt,
+                }))
+              }
+            : undefined;
+
+          return {
+            chat_id: chat.id,
+            role: m.role,
+            content: m.content,
+            model: m.model,
+            metadata,
+          };
+        });
 
         const { error: msgError } = await supabase
           .from('messages')

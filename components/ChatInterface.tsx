@@ -177,12 +177,18 @@ export function ChatInterface() {
             ? getMessageContent(firstAssistantMessage).slice(0, 100)
             : '';
           // Convert messages to the format expected by chat history
-          const chatMessages = messages.map(m => ({
-            id: m.id,
-            role: m.role as 'user' | 'assistant',
-            content: getMessageContent(m),
-            timestamp: new Date().toISOString(),
-          }));
+          // Include sources so they persist when reloading chat sessions
+          const chatMessages = messages.map(m => {
+            // Extract sources from the message if available
+            const msgSources = (m as { sources?: SourceInfo[] }).sources;
+            return {
+              id: m.id,
+              role: m.role as 'user' | 'assistant',
+              content: getMessageContent(m),
+              timestamp: new Date().toISOString(),
+              sources: msgSources,
+            };
+          });
           addToHistory(title, preview, chatMessages);
         }
       }
@@ -202,10 +208,12 @@ export function ChatInterface() {
           const sessionMessages = await getSessionMessages(sessionToLoad);
           if (sessionMessages && sessionMessages.length > 0) {
             // Convert ChatMessage[] to the format expected by useChat
+            // Include sources so they display in the loaded session
             const formattedMessages = sessionMessages.map((msg, idx) => ({
               id: msg.id || `msg-${idx}`,
               role: msg.role as 'user' | 'assistant',
               content: msg.content,
+              sources: msg.sources,
             }));
             setMessages(formattedMessages);
             setActiveTab('answer');
@@ -239,12 +247,18 @@ export function ChatInterface() {
         const preview = getMessageContent(lastAssistantMessage).slice(0, 150);
         
         // Convert messages to chat history format
-        const chatMessages = messages.map(m => ({
-          id: m.id,
-          role: m.role as 'user' | 'assistant',
-          content: getMessageContent(m),
-          timestamp: new Date().toISOString(),
-        }));
+        // Include sources so they persist when reloading chat sessions
+        const chatMessages = messages.map(m => {
+          // Extract sources from the message if available
+          const msgSources = (m as { sources?: SourceInfo[] }).sources;
+          return {
+            id: m.id,
+            role: m.role as 'user' | 'assistant',
+            content: getMessageContent(m),
+            timestamp: new Date().toISOString(),
+            sources: msgSources,
+          };
+        });
         
         // Save to history (this also updates Supabase)
         addToHistory(title, preview, chatMessages);

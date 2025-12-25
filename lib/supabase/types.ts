@@ -27,6 +27,19 @@ export interface DbMessage {
   created_at: string;
 }
 
+// Source info for citations (stored in metadata)
+export interface StoredSourceInfo {
+  id: string;
+  name: string;
+  url: string;
+  title?: string;
+  snippet?: string;
+  favicon?: string;
+  type?: 'external' | 'brand-doc' | 'asset' | 'discover';
+  category?: string;
+  publishedAt?: string;
+}
+
 // Message metadata for extended features
 export interface MessageMetadata {
   has_thinking?: boolean;
@@ -35,6 +48,8 @@ export interface MessageMetadata {
   file_ids?: string[];
   token_count?: number;
   finish_reason?: string;
+  // Sources/citations from the response
+  sources?: StoredSourceInfo[];
 }
 
 // Application-level types
@@ -44,11 +59,8 @@ export interface ChatMessage {
   content: string;
   model?: string;
   metadata?: MessageMetadata;
-  sources?: Array<{
-    title: string;
-    url: string;
-    snippet?: string;
-  }>;
+  // Full source info for proper display in UI
+  sources?: StoredSourceInfo[];
   thinking?: ThinkingBlock[];
   toolExecutions?: ToolExecution[];
   artifacts?: Artifact[];

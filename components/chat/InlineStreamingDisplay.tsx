@@ -2,15 +2,39 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronRight, Loader2, Globe, Brain, Search, Wrench } from 'lucide-react';
+import { ChevronRight, Loader2, Globe, Brain, Search, Wrench, Calculator, Clock, FileText, Code } from 'lucide-react';
 import { ThinkingDotFlow } from '@/components/ui/dot-flow';
 import type { ToolCall } from '@/hooks/useChat';
 
-// Tool name to icon mapping
-const toolIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  'web_search': Globe,
-  'search_brand_knowledge': Brain,
-  'search': Search,
+// Tool name to icon and description mapping
+const toolConfig: Record<string, { 
+  icon: React.ComponentType<{ className?: string }>;
+  getDescription: (input?: Record<string, unknown>) => string;
+}> = {
+  'web_search': {
+    icon: Globe,
+    getDescription: (input) => input?.query ? `Searching: "${input.query}"` : 'Searching the web...',
+  },
+  'search_brand_knowledge': {
+    icon: Brain,
+    getDescription: (input) => input?.query ? `Looking up: "${input.query}"` : 'Searching brand knowledge...',
+  },
+  'calculator': {
+    icon: Calculator,
+    getDescription: (input) => input?.expression ? `Calculating: ${input.expression}` : 'Performing calculation...',
+  },
+  'get_current_time': {
+    icon: Clock,
+    getDescription: (input) => input?.timezone ? `Getting time in ${input.timezone}` : 'Getting current time...',
+  },
+  'read_file': {
+    icon: FileText,
+    getDescription: (input) => input?.file_id ? `Reading file...` : 'Accessing file...',
+  },
+  'create_artifact': {
+    icon: Code,
+    getDescription: (input) => input?.title ? `Creating: ${input.title}` : 'Creating artifact...',
+  },
 };
 
 interface InlineStreamingDisplayProps {
@@ -28,12 +52,12 @@ interface InlineStreamingDisplayProps {
  * InlineStreamingDisplay Component
  * 
  * Displays Claude's thinking process and tool usage inline during streaming.
- * Shows actual thinking content instead of generic placeholder text.
+ * Shows actual thinking content and tool activity descriptions.
  * 
  * Visual states:
  * - No content yet: Show animated DotLoader with rotating phrases
- * - Thinking arrives: Display thinking text inline with streaming cursor
- * - Tool use starts: Show tool name with expandable details
+ * - Tool use starts: Show tool name with description of what's happening
+ * - Thinking arrives: Display thinking text when expanded
  * - Response starts: Smoothly transition away
  */
 export function InlineStreamingDisplay({
@@ -50,15 +74,15 @@ export function InlineStreamingDisplay({
   const hasThinking = thinking && thinking.length > 0;
   const hasToolCalls = toolCalls && toolCalls.length > 0;
   
-  // De-duplicate tools by name - only show each unique tool once
+  // De-duplicate tools by name - only show each unique tool once, keep the most recent
   const uniqueTools = useMemo(() => {
     if (!toolCalls) return [];
-    const seen = new Set<string>();
-    return toolCalls.filter(tool => {
-      if (seen.has(tool.name)) return false;
-      seen.add(tool.name);
-      return true;
+    const toolMap = new Map<string, ToolCall>();
+    // Process in order so later tools override earlier ones (keeps most recent input)
+    toolCalls.forEach(tool => {
+      toolMap.set(tool.name, tool);
     });
+    return Array.from(toolMap.values());
   }, [toolCalls]);
   
   const activeTools = uniqueTools.filter(t => t.status === 'running' || t.status === 'pending');
@@ -73,10 +97,48 @@ export function InlineStreamingDisplay({
       .replace(/\b\w/g, c => c.toUpperCase());
   };
 
+  // Get tool description based on its input
+  const getToolDescription = (tool: ToolCall) => {
+    const config = toolConfig[tool.name];
+    if (config) {
+      return config.getDescription(tool.input);
+    }
+    // Fallback for unknown tools
+    if (tool.input?.query) {
+      return `Processing: "${tool.input.query}"`;
+    }
+    return `Running ${formatToolName(tool.name)}...`;
+  };
+
+  // Build the activity log content
+  const activityContent = useMemo(() => {
+    const lines: string[] = [];
+    
+    // Add tool activity descriptions
+    uniqueTools.forEach(tool => {
+      const status = tool.status === 'completed' ? '✓' : tool.status === 'error' ? '✗' : '→';
+      lines.push(`${status} ${getToolDescription(tool)}`);
+    });
+    
+    // Add thinking if available
+    if (hasThinking && thinking) {
+      lines.push('');
+      lines.push('Reasoning:');
+      // Show last portion of thinking
+      const thinkingPreview = thinking.length > 600 ? '...' + thinking.slice(-600) : thinking;
+      lines.push(thinkingPreview);
+    }
+    
+    return lines.join('\n');
+  }, [uniqueTools, hasThinking, thinking]);
+
+  // Check if there's meaningful content to show when expanded
+  const hasExpandableContent = hasThinking || uniqueTools.some(t => t.input);
+
   return (
     <div className="py-2">
       <AnimatePresence mode="wait">
-        {/* Tool calls with expandable thinking */}
+        {/* Tool calls with expandable details */}
         {(hasToolCalls || hasThinking) && (
           <motion.div
             key="activity"
@@ -87,52 +149,71 @@ export function InlineStreamingDisplay({
           >
             {/* Tool/Thinking header row */}
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-2 text-left group w-full"
+              onClick={() => hasExpandableContent && setIsExpanded(!isExpanded)}
+              className={`flex items-start gap-2 text-left w-full ${hasExpandableContent ? 'group cursor-pointer' : 'cursor-default'}`}
             >
-              {/* Chevron */}
-              <motion.div
-                animate={{ rotate: isExpanded ? 90 : 0 }}
-                transition={{ duration: 0.15 }}
-                className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)]"
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </motion.div>
+              {/* Chevron - only show if expandable */}
+              {hasExpandableContent ? (
+                <motion.div
+                  animate={{ rotate: isExpanded ? 90 : 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)] mt-0.5 flex-shrink-0"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </motion.div>
+              ) : (
+                <div className="w-3.5" /> // Spacer
+              )}
               
-              {/* Tool icons and names */}
-              <div className="flex items-center gap-3">
-                {uniqueTools.map((tool, idx) => {
-                  const Icon = toolIcons[tool.name] || Wrench;
-                  const isActive = tool.status === 'running' || tool.status === 'pending';
+              {/* Tool info */}
+              <div className="flex-1 min-w-0">
+                {/* Tool icons and names row */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {uniqueTools.map((tool, idx) => {
+                    const config = toolConfig[tool.name];
+                    const Icon = config?.icon || Wrench;
+                    const isActive = tool.status === 'running' || tool.status === 'pending';
+                    
+                    return (
+                      <div key={tool.id} className="flex items-center gap-1.5">
+                        {idx > 0 && <span className="text-[var(--fg-quaternary)]">·</span>}
+                        <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'}`} />
+                        <span className={`text-xs ${isActive ? 'text-[var(--fg-secondary)]' : 'text-[var(--fg-tertiary)]'}`}>
+                          {formatToolName(tool.name)}
+                        </span>
+                        {isActive && (
+                          <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
+                        )}
+                      </div>
+                    );
+                  })}
                   
-                  return (
-                    <div key={tool.id} className="flex items-center gap-1.5">
-                      {idx > 0 && <span className="text-[var(--fg-quaternary)]">·</span>}
-                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'}`} />
-                      <span className={`text-xs ${isActive ? 'text-[var(--fg-secondary)]' : 'text-[var(--fg-tertiary)]'}`}>
-                        {formatToolName(tool.name)}
-                      </span>
-                      {isActive && (
-                        <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
-                      )}
+                  {/* If only thinking (no tools), show thinking label */}
+                  {!hasToolCalls && hasThinking && (
+                    <div className="flex items-center gap-1.5">
+                      <Brain className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
+                      <span className="text-xs text-[var(--fg-secondary)]">Thinking</span>
+                      <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
                     </div>
-                  );
-                })}
+                  )}
+                </div>
                 
-                {/* If only thinking (no tools), show thinking label */}
-                {!hasToolCalls && hasThinking && (
-                  <div className="flex items-center gap-1.5">
-                    <Brain className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
-                    <span className="text-xs text-[var(--fg-secondary)]">Thinking</span>
-                    <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
-                  </div>
+                {/* Tool description - show inline when not expanded */}
+                {!isExpanded && activeTools.length > 0 && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-xs text-[var(--fg-tertiary)] mt-1 truncate"
+                  >
+                    {getToolDescription(activeTools[activeTools.length - 1])}
+                  </motion.p>
                 )}
               </div>
             </button>
             
-            {/* Expandable thinking content */}
+            {/* Expandable activity log */}
             <AnimatePresence>
-              {isExpanded && hasThinking && (
+              {isExpanded && hasExpandableContent && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
@@ -142,11 +223,7 @@ export function InlineStreamingDisplay({
                 >
                   <div className="pl-6 pt-2">
                     <p className="text-xs text-[var(--fg-tertiary)] leading-relaxed font-mono whitespace-pre-wrap">
-                      {/* Show last portion of thinking to keep it manageable */}
-                      {thinking && thinking.length > 800 
-                        ? '...' + thinking.slice(-800) 
-                        : thinking
-                      }
+                      {activityContent}
                       {/* Streaming cursor */}
                       <motion.span
                         className="inline-block w-1 h-3 bg-[var(--fg-brand-primary)] ml-0.5 align-middle"
@@ -204,18 +281,26 @@ export function InlineStreamingIndicator({
 
   const hasThinking = thinking && thinking.length > 0;
   
-  // De-duplicate tools by name
+  // De-duplicate tools by name, keep most recent
   const uniqueActiveTools = useMemo(() => {
     if (!toolCalls) return [];
-    const seen = new Set<string>();
-    return toolCalls
+    const toolMap = new Map<string, ToolCall>();
+    toolCalls
       .filter(t => t.status === 'running' || t.status === 'pending')
-      .filter(tool => {
-        if (seen.has(tool.name)) return false;
-        seen.add(tool.name);
-        return true;
+      .forEach(tool => {
+        toolMap.set(tool.name, tool);
       });
+    return Array.from(toolMap.values());
   }, [toolCalls]);
+
+  // Get description for active tool
+  const getDescription = (tool: ToolCall) => {
+    const config = toolConfig[tool.name];
+    if (config) {
+      return config.getDescription(tool.input);
+    }
+    return `Running ${tool.name.replace(/_/g, ' ')}...`;
+  };
 
   return (
     <motion.div
@@ -235,11 +320,12 @@ export function InlineStreamingIndicator({
       {uniqueActiveTools.length > 0 && !hasThinking && (
         <>
           {(() => {
-            const Icon = toolIcons[uniqueActiveTools[0].name] || Wrench;
+            const config = toolConfig[uniqueActiveTools[0].name];
+            const Icon = config?.icon || Wrench;
             return <Icon className="w-3 h-3 text-[var(--fg-brand-primary)]" />;
           })()}
-          <span className="text-[var(--fg-tertiary)]">
-            {uniqueActiveTools[0].name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+          <span className="text-[var(--fg-tertiary)] max-w-[200px] truncate">
+            {getDescription(uniqueActiveTools[0])}
           </span>
           <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
         </>

@@ -12,6 +12,50 @@ import type { ToolExecutionContext, ToolResult } from './index';
 // Uses Perplexity API for web search
 // ============================================
 
+// Helper to extract a readable title from URL
+function extractTitleFromUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, '');
+    const pathname = parsed.pathname;
+    
+    // If path is just "/" or empty, use the hostname
+    if (!pathname || pathname === '/') {
+      return hostname;
+    }
+    
+    // Get the last meaningful segment of the path
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments.length === 0) {
+      return hostname;
+    }
+    
+    // Take the last segment and clean it up
+    let title = segments[segments.length - 1];
+    
+    // Remove file extensions
+    title = title.replace(/\.(html?|php|aspx?|jsp)$/i, '');
+    
+    // Replace hyphens and underscores with spaces
+    title = title.replace(/[-_]/g, ' ');
+    
+    // Decode URL encoding
+    title = decodeURIComponent(title);
+    
+    // Capitalize first letter of each word
+    title = title.replace(/\b\w/g, c => c.toUpperCase());
+    
+    // If title is too short, include hostname for context
+    if (title.length < 8) {
+      return `${title} - ${hostname}`;
+    }
+    
+    return title;
+  } catch {
+    return 'Web Page';
+  }
+}
+
 export async function executeWebSearch(
   input: { query: string; max_results?: number },
   context: ToolExecutionContext
@@ -51,9 +95,10 @@ export async function executeWebSearch(
     return {
       success: true,
       data: {
+        query: input.query, // Include the search query for context
         summary: content,
-        sources: citations.map((url: string, i: number) => ({
-          title: `Source ${i + 1}`,
+        sources: citations.map((url: string) => ({
+          title: extractTitleFromUrl(url),
           url,
         })),
       },

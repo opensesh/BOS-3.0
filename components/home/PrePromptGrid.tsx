@@ -112,10 +112,12 @@ function CarouselRow({
 
   const canGoPrev = currentIndex > 0;
   const canGoNext = currentIndex < maxIndex;
-  const cardWidthPercent = 100 / visibleCount;
+  
+  // Smaller card width to allow padding for gradient effect
+  const cardWidthPercent = 45; // ~45% each for 2 cards with gaps
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       {/* Left arrow */}
       <button
         onClick={handlePrev}
@@ -130,19 +132,25 @@ function CarouselRow({
         <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
       </button>
 
-      {/* Cards - no gradient mask on mobile, show full cards */}
-      <div className="relative flex-1 overflow-hidden">
+      {/* Cards with soft gradient fade */}
+      <div 
+        className="relative flex-1 overflow-hidden"
+        style={{
+          maskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)',
+        }}
+      >
         <div 
-          className="flex gap-3 transition-transform duration-300 ease-out"
+          className="flex gap-3 transition-transform duration-300 ease-out px-1"
           style={{
-            transform: `translateX(-${currentIndex * (cardWidthPercent + 1)}%)`,
+            transform: `translateX(-${currentIndex * (cardWidthPercent + 1.5)}%)`,
           }}
         >
           {items.map((item) => (
             <div 
               key={item.id} 
               className="flex-shrink-0 min-h-[130px]"
-              style={{ width: `calc(${cardWidthPercent}% - 6px)` }}
+              style={{ width: `${cardWidthPercent}%` }}
             >
               {type === 'link' && 'href' in item ? (
                 <AnimatedFolder

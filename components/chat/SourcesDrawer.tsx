@@ -249,15 +249,15 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        {/* Source name */}
-                        <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">
-                          {source.name}
-                        </p>
-
                         {/* Title */}
                         <h3 className="text-[14px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors line-clamp-2">
                           {source.title || source.name}
                         </h3>
+
+                        {/* Domain / URL */}
+                        <p className="text-xs text-[var(--fg-tertiary)] mt-0.5 truncate">
+                          {source.name}
+                        </p>
 
                         {/* Snippet */}
                         {source.snippet && (

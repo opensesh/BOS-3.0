@@ -93,17 +93,13 @@ const allItems = [
 ];
 
 export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
-  // Start centered: index 2 shows Colors, Spaces, Create post, Plan campaign
+  // Start centered
   const [currentIndex, setCurrentIndex] = useState(2);
   
-  // Desktop: 4 cards, Mobile: 2 cards
-  const desktopVisibleCount = 4;
-  const mobileVisibleCount = 2;
-  
-  const desktopMaxIndex = allItems.length - desktopVisibleCount;
-  const mobileMaxIndex = allItems.length - mobileVisibleCount;
+  // Responsive: 4 desktop, 3 tablet, 2 mobile
+  const getMaxIndex = (visibleCount: number) => allItems.length - visibleCount;
 
-  const handlePrev = (maxIdx: number) => {
+  const handlePrev = () => {
     setCurrentIndex(prev => Math.max(0, prev - 1));
   };
 
@@ -118,93 +114,169 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
       animate="visible"
       className="w-full max-w-3xl mx-auto px-4 mt-4"
     >
-      {/* Desktop Carousel: 4 cards */}
-      <div className="hidden lg:block">
-        <div className="flex items-center gap-4">
-          {/* Left arrow */}
-          <button
-            onClick={() => handlePrev(desktopMaxIndex)}
-            disabled={currentIndex <= 0}
-            className={`flex-shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-              currentIndex > 0 
-                ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
-                : 'opacity-30 cursor-not-allowed'
-            }`}
-            aria-label="Previous"
+      {/* Carousel container - arrows inside */}
+      <div className="relative">
+        {/* Left arrow - overlaid */}
+        <button
+          onClick={handlePrev}
+          disabled={currentIndex <= 0}
+          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+            currentIndex > 0 
+              ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+              : 'opacity-30 cursor-not-allowed'
+          }`}
+          aria-label="Previous"
+        >
+          <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
+        </button>
+
+        {/* Right arrow - overlaid */}
+        <button
+          onClick={() => handleNext(getMaxIndex(4))}
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 hidden lg:flex ${
+            currentIndex < getMaxIndex(4) 
+              ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+              : 'opacity-30 cursor-not-allowed'
+          }`}
+          aria-label="Next"
+          disabled={currentIndex >= getMaxIndex(4)}
+        >
+          <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+        </button>
+
+        {/* Right arrow - tablet */}
+        <button
+          onClick={() => handleNext(getMaxIndex(3))}
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 hidden md:flex lg:hidden ${
+            currentIndex < getMaxIndex(3) 
+              ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+              : 'opacity-30 cursor-not-allowed'
+          }`}
+          aria-label="Next"
+          disabled={currentIndex >= getMaxIndex(3)}
+        >
+          <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+        </button>
+
+        {/* Right arrow - mobile */}
+        <button
+          onClick={() => handleNext(getMaxIndex(2))}
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 md:hidden ${
+            currentIndex < getMaxIndex(2) 
+              ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+              : 'opacity-30 cursor-not-allowed'
+          }`}
+          aria-label="Next"
+          disabled={currentIndex >= getMaxIndex(2)}
+        >
+          <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+        </button>
+
+        {/* Cards - Desktop: 4, Tablet: 3, Mobile: 2 */}
+        <div className="overflow-hidden">
+          {/* Desktop layout - 4 cards */}
+          <div 
+            className="hidden lg:flex gap-3 transition-transform duration-300 ease-out"
+            style={{
+              transform: `translateX(calc(-${currentIndex} * (25% + 2.25px)))`,
+            }}
           >
-            <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
-          </button>
-
-          {/* Cards container */}
-          <div className="relative flex-1">
-            {/* Left edge fade - only for incoming cards */}
-            <div 
-              className="absolute left-0 top-0 bottom-0 w-4 z-10 pointer-events-none"
-              style={{
-                background: 'linear-gradient(to right, var(--bg-primary), transparent)',
-              }}
-            />
-            
-            {/* Right edge fade - only for incoming cards */}
-            <div 
-              className="absolute right-0 top-0 bottom-0 w-4 z-10 pointer-events-none"
-              style={{
-                background: 'linear-gradient(to left, var(--bg-primary), transparent)',
-              }}
-            />
-
-            <div className="overflow-hidden">
+            {allItems.map((item) => (
               <div 
-                className="flex gap-3 transition-transform duration-300 ease-out"
-                style={{
-                  transform: `translateX(calc(-${currentIndex} * (25% + 2.25px)))`,
-                }}
+                key={item.id} 
+                className="flex-shrink-0 min-h-[140px]"
+                style={{ width: 'calc(25% - 9px)' }}
               >
-                {allItems.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="flex-shrink-0 min-h-[140px]"
-                    style={{ width: 'calc(25% - 9px)' }}
-                  >
-                    {item.type === 'link' ? (
-                      <AnimatedFolder
-                        title={item.title}
-                        subtitle={item.subtitle}
-                        href={item.href}
-                        icon={item.icon}
-                      />
-                    ) : (
-                      <IconHover3D
-                        icon={item.icon}
-                        title={item.title}
-                        description={item.description}
-                        onClick={() => onPromptSubmit(item.prompt)}
-                      />
-                    )}
-                  </div>
-                ))}
+                {item.type === 'link' ? (
+                  <AnimatedFolder
+                    title={item.title}
+                    subtitle={item.subtitle}
+                    href={item.href}
+                    icon={item.icon}
+                  />
+                ) : (
+                  <IconHover3D
+                    icon={item.icon}
+                    title={item.title}
+                    description={item.description}
+                    onClick={() => onPromptSubmit(item.prompt)}
+                  />
+                )}
               </div>
-            </div>
+            ))}
           </div>
 
-          {/* Right arrow */}
-          <button
-            onClick={() => handleNext(desktopMaxIndex)}
-            disabled={currentIndex >= desktopMaxIndex}
-            className={`flex-shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-              currentIndex < desktopMaxIndex 
-                ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
-                : 'opacity-30 cursor-not-allowed'
-            }`}
-            aria-label="Next"
+          {/* Tablet layout - 3 cards */}
+          <div 
+            className="hidden md:flex lg:hidden gap-3 transition-transform duration-300 ease-out"
+            style={{
+              transform: `translateX(calc(-${currentIndex} * (33.333% + 4px)))`,
+            }}
           >
-            <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
-          </button>
-        </div>
+            {allItems.map((item) => (
+              <div 
+                key={item.id} 
+                className="flex-shrink-0 min-h-[140px]"
+                style={{ width: 'calc(33.333% - 8px)' }}
+              >
+                {item.type === 'link' ? (
+                  <AnimatedFolder
+                    title={item.title}
+                    subtitle={item.subtitle}
+                    href={item.href}
+                    icon={item.icon}
+                  />
+                ) : (
+                  <IconHover3D
+                    icon={item.icon}
+                    title={item.title}
+                    description={item.description}
+                    onClick={() => onPromptSubmit(item.prompt)}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
 
-        {/* Progress dots */}
-        <div className="flex justify-center gap-1.5 mt-4">
-          {Array.from({ length: desktopMaxIndex + 1 }).map((_, idx) => (
+          {/* Mobile layout - 2 cards */}
+          <div 
+            className="flex md:hidden gap-3 transition-transform duration-300 ease-out"
+            style={{
+              transform: `translateX(calc(-${currentIndex} * (50% + 6px)))`,
+            }}
+          >
+            {allItems.map((item) => (
+              <div 
+                key={item.id} 
+                className="flex-shrink-0 min-h-[130px]"
+                style={{ width: 'calc(50% - 6px)' }}
+              >
+                {item.type === 'link' ? (
+                  <AnimatedFolder
+                    title={item.title}
+                    subtitle={item.subtitle}
+                    href={item.href}
+                    icon={item.icon}
+                  />
+                ) : (
+                  <IconHover3D
+                    icon={item.icon}
+                    title={item.title}
+                    description={item.description}
+                    onClick={() => onPromptSubmit(item.prompt)}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Progress dots - responsive */}
+      <div className="flex justify-center gap-1.5 mt-4">
+        {/* Desktop dots */}
+        <div className="hidden lg:flex gap-1.5">
+          {Array.from({ length: getMaxIndex(4) + 1 }).map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}
@@ -217,98 +289,29 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
             />
           ))}
         </div>
-      </div>
 
-      {/* Tablet & Mobile Carousel: 2 cards, single row */}
-      <div className="lg:hidden">
-        <div className="flex items-center gap-3">
-          {/* Left arrow */}
-          <button
-            onClick={() => handlePrev(mobileMaxIndex)}
-            disabled={currentIndex <= 0}
-            className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-              currentIndex > 0 
-                ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
-                : 'opacity-30 cursor-not-allowed'
-            }`}
-            aria-label="Previous"
-          >
-            <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
-          </button>
-
-          {/* Cards container */}
-          <div className="relative flex-1">
-            {/* Left edge fade */}
-            <div 
-              className="absolute left-0 top-0 bottom-0 w-3 z-10 pointer-events-none"
-              style={{
-                background: 'linear-gradient(to right, var(--bg-primary), transparent)',
-              }}
-            />
-            
-            {/* Right edge fade */}
-            <div 
-              className="absolute right-0 top-0 bottom-0 w-3 z-10 pointer-events-none"
-              style={{
-                background: 'linear-gradient(to left, var(--bg-primary), transparent)',
-              }}
-            />
-
-            <div className="overflow-hidden">
-              <div 
-                className="flex gap-3 transition-transform duration-300 ease-out"
-                style={{
-                  transform: `translateX(calc(-${currentIndex} * (50% + 6px)))`,
-                }}
-              >
-                {allItems.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="flex-shrink-0 min-h-[130px]"
-                    style={{ width: 'calc(50% - 6px)' }}
-                  >
-                    {item.type === 'link' ? (
-                      <AnimatedFolder
-                        title={item.title}
-                        subtitle={item.subtitle}
-                        href={item.href}
-                        icon={item.icon}
-                      />
-                    ) : (
-                      <IconHover3D
-                        icon={item.icon}
-                        title={item.title}
-                        description={item.description}
-                        onClick={() => onPromptSubmit(item.prompt)}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right arrow */}
-          <button
-            onClick={() => handleNext(mobileMaxIndex)}
-            disabled={currentIndex >= mobileMaxIndex}
-            className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-              currentIndex < mobileMaxIndex 
-                ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
-                : 'opacity-30 cursor-not-allowed'
-            }`}
-            aria-label="Next"
-          >
-            <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
-          </button>
-        </div>
-
-        {/* Progress dots */}
-        <div className="flex justify-center gap-1.5 mt-4">
-          {Array.from({ length: mobileMaxIndex + 1 }).map((_, idx) => (
+        {/* Tablet dots */}
+        <div className="hidden md:flex lg:hidden gap-1.5">
+          {Array.from({ length: getMaxIndex(3) + 1 }).map((_, idx) => (
             <button
               key={idx}
-              onClick={() => setCurrentIndex(idx)}
+              onClick={() => setCurrentIndex(Math.min(idx, getMaxIndex(3)))}
+              className={`h-1.5 rounded-full transition-all duration-200 ${
+                idx === currentIndex 
+                  ? 'bg-[var(--color-brand-500)] w-4' 
+                  : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Mobile dots */}
+        <div className="flex md:hidden gap-1.5">
+          {Array.from({ length: getMaxIndex(2) + 1 }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(Math.min(idx, getMaxIndex(2)))}
               className={`h-1.5 rounded-full transition-all duration-200 ${
                 idx === currentIndex 
                   ? 'bg-[var(--color-brand-500)] w-4' 

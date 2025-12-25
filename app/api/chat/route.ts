@@ -348,9 +348,12 @@ async function streamWithAnthropicNative(
               const webSearchData = result.data as { sources?: Array<{ title: string; url: string }> };
               if (webSearchData.sources && Array.isArray(webSearchData.sources)) {
                 const newSources: SourceData[] = [];
-                for (const source of webSearchData.sources) {
+                for (let i = 0; i < webSearchData.sources.length; i++) {
+                  const source = webSearchData.sources[i];
+                  // Generate truly unique ID using URL hash + timestamp + index
+                  const urlHash = source.url.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0).toString(36);
                   const sourceData: SourceData = {
-                    id: `web-search-${collectedSources.length}`,
+                    id: `ws-${urlHash}-${Date.now()}-${i}`,
                     name: extractHostname(source.url),
                     url: source.url,
                     title: source.title || extractTitleFromUrl(source.url),
@@ -377,7 +380,9 @@ async function streamWithAnthropicNative(
           // Continue conversation with tool results
           console.log('Continuing with tool results:', toolResults.length, 'results');
           
-          const continueStream = await client.messages.stream({
+          // Use non-streaming request for the continuation to ensure we get the full response
+          // This is more reliable than streaming for tool result continuations
+          const continueResponse = await client.messages.create({
             model: modelId,
             max_tokens: 16000,
             system: systemPrompt,
@@ -386,36 +391,34 @@ async function streamWithAnthropicNative(
               { role: 'assistant', content: response.content },
               { role: 'user', content: toolResults },
             ],
-            ...(thinkingConfig ? { thinking: thinkingConfig } : {}),
           });
 
-          let continuationTextCount = 0;
-          
-          continueStream.on('text', (text: string) => {
-            continuationTextCount++;
-            controller.enqueue(sse.encode({ type: 'text', content: text }));
-          });
-
-          continueStream.on('contentBlock', (block: { type: string; thinking?: string }) => {
-            if (block.type === 'thinking' && block.thinking) {
-              controller.enqueue(sse.encode({ type: 'thinking', content: block.thinking }));
-            }
-          });
-
-          const continueResponse = await continueStream.finalMessage();
           console.log('Continuation complete:', {
-            textChunks: continuationTextCount,
             stopReason: continueResponse.stop_reason,
             contentBlocks: continueResponse.content?.length || 0,
           });
           
-          // If continuation didn't produce text but has content blocks, extract them
-          if (continuationTextCount === 0 && continueResponse.content) {
-            for (const block of continueResponse.content) {
-              if (block.type === 'text' && 'text' in block) {
-                controller.enqueue(sse.encode({ type: 'text', content: block.text }));
+          // Extract and stream the text content from the continuation response
+          let hasText = false;
+          for (const block of continueResponse.content || []) {
+            if (block.type === 'text' && 'text' in block) {
+              hasText = true;
+              // Stream the text in chunks for smooth UI
+              const text = block.text;
+              const chunkSize = 20;
+              for (let i = 0; i < text.length; i += chunkSize) {
+                const chunk = text.slice(i, i + chunkSize);
+                controller.enqueue(sse.encode({ type: 'text', content: chunk }));
+                // Small delay for smooth streaming effect
+                await new Promise(resolve => setTimeout(resolve, 5));
               }
+            } else if (block.type === 'thinking' && 'thinking' in block) {
+              controller.enqueue(sse.encode({ type: 'thinking', content: (block as { thinking: string }).thinking }));
             }
+          }
+          
+          if (!hasText) {
+            console.warn('Continuation produced no text content. Stop reason:', continueResponse.stop_reason);
           }
         }
 

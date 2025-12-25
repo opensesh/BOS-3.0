@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowLeft, Sparkles, Globe, Image } from 'lucide-react';
+import { ArrowLeft, Globe, Image } from 'lucide-react';
 import { OverflowMenu } from './OverflowMenu';
 import { ShareButton } from './ShareModal';
 import { SourceInfo } from './AnswerView';
@@ -33,8 +33,8 @@ export function ChatHeader({
   const tabs = [
     {
       id: 'answer' as ChatTab,
-      label: 'Answer',
-      icon: Sparkles,
+      label: 'Chat',
+      icon: null, // No icon for Chat tab
       available: true,
     },
     {
@@ -54,8 +54,8 @@ export function ChatHeader({
   ];
 
   return (
-    <div className="sticky top-0 z-30 bg-[var(--bg-primary)]">
-      <div className="max-w-3xl mx-auto px-4">
+    <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
+      <div className="px-4">
         <div className="flex items-center justify-between h-12">
           {/* Left side - Back button and tabs */}
           <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function ChatHeader({
                       }
                     `}
                   >
-                    <Icon className="w-4 h-4" />
+                    {Icon && <Icon className="w-4 h-4" />}
                     <span>{tab.label}</span>
                     {/* Active indicator */}
                     {isActive && (

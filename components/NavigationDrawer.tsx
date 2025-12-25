@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
@@ -42,12 +42,22 @@ const brandHubNavItems = [
 
 export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationDrawerProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0, height: 0 });
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const onCloseRef = useRef(onClose);
-  const { chatHistory } = useChatContext();
+  const { chatHistory, loadSession } = useChatContext();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
+
+  // Handle clicking on a recent chat - load the session and navigate to home
+  const handleChatClick = useCallback((chatId: string) => {
+    loadSession(chatId);
+    if (pathname !== '/') {
+      router.push('/');
+    }
+    onClose();
+  }, [loadSession, pathname, router, onClose]);
 
   // Keep onClose ref up to date without triggering re-renders
   useEffect(() => {
@@ -231,6 +241,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         key={chat.id}
                         variants={fadeInUp}
                         custom={index}
+                        onClick={() => handleChatClick(chat.id)}
                         className="w-full text-left px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
                       >
                         <MessageSquare className="w-4 h-4 flex-shrink-0" />

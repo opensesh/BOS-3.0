@@ -958,10 +958,8 @@ export function ChatInterface() {
                         <ActiveSettingsIndicators
                           currentProject={currentProject}
                           currentWritingStyle={currentWritingStyle}
-                          extendedThinkingEnabled={extendedThinkingEnabled}
                           onRemoveProject={() => setCurrentProject(null)}
                           onRemoveWritingStyle={() => setCurrentWritingStyle(null)}
-                          onRemoveExtendedThinking={() => setExtendedThinkingEnabled(false)}
                           disabled={isLoading}
                         />
                       </div>

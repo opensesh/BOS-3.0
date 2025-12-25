@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FolderPlus, PenTool, Clock } from 'lucide-react';
+import { X, FolderPlus, PenTool } from 'lucide-react';
 import { Project } from './project-selector';
 import { WritingStyle } from './writing-style-selector';
 
@@ -33,13 +33,12 @@ function IndicatorChip({ icon: Icon, label, tooltip, onRemove, disabled }: Indic
     >
       <div
         className={`
-          flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+          flex items-center gap-1.5 px-2 py-2 rounded-lg
           bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]
           transition-all duration-150
-          ${isHovered ? 'pr-1.5' : ''}
         `}
       >
-        <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+        <Icon className="w-5 h-5 flex-shrink-0" />
         <span className="text-xs font-medium truncate max-w-[100px]">{label}</span>
         
         {/* Remove button - appears on hover */}
@@ -55,10 +54,10 @@ function IndicatorChip({ icon: Icon, label, tooltip, onRemove, disabled }: Indic
                 e.stopPropagation();
                 onRemove();
               }}
-              className="flex items-center justify-center w-4 h-4 rounded hover:bg-[var(--bg-brand-secondary)] transition-colors"
+              className="flex items-center justify-center w-5 h-5 rounded hover:bg-[var(--bg-brand-secondary)] transition-colors ml-0.5"
               aria-label={`Remove ${label}`}
             >
-              <X className="w-3 h-3" />
+              <X className="w-3.5 h-3.5" />
             </motion.button>
           )}
         </AnimatePresence>
@@ -93,23 +92,19 @@ function IndicatorChip({ icon: Icon, label, tooltip, onRemove, disabled }: Indic
 interface ActiveSettingsIndicatorsProps {
   currentProject: Project | null;
   currentWritingStyle: WritingStyle | null;
-  extendedThinkingEnabled: boolean;
   onRemoveProject: () => void;
   onRemoveWritingStyle: () => void;
-  onRemoveExtendedThinking: () => void;
   disabled?: boolean;
 }
 
 export function ActiveSettingsIndicators({
   currentProject,
   currentWritingStyle,
-  extendedThinkingEnabled,
   onRemoveProject,
   onRemoveWritingStyle,
-  onRemoveExtendedThinking,
   disabled,
 }: ActiveSettingsIndicatorsProps) {
-  const hasActiveSettings = currentProject || currentWritingStyle || extendedThinkingEnabled;
+  const hasActiveSettings = currentProject || currentWritingStyle;
 
   if (!hasActiveSettings) {
     return null;
@@ -151,25 +146,6 @@ export function ActiveSettingsIndicators({
               label={currentWritingStyle.name}
               tooltip={`Writing style: ${currentWritingStyle.name}${currentWritingStyle.description ? ` - ${currentWritingStyle.description}` : ''}`}
               onRemove={onRemoveWritingStyle}
-              disabled={disabled}
-            />
-          </motion.div>
-        )}
-
-        {/* Extended thinking indicator */}
-        {extendedThinkingEnabled && (
-          <motion.div
-            key="thinking"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.15 }}
-          >
-            <IndicatorChip
-              icon={Clock}
-              label="Extended"
-              tooltip="Extended thinking mode enabled - Claude will think longer for complex problems"
-              onRemove={onRemoveExtendedThinking}
               disabled={disabled}
             />
           </motion.div>

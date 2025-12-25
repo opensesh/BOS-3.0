@@ -227,6 +227,7 @@ export function BrandSelector({ size = 20, className = '', href = '/', onClick }
                 width={size}
                 height={size}
                 className="object-contain"
+                style={{ width: 'auto', height: 'auto', maxWidth: size, maxHeight: size }}
               />
             ) : (
               <Brandmark size={size} />

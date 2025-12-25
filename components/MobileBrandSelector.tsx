@@ -187,7 +187,7 @@ export function MobileBrandSelector({ onClose }: MobileBrandSelectorProps) {
           aria-label="Select brand"
         >
           {/* Logo + Brand Name */}
-          <div className="flex items-center space-x-3 overflow-hidden">
+            <div className="flex items-center space-x-3 overflow-hidden">
             <div className="flex-shrink-0">
               {selectedBrand.logoPath ? (
                 <Image
@@ -196,6 +196,7 @@ export function MobileBrandSelector({ onClose }: MobileBrandSelectorProps) {
                   width={28}
                   height={28}
                   className="object-contain"
+                  style={{ width: 'auto', height: 'auto', maxWidth: 28, maxHeight: 28 }}
                 />
               ) : (
                 <Brandmark size={28} />
@@ -255,6 +256,7 @@ export function MobileBrandSelector({ onClose }: MobileBrandSelectorProps) {
                           width={20}
                           height={20}
                           className="object-contain"
+                          style={{ width: 'auto', height: 'auto', maxWidth: 20, maxHeight: 20 }}
                         />
                       ) : (
                         <Brandmark size={20} />

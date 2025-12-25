@@ -275,6 +275,7 @@ function LogoCard({
           width={100}
           height={100}
           className={`object-contain ${imageSizeClass}`}
+          style={{ width: 'auto', height: 'auto' }}
         />
       </div>
     </div>

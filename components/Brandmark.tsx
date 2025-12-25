@@ -32,6 +32,7 @@ export function Brandmark({ className = '', size = 24 }: BrandmarkProps) {
         src={logoSrc}
         alt="Brand Operating System"
         fill
+        priority
         className="object-contain transition-opacity duration-200"
         sizes={`${size}px`}
       />

@@ -120,18 +120,18 @@ function Dropdown({
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary-hover)] transition-colors text-[11px] border border-[var(--border-primary)]/30 shadow-sm"
+        className="flex items-center gap-1 px-2 py-1 rounded-md bg-[var(--bg-primary)]/60 hover:bg-[var(--bg-primary)] transition-colors text-[11px]"
         aria-label={hideLabel ? (Icon === Download ? 'Download logo' : 'Select option') : undefined}
       >
-        {Icon && <Icon className="w-3 h-3 text-[var(--fg-primary)]/70" />}
+        {Icon && <Icon className="w-3 h-3 text-[var(--fg-tertiary)]" />}
         {!hideLabel && selectedOption && (
-          <span className="text-[var(--fg-primary)] font-medium font-display">{selectedOption.label}</span>
+          <span className="text-[var(--fg-secondary)] font-medium font-display">{selectedOption.label}</span>
         )}
-        <ChevronDown className={`w-2.5 h-2.5 text-[var(--fg-primary)]/70 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-2.5 h-2.5 text-[var(--fg-tertiary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-24 rounded bg-[var(--bg-secondary)] border border-[var(--border-primary)] shadow-xl z-30 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-24 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]/50 shadow-lg z-30 overflow-hidden">
           {options.map((option) => (
             <button
               key={option.value}
@@ -143,7 +143,7 @@ function Dropdown({
               className={`w-full px-2 py-1.5 text-left text-[11px] transition-colors ${
                 option.value === value
                   ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] font-medium'
-                  : 'text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                  : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
               }`}
             >
               {option.label}
@@ -239,17 +239,17 @@ function LogoCard({
 
   return (
     <div 
-      className="group relative rounded-xl border border-[var(--border-primary)] transition-all duration-300 hover:border-[var(--fg-primary)] bg-[var(--bg-secondary)]"
+      className="group relative rounded-xl overflow-hidden transition-all duration-300 hover:ring-1 hover:ring-[var(--border-brand)] bg-[var(--bg-secondary)]"
       role="article"
       aria-label={`${logo.name} logo - ${colorVariant} variant`}
     >
       {/* Header Row with Logo Name and Controls */}
-      <div className="bg-[var(--bg-tertiary)] px-3 py-2 rounded-t-xl border-b border-[var(--border-primary)]/30 flex items-center justify-between">
+      <div className="bg-[var(--bg-tertiary)]/50 px-3 py-2 flex items-center justify-between">
         {/* Logo Name Label */}
-        <span className="text-[11px] font-medium text-[var(--fg-primary)] font-display">{logo.name}</span>
+        <span className="text-[11px] font-medium text-[var(--fg-secondary)] font-display">{logo.name}</span>
         
         {/* Controls */}
-        <div className="flex gap-1.5 items-center">
+        <div className="flex gap-1 items-center">
           <Dropdown
             options={colorOptions}
             value={colorVariant}
@@ -268,7 +268,7 @@ function LogoCard({
       </div>
       
       {/* Logo Preview - Square aspect ratio */}
-      <div className={`aspect-square ${bgClass} relative flex items-center justify-center p-3 rounded-b-xl`}>
+      <div className={`aspect-square ${bgClass} relative flex items-center justify-center p-3`}>
         <Image
           src={imagePath}
           alt={`${logo.name} logo in ${colorVariant} variant`}

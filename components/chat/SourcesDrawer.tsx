@@ -56,23 +56,23 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
     <>
       {/* Backdrop - top-12 aligns with bottom of chat header */}
       <div
-        className="fixed inset-0 top-12 bg-black/40 z-40"
+        className="fixed inset-0 top-12 bg-black/30 z-40 backdrop-blur-[2px]"
         onClick={onClose}
       />
 
       {/* Drawer - top-12 aligns with bottom of chat header */}
-      <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] border-l border-[var(--border-primary)] z-50 flex flex-col animate-slide-in-right">
+      <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] border-l border-[var(--border-primary)]/30 z-50 flex flex-col animate-slide-in-right shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-primary)]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-primary)]/20">
           <h2 className="text-[15px] font-semibold text-[var(--fg-primary)]">
             Sources
-            <span className="text-xs text-[var(--fg-tertiary)] font-normal ml-2">
-              ({totalCount})
+            <span className="text-xs text-[var(--fg-tertiary)]/60 font-normal ml-2">
+              {totalCount}
             </span>
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]/50 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -82,45 +82,40 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
         <div className="flex-1 overflow-y-auto">
           {/* Brand Context Section - internal knowledge that informed the response */}
           {hasBrandResources && (
-            <div className="border-b border-[var(--border-primary)]/50">
-              <div className="px-5 py-3 bg-[var(--bg-brand-primary)]">
+            <div className="pt-4 pb-2">
+              <div className="px-5 mb-3">
                 <div className="flex items-center gap-2">
-                  <Hexagon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
-                  <span className="text-xs font-semibold text-[var(--fg-brand-primary)] uppercase tracking-wider">
+                  <Hexagon className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
+                  <span className="text-[11px] font-medium text-[var(--fg-brand-primary)] uppercase tracking-wider">
                     Brand Context
-                  </span>
-                  <span className="text-[10px] text-[var(--fg-brand-primary)]/60 ml-auto">
-                    Internal Knowledge
                   </span>
                 </div>
               </div>
-              <div className="divide-y divide-[var(--border-primary)]/50">
+              <div className="px-3 space-y-1">
                 {resourceCards.map((card, idx) => (
                   <Link
                     key={`brand-${idx}`}
                     href={card.href}
                     onClick={onClose}
-                    className="block px-5 py-4 hover:bg-[var(--bg-secondary)]/50 transition-colors group"
+                    className="flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-[var(--bg-brand-primary)]/30 transition-all duration-200 group"
                   >
-                    <div className="flex items-start gap-3">
-                      {/* Icon */}
-                      <div className="w-6 h-6 rounded-full bg-[var(--bg-brand-primary)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Hexagon className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-[14px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
-                          {card.title}
-                        </h3>
-                        <p className="text-[13px] text-[var(--fg-tertiary)] mt-0.5">
-                          {card.description}
-                        </p>
-                      </div>
-
-                      {/* Arrow */}
-                      <ArrowRight className="w-4 h-4 text-[var(--fg-brand-primary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+                    {/* Icon */}
+                    <div className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)]/50 flex items-center justify-center flex-shrink-0">
+                      <Hexagon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
                     </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <h3 className="text-[13px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors leading-snug">
+                        {card.title}
+                      </h3>
+                      <p className="text-[12px] text-[var(--fg-tertiary)]/70 mt-0.5 line-clamp-1">
+                        {card.description}
+                      </p>
+                    </div>
+
+                    {/* Arrow */}
+                    <ArrowRight className="w-4 h-4 text-[var(--fg-brand-primary)] opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 mt-1 translate-x-0 group-hover:translate-x-0.5" />
                   </Link>
                 ))}
               </div>
@@ -129,19 +124,16 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
 
           {/* Discover Sources Section */}
           {hasDiscoverSources && (
-            <div className="border-b border-[var(--border-primary)]/50">
-              <div className="px-5 py-3 bg-cyan-500/5">
+            <div className="pt-4 pb-2">
+              <div className="px-5 mb-3">
                 <div className="flex items-center gap-2">
-                  <Compass className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
-                    Your News Sources
-                  </span>
-                  <span className="text-[10px] text-[var(--fg-tertiary)] ml-auto">
-                    RSS Feeds
+                  <Compass className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="text-[11px] font-medium text-cyan-400 uppercase tracking-wider">
+                    News Sources
                   </span>
                 </div>
               </div>
-              <div className="divide-y divide-[var(--border-primary)]/50">
+              <div className="px-3 space-y-1">
                 {discoverSources.map((source, idx) => {
                   const categoryConfig = source.category 
                     ? CATEGORY_CONFIG[source.category] 
@@ -153,51 +145,42 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
                       href={source.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block px-5 py-4 hover:bg-[var(--bg-secondary)]/50 transition-colors group"
+                      className="flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-cyan-500/5 transition-all duration-200 group"
                     >
-                      <div className="flex items-start gap-3">
-                        {/* Icon with category color */}
-                        <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Rss className="w-3.5 h-3.5 text-cyan-400" />
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          {/* Source name and category */}
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <p className="text-xs text-[var(--fg-tertiary)]">
-                              {source.name}
-                            </p>
-                            {categoryConfig && (
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-secondary)] ${categoryConfig.color}`}>
-                                {categoryConfig.label}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Title */}
-                          <h3 className="text-[14px] font-medium text-[var(--fg-primary)] group-hover:text-cyan-400 transition-colors line-clamp-2">
-                            {source.title || source.name}
-                          </h3>
-
-                          {/* Snippet */}
-                          {source.snippet && (
-                            <p className="text-[13px] text-[var(--fg-tertiary)] mt-1 line-clamp-2">
-                              {source.snippet}
-                            </p>
-                          )}
-
-                          {/* Published time */}
-                          {source.publishedAt && (
-                            <p className="text-[11px] text-[var(--fg-tertiary)]/60 mt-1.5">
-                              {source.publishedAt}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* External link icon */}
-                        <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+                      {/* Icon with category color */}
+                      <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+                        <Rss className="w-4 h-4 text-cyan-400" />
                       </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        {/* Title */}
+                        <h3 className="text-[13px] font-medium text-[var(--fg-primary)] group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                          {source.title || source.name}
+                        </h3>
+
+                        {/* Source name and category */}
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-[11px] text-[var(--fg-tertiary)]/60">
+                            {source.name}
+                          </p>
+                          {categoryConfig && (
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--bg-secondary)]/50 ${categoryConfig.color}`}>
+                              {categoryConfig.label}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Published time */}
+                        {source.publishedAt && (
+                          <p className="text-[10px] text-[var(--fg-tertiary)]/40 mt-1">
+                            {source.publishedAt}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* External link icon */}
+                      <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 mt-1" />
                     </a>
                   );
                 })}
@@ -207,69 +190,57 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
 
           {/* Web Sources Section - actual citations from AI response */}
           {hasWebSources && (
-            <div>
-              <div className="px-5 py-3 bg-[var(--bg-secondary)]/30">
+            <div className="pt-4 pb-2">
+              <div className="px-5 mb-3">
                 <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                  <span className="text-xs font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider">
+                  <Globe className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/60" />
+                  <span className="text-[11px] font-medium text-[var(--fg-tertiary)]/60 uppercase tracking-wider">
                     Citations
-                  </span>
-                  <span className="text-[10px] text-[var(--fg-tertiary)]/60 ml-auto">
-                    External Sources
                   </span>
                 </div>
               </div>
-              <div className="divide-y divide-[var(--border-primary)]/50">
+              <div className="px-3 space-y-1">
                 {webSources.map((source, idx) => (
                   <a
                     key={source.id || idx}
                     href={source.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block px-5 py-4 hover:bg-[var(--bg-secondary)]/50 transition-colors group"
+                    className="flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-[var(--bg-secondary)]/30 transition-all duration-200 group"
                   >
-                    <div className="flex items-start gap-3">
-                      {/* Favicon */}
-                      <div className="w-6 h-6 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        {source.favicon ? (
-                          <img
-                            src={source.favicon}
-                            alt=""
-                            className="w-4 h-4 rounded"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                        ) : (
-                          <Globe className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
-                        )}
-                        <Globe className="w-3.5 h-3.5 text-[var(--fg-tertiary)] hidden" />
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        {/* Title */}
-                        <h3 className="text-[14px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors line-clamp-2">
-                          {source.title || source.name}
-                        </h3>
-
-                        {/* Domain / URL */}
-                        <p className="text-xs text-[var(--fg-tertiary)] mt-0.5 truncate">
-                          {source.name}
-                        </p>
-
-                        {/* Snippet */}
-                        {source.snippet && (
-                          <p className="text-[13px] text-[var(--fg-tertiary)] mt-1 line-clamp-2">
-                            {source.snippet}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* External link icon */}
-                      <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+                    {/* Favicon */}
+                    <div className="w-8 h-8 rounded-lg bg-[var(--bg-secondary)]/50 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {source.favicon ? (
+                        <img
+                          src={source.favicon}
+                          alt=""
+                          className="w-4 h-4 rounded"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : (
+                        <Globe className="w-4 h-4 text-[var(--fg-tertiary)]/50" />
+                      )}
+                      <Globe className="w-4 h-4 text-[var(--fg-tertiary)]/50 hidden" />
                     </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      {/* Title */}
+                      <h3 className="text-[13px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors line-clamp-2 leading-snug">
+                        {source.title || source.name}
+                      </h3>
+
+                      {/* Domain / URL */}
+                      <p className="text-[11px] text-[var(--fg-tertiary)]/50 mt-1 truncate">
+                        {source.name}
+                      </p>
+                    </div>
+
+                    {/* External link icon */}
+                    <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 mt-1" />
                   </a>
                 ))}
               </div>
@@ -278,41 +249,41 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
 
           {/* Empty state with search links */}
           {!hasAnySources && (
-            <div className="px-5 py-8">
+            <div className="px-5 py-12">
               <div className="text-center">
-                <div className="w-12 h-12 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-6 h-6 text-[var(--fg-tertiary)]" />
+                <div className="w-14 h-14 rounded-2xl bg-[var(--bg-secondary)]/30 flex items-center justify-center mx-auto mb-5">
+                  <Search className="w-6 h-6 text-[var(--fg-tertiary)]/50" />
                 </div>
                 <h3 className="text-[15px] font-medium text-[var(--fg-primary)] mb-2">
-                  No sources for this response
+                  No sources available
                 </h3>
-                <p className="text-[13px] text-[var(--fg-tertiary)] mb-6">
-                  This response was generated from the AI&apos;s knowledge. Find more information on the web:
+                <p className="text-[13px] text-[var(--fg-tertiary)]/70 mb-6 max-w-[280px] mx-auto">
+                  This response was generated from AI knowledge. Explore more on the web:
                 </p>
                 <div className="space-y-2">
                   <a
                     href={`https://www.google.com/search?q=${searchQuery}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 transition-colors group"
+                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-[var(--bg-secondary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-200 group"
                   >
                     <img src="https://www.google.com/favicon.ico" alt="" className="w-4 h-4" />
-                    <span className="text-[14px] text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-1 text-left">
+                    <span className="text-[13px] text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-1 text-left font-medium">
                       Search on Google
                     </span>
-                    <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)]/40 group-hover:text-[var(--fg-brand-primary)] transition-colors" />
                   </a>
                   <a
                     href={`https://www.perplexity.ai/search?q=${searchQuery}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 transition-colors group"
+                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-[var(--bg-secondary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-200 group"
                   >
-                    <Globe className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                    <span className="text-[14px] text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-1 text-left">
+                    <Globe className="w-4 h-4 text-[var(--fg-tertiary)]/60" />
+                    <span className="text-[13px] text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-1 text-left font-medium">
                       Search on Perplexity
                     </span>
-                    <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)]/40 group-hover:text-[var(--fg-brand-primary)] transition-colors" />
                   </a>
                 </div>
               </div>

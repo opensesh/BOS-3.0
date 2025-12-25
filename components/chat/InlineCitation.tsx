@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Image } from 'lucide-react';
 import { SourceInfo } from './AnswerView';
@@ -21,6 +21,8 @@ export function InlineCitation({
 }: InlineCitationProps) {
   const router = useRouter();
   const [showPopover, setShowPopover] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState<'above' | 'below'>('above');
+  const containerRef = useRef<HTMLSpanElement>(null);
 
   // Check if primary source is a brand source
   const primarySourceData = sources[0];
@@ -52,6 +54,28 @@ export function InlineCitation({
   // External sources for regular popover
   const externalSources = sources.filter((s) => !s.type || s.type === 'external');
 
+  // Calculate popover position based on available space
+  const calculatePosition = useCallback(() => {
+    if (!containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    // Estimate popover height (header + items, roughly 200-300px max)
+    const estimatedPopoverHeight = Math.min(sources.length * 60 + 50, 300);
+    
+    // If there's not enough space above (less than estimated popover height + some margin), show below
+    const spaceAbove = rect.top;
+    const shouldShowBelow = spaceAbove < estimatedPopoverHeight + 20;
+    
+    setPopoverPosition(shouldShowBelow ? 'below' : 'above');
+  }, [sources.length]);
+
+  // Recalculate position when showing popover
+  useEffect(() => {
+    if (showPopover) {
+      calculatePosition();
+    }
+  }, [showPopover, calculatePosition]);
+
   // Handle click to navigate to the brand source page
   const handleClick = (e: React.MouseEvent) => {
     if (!isBrandSource) return;
@@ -73,6 +97,7 @@ export function InlineCitation({
 
   return (
     <span
+      ref={containerRef}
       className="relative inline-flex"
       onMouseEnter={() => setShowPopover(true)}
       onMouseLeave={() => setShowPopover(false)}
@@ -105,9 +130,9 @@ export function InlineCitation({
       {/* Popover - use brand popover for brand sources */}
       {showPopover && sources.length > 0 && (
         isBrandSource && brandSources.length > 0 ? (
-          <BrandSourcePopover sources={brandSources} />
+          <BrandSourcePopover sources={brandSources} position={popoverPosition} />
         ) : externalSources.length > 0 ? (
-          <SourcePopover sources={externalSources} />
+          <SourcePopover sources={externalSources} position={popoverPosition} />
         ) : null
       )}
     </span>

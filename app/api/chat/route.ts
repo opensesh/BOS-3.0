@@ -343,11 +343,10 @@ async function streamWithAnthropicNative(
               content: result.success ? 'Tool completed successfully' : `Error: ${result.error}` 
             }));
 
-            // Extract sources from web_search tool results and stream them immediately
+            // Extract sources from web_search and stream them ONE BY ONE for smooth UX
             if (toolCall.name === 'web_search' && result.success && result.data) {
               const webSearchData = result.data as { sources?: Array<{ title: string; url: string }> };
               if (webSearchData.sources && Array.isArray(webSearchData.sources)) {
-                const newSources: SourceData[] = [];
                 for (let i = 0; i < webSearchData.sources.length; i++) {
                   const source = webSearchData.sources[i];
                   // Generate truly unique ID using URL hash + timestamp + index
@@ -361,11 +360,12 @@ async function streamWithAnthropicNative(
                     type: 'external',
                   };
                   collectedSources.push(sourceData);
-                  newSources.push(sourceData);
-                }
-                // Stream sources immediately so UI can show them as they're found
-                if (newSources.length > 0) {
-                  controller.enqueue(sse.encode({ type: 'sources', sources: newSources }));
+                  
+                  // Stream each source individually for a smooth "finding sources" feel
+                  controller.enqueue(sse.encode({ type: 'sources', sources: [sourceData] }));
+                  
+                  // Small delay between sources for visual effect (50-100ms feels natural)
+                  await new Promise(resolve => setTimeout(resolve, 60));
                 }
               }
             }

@@ -86,121 +86,30 @@ const prePrompts = [
   },
 ];
 
-// Combined for desktop carousel
+// Combined for carousel
 const allItems = [
   ...quickLinks.map(link => ({ ...link, type: 'link' as const })),
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
-// Reusable carousel row component for mobile/tablet
-function CarouselRow({ 
-  items, 
-  type, 
-  onPromptSubmit,
-  visibleCount = 2,
-}: { 
-  items: typeof quickLinks | typeof prePrompts;
-  type: 'link' | 'prompt';
-  onPromptSubmit?: (prompt: string) => void;
-  visibleCount?: number;
-}) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const maxIndex = items.length - visibleCount;
-
-  const handlePrev = () => setCurrentIndex(prev => Math.max(0, prev - 1));
-  const handleNext = () => setCurrentIndex(prev => Math.min(maxIndex, prev + 1));
-
-  const canGoPrev = currentIndex > 0;
-  const canGoNext = currentIndex < maxIndex;
-  
-  // Smaller card width to allow padding for gradient effect
-  const cardWidthPercent = 45; // ~45% each for 2 cards with gaps
-
-  return (
-    <div className="flex items-center gap-3">
-      {/* Left arrow */}
-      <button
-        onClick={handlePrev}
-        disabled={!canGoPrev}
-        className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-          canGoPrev 
-            ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
-            : 'opacity-30 cursor-not-allowed'
-        }`}
-        aria-label="Previous"
-      >
-        <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
-      </button>
-
-      {/* Cards with soft gradient fade */}
-      <div 
-        className="relative flex-1 overflow-hidden"
-        style={{
-          maskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)',
-          WebkitMaskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)',
-        }}
-      >
-        <div 
-          className="flex gap-3 transition-transform duration-300 ease-out px-1"
-          style={{
-            transform: `translateX(-${currentIndex * (cardWidthPercent + 1.5)}%)`,
-          }}
-        >
-          {items.map((item) => (
-            <div 
-              key={item.id} 
-              className="flex-shrink-0 min-h-[130px]"
-              style={{ width: `${cardWidthPercent}%` }}
-            >
-              {type === 'link' && 'href' in item ? (
-                <AnimatedFolder
-                  title={item.title}
-                  subtitle={item.subtitle}
-                  href={item.href}
-                  icon={item.icon}
-                />
-              ) : type === 'prompt' && 'prompt' in item ? (
-                <IconHover3D
-                  icon={item.icon}
-                  title={item.title}
-                  description={item.description}
-                  onClick={() => onPromptSubmit?.(item.prompt)}
-                />
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Right arrow */}
-      <button
-        onClick={handleNext}
-        disabled={!canGoNext}
-        className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-          canGoNext 
-            ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
-            : 'opacity-30 cursor-not-allowed'
-        }`}
-        aria-label="Next"
-      >
-        <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
-      </button>
-    </div>
-  );
-}
-
 export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
-  // Desktop carousel state
+  // Start centered: index 2 shows Colors, Spaces, Create post, Plan campaign
   const [currentIndex, setCurrentIndex] = useState(2);
-  const visibleCount = 4;
-  const maxIndex = allItems.length - visibleCount;
+  
+  // Desktop: 4 cards, Mobile: 2 cards
+  const desktopVisibleCount = 4;
+  const mobileVisibleCount = 2;
+  
+  const desktopMaxIndex = allItems.length - desktopVisibleCount;
+  const mobileMaxIndex = allItems.length - mobileVisibleCount;
 
-  const handlePrev = () => setCurrentIndex(prev => Math.max(0, prev - 1));
-  const handleNext = () => setCurrentIndex(prev => Math.min(maxIndex, prev + 1));
+  const handlePrev = (maxIdx: number) => {
+    setCurrentIndex(prev => Math.max(0, prev - 1));
+  };
 
-  const canGoPrev = currentIndex > 0;
-  const canGoNext = currentIndex < maxIndex;
-  const cardWidthPercent = 100 / visibleCount;
+  const handleNext = (maxIdx: number) => {
+    setCurrentIndex(prev => Math.min(maxIdx, prev + 1));
+  };
 
   return (
     <motion.div
@@ -209,15 +118,15 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
       animate="visible"
       className="w-full max-w-3xl mx-auto px-4 mt-4"
     >
-      {/* Desktop: Single carousel with all items */}
+      {/* Desktop Carousel: 4 cards */}
       <div className="hidden lg:block">
         <div className="flex items-center gap-4">
           {/* Left arrow */}
           <button
-            onClick={handlePrev}
-            disabled={!canGoPrev}
+            onClick={() => handlePrev(desktopMaxIndex)}
+            disabled={currentIndex <= 0}
             className={`flex-shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-              canGoPrev 
+              currentIndex > 0 
                 ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
                 : 'opacity-30 cursor-not-allowed'
             }`}
@@ -226,52 +135,64 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
             <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
           </button>
 
-          {/* Cards */}
-          <div 
-            className="relative flex-1 overflow-hidden"
-            style={{
-              maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
-            }}
-          >
+          {/* Cards container */}
+          <div className="relative flex-1">
+            {/* Left edge fade - only for incoming cards */}
             <div 
-              className="flex gap-3 transition-transform duration-300 ease-out"
+              className="absolute left-0 top-0 bottom-0 w-4 z-10 pointer-events-none"
               style={{
-                transform: `translateX(-${currentIndex * (cardWidthPercent + 0.5)}%)`,
+                background: 'linear-gradient(to right, var(--bg-primary), transparent)',
               }}
-            >
-              {allItems.map((item) => (
-                <div 
-                  key={item.id} 
-                  className="flex-shrink-0 min-h-[140px]"
-                  style={{ width: `calc(${cardWidthPercent}% - 9px)` }}
-                >
-                  {item.type === 'link' ? (
-                    <AnimatedFolder
-                      title={item.title}
-                      subtitle={item.subtitle}
-                      href={item.href}
-                      icon={item.icon}
-                    />
-                  ) : (
-                    <IconHover3D
-                      icon={item.icon}
-                      title={item.title}
-                      description={item.description}
-                      onClick={() => onPromptSubmit(item.prompt)}
-                    />
-                  )}
-                </div>
-              ))}
+            />
+            
+            {/* Right edge fade - only for incoming cards */}
+            <div 
+              className="absolute right-0 top-0 bottom-0 w-4 z-10 pointer-events-none"
+              style={{
+                background: 'linear-gradient(to left, var(--bg-primary), transparent)',
+              }}
+            />
+
+            <div className="overflow-hidden">
+              <div 
+                className="flex gap-3 transition-transform duration-300 ease-out"
+                style={{
+                  transform: `translateX(calc(-${currentIndex} * (25% + 2.25px)))`,
+                }}
+              >
+                {allItems.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className="flex-shrink-0 min-h-[140px]"
+                    style={{ width: 'calc(25% - 9px)' }}
+                  >
+                    {item.type === 'link' ? (
+                      <AnimatedFolder
+                        title={item.title}
+                        subtitle={item.subtitle}
+                        href={item.href}
+                        icon={item.icon}
+                      />
+                    ) : (
+                      <IconHover3D
+                        icon={item.icon}
+                        title={item.title}
+                        description={item.description}
+                        onClick={() => onPromptSubmit(item.prompt)}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Right arrow */}
           <button
-            onClick={handleNext}
-            disabled={!canGoNext}
+            onClick={() => handleNext(desktopMaxIndex)}
+            disabled={currentIndex >= desktopMaxIndex}
             className={`flex-shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-              canGoNext 
+              currentIndex < desktopMaxIndex 
                 ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
                 : 'opacity-30 cursor-not-allowed'
             }`}
@@ -283,7 +204,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
 
         {/* Progress dots */}
         <div className="flex justify-center gap-1.5 mt-4">
-          {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+          {Array.from({ length: desktopMaxIndex + 1 }).map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}
@@ -298,22 +219,105 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
         </div>
       </div>
 
-      {/* Tablet & Mobile: Two carousel rows */}
-      <div className="lg:hidden space-y-3">
-        {/* Row 1: Quick Links carousel */}
-        <CarouselRow 
-          items={quickLinks} 
-          type="link" 
-          visibleCount={2}
-        />
+      {/* Tablet & Mobile Carousel: 2 cards, single row */}
+      <div className="lg:hidden">
+        <div className="flex items-center gap-3">
+          {/* Left arrow */}
+          <button
+            onClick={() => handlePrev(mobileMaxIndex)}
+            disabled={currentIndex <= 0}
+            className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+              currentIndex > 0 
+                ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+                : 'opacity-30 cursor-not-allowed'
+            }`}
+            aria-label="Previous"
+          >
+            <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
+          </button>
 
-        {/* Row 2: Pre-prompts carousel */}
-        <CarouselRow 
-          items={prePrompts} 
-          type="prompt" 
-          onPromptSubmit={onPromptSubmit}
-          visibleCount={2}
-        />
+          {/* Cards container */}
+          <div className="relative flex-1">
+            {/* Left edge fade */}
+            <div 
+              className="absolute left-0 top-0 bottom-0 w-3 z-10 pointer-events-none"
+              style={{
+                background: 'linear-gradient(to right, var(--bg-primary), transparent)',
+              }}
+            />
+            
+            {/* Right edge fade */}
+            <div 
+              className="absolute right-0 top-0 bottom-0 w-3 z-10 pointer-events-none"
+              style={{
+                background: 'linear-gradient(to left, var(--bg-primary), transparent)',
+              }}
+            />
+
+            <div className="overflow-hidden">
+              <div 
+                className="flex gap-3 transition-transform duration-300 ease-out"
+                style={{
+                  transform: `translateX(calc(-${currentIndex} * (50% + 6px)))`,
+                }}
+              >
+                {allItems.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className="flex-shrink-0 min-h-[130px]"
+                    style={{ width: 'calc(50% - 6px)' }}
+                  >
+                    {item.type === 'link' ? (
+                      <AnimatedFolder
+                        title={item.title}
+                        subtitle={item.subtitle}
+                        href={item.href}
+                        icon={item.icon}
+                      />
+                    ) : (
+                      <IconHover3D
+                        icon={item.icon}
+                        title={item.title}
+                        description={item.description}
+                        onClick={() => onPromptSubmit(item.prompt)}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right arrow */}
+          <button
+            onClick={() => handleNext(mobileMaxIndex)}
+            disabled={currentIndex >= mobileMaxIndex}
+            className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+              currentIndex < mobileMaxIndex 
+                ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+                : 'opacity-30 cursor-not-allowed'
+            }`}
+            aria-label="Next"
+          >
+            <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+          </button>
+        </div>
+
+        {/* Progress dots */}
+        <div className="flex justify-center gap-1.5 mt-4">
+          {Array.from({ length: mobileMaxIndex + 1 }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`h-1.5 rounded-full transition-all duration-200 ${
+                idx === currentIndex 
+                  ? 'bg-[var(--color-brand-500)] w-4' 
+                  : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
       </div>
     </motion.div>
   );

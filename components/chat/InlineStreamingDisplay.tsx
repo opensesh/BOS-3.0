@@ -223,21 +223,24 @@ export function InlineStreamingDisplay({
                 {sources.length > 0 ? (
                   <div className="space-y-1">
                     {sources.map((source, idx) => (
-                      <motion.div
+                      <motion.a
                         key={source.id || idx}
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.15, delay: idx * 0.03 }}
-                        className="flex items-center gap-2 text-xs"
+                        className="flex items-center gap-2 text-xs hover:text-[var(--fg-primary)] transition-colors group"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <CheckCircle className="w-3 h-3 text-[var(--fg-success-primary)] flex-shrink-0" />
-                        <span className="text-[var(--fg-tertiary)] truncate">
+                        <span className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] truncate">
                           {source.title || source.name}
                         </span>
-                        <span className="text-[var(--fg-quaternary)] text-[10px]">
+                        <span className="text-[var(--fg-quaternary)] text-[10px] flex-shrink-0">
                           {source.name}
                         </span>
-                      </motion.div>
+                      </motion.a>
                     ))}
                     {/* Show streaming indicator while still searching */}
                     {isStreaming && activeTools.length > 0 && (

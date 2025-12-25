@@ -10,6 +10,46 @@ import {
 } from '@/lib/brand-knowledge';
 import type { ToolCall } from '@/hooks/useChat';
 
+/**
+ * Renders text with inline markdown formatting (bold, italic)
+ * Converts **text** to <strong> and *text* to <em>
+ */
+function renderInlineMarkdown(text: string): React.ReactNode {
+  // Split by bold markers first (**text**)
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  
+  // Regex to match **bold** text (non-greedy, no newlines)
+  const boldRegex = /\*\*([^*\n]+)\*\*/g;
+  let match;
+  
+  while ((match = boldRegex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // Add the bold text
+    parts.push(
+      <strong key={`bold-${match.index}`} className="font-semibold text-[var(--fg-primary)]">
+        {match[1]}
+      </strong>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  
+  // If no formatting found, return original text
+  if (parts.length === 0) {
+    return text;
+  }
+  
+  return <>{parts}</>;
+}
+
 export interface SourceInfo {
   id: string;
   name: string;
@@ -85,9 +125,9 @@ export function AnswerView({
               level === 3 ? 'text-[16px] mt-3 mb-0.5' : ''
             }`.trim();
             
-            if (level === 1) return <h1 key={idx} className={className}>{section.content}</h1>;
-            if (level === 2) return <h2 key={idx} className={className}>{section.content}</h2>;
-            return <h3 key={idx} className={className}>{section.content}</h3>;
+            if (level === 1) return <h1 key={idx} className={className}>{renderInlineMarkdown(section.content)}</h1>;
+            if (level === 2) return <h2 key={idx} className={className}>{renderInlineMarkdown(section.content)}</h2>;
+            return <h3 key={idx} className={className}>{renderInlineMarkdown(section.content)}</h3>;
           }
 
           if (section.type === 'list' && section.items) {
@@ -95,7 +135,7 @@ export function AnswerView({
               <ul key={idx} className="space-y-0.5 pl-5 list-disc marker:text-[var(--fg-tertiary)]">
                 {section.items.map((item, itemIdx) => (
                   <li key={itemIdx} className="text-[15px] leading-[1.6] text-[var(--fg-primary)]/90 pl-1">
-                    {item}
+                    {renderInlineMarkdown(item)}
                   </li>
                 ))}
               </ul>
@@ -110,7 +150,7 @@ export function AnswerView({
               key={idx}
               className="text-[15px] leading-[1.6] text-[var(--fg-primary)]/90"
             >
-              {section.content}
+              {renderInlineMarkdown(section.content)}
               {showCitations && sectionSources.length > 0 && (
                 <>
                   {' '}

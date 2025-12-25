@@ -252,57 +252,55 @@ export function ResponseActions({
             </button>
           </Tooltip>
 
-          {/* Sources button - always show to allow users to find related links */}
-          <button
-            onClick={() => setShowSourcesDrawer(true)}
-            className="flex items-center gap-2 ml-2 px-2.5 py-1.5 rounded-full bg-[var(--bg-secondary)]/80 hover:bg-[var(--bg-secondary)] border border-[var(--border-primary)]/50 transition-colors group"
-          >
-            {hasAnySourcesData ? (
-              <>
-                {/* Stacked source icons - show up to 4 icons representing different source types */}
-                <div className="flex -space-x-1">
-                  {/* Show discover source icons first (cyan) */}
-                  {discoverSources.slice(0, hasWebSources || hasBrandResources ? 1 : 2).map((source, idx) => (
-                    <div
-                      key={source.id || `discover-${idx}`}
-                      className="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center"
-                    >
-                      <Rss className="w-2.5 h-2.5 text-cyan-400" />
-                    </div>
-                  ))}
-                  {/* Show web source favicons */}
-                  {webSources.slice(0, hasDiscoverSources ? 1 : (hasBrandResources ? 2 : 3)).map((source, idx) => (
-                    <div
-                      key={source.id || `web-${idx}`}
-                      className="w-5 h-5 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center"
-                    >
-                      {source.favicon ? (
-                        <img src={source.favicon} alt="" className="w-3 h-3 rounded" />
-                      ) : (
-                        <Globe className="w-2.5 h-2.5 text-[var(--fg-tertiary)]" />
-                      )}
-                    </div>
-                  ))}
-                  {/* Show brand icon if we have brand resources */}
-                  {hasBrandResources && (
-                    <div className="w-5 h-5 rounded-full bg-[var(--bg-brand-primary)] border border-[var(--border-brand)]/30 flex items-center justify-center">
-                      <Hexagon className="w-2.5 h-2.5 text-[var(--fg-brand-primary)]" />
-                    </div>
-                  )}
-                </div>
-                <span className="text-[13px] text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors">
-                  {totalSourcesCount} {totalSourcesCount === 1 ? 'source' : 'sources'}
-                </span>
-              </>
-            ) : (
-              <>
-                <Globe className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-                <span className="text-[13px] text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors">
-                  Related links
-                </span>
-              </>
-            )}
-          </button>
+          {/* Sources button - only interactive when sources exist */}
+          {hasAnySourcesData ? (
+            <button
+              onClick={() => setShowSourcesDrawer(true)}
+              className="flex items-center gap-2 ml-2 px-2.5 py-1.5 rounded-full bg-[var(--bg-secondary)]/80 hover:bg-[var(--bg-secondary)] border border-[var(--border-primary)]/50 transition-colors group"
+            >
+              {/* Stacked source icons - show up to 4 icons representing different source types */}
+              <div className="flex -space-x-1">
+                {/* Show discover source icons first (cyan) */}
+                {discoverSources.slice(0, hasWebSources || hasBrandResources ? 1 : 2).map((source, idx) => (
+                  <div
+                    key={source.id || `discover-${idx}`}
+                    className="w-5 h-5 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center"
+                  >
+                    <Rss className="w-2.5 h-2.5 text-cyan-400" />
+                  </div>
+                ))}
+                {/* Show web source favicons */}
+                {webSources.slice(0, hasDiscoverSources ? 1 : (hasBrandResources ? 2 : 3)).map((source, idx) => (
+                  <div
+                    key={source.id || `web-${idx}`}
+                    className="w-5 h-5 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center"
+                  >
+                    {source.favicon ? (
+                      <img src={source.favicon} alt="" className="w-3 h-3 rounded" />
+                    ) : (
+                      <Globe className="w-2.5 h-2.5 text-[var(--fg-tertiary)]" />
+                    )}
+                  </div>
+                ))}
+                {/* Show brand icon if we have brand resources */}
+                {hasBrandResources && (
+                  <div className="w-5 h-5 rounded-full bg-[var(--bg-brand-primary)] border border-[var(--border-brand)]/30 flex items-center justify-center">
+                    <Hexagon className="w-2.5 h-2.5 text-[var(--fg-brand-primary)]" />
+                  </div>
+                )}
+              </div>
+              <span className="text-[13px] text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors">
+                {totalSourcesCount} {totalSourcesCount === 1 ? 'source' : 'sources'}
+              </span>
+            </button>
+          ) : (
+            /* Disabled icon when no sources - just the icon, no button styling */
+            <Tooltip label="No related links">
+              <div className="p-2 ml-2">
+                <Globe className="w-4 h-4 text-[var(--fg-tertiary)]/50" />
+              </div>
+            </Tooltip>
+          )}
         </div>
 
         {/* Right side - feedback and copy */}

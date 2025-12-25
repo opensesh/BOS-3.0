@@ -13,22 +13,9 @@ interface SearchResearchToggleProps {
   showSuggestions?: boolean;
 }
 
-// Fallback suggestions used when API is unavailable
-const FALLBACK_SEARCH_SUGGESTIONS = [
-  'Where can I find the fonts for my brand?',
-  'What colors should I use for my brand?',
-  'Show me brand logo guidelines',
-  'What is my brand voice and tone?',
-  'Where are the brand asset files?',
-];
-
-const FALLBACK_RESEARCH_SUGGESTIONS = [
-  'Comprehensive analysis of brand identity systems and their impact on market positioning',
-  'Deep dive into brand consistency across digital and physical touchpoints',
-  'Research best practices for brand asset management and version control workflows',
-  'Analyze competitor brand strategies and differentiation opportunities in our market',
-  'Strategic framework for brand evolution and rebranding decision-making processes',
-];
+// No fallback suggestions - only show real search suggestions
+const FALLBACK_SEARCH_SUGGESTIONS: string[] = [];
+const FALLBACK_RESEARCH_SUGGESTIONS: string[] = [];
 
 export function SearchResearchToggle({ 
   onQueryClick, 
@@ -281,7 +268,6 @@ export function SearchResearchSuggestions({
   mode,
   onQueryClick,
   suggestions: externalSuggestions,
-  inputValue = '',
   isLoading = false,
 }: {
   mode: 'search' | 'research';
@@ -292,26 +278,13 @@ export function SearchResearchSuggestions({
 }) {
   const CurrentIcon = mode === 'search' ? Search : Orbit;
 
-  // Use external suggestions if provided, otherwise fallback
-  const fallbackSuggestions = mode === 'search'
-    ? FALLBACK_SEARCH_SUGGESTIONS
-    : FALLBACK_RESEARCH_SUGGESTIONS;
+  // Only use external suggestions - no fallbacks
+  const suggestions = externalSuggestions || [];
 
-  const suggestions = externalSuggestions && externalSuggestions.length > 0
-    ? externalSuggestions
-    : fallbackSuggestions;
-
-  // Filter suggestions based on input if we're using fallbacks
-  const filteredSuggestions = inputValue && !externalSuggestions?.length
-    ? suggestions.filter(s =>
-        s.toLowerCase().includes(inputValue.toLowerCase())
-      )
-    : suggestions;
-
-  // Show all suggestions if no matches found
-  const displaySuggestions = filteredSuggestions.length > 0
-    ? filteredSuggestions
-    : suggestions;
+  // Don't render anything if no suggestions and not loading
+  if (!isLoading && suggestions.length === 0) {
+    return null;
+  }
 
   return (
     <motion.div
@@ -323,15 +296,15 @@ export function SearchResearchSuggestions({
     >
       {/* Loading indicator */}
       {isLoading && (
-        <div className="flex items-center justify-center py-2">
-          <div className="w-4 h-4 border-2 border-[var(--border-brand-solid)] border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center justify-center py-3">
+          <div className="w-4 h-4 border-2 border-[var(--fg-tertiary)]/30 border-t-[var(--fg-brand-primary)] rounded-full animate-spin" />
         </div>
       )}
 
       {/* Suggestions List */}
-      {!isLoading && (
+      {!isLoading && suggestions.length > 0 && (
         <div className="space-y-0.5">
-          {displaySuggestions.map((suggestion, index) => (
+          {suggestions.map((suggestion, index) => (
             <motion.button
               key={`${mode}-${suggestion}-${index}`}
               variants={suggestionItem}

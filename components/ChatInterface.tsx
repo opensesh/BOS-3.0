@@ -1113,8 +1113,8 @@ export function ChatInterface() {
                     </div>
 
                     {/* Suggestions - inside container, below toolbar */}
-                    {showSuggestions && (
-                      <div className="border-t border-[var(--border-primary)]">
+                    {showSuggestions && (suggestionsLoading || fetchedSuggestions.length > 0) && (
+                      <div className="border-t border-[var(--border-primary)]/50">
                         <SearchResearchSuggestions
                           mode={suggestionsMode}
                           onQueryClick={handleQueryClick}

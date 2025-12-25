@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface UseSuggestionsOptions {
   mode: 'search' | 'research';
@@ -18,12 +18,12 @@ interface UseSuggestionsResult {
 }
 
 /**
- * Hook for fetching smart search suggestions
- * Provides real-time autocomplete as the user types
+ * Hook for fetching fast search suggestions
+ * Uses DuckDuckGo autocomplete for real-time suggestions
  */
 export function useSearchSuggestions({
   mode,
-  debounceMs = 200,
+  debounceMs = 150, // Fast debounce for responsive feel
   minQueryLength = 2,
   maxSuggestions = 6,
 }: UseSuggestionsOptions): UseSuggestionsResult {
@@ -40,41 +40,26 @@ export function useSearchSuggestions({
     setError(null);
   }, []);
 
-  const fetchSuggestions = useCallback(async (query: string) => {
+  const fetchSuggestions = useCallback((query: string) => {
     // Clear existing debounce timeout
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
 
-    // If query is too short, fetch trending/default suggestions
-    if (!query || query.length < minQueryLength) {
-      // Debounce the fetch for trending suggestions
-      debounceTimeoutRef.current = setTimeout(async () => {
-        try {
-          setIsLoading(true);
-          setError(null);
-          
-          const response = await fetch('/api/suggestions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: '', mode, limit: maxSuggestions }),
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            setSuggestions(data.suggestions || []);
-          }
-        } catch {
-          // Silently fail for trending suggestions
-        } finally {
-          setIsLoading(false);
-        }
-      }, 100);
+    const trimmedQuery = query.trim();
+
+    // If query is too short, clear suggestions immediately
+    if (!trimmedQuery || trimmedQuery.length < minQueryLength) {
+      setSuggestions([]);
+      setIsLoading(false);
       return;
     }
 
     // Store query for comparison
-    lastQueryRef.current = query;
+    lastQueryRef.current = trimmedQuery;
+    
+    // Show loading state immediately for better UX
+    setIsLoading(true);
 
     // Debounce the actual API call
     debounceTimeoutRef.current = setTimeout(async () => {
@@ -87,13 +72,14 @@ export function useSearchSuggestions({
       abortControllerRef.current = new AbortController();
 
       try {
-        setIsLoading(true);
-        setError(null);
-
         const response = await fetch('/api/suggestions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query, mode, limit: maxSuggestions }),
+          body: JSON.stringify({ 
+            query: trimmedQuery, 
+            mode, 
+            limit: maxSuggestions 
+          }),
           signal: abortControllerRef.current.signal,
         });
 
@@ -104,8 +90,9 @@ export function useSearchSuggestions({
         const data = await response.json();
         
         // Only update if this is still the latest query
-        if (query === lastQueryRef.current) {
+        if (trimmedQuery === lastQueryRef.current) {
           setSuggestions(data.suggestions || []);
+          setError(null);
         }
       } catch (err) {
         // Ignore abort errors
@@ -114,9 +101,13 @@ export function useSearchSuggestions({
         }
         console.error('Error fetching suggestions:', err);
         setError('Failed to fetch suggestions');
-        // Keep existing suggestions on error
+        // Clear suggestions on error for clean UX
+        setSuggestions([]);
       } finally {
-        setIsLoading(false);
+        // Only clear loading if this is still the latest query
+        if (trimmedQuery === lastQueryRef.current) {
+          setIsLoading(false);
+        }
       }
     }, debounceMs);
   }, [mode, debounceMs, minQueryLength, maxSuggestions]);
@@ -133,13 +124,6 @@ export function useSearchSuggestions({
     };
   }, []);
 
-  // Refetch when mode changes
-  useEffect(() => {
-    if (lastQueryRef.current) {
-      fetchSuggestions(lastQueryRef.current);
-    }
-  }, [mode, fetchSuggestions]);
-
   return {
     suggestions,
     isLoading,
@@ -150,7 +134,7 @@ export function useSearchSuggestions({
 }
 
 /**
- * Log a search query to history
+ * Log a search query to history (optional analytics)
  */
 export async function logSearchQuery(query: string, mode: 'search' | 'research'): Promise<void> {
   try {

@@ -97,50 +97,60 @@ export function WelcomeHeader() {
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <div className="w-full max-w-4xl px-4 mb-6">
-        <div className="h-10 mb-1" />
-        <div className="h-8 mb-4" />
-        <div className="h-4" />
+      <div className="w-full max-w-3xl px-4 mb-3">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
+          <div>
+            <div className="h-8 mb-0.5" />
+            <div className="h-6" />
+          </div>
+          <div className="h-4" />
+        </div>
       </div>
     );
   }
 
   return (
     <motion.div 
-      className="w-full max-w-4xl px-4 mb-6"
+      className="w-full max-w-3xl px-4 mb-3"
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
     >
-      {/* Greeting with gradient */}
-      <h1 
-        className="text-3xl md:text-4xl font-semibold mb-1 tracking-tight"
-        style={{
-          background: 'linear-gradient(135deg, var(--color-brand-400) 0%, var(--color-brand-500) 50%, var(--color-brand-600) 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        }}
-      >
-        Hello, user
-      </h1>
+      {/* Main content row */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2">
+        {/* Left side - greeting */}
+        <div>
+          {/* Greeting with gradient */}
+          <h1 
+            className="text-2xl md:text-3xl font-semibold mb-0.5 tracking-tight"
+            style={{
+              background: 'linear-gradient(135deg, var(--color-brand-400) 0%, var(--color-brand-500) 50%, var(--color-brand-600) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            Hello, user
+          </h1>
 
-      {/* Secondary question - neutral color */}
-      <p className="text-xl md:text-2xl text-[var(--fg-secondary)] font-medium mb-4">
-        How can I help you today?
-      </p>
+          {/* Secondary question - neutral color */}
+          <p className="text-lg md:text-xl text-[var(--fg-secondary)] font-medium">
+            How can I help you today?
+          </p>
+        </div>
 
-      {/* Subtle brand context - smaller */}
-      <p className="text-sm text-[var(--fg-tertiary)]">
-        Brand Operating System for{' '}
-        <span 
-          className="font-medium text-[var(--fg-secondary)]"
-          style={{ fontFamily: 'Offbit, monospace' }}
-        >
-          {displayText}
-          {!isComplete && <span className="animate-pulse">|</span>}
-        </span>
-      </p>
+        {/* Right side - brand context (right-aligned on desktop) */}
+        <p className="text-xs text-[var(--fg-tertiary)] md:text-right">
+          Brand Operating System for{' '}
+          <span 
+            className="font-medium text-[var(--fg-secondary)]"
+            style={{ fontFamily: 'Offbit, monospace' }}
+          >
+            {displayText}
+            {!isComplete && <span className="animate-pulse">|</span>}
+          </span>
+        </p>
+      </div>
     </motion.div>
   );
 }

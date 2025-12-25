@@ -38,14 +38,14 @@ export function AnimatedFolder({
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative w-full h-full rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-all duration-300 hover:border-[var(--border-brand)]"
+      className="group relative w-full h-full rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-3 cursor-pointer text-left transition-all duration-300 hover:border-[var(--border-brand)]"
       whileTap={{ scale: 0.98 }}
     >
       {/* Folder Container */}
       <div className="flex flex-col">
-        {/* 3D Folder - same size as icon container (48x48) */}
+        {/* 3D Folder - same size as icon container (40x40) */}
         <div 
-          className="relative w-12 h-12 mb-3"
+          className="relative w-10 h-10 mb-2"
           style={{ perspective: '1000px' }}
         >
           {/* Back Panel */}
@@ -59,7 +59,7 @@ export function AnimatedFolder({
 
           {/* Folder Tab */}
           <motion.div
-            className="absolute -top-1 left-1.5 w-5 h-2 rounded-t-sm"
+            className="absolute -top-1 left-1 w-4 h-1.5 rounded-t-sm"
             style={{
               background: colors.main,
             }}
@@ -118,7 +118,7 @@ export function AnimatedFolder({
 
         {/* Title - vanilla by default, orange on hover */}
         <h3 
-          className="text-base font-semibold mb-0.5 transition-colors duration-300"
+          className="text-sm font-semibold mb-0.5 transition-colors duration-300"
           style={{ color: isHovered ? colors.hex : 'var(--fg-primary)' }}
         >
           {title}
@@ -126,7 +126,7 @@ export function AnimatedFolder({
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="text-sm text-[var(--fg-tertiary)]">
+          <p className="text-xs text-[var(--fg-tertiary)]">
             {subtitle}
           </p>
         )}

@@ -12,10 +12,11 @@ import {
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { BackgroundGradient } from './BackgroundGradient';
 import { WelcomeHeader, PrePromptGrid } from './home';
-import { PlusMenu, ProjectIndicator } from './ui/plus-menu';
+import { PlusMenu } from './ui/plus-menu';
 import { ExtendedThinkingToggle } from './ui/extended-thinking-toggle';
 import { DataSourcesDropdown } from './ui/data-sources-dropdown';
 import { ModelSelector } from './ui/model-selector';
+import { ActiveSettingsIndicators } from './ui/active-settings-indicators';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { useAttachments } from '@/hooks/useAttachments';
 import { ModelId } from '@/lib/ai/providers';
@@ -934,7 +935,7 @@ export function ChatInterface() {
 
                     {/* Toolbar - always visible */}
                     <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-[var(--border-primary)] gap-2 sm:gap-4">
-                      {/* Left side - Plus menu, Project indicator, Extended thinking */}
+                      {/* Left side - Plus menu, Active settings indicators, Extended thinking toggle */}
                       <div className="flex items-center gap-1 sm:gap-2">
                         <PlusMenu
                           onAddFiles={openFilePicker}
@@ -946,17 +947,21 @@ export function ChatInterface() {
                           onCreateProject={handleCreateProject}
                           disabled={isLoading}
                         />
-                        
-                        {currentProject && (
-                          <ProjectIndicator
-                            project={currentProject}
-                            onClick={() => {/* Could open project selector */}}
-                          />
-                        )}
 
                         <ExtendedThinkingToggle
                           enabled={extendedThinkingEnabled}
                           onToggle={setExtendedThinkingEnabled}
+                          disabled={isLoading}
+                        />
+                        
+                        {/* Active settings indicators - shown as removable chips */}
+                        <ActiveSettingsIndicators
+                          currentProject={currentProject}
+                          currentWritingStyle={currentWritingStyle}
+                          extendedThinkingEnabled={extendedThinkingEnabled}
+                          onRemoveProject={() => setCurrentProject(null)}
+                          onRemoveWritingStyle={() => setCurrentWritingStyle(null)}
+                          onRemoveExtendedThinking={() => setExtendedThinkingEnabled(false)}
                           disabled={isLoading}
                         />
                       </div>

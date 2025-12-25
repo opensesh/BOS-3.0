@@ -173,7 +173,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
         </button>
 
         {/* Cards - Desktop: 4, Tablet: 3, Mobile: 2 */}
-        <div className="overflow-hidden">
+        <div className="overflow-hidden mx-10">
           {/* Desktop layout - 4 cards */}
           <div 
             className="hidden lg:flex gap-3 transition-transform duration-300 ease-out"

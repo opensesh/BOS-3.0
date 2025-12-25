@@ -385,131 +385,6 @@ export async function executeCode(
 }
 
 // ============================================
-// FETCH BRAND ASSETS EXECUTOR
-// Fetches brand assets from the asset manifest
-// ============================================
-
-interface BrandAsset {
-  path: string;
-  category: string;
-  filename: string;
-  variant?: string;
-  description?: string;
-}
-
-export async function executeFetchBrandAssets(
-  input: { category: string; variant?: string; limit?: number },
-  context: ToolExecutionContext
-): Promise<ToolResult> {
-  try {
-    // Import the asset manifest dynamically
-    const { ASSET_MANIFEST } = await import('@/lib/brand-knowledge/asset-manifest');
-    
-    const category = input.category as keyof typeof ASSET_MANIFEST;
-    const limit = Math.min(input.limit || 8, 20); // Cap at 20 assets
-    
-    // Check if category exists
-    if (!ASSET_MANIFEST[category]) {
-      return {
-        success: false,
-        error: `Unknown asset category: ${category}. Valid categories are: logos, images, textures, illustrations, icons, fonts.`,
-      };
-    }
-    
-    let assets: BrandAsset[] = ASSET_MANIFEST[category];
-    
-    // Filter by variant if provided
-    if (input.variant) {
-      const variantLower = input.variant.toLowerCase();
-      assets = assets.filter(asset => {
-        // Check variant field
-        if (asset.variant?.toLowerCase().includes(variantLower)) return true;
-        // Check filename as fallback
-        if (asset.filename.toLowerCase().includes(variantLower)) return true;
-        // Check description as fallback
-        if (asset.description?.toLowerCase().includes(variantLower)) return true;
-        return false;
-      });
-    }
-    
-    // Limit results
-    assets = assets.slice(0, limit);
-    
-    if (assets.length === 0) {
-      return {
-        success: true,
-        data: {
-          category,
-          variant: input.variant,
-          count: 0,
-          assets: [],
-          message: input.variant 
-            ? `No ${category} found matching variant "${input.variant}".`
-            : `No ${category} found.`,
-        },
-      };
-    }
-    
-    // Generate helpful display information
-    const assetData = assets.map(asset => ({
-      path: asset.path,
-      filename: asset.filename,
-      variant: asset.variant || null,
-      description: asset.description || generateDescription(asset),
-      downloadUrl: asset.path,
-      previewable: isPreviewable(asset.path),
-    }));
-    
-    return {
-      success: true,
-      data: {
-        category,
-        variant: input.variant || null,
-        count: assetData.length,
-        totalAvailable: ASSET_MANIFEST[category].length,
-        assets: assetData,
-        // Include a marker that the chat UI can detect to render a carousel
-        displayType: 'asset_carousel',
-      },
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to fetch brand assets',
-    };
-  }
-}
-
-// Helper to generate description for assets without one
-function generateDescription(asset: BrandAsset): string {
-  const parts: string[] = [];
-  
-  // Add category info
-  const categoryNames: Record<string, string> = {
-    logos: 'Logo',
-    images: 'Brand Image',
-    textures: 'Texture',
-    illustrations: 'Illustration',
-    icons: 'Icon',
-    fonts: 'Font',
-  };
-  parts.push(categoryNames[asset.category] || 'Asset');
-  
-  // Add variant info
-  if (asset.variant) {
-    parts.push(`- ${asset.variant.replace(/-/g, ' ')}`);
-  }
-  
-  return parts.join(' ');
-}
-
-// Helper to check if asset can be previewed as image
-function isPreviewable(path: string): boolean {
-  const ext = path.split('.').pop()?.toLowerCase();
-  return ['svg', 'png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext || '');
-}
-
-// ============================================
 // TOOL EXECUTOR REGISTRY
 // ============================================
 
@@ -520,8 +395,7 @@ export type ToolName =
   | 'read_file'
   | 'get_current_time'
   | 'create_artifact'
-  | 'search_brand_knowledge'
-  | 'fetch_brand_assets';
+  | 'search_brand_knowledge';
 
 export const toolExecutors: Record<ToolName, (input: Record<string, unknown>, context: ToolExecutionContext) => Promise<ToolResult>> = {
   'web_search': executeWebSearch as typeof toolExecutors['web_search'],
@@ -531,7 +405,6 @@ export const toolExecutors: Record<ToolName, (input: Record<string, unknown>, co
   'get_current_time': executeGetCurrentTime as typeof toolExecutors['get_current_time'],
   'create_artifact': executeCreateArtifact as typeof toolExecutors['create_artifact'],
   'search_brand_knowledge': executeBrandKnowledgeSearch as typeof toolExecutors['search_brand_knowledge'],
-  'fetch_brand_assets': executeFetchBrandAssets as typeof toolExecutors['fetch_brand_assets'],
 };
 
 /**

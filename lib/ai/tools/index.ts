@@ -201,34 +201,6 @@ export const brandKnowledgeTool: ToolDefinition = {
   },
 };
 
-/**
- * Fetch Brand Assets Tool
- * Fetches brand visual assets (logos, images, textures, illustrations)
- */
-export const fetchBrandAssetsTool: ToolDefinition = {
-  name: 'fetch_brand_assets',
-  description: 'Fetch and display brand visual assets like logos, images, textures, and illustrations. Use this when the user asks to see, show, display, or view brand visual assets. Returns asset information including paths and descriptions that can be rendered as a gallery.',
-  input_schema: {
-    type: 'object',
-    properties: {
-      category: {
-        type: 'string',
-        enum: ['logos', 'images', 'textures', 'illustrations', 'icons', 'fonts'],
-        description: 'The category of assets to fetch',
-      },
-      variant: {
-        type: 'string',
-        description: 'Optional filter for specific variants. For logos: "vanilla", "charcoal", "glass", "brandmark", "combo", "horizontal", "stacked". For images: "auto", "lifestyle", "move", "escape", "work", "feel". For textures: "ascii", "halftone", "recycled".',
-      },
-      limit: {
-        type: 'number',
-        description: 'Maximum number of assets to return (default: 8, max: 20)',
-      },
-    },
-    required: ['category'],
-  },
-};
-
 // ============================================
 // ALL TOOLS
 // ============================================
@@ -241,7 +213,6 @@ export const ALL_TOOLS: ToolDefinition[] = [
   getCurrentTimeTool,
   createArtifactTool,
   brandKnowledgeTool,
-  fetchBrandAssetsTool,
 ];
 
 /**
@@ -272,7 +243,6 @@ export function getDefaultTools(): ToolDefinition[] {
     getCurrentTimeTool,
     createArtifactTool,
     brandKnowledgeTool,
-    fetchBrandAssetsTool,
   ];
 }
 

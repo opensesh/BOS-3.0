@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { InlineCitation } from './InlineCitation';
 import { BrandResourceCardProps } from './BrandResourceCard';
 import { InlineStreamingDisplay } from './InlineStreamingDisplay';
-import { AssetCarousel, type BrandAsset } from './AssetCarousel';
 import {
   BRAND_PAGE_ROUTES,
   BRAND_SOURCES,
@@ -63,41 +62,6 @@ export function AnswerView({
     if (!citations || citations.length === 0) return [];
     return citations;
   };
-
-  // Extract asset carousel data from completed tool calls
-  const assetCarouselData = useMemo(() => {
-    if (!toolCalls) return null;
-    
-    const assetToolCall = toolCalls.find(
-      tc => tc.name === 'fetch_brand_assets' && tc.status === 'completed' && tc.result
-    );
-    
-    if (!assetToolCall?.result) return null;
-    
-    const result = assetToolCall.result as {
-      success?: boolean;
-      data?: {
-        category?: string;
-        variant?: string | null;
-        count?: number;
-        totalAvailable?: number;
-        assets?: BrandAsset[];
-        displayType?: string;
-      };
-    };
-    
-    // Check if it's a successful asset fetch with displayType
-    if (result.success && result.data?.displayType === 'asset_carousel' && result.data.assets) {
-      return {
-        category: result.data.category || 'assets',
-        variant: result.data.variant,
-        assets: result.data.assets,
-        totalAvailable: result.data.totalAvailable,
-      };
-    }
-    
-    return null;
-  }, [toolCalls]);
 
   return (
     <div>
@@ -160,16 +124,6 @@ export function AnswerView({
             </p>
           );
         })}
-
-        {/* Asset Carousel - rendered when fetch_brand_assets tool completes */}
-        {assetCarouselData && (
-          <AssetCarousel
-            category={assetCarouselData.category}
-            variant={assetCarouselData.variant}
-            assets={assetCarouselData.assets}
-            totalAvailable={assetCarouselData.totalAvailable}
-          />
-        )}
 
         {/* Streaming indicator with thinking/tool display */}
         {isStreaming && (

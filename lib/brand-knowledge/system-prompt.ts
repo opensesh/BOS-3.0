@@ -294,47 +294,6 @@ const ASSET_REFERENCE = `## Quick Asset Reference
 - Halftone: /assets/textures/texture_halftone_01_compressed.jpg
 - Paper: /assets/textures/texture_recycled-card_01_compressed.jpg`;
 
-// Brand asset tool instructions
-const BRAND_ASSET_TOOL_INSTRUCTIONS = `## Brand Asset Tool (fetch_brand_assets)
-
-You have access to a tool called fetch_brand_assets that displays brand visual assets directly in the chat.
-
-### WHEN TO USE THIS TOOL
-Use fetch_brand_assets whenever the user asks to:
-- See, show, display, or view brand assets
-- Look at logos, images, textures, illustrations, icons, or fonts
-- Browse the visual asset library
-- Download brand materials
-- Get a visual overview of available assets
-
-### EXAMPLES - When to call the tool:
-- "Show me our logos" → fetch_brand_assets(category: "logos")
-- "Can I see the brand images?" → fetch_brand_assets(category: "images")
-- "What lifestyle photos do we have?" → fetch_brand_assets(category: "images", variant: "lifestyle")
-- "Display the vanilla logo variants" → fetch_brand_assets(category: "logos", variant: "vanilla")
-- "Show me some textures" → fetch_brand_assets(category: "textures")
-- "I need to see the charcoal logos" → fetch_brand_assets(category: "logos", variant: "charcoal")
-- "What automotive images are available?" → fetch_brand_assets(category: "images", variant: "auto")
-
-### TOOL PARAMETERS
-- category (required): "logos" | "images" | "textures" | "illustrations" | "icons" | "fonts"
-- variant (optional): Filter by variant name
-  - For logos: "vanilla", "charcoal", "glass", "brandmark", "combo", "horizontal", "stacked"
-  - For images: "auto", "lifestyle", "move", "escape", "work", "feel"
-  - For textures: "ascii", "halftone", "recycled"
-- limit (optional): Max number of assets to return (default: 8, max: 20)
-
-### RESPONSE FORMAT
-After calling the tool, write a brief explanation of what assets are being displayed and any relevant usage guidelines. The asset carousel will render automatically below your response.
-
-### WHEN NOT TO USE
-Do NOT use this tool when:
-- The user is asking about asset specifications without wanting to see them
-- The user wants general information about brand guidelines
-- The question is about colors, typography specs, or non-visual elements
-- The user is asking about file formats or technical requirements only`;
-
-
 /**
  * Build the brand system prompt
  */
@@ -354,8 +313,6 @@ export function buildBrandSystemPrompt(options: SystemPromptOptions = {}): strin
   parts.push(CITATION_FORMAT_INSTRUCTIONS);
   parts.push('');
   parts.push(RESOURCE_CARD_INSTRUCTIONS);
-  parts.push('');
-  parts.push(BRAND_ASSET_TOOL_INSTRUCTIONS);
   parts.push('');
   parts.push(BRAND_ESSENTIALS);
   parts.push('');

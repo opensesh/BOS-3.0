@@ -16,7 +16,6 @@ import {
   ChevronUp,
   Palette,
   Globe,
-  Image,
 } from 'lucide-react';
 
 // Tool name to icon mapping
@@ -28,7 +27,6 @@ const toolIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   'get_current_time': Clock,
   'create_artifact': Code,
   'search_brand_knowledge': Palette,
-  'fetch_brand_assets': Image,
 };
 
 interface ToolExecutionCardProps {

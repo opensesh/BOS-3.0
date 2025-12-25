@@ -1,99 +1,208 @@
-# Brand Operating System (BOS) 2.0
+# Brand Operating System (BOS) 3.0
 
-A modern, responsive interface built with Next.js 14+, TypeScript, and Tailwind CSS, featuring BRAND-OS color system integration.
+A modern AI-powered brand management platform built with Next.js 16+, React 19, TypeScript, and Tailwind CSS. Features multi-model AI integration with Claude and Perplexity, brand knowledge systems, and collaborative workspaces.
 
 ## 🚀 Features
 
-- **Modern Tech Stack**: Next.js 14+ with App Router, TypeScript, Tailwind CSS
-- **Dark/Light Mode**: Persistent theme switching with next-themes
-- **Responsive Design**: Mobile-first design that works across all devices
-- **BRAND-OS Integration**: Custom color system from opensesh/BRAND-OS
-- **Interactive UI**: Comprehensive hover, focus, active, and disabled states
-- **Keyboard Shortcuts**: 
-  - `Cmd/Ctrl + K` - Focus search input
-  - `Escape` - Blur search input
-  - `Enter` - Submit query
-  - `Shift + Enter` - New line in textarea
-- **Accessibility**: ARIA labels, keyboard navigation, focus management
+### AI Integration
+- **Multi-Model Support**: Claude Sonnet 4, Claude Opus 4, Perplexity Sonar
+- **Extended Thinking**: Deep reasoning capabilities with Claude models
+- **Web Search**: Real-time web grounding via Perplexity Sonar
+- **Auto-Routing**: Intelligent model selection based on query complexity
+- **Tool Use**: Web search, citations, and source attribution
+- **Writing Styles**: Learning, Concise, Explanatory, Creative, Formal, and more
+
+### Brand Management
+- **Brain Dashboard**: Centralized brand intelligence
+  - Brand Identity & Messaging
+  - Writing Styles & Voice Guidelines
+  - Component Library
+  - Architecture Documentation
+  - Skills & Capabilities
+- **Brand Hub**: Asset management
+  - Logo variations and usage
+  - Color system with design tokens
+  - Typography (Neue Haas Grotesk, Offbit)
+  - Art Direction guidelines
+  - Design Tokens export
+
+### Collaboration
+- **Spaces**: Project-focused workspaces
+  - File attachments
+  - Link collections
+  - Custom instructions
+  - Task management
+  - Threaded discussions
+
+### Modern Tech Stack
+- **Framework**: Next.js 16+ with App Router
+- **UI**: React 19 with React Aria Components for accessibility
+- **Styling**: Tailwind CSS with UUI semantic tokens
+- **State**: Zustand for global state management
+- **Database**: Supabase for persistence
+- **Animation**: Framer Motion & GSAP
+- **Analytics**: Vercel Analytics & Speed Insights
 
 ## 🎨 Design System
 
 ### Colors (BRAND-OS)
-- **Charcoal** (#191919): Dark backgrounds
-- **Vanilla** (#FFFAEE): Light/cream accents
-- **Aperol** (#FE5102): Primary brand color
+| Token | Value | Usage |
+|-------|-------|-------|
+| Charcoal | `#191919` | Dark backgrounds |
+| Vanilla | `#FFFAEE` | Light/cream accents |
+| Aperol | `#FE5102` | Primary brand color |
 
-### Key Features
-- Collapsible sidebar with smooth transitions
-- Multi-page routing (Home, Discover, Spaces, Finance)
-- Chat interface with toolbar and quick actions
-- Theme persistence across sessions
-- Mobile-responsive navigation
+### Typography
+- **Primary**: Neue Haas Grotesk Display Pro
+- **Accent**: Offbit (monospace/display)
+- **System Fallback**: system-ui, sans-serif
+
+### Component Library
+Built on React Aria Components for full accessibility:
+- Buttons, Inputs, Textareas
+- Select, Combobox, Multi-select
+- Avatars, Badges, Tags
+- Tooltips, Modals, Popovers
+- Custom loaders and transitions
 
 ## 📦 Installation
 
 ```bash
-# Install dependencies
+# Install dependencies (using Bun recommended)
+bun install
+# or
 npm install
 
+# Set up environment variables
+cp .env.example .env.local
+# Add your API keys:
+# - ANTHROPIC_API_KEY
+# - PERPLEXITY_API_KEY
+# - SUPABASE_URL
+# - SUPABASE_ANON_KEY
+
 # Run development server
+bun dev
+# or
 npm run dev
 
 # Build for production
-npm run build
+bun run build
 
 # Start production server
-npm start
+bun start
 ```
 
 ## 🏗️ Project Structure
 
 ```
-BOS/
-├── app/                    # Next.js App Router
-│   ├── layout.tsx         # Root layout with theme provider
-│   ├── page.tsx           # Homepage
-│   ├── discover/          # Discover page
-│   ├── spaces/            # Spaces page
-│   ├── finance/           # Finance page
-│   └── globals.css        # Global styles
-├── components/            # React components
-│   ├── Sidebar.tsx        # Navigation sidebar
-│   ├── ChatInterface.tsx  # Main chat/search interface
-│   └── ThemeToggle.tsx    # Dark/light mode toggle
-├── hooks/                 # Custom React hooks
+BOS-3.0/
+├── app/                          # Next.js App Router
+│   ├── api/                      # API Routes
+│   │   ├── chat/                 # AI chat endpoint
+│   │   ├── related-questions/    # Follow-up suggestions
+│   │   └── suggestions/          # Search suggestions
+│   ├── brain/                    # Brand brain dashboard
+│   │   ├── architecture/
+│   │   ├── brand-identity/
+│   │   ├── components/
+│   │   ├── skills/
+│   │   └── writing-styles/
+│   ├── brand-hub/                # Brand assets hub
+│   │   ├── art-direction/
+│   │   ├── colors/
+│   │   ├── design-tokens/
+│   │   ├── fonts/
+│   │   ├── guidelines/
+│   │   └── logo/
+│   ├── spaces/                   # Collaboration spaces
+│   │   └── [slug]/
+│   │       └── chat/[threadId]/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── globals.css
+│   └── theme.css
+├── components/                   # React components
+│   ├── brain/                    # Brain page components
+│   ├── brand-hub/                # Brand hub components
+│   ├── chat/                     # Chat interface components
+│   │   ├── ChatContent.tsx
+│   │   ├── ChatResponse.tsx
+│   │   ├── FollowUpInput.tsx
+│   │   ├── SourcesDrawer.tsx
+│   │   └── ThinkingDisplay.tsx
+│   ├── home/                     # Home page components
+│   ├── spaces/                   # Spaces components
+│   ├── ui/                       # Design system
+│   │   ├── base/                 # Primitive components
+│   │   │   ├── avatar/
+│   │   │   ├── badges/
+│   │   │   ├── buttons/
+│   │   │   ├── input/
+│   │   │   ├── select/
+│   │   │   ├── textarea/
+│   │   │   └── tooltip/
+│   │   └── *.tsx                 # Feature components
+│   ├── Sidebar.tsx
+│   ├── TopHeader.tsx
+│   └── ChatInterface.tsx
+├── hooks/                        # Custom React hooks
+│   ├── useChat.ts
+│   ├── useSpaces.ts
+│   ├── useAttachments.ts
+│   ├── useVoiceRecognition.ts
 │   └── useKeyboardShortcuts.ts
-├── lib/                   # Utilities
-│   └── theme-provider.tsx
-├── types/                 # TypeScript definitions
-│   └── index.ts
-└── tailwind.config.ts     # Tailwind configuration
+├── lib/                          # Utilities & services
+│   ├── ai/                       # AI provider configuration
+│   │   ├── providers.ts          # Model configs & clients
+│   │   ├── auto-router.ts        # Smart model selection
+│   │   └── tools/                # Tool definitions
+│   ├── brand-knowledge/          # Brand context system
+│   │   ├── system-prompt.ts
+│   │   ├── brand-docs.ts
+│   │   └── asset-manifest.ts
+│   ├── supabase/                 # Database services
+│   │   ├── chat-service.ts
+│   │   ├── file-service.ts
+│   │   └── projects-service.ts
+│   └── stores/                   # Zustand stores
+├── public/
+│   ├── assets/                   # Static assets
+│   │   ├── fonts/
+│   │   ├── logos/
+│   │   └── icons/
+│   ├── claude-data/              # AI-readable content
+│   └── data/                     # Generated content
+├── types/                        # TypeScript definitions
+└── supabase/                     # Database migrations
 ```
 
-## 🎯 Usage
+## ⌨️ Keyboard Shortcuts
 
-### Development
-1. Start the development server: `npm run dev`
-2. Open [http://localhost:3000](http://localhost:3000)
-3. Edit components in `components/` or pages in `app/`
-4. Changes will hot-reload automatically
-
-### Navigation
-- **Home**: Main search/chat interface
-- **Discover**: Placeholder for discovery features
-- **Spaces**: Placeholder for workspace features
-- **Finance**: Placeholder for finance-related features
-
-### Chat Interface
-- Type in the search box to compose queries
-- Use toolbar icons for additional functionality (placeholder for now)
-- Click "New Chat" to start a fresh conversation
-- Quick action buttons provide shortcuts to common tasks
+| Shortcut | Action |
+|----------|--------|
+| `⌘/Ctrl + K` | Focus search input |
+| `Enter` | Submit query |
+| `Shift + Enter` | New line in textarea |
+| `Escape` | Close modal / blur input |
 
 ## 🔧 Configuration
 
-### Tailwind Colors
-Customize colors in `tailwind.config.ts`:
+### AI Models
+Configure in `lib/ai/providers.ts`:
+
+```typescript
+const models = {
+  'claude-sonnet': { provider: 'anthropic', supportsThinking: true },
+  'claude-opus': { provider: 'anthropic', supportsThinking: true },
+  'sonar': { provider: 'perplexity', supportsThinking: false },
+  'sonar-pro': { provider: 'perplexity', supportsThinking: false },
+};
+```
+
+### Tailwind Theme
+Customize in `tailwind.config.ts`:
+
 ```typescript
 colors: {
   brand: {
@@ -101,32 +210,82 @@ colors: {
     vanilla: '#FFFAEE',
     aperol: '#FE5102',
   },
-  // ... more colors
+  // UUI semantic tokens via CSS variables
+  bg: { primary: 'var(--bg-primary)', ... },
+  fg: { primary: 'var(--fg-primary)', ... },
 }
 ```
 
-### Theme
-Adjust theme settings in `app/layout.tsx`:
-```typescript
-<ThemeProvider
-  attribute="class"
-  defaultTheme="dark"  // or "light" or "system"
-  enableSystem
-  disableTransitionOnChange
->
+### Environment Variables
+```bash
+# Required
+ANTHROPIC_API_KEY=sk-ant-...
+PERPLEXITY_API_KEY=pplx-...
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+
+# Optional
+VERCEL_ANALYTICS_ID=...
 ```
 
-## 🚧 Future Enhancements
+## 🚀 Scripts
 
-- [ ] Backend API integration for AI responses
-- [ ] Real-time message streaming
-- [ ] File upload functionality
-- [ ] Voice input support
-- [ ] Search history
-- [ ] User authentication
-- [ ] Workspace/spaces management
-- [ ] Analytics and insights
-- [ ] Mobile app (React Native)
+```bash
+# Development
+bun dev                           # Start dev server
+
+# Build
+bun run build                     # Production build
+bun start                         # Start production server
+
+# Utilities
+bun run lint                      # Run ESLint
+bun run generate:brand-index      # Generate brand knowledge index
+bun run fetch-thumbnails          # Populate article thumbnails
+bun run capture-screenshots       # Capture component screenshots
+```
+
+## 🎯 Key Features Deep Dive
+
+### AI Chat System
+- **Streaming responses** with real-time token display
+- **Extended thinking** visualization with collapsible blocks
+- **Source citations** with favicon and snippet previews
+- **Follow-up questions** auto-generated based on context
+- **Image attachments** with drag-and-drop support
+- **Writing style** presets for different content types
+
+### Brand Knowledge Integration
+- System prompts enriched with brand documentation
+- Contextual awareness of current page/space
+- Asset references and brand guideline compliance
+- Voice and tone consistency checks
+
+### Spaces & Collaboration
+- Create focused project workspaces
+- Attach files, links, and instructions
+- Threaded discussions with full history
+- Task management integration
+- Context-aware AI responses within spaces
+
+## 📊 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/chat` | POST | Stream AI responses |
+| `/api/suggestions` | POST | Get search suggestions |
+| `/api/related-questions` | POST | Generate follow-ups |
+
+## 🔐 Accessibility
+
+- Full keyboard navigation
+- ARIA labels and roles
+- Focus management
+- Screen reader support
+- High contrast support
+- Reduced motion preferences
 
 ## 📝 License
 
@@ -134,8 +293,8 @@ GNU General Public License v3.0
 
 ## 🤝 Contributing
 
-This is a personal project, but suggestions and feedback are welcome!
+This is a personal project for OPEN SESSION. Suggestions and feedback welcome!
 
 ---
 
-Built with ❤️ using BRAND-OS design system
+Built with ❤️ using BRAND-OS design system by [OPEN SESSION](https://opensesh.com)

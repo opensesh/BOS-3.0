@@ -3,11 +3,12 @@
 import React from 'react';
 import { InlineCitation } from './InlineCitation';
 import { BrandResourceCardProps } from './BrandResourceCard';
-import { ThinkingDotFlow } from '@/components/ui/dot-flow';
+import { InlineStreamingDisplay } from './InlineStreamingDisplay';
 import {
   BRAND_PAGE_ROUTES,
   BRAND_SOURCES,
 } from '@/lib/brand-knowledge';
+import type { ToolCall } from '@/hooks/useChat';
 
 export interface SourceInfo {
   id: string;
@@ -40,6 +41,10 @@ interface AnswerViewProps {
   isStreaming?: boolean;
   showCitations?: boolean;
   resourceCards?: BrandResourceCardProps[];
+  /** Claude's thinking/reasoning content during extended thinking */
+  thinking?: string;
+  /** Tool calls made during the response */
+  toolCalls?: ToolCall[];
 }
 
 export function AnswerView({
@@ -49,6 +54,8 @@ export function AnswerView({
   isStreaming = false,
   showCitations = true,
   resourceCards = [],
+  thinking,
+  toolCalls,
 }: AnswerViewProps) {
   // Group sources by index for citation display
   const getSourcesForCitation = (citations?: SourceInfo[]): SourceInfo[] => {
@@ -118,11 +125,14 @@ export function AnswerView({
           );
         })}
 
-        {/* Streaming indicator with DotFlow animation */}
+        {/* Streaming indicator with thinking/tool display */}
         {isStreaming && (
-          <div className="py-2">
-            <ThinkingDotFlow />
-          </div>
+          <InlineStreamingDisplay
+            thinking={thinking}
+            toolCalls={toolCalls}
+            isStreaming={isStreaming}
+            hasContent={sections.length > 0}
+          />
         )}
       </div>
     </div>

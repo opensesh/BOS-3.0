@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useChat } from '@/hooks/useChat';
+import { useChat, type ToolCall } from '@/hooks/useChat';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -69,6 +69,10 @@ interface ParsedMessage {
   sources?: SourceInfo[];
   images?: ImageResult[];
   modelUsed?: string;
+  /** Claude's thinking/reasoning content during extended thinking */
+  thinking?: string;
+  /** Tool calls made during the response */
+  toolCalls?: ToolCall[];
 }
 
 export function ChatInterface() {
@@ -703,9 +707,12 @@ export function ChatInterface() {
   // Parse messages into our format
   const parsedMessages: ParsedMessage[] = useMemo(() => {
     return messages.map((message) => {
-      // Extract sources from the message if available
+      // Extract extended data from the message if available
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const messageSources = (message as any).sources as SourceInfo[] | undefined;
+      const messageAny = message as any;
+      const messageSources = messageAny.sources as SourceInfo[] | undefined;
+      const messageThinking = messageAny.thinking as string | undefined;
+      const messageToolCalls = messageAny.toolCalls as ToolCall[] | undefined;
       
       return {
         id: message.id,
@@ -714,6 +721,8 @@ export function ChatInterface() {
         sources: messageSources || [],
         images: [],
         modelUsed,
+        thinking: messageThinking,
+        toolCalls: messageToolCalls,
       };
     });
   }, [messages, modelUsed, getMessageContent]);
@@ -776,10 +785,20 @@ export function ChatInterface() {
                               onFollowUpClick={handleFollowUpSubmit}
                               onRegenerate={() => handleFollowUpSubmit(message.content)}
                               isLastResponse={idx === parsedMessages.length - 2}
+                              thinking={nextMessage.thinking}
+                              toolCalls={nextMessage.toolCalls}
                             />
                           );
                         }
                         if (!nextMessage && isLoading) {
+                          // Get streaming data from the last message in the raw messages array
+                          const lastRawMessage = messages[messages.length - 1];
+                          const streamingThinking = lastRawMessage?.role === 'assistant' 
+                            ? (lastRawMessage as { thinking?: string }).thinking 
+                            : undefined;
+                          const streamingToolCalls = lastRawMessage?.role === 'assistant'
+                            ? (lastRawMessage as { toolCalls?: ToolCall[] }).toolCalls
+                            : undefined;
                           return (
                             <ChatContent
                               key={message.id}
@@ -788,6 +807,8 @@ export function ChatInterface() {
                               isStreaming={true}
                               onFollowUpClick={handleFollowUpSubmit}
                               isLastResponse={true}
+                              thinking={streamingThinking}
+                              toolCalls={streamingToolCalls}
                             />
                           );
                         }

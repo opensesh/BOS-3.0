@@ -4,6 +4,7 @@ import React from 'react';
 import { AnswerView, parseContentToSections, extractResourceCards, SourceInfo } from './AnswerView';
 import { ResponseActions } from './ResponseActions';
 import { RelatedQuestions } from './RelatedQuestions';
+import type { ToolCall } from '@/hooks/useChat';
 
 interface ChatContentProps {
   query: string;
@@ -14,6 +15,10 @@ interface ChatContentProps {
   onFollowUpClick: (question: string) => void;
   onRegenerate?: () => void;
   isLastResponse?: boolean;
+  /** Claude's thinking/reasoning content during extended thinking */
+  thinking?: string;
+  /** Tool calls made during the response */
+  toolCalls?: ToolCall[];
 }
 
 export function ChatContent({
@@ -25,6 +30,8 @@ export function ChatContent({
   onFollowUpClick,
   onRegenerate,
   isLastResponse = true,
+  thinking,
+  toolCalls,
 }: ChatContentProps) {
   // Check if we should show citations (only for Perplexity models)
   const showCitations = modelUsed?.includes('sonar') || modelUsed?.includes('perplexity');
@@ -50,6 +57,8 @@ export function ChatContent({
         isStreaming={isStreaming}
         showCitations={showCitations}
         resourceCards={resourceCards}
+        thinking={thinking}
+        toolCalls={toolCalls}
       />
 
       {/* Response actions - shown for all completed responses */}

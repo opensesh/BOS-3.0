@@ -21,3 +21,4 @@ export { SourcesDrawer } from './SourcesDrawer';
 export { ThinkingDisplay, ThinkingIndicator } from './ThinkingDisplay';
 export { ToolExecutionCard, ToolExecutionList, ToolUseIndicator } from './ToolExecutionCard';
 export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRenderer';
+export { InlineStreamingDisplay, InlineStreamingIndicator } from './InlineStreamingDisplay';

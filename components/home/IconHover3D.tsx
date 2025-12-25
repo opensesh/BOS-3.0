@@ -26,9 +26,9 @@ export function IconHover3D({
       className="group relative w-full h-full rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-colors duration-300 hover:border-[var(--border-brand)]"
       whileTap={{ scale: 0.98 }}
     >
-      <div className="flex items-start gap-3">
-        {/* Icon Container */}
-        <div className="relative flex-shrink-0">
+      <div className="flex flex-col">
+        {/* Icon Container - same size as folder (48x48) */}
+        <div className="relative mb-3">
           <motion.div
             className="w-12 h-12 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
             animate={{
@@ -63,38 +63,18 @@ export function IconHover3D({
           />
         </div>
 
-        {/* Text Content */}
-        <div className="flex-1 min-w-0">
-          {/* Title */}
-          <h3 className="text-base font-semibold text-[var(--fg-primary)] mb-0.5">
-            {title}
-          </h3>
-
-          {/* Description */}
-          <p className="text-sm text-[var(--fg-tertiary)] line-clamp-2">
-            {description}
-          </p>
-        </div>
-
-        {/* Arrow indicator */}
-        <motion.div
-          className="flex-shrink-0 self-center"
-          animate={{
-            x: isHovered ? 3 : 0,
-            opacity: isHovered ? 1 : 0.4,
-          }}
-          transition={{ duration: 0.2 }}
+        {/* Title - vanilla by default, orange on hover */}
+        <h3 
+          className="text-base font-semibold mb-0.5 transition-colors duration-300"
+          style={{ color: isHovered ? 'var(--color-brand-500)' : 'var(--fg-primary)' }}
         >
-          <svg 
-            className="w-4 h-4 text-[var(--fg-tertiary)]" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-          </svg>
-        </motion.div>
+          {title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-sm text-[var(--fg-tertiary)] line-clamp-2">
+          {description}
+        </p>
       </div>
     </motion.button>
   );

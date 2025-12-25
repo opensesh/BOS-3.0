@@ -9,36 +9,16 @@ interface AnimatedFolderProps {
   title: string;
   subtitle?: string;
   href: string;
-  color?: 'aperol' | 'blue' | 'green' | 'purple';
   variant?: 'icons' | 'squares';
   icons?: FC<SVGProps<SVGSVGElement>>[];
 }
 
-const colorVariants = {
-  aperol: {
-    main: 'var(--color-brand-500)',
-    light: 'var(--color-brand-400)',
-    dark: 'var(--color-brand-600)',
-    hex: '#fe5102',
-  },
-  blue: {
-    main: '#3B82F6',
-    light: '#60A5FA',
-    dark: '#2563EB',
-    hex: '#3B82F6',
-  },
-  green: {
-    main: '#10B981',
-    light: '#34D399',
-    dark: '#059669',
-    hex: '#10B981',
-  },
-  purple: {
-    main: '#8B5CF6',
-    light: '#A78BFA',
-    dark: '#7C3AED',
-    hex: '#8B5CF6',
-  },
+// Aperol color only
+const colors = {
+  main: 'var(--color-brand-500)',
+  light: 'var(--color-brand-400)',
+  dark: 'var(--color-brand-600)',
+  hex: '#fe5102',
 };
 
 // Default icons for brand assets
@@ -48,13 +28,11 @@ export function AnimatedFolder({
   title,
   subtitle,
   href,
-  color = 'aperol',
   variant = 'icons',
   icons = defaultBrandIcons,
 }: AnimatedFolderProps) {
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
-  const colors = colorVariants[color];
 
   const handleClick = () => {
     router.push(href);
@@ -70,14 +48,14 @@ export function AnimatedFolder({
     >
       {/* Folder Container */}
       <div className="flex flex-col">
-        {/* 3D Folder */}
+        {/* 3D Folder - same size as icon container (48x48) */}
         <div 
-          className="relative w-20 h-14 mb-3"
+          className="relative w-12 h-12 mb-3"
           style={{ perspective: '1000px' }}
         >
           {/* Back Panel */}
           <motion.div
-            className="absolute inset-0 rounded-md"
+            className="absolute inset-0 rounded-lg"
             style={{
               background: colors.dark,
               transformStyle: 'preserve-3d',
@@ -86,7 +64,7 @@ export function AnimatedFolder({
 
           {/* Folder Tab */}
           <motion.div
-            className="absolute -top-1.5 left-2 w-8 h-3 rounded-t-sm"
+            className="absolute -top-1 left-1.5 w-5 h-2 rounded-t-sm"
             style={{
               background: colors.main,
             }}
@@ -94,7 +72,7 @@ export function AnimatedFolder({
 
           {/* Front Panel (opens on hover) */}
           <motion.div
-            className="absolute inset-0 rounded-md origin-bottom"
+            className="absolute inset-0 rounded-lg origin-bottom"
             style={{
               background: `linear-gradient(180deg, ${colors.light} 0%, ${colors.main} 100%)`,
               transformStyle: 'preserve-3d',
@@ -110,7 +88,7 @@ export function AnimatedFolder({
           >
             {/* Shine effect */}
             <div 
-              className="absolute inset-0 rounded-md opacity-30"
+              className="absolute inset-0 rounded-lg opacity-30"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)',
               }}
@@ -124,21 +102,21 @@ export function AnimatedFolder({
                 {icons.slice(0, 3).map((Icon, index) => (
                   <motion.div
                     key={index}
-                    initial={{ y: 15, opacity: 0, scale: 0.8 }}
+                    initial={{ y: 10, opacity: 0, scale: 0.8 }}
                     animate={{ 
-                      y: -8 - (index * 3), 
+                      y: -6 - (index * 2), 
                       opacity: 1, 
                       scale: 1,
                       rotate: (index - 1) * 6,
                     }}
-                    exit={{ y: 15, opacity: 0, scale: 0.8 }}
+                    exit={{ y: 10, opacity: 0, scale: 0.8 }}
                     transition={{ 
                       delay: index * 0.04,
                       type: 'spring',
                       stiffness: 400,
                       damping: 25,
                     }}
-                    className="w-6 h-6 rounded-sm shadow-lg bg-white flex items-center justify-center p-1"
+                    className="w-5 h-5 rounded-sm shadow-lg bg-white flex items-center justify-center p-0.5"
                     style={{
                       zIndex: 10 + index,
                     }}
@@ -158,15 +136,15 @@ export function AnimatedFolder({
             {isHovered && variant === 'squares' && (
               <div className="absolute inset-0 flex items-center justify-center overflow-visible">
                 <motion.div
-                  initial={{ y: 15, opacity: 0, scale: 0.8 }}
-                  animate={{ y: -10, opacity: 1, scale: 1 }}
-                  exit={{ y: 15, opacity: 0, scale: 0.8 }}
+                  initial={{ y: 10, opacity: 0, scale: 0.8 }}
+                  animate={{ y: -8, opacity: 1, scale: 1 }}
+                  exit={{ y: 10, opacity: 0, scale: 0.8 }}
                   transition={{ 
                     type: 'spring',
                     stiffness: 400,
                     damping: 25,
                   }}
-                  className="w-7 h-7 rounded-sm shadow-lg bg-white flex items-center justify-center p-1"
+                  className="w-5 h-5 rounded-sm shadow-lg bg-white flex items-center justify-center p-0.5"
                   style={{ zIndex: 10 }}
                 >
                   <LayoutGrid 
@@ -179,10 +157,10 @@ export function AnimatedFolder({
           </AnimatePresence>
         </div>
 
-        {/* Title - colored to match folder */}
+        {/* Title - vanilla by default, orange on hover */}
         <h3 
-          className="text-base font-semibold mb-0.5"
-          style={{ color: colors.hex }}
+          className="text-base font-semibold mb-0.5 transition-colors duration-300"
+          style={{ color: isHovered ? colors.hex : 'var(--fg-primary)' }}
         >
           {title}
         </h3>

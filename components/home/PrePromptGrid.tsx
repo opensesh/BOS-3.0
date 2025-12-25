@@ -17,7 +17,6 @@ const quickLinks = [
     title: 'Brand Assets',
     subtitle: 'Explore your brand hub',
     href: '/brand-hub',
-    color: 'aperol' as const,
     variant: 'icons' as const,
     icons: [Palette, Type, Image],
   },
@@ -26,7 +25,6 @@ const quickLinks = [
     title: 'Design Spaces',
     subtitle: 'Find conversations',
     href: '/spaces',
-    color: 'purple' as const,
     variant: 'squares' as const,
   },
 ];
@@ -66,7 +64,6 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
               title={link.title}
               subtitle={link.subtitle}
               href={link.href}
-              color={link.color}
               variant={link.variant}
               icons={link.icons}
             />

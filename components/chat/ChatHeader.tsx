@@ -63,10 +63,10 @@ export function ChatHeader({
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-1.5 -ml-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                className="p-1 -ml-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
                 title="Back to home"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3.5 h-3.5" />
               </button>
             )}
 
@@ -89,12 +89,18 @@ export function ChatHeader({
                           ? 'text-[var(--fg-primary)]'
                           : isAvailable
                           ? 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'
-                          : 'text-[var(--fg-tertiary)]/40 cursor-not-allowed'
+                          : 'text-[var(--fg-tertiary)]/30 cursor-not-allowed opacity-50 pointer-events-none'
                       }
                     `}
                   >
-                    {Icon && <Icon className="w-4 h-4" />}
+                    {Icon && <Icon className={`w-4 h-4 ${!isAvailable ? 'opacity-50' : ''}`} />}
                     <span>{tab.label}</span>
+                    {/* Count badge for available tabs with items */}
+                    {isAvailable && tab.count !== undefined && tab.count > 0 && (
+                      <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]">
+                        {tab.count}
+                      </span>
+                    )}
                     {/* Active indicator */}
                     {isActive && (
                       <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-[var(--bg-brand-solid)] rounded-full" />

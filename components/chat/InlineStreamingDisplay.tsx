@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Loader2, Globe, Brain, Search, Wrench, Calculator, Clock, FileText, Code } from 'lucide-react';
+import { ChevronRight, Loader2, Globe, Brain, Wrench, Calculator, Clock, FileText, Code } from 'lucide-react';
 import { ThinkingDotFlow } from '@/components/ui/dot-flow';
 import type { ToolCall } from '@/hooks/useChat';
 
@@ -37,6 +37,20 @@ const toolConfig: Record<string, {
   },
 };
 
+// Helper to get tool description
+const getToolDescription = (tool: ToolCall): string => {
+  const config = toolConfig[tool.name];
+  if (config) {
+    return config.getDescription(tool.input);
+  }
+  // Fallback for unknown tools
+  if (tool.input?.query) {
+    return `Processing: "${tool.input.query}"`;
+  }
+  const formattedName = tool.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return `Running ${formattedName}...`;
+};
+
 interface InlineStreamingDisplayProps {
   /** Claude's thinking/reasoning content */
   thinking?: string;
@@ -52,13 +66,7 @@ interface InlineStreamingDisplayProps {
  * InlineStreamingDisplay Component
  * 
  * Displays Claude's thinking process and tool usage inline during streaming.
- * Shows actual thinking content and tool activity descriptions.
- * 
- * Visual states:
- * - No content yet: Show animated DotLoader with rotating phrases
- * - Tool use starts: Show tool name with description of what's happening
- * - Thinking arrives: Display thinking text when expanded
- * - Response starts: Smoothly transition away
+ * Always shows what's happening - never just a tool name without context.
  */
 export function InlineStreamingDisplay({
   thinking,
@@ -66,51 +74,27 @@ export function InlineStreamingDisplay({
   isStreaming,
   hasContent,
 }: InlineStreamingDisplayProps) {
+  // ALL HOOKS MUST BE CALLED FIRST - before any conditional returns
   const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Don't show anything if not streaming
-  if (!isStreaming) return null;
   
   const hasThinking = thinking && thinking.length > 0;
   const hasToolCalls = toolCalls && toolCalls.length > 0;
   
-  // De-duplicate tools by name - only show each unique tool once, keep the most recent
+  // De-duplicate tools by name - keep the most recent one (with latest input)
   const uniqueTools = useMemo(() => {
     if (!toolCalls) return [];
     const toolMap = new Map<string, ToolCall>();
-    // Process in order so later tools override earlier ones (keeps most recent input)
     toolCalls.forEach(tool => {
       toolMap.set(tool.name, tool);
     });
     return Array.from(toolMap.values());
   }, [toolCalls]);
   
-  const activeTools = uniqueTools.filter(t => t.status === 'running' || t.status === 'pending');
-  
-  // If we have text content and no active thinking/tools, don't show this component
-  if (hasContent && !hasThinking && activeTools.length === 0) return null;
+  const activeTools = useMemo(() => {
+    return uniqueTools.filter(t => t.status === 'running' || t.status === 'pending');
+  }, [uniqueTools]);
 
-  // Format tool name for display
-  const formatToolName = (name: string) => {
-    return name
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, c => c.toUpperCase());
-  };
-
-  // Get tool description based on its input
-  const getToolDescription = (tool: ToolCall) => {
-    const config = toolConfig[tool.name];
-    if (config) {
-      return config.getDescription(tool.input);
-    }
-    // Fallback for unknown tools
-    if (tool.input?.query) {
-      return `Processing: "${tool.input.query}"`;
-    }
-    return `Running ${formatToolName(tool.name)}...`;
-  };
-
-  // Build the activity log content
+  // Build the activity log content for expanded view
   const activityContent = useMemo(() => {
     const lines: string[] = [];
     
@@ -124,7 +108,6 @@ export function InlineStreamingDisplay({
     if (hasThinking && thinking) {
       lines.push('');
       lines.push('Reasoning:');
-      // Show last portion of thinking
       const thinkingPreview = thinking.length > 600 ? '...' + thinking.slice(-600) : thinking;
       lines.push(thinkingPreview);
     }
@@ -134,6 +117,17 @@ export function InlineStreamingDisplay({
 
   // Check if there's meaningful content to show when expanded
   const hasExpandableContent = hasThinking || uniqueTools.some(t => t.input);
+
+  // NOW we can do conditional returns - after all hooks are called
+  if (!isStreaming) return null;
+  if (hasContent && !hasThinking && activeTools.length === 0) return null;
+
+  // Get the current activity description to show
+  const currentDescription = activeTools.length > 0 
+    ? getToolDescription(activeTools[activeTools.length - 1])
+    : hasThinking 
+      ? 'Processing your request...'
+      : null;
 
   return (
     <div className="py-2">
@@ -147,67 +141,45 @@ export function InlineStreamingDisplay({
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
           >
-            {/* Tool/Thinking header row */}
+            {/* Clickable row - always shows description */}
             <button
               onClick={() => hasExpandableContent && setIsExpanded(!isExpanded)}
               className={`flex items-start gap-2 text-left w-full ${hasExpandableContent ? 'group cursor-pointer' : 'cursor-default'}`}
             >
-              {/* Chevron - only show if expandable */}
-              {hasExpandableContent ? (
-                <motion.div
-                  animate={{ rotate: isExpanded ? 90 : 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)] mt-0.5 flex-shrink-0"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </motion.div>
-              ) : (
-                <div className="w-3.5" /> // Spacer
-              )}
+              {/* Chevron */}
+              <motion.div
+                animate={{ rotate: isExpanded ? 90 : 0 }}
+                transition={{ duration: 0.15 }}
+                className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)] mt-0.5 flex-shrink-0"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </motion.div>
               
-              {/* Tool info */}
+              {/* Tool info - always shows icon + description */}
               <div className="flex-1 min-w-0">
-                {/* Tool icons and names row */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  {uniqueTools.map((tool, idx) => {
-                    const config = toolConfig[tool.name];
-                    const Icon = config?.icon || Wrench;
-                    const isActive = tool.status === 'running' || tool.status === 'pending';
-                    
-                    return (
-                      <div key={tool.id} className="flex items-center gap-1.5">
-                        {idx > 0 && <span className="text-[var(--fg-quaternary)]">·</span>}
-                        <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'}`} />
-                        <span className={`text-xs ${isActive ? 'text-[var(--fg-secondary)]' : 'text-[var(--fg-tertiary)]'}`}>
-                          {formatToolName(tool.name)}
-                        </span>
-                        {isActive && (
-                          <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="flex items-center gap-2">
+                  {/* Tool icon */}
+                  {activeTools.length > 0 ? (
+                    <>
+                      {(() => {
+                        const tool = activeTools[activeTools.length - 1];
+                        const config = toolConfig[tool.name];
+                        const Icon = config?.icon || Wrench;
+                        return <Icon className="w-3.5 h-3.5 text-[var(--fg-brand-primary)] flex-shrink-0" />;
+                      })()}
+                    </>
+                  ) : hasThinking ? (
+                    <Brain className="w-3.5 h-3.5 text-[var(--fg-brand-primary)] flex-shrink-0" />
+                  ) : null}
                   
-                  {/* If only thinking (no tools), show thinking label */}
-                  {!hasToolCalls && hasThinking && (
-                    <div className="flex items-center gap-1.5">
-                      <Brain className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
-                      <span className="text-xs text-[var(--fg-secondary)]">Thinking</span>
-                      <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
-                    </div>
-                  )}
+                  {/* Description text - always shows what's happening */}
+                  <span className="text-xs text-[var(--fg-secondary)] truncate">
+                    {currentDescription}
+                  </span>
+                  
+                  {/* Spinner */}
+                  <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin flex-shrink-0" />
                 </div>
-                
-                {/* Tool description - show inline when not expanded */}
-                {!isExpanded && activeTools.length > 0 && (
-                  <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-xs text-[var(--fg-tertiary)] mt-1 truncate"
-                  >
-                    {getToolDescription(activeTools[activeTools.length - 1])}
-                  </motion.p>
-                )}
               </div>
             </button>
             
@@ -277,8 +249,7 @@ export function InlineStreamingIndicator({
   toolCalls,
   isStreaming,
 }: Omit<InlineStreamingDisplayProps, 'hasContent'>) {
-  if (!isStreaming) return null;
-
+  // ALL HOOKS FIRST - before any conditional returns
   const hasThinking = thinking && thinking.length > 0;
   
   // De-duplicate tools by name, keep most recent
@@ -293,14 +264,8 @@ export function InlineStreamingIndicator({
     return Array.from(toolMap.values());
   }, [toolCalls]);
 
-  // Get description for active tool
-  const getDescription = (tool: ToolCall) => {
-    const config = toolConfig[tool.name];
-    if (config) {
-      return config.getDescription(tool.input);
-    }
-    return `Running ${tool.name.replace(/_/g, ' ')}...`;
-  };
+  // NOW we can conditionally return
+  if (!isStreaming) return null;
 
   return (
     <motion.div
@@ -325,7 +290,7 @@ export function InlineStreamingIndicator({
             return <Icon className="w-3 h-3 text-[var(--fg-brand-primary)]" />;
           })()}
           <span className="text-[var(--fg-tertiary)] max-w-[200px] truncate">
-            {getDescription(uniqueActiveTools[0])}
+            {getToolDescription(uniqueActiveTools[0])}
           </span>
           <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
         </>
@@ -342,4 +307,3 @@ export function InlineStreamingIndicator({
 }
 
 export default InlineStreamingDisplay;
-

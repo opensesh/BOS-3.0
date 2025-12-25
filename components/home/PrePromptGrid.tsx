@@ -9,12 +9,10 @@ import {
   Type,
   Palette,
   LayoutGrid,
-  FileText,
-  MessageSquare,
-  Lightbulb,
-  PenTool,
   Megaphone,
-  Sparkles
+  Sparkles,
+  Lightbulb,
+  MessageSquare,
 } from 'lucide-react';
 import { AnimatedFolder } from './AnimatedFolder';
 import { IconHover3D } from './IconHover3D';
@@ -94,24 +92,112 @@ const allItems = [
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
-export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
-  // Start centered: index 2 shows items 2,3,4,5 (Colors, Spaces, Create post, Plan campaign)
-  const [currentIndex, setCurrentIndex] = useState(2);
-  
-  const visibleCount = 4;
-  const maxIndex = allItems.length - visibleCount;
+// Reusable carousel row component for mobile/tablet
+function CarouselRow({ 
+  items, 
+  type, 
+  onPromptSubmit,
+  visibleCount = 2,
+}: { 
+  items: typeof quickLinks | typeof prePrompts;
+  type: 'link' | 'prompt';
+  onPromptSubmit?: (prompt: string) => void;
+  visibleCount?: number;
+}) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const maxIndex = items.length - visibleCount;
 
-  const handlePrev = () => {
-    setCurrentIndex(prev => Math.max(0, prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex(prev => Math.min(maxIndex, prev + 1));
-  };
+  const handlePrev = () => setCurrentIndex(prev => Math.max(0, prev - 1));
+  const handleNext = () => setCurrentIndex(prev => Math.min(maxIndex, prev + 1));
 
   const canGoPrev = currentIndex > 0;
   const canGoNext = currentIndex < maxIndex;
+  const cardWidthPercent = 100 / visibleCount;
 
+  return (
+    <div className="flex items-center gap-2">
+      {/* Left arrow */}
+      <button
+        onClick={handlePrev}
+        disabled={!canGoPrev}
+        className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+          canGoPrev 
+            ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+            : 'opacity-30 cursor-not-allowed'
+        }`}
+        aria-label="Previous"
+      >
+        <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
+      </button>
+
+      {/* Cards */}
+      <div 
+        className="relative flex-1 overflow-hidden"
+        style={{
+          maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+        }}
+      >
+        <div 
+          className="flex gap-3 transition-transform duration-300 ease-out"
+          style={{
+            transform: `translateX(-${currentIndex * (cardWidthPercent + 1)}%)`,
+          }}
+        >
+          {items.map((item) => (
+            <div 
+              key={item.id} 
+              className="flex-shrink-0 min-h-[130px]"
+              style={{ width: `calc(${cardWidthPercent}% - 6px)` }}
+            >
+              {type === 'link' && 'href' in item ? (
+                <AnimatedFolder
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  href={item.href}
+                  icon={item.icon}
+                />
+              ) : type === 'prompt' && 'prompt' in item ? (
+                <IconHover3D
+                  icon={item.icon}
+                  title={item.title}
+                  description={item.description}
+                  onClick={() => onPromptSubmit?.(item.prompt)}
+                />
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right arrow */}
+      <button
+        onClick={handleNext}
+        disabled={!canGoNext}
+        className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+          canGoNext 
+            ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+            : 'opacity-30 cursor-not-allowed'
+        }`}
+        aria-label="Next"
+      >
+        <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+      </button>
+    </div>
+  );
+}
+
+export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
+  // Desktop carousel state
+  const [currentIndex, setCurrentIndex] = useState(2);
+  const visibleCount = 4;
+  const maxIndex = allItems.length - visibleCount;
+
+  const handlePrev = () => setCurrentIndex(prev => Math.max(0, prev - 1));
+  const handleNext = () => setCurrentIndex(prev => Math.min(maxIndex, prev + 1));
+
+  const canGoPrev = currentIndex > 0;
+  const canGoNext = currentIndex < maxIndex;
   const cardWidthPercent = 100 / visibleCount;
 
   return (
@@ -121,7 +207,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
       animate="visible"
       className="w-full max-w-3xl mx-auto px-4 mt-4"
     >
-      {/* Desktop: Carousel */}
+      {/* Desktop: Single carousel with all items */}
       <div className="hidden lg:block">
         <div className="flex items-center gap-4">
           {/* Left arrow */}
@@ -138,7 +224,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
             <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
           </button>
 
-          {/* Cards container with CSS mask for soft fade */}
+          {/* Cards */}
           <div 
             className="relative flex-1 overflow-hidden"
             style={{
@@ -210,35 +296,22 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
         </div>
       </div>
 
-      {/* Tablet & Mobile: Two rows */}
-      <div className="lg:hidden space-y-4">
-        {/* Row 1: Quick Links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {quickLinks.map((link) => (
-            <div key={link.id} className="min-h-[130px]">
-              <AnimatedFolder
-                title={link.title}
-                subtitle={link.subtitle}
-                href={link.href}
-                icon={link.icon}
-              />
-            </div>
-          ))}
-        </div>
+      {/* Tablet & Mobile: Two carousel rows */}
+      <div className="lg:hidden space-y-3">
+        {/* Row 1: Quick Links carousel */}
+        <CarouselRow 
+          items={quickLinks} 
+          type="link" 
+          visibleCount={2}
+        />
 
-        {/* Row 2: Pre-prompts */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {prePrompts.map((prompt) => (
-            <div key={prompt.id} className="min-h-[130px]">
-              <IconHover3D
-                icon={prompt.icon}
-                title={prompt.title}
-                description={prompt.description}
-                onClick={() => onPromptSubmit(prompt.prompt)}
-              />
-            </div>
-          ))}
-        </div>
+        {/* Row 2: Pre-prompts carousel */}
+        <CarouselRow 
+          items={prePrompts} 
+          type="prompt" 
+          onPromptSubmit={onPromptSubmit}
+          visibleCount={2}
+        />
       </div>
     </motion.div>
   );

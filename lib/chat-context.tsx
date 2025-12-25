@@ -141,6 +141,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [currentSessionId]);
 
   const getSessionMessages = useCallback(async (id: string): Promise<ChatMessage[] | null> => {
+    // First check if we already have the messages in local state
+    // This handles cases where sessions were saved locally or already loaded
+    const localSession = chatHistory.find(item => item.id === id);
+    if (localSession?.messages && localSession.messages.length > 0) {
+      return localSession.messages;
+    }
+    
+    // Fall back to fetching from Supabase
     try {
       const session = await chatService.getSession(id);
       return session?.messages || null;
@@ -148,7 +156,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       console.error('Error getting session messages:', error);
       return null;
     }
-  }, []);
+  }, [chatHistory]);
 
   const clearHistory = useCallback(() => {
     setChatHistory([]);

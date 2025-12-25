@@ -549,7 +549,6 @@ export function ChatInterface() {
     const currentAttachments = [...attachments];
     setInput('');
     clearAttachments();
-    setShowSuggestions(false);
 
     try {
       // Build message with attachments using FileUIPart format for AI SDK compatibility

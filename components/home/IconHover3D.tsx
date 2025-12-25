@@ -27,10 +27,10 @@ export function IconHover3D({
       whileTap={{ scale: 0.98 }}
     >
       <div className="flex flex-col">
-        {/* Icon Container - same size as folder (40x40) */}
+        {/* Icon Container - matching folder height */}
         <div className="relative mb-2">
           <motion.div
-            className="w-10 h-10 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
+            className="w-10 h-8 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
             animate={{
               scale: isHovered ? 1.05 : 1,
             }}

@@ -43,9 +43,9 @@ export function AnimatedFolder({
     >
       {/* Folder Container */}
       <div className="flex flex-col">
-        {/* 3D Folder - same size as icon container (40x40) */}
+        {/* 3D Folder - shorter height to match icon containers */}
         <div 
-          className="relative w-10 h-10 mb-2"
+          className="relative w-10 h-8 mb-2"
           style={{ perspective: '1000px' }}
         >
           {/* Back Panel */}

@@ -868,7 +868,7 @@ export function ChatInterface() {
             {/* Error display */}
             {(error || submitError) && (
               <motion.div 
-                className="w-full max-w-4xl px-4 mb-4"
+                className="w-full max-w-3xl px-4 mb-4"
                 variants={fadeInUp}
               >
                 <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
@@ -886,8 +886,8 @@ export function ChatInterface() {
               onPromptSubmit={(prompt) => handleQueryClick(prompt, true)} 
             />
 
-            <motion.div className="w-full mt-auto" variants={fadeInUp}>
-              <div className="max-w-4xl mx-auto px-4">
+            <motion.div className="w-full mt-4" variants={fadeInUp}>
+              <div className="max-w-3xl mx-auto px-4">
                 <form onSubmit={handleSubmit} className="relative">
                   {/* Hidden file input */}
                   <input

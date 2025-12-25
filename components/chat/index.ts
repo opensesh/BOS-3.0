@@ -22,3 +22,4 @@ export { ThinkingDisplay, ThinkingIndicator } from './ThinkingDisplay';
 export { ToolExecutionCard, ToolExecutionList, ToolUseIndicator } from './ToolExecutionCard';
 export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRenderer';
 export { InlineStreamingDisplay, InlineStreamingIndicator } from './InlineStreamingDisplay';
+export { AssetCarousel, type BrandAsset, type AssetCarouselProps } from './AssetCarousel';

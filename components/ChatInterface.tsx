@@ -738,6 +738,13 @@ export function ChatInterface() {
     return parsedMessages.flatMap(m => m.images || []);
   }, [parsedMessages]);
 
+  // Extract all resource cards from assistant messages
+  const allResourceCards = useMemo(() => {
+    return parsedMessages
+      .filter(m => m.role === 'assistant')
+      .flatMap(m => extractResourceCards(m.content));
+  }, [parsedMessages]);
+
   // Get first query for thread title
   const threadTitle = useMemo(() => {
     const firstUserMessage = parsedMessages.find(m => m.role === 'user');
@@ -757,9 +764,9 @@ export function ChatInterface() {
             <ChatHeader
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              hasLinks={allSources.length > 0}
+              hasLinks={allSources.length > 0 || allResourceCards.length > 0}
               hasImages={allImages.length > 0}
-              linksCount={allSources.length}
+              linksCount={allSources.length + allResourceCards.length}
               imagesCount={allImages.length}
               threadTitle={threadTitle}
               onBack={resetChat}
@@ -821,15 +828,11 @@ export function ChatInterface() {
                 )}
 
                 {activeTab === 'links' && (
-                  <div className="py-6">
-                    {/* Links view content */}
-                    <p className="text-[var(--fg-tertiary)] text-sm">
-                      {allSources.length > 0 
-                        ? `${allSources.length} sources found`
-                        : 'No links available'
-                      }
-                    </p>
-                  </div>
+                  <LinksView
+                    query={threadTitle}
+                    sources={allSources}
+                    resourceCards={allResourceCards}
+                  />
                 )}
 
                 {activeTab === 'images' && (

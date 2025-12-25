@@ -256,7 +256,7 @@ export function ResponseActions({
           {hasAnySourcesData ? (
             <button
               onClick={() => setShowSourcesDrawer(true)}
-              className="flex items-center gap-2 ml-2 px-2.5 py-1.5 rounded-full bg-[var(--bg-secondary)]/80 hover:bg-[var(--bg-secondary)] border border-[var(--border-primary)]/50 transition-colors group"
+              className="flex items-center gap-2 ml-2 px-2.5 py-1.5 rounded-full bg-[var(--bg-secondary)]/80 hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] transition-colors group"
             >
               {/* Stacked source icons - show up to 4 icons representing different source types */}
               <div className="flex -space-x-1">

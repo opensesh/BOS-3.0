@@ -785,9 +785,9 @@ export function ChatInterface() {
             <ChatHeader
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              hasLinks={allSources.length > 0}
+              hasLinks={allSources.length > 0 || allResourceCards.length > 0}
               hasImages={allImages.length > 0}
-              linksCount={allSources.length}
+              linksCount={allSources.length + allResourceCards.length}
               imagesCount={allImages.length}
               threadTitle={threadTitle}
               onBack={resetChat}

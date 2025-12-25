@@ -97,23 +97,24 @@ export function WelcomeHeader() {
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <div className="w-full max-w-4xl px-4 mb-8">
-        <div className="h-16 mb-3" />
-        <div className="h-6" />
+      <div className="w-full max-w-4xl px-4 mb-6">
+        <div className="h-10 mb-1" />
+        <div className="h-8 mb-4" />
+        <div className="h-4" />
       </div>
     );
   }
 
   return (
     <motion.div 
-      className="w-full max-w-4xl px-4 mb-8"
+      className="w-full max-w-4xl px-4 mb-6"
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
     >
-      {/* Main headline - Gemini style */}
+      {/* Greeting with gradient */}
       <h1 
-        className="text-4xl md:text-5xl font-medium mb-3 tracking-tight"
+        className="text-3xl md:text-4xl font-semibold mb-1 tracking-tight"
         style={{
           background: 'linear-gradient(135deg, var(--color-brand-400) 0%, var(--color-brand-500) 50%, var(--color-brand-600) 100%)',
           WebkitBackgroundClip: 'text',
@@ -121,14 +122,19 @@ export function WelcomeHeader() {
           backgroundClip: 'text',
         }}
       >
-        Hello, how can I help you today?
+        Hello, user
       </h1>
 
-      {/* Session context with typewriter brand name */}
-      <p className="text-xl md:text-2xl text-[var(--fg-tertiary)] font-normal">
-        Welcome to your brand operating system for{' '}
+      {/* Secondary question - neutral color */}
+      <p className="text-xl md:text-2xl text-[var(--fg-secondary)] font-medium mb-4">
+        How can I help you today?
+      </p>
+
+      {/* Subtle brand context - smaller */}
+      <p className="text-sm text-[var(--fg-tertiary)]">
+        Brand Operating System for{' '}
         <span 
-          className="font-bold font-accent text-[var(--fg-primary)]"
+          className="font-medium text-[var(--fg-secondary)]"
           style={{ fontFamily: 'Offbit, monospace' }}
         >
           {displayText}

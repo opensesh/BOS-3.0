@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { BookOpen, MessageSquare, Palette, Type, Image } from 'lucide-react';
+import { BookOpen, MessageSquare, Download, LayoutGrid } from 'lucide-react';
 import { AnimatedFolder } from './AnimatedFolder';
 import { IconHover3D } from './IconHover3D';
 import { staggerContainer, fadeInUp } from '@/lib/motion';
@@ -13,19 +13,18 @@ interface PrePromptGridProps {
 // Quick link destinations
 const quickLinks = [
   {
-    id: 'brand-assets',
-    title: 'Brand Assets',
-    subtitle: 'Explore your brand hub',
+    id: 'download-logo',
+    title: 'Download Logo',
+    subtitle: 'Get your brand assets',
     href: '/brand-hub',
-    variant: 'icons' as const,
-    icons: [Palette, Type, Image],
+    icon: Download,
   },
   {
     id: 'design-spaces',
     title: 'Design Spaces',
     subtitle: 'Find conversations',
     href: '/spaces',
-    variant: 'squares' as const,
+    icon: LayoutGrid,
   },
 ];
 
@@ -64,8 +63,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
               title={link.title}
               subtitle={link.subtitle}
               href={link.href}
-              variant={link.variant}
-              icons={link.icons}
+              icon={link.icon}
             />
           </motion.div>
         ))}

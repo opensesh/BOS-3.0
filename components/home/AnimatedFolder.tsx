@@ -3,14 +3,13 @@
 import { useState, type FC, type SVGProps } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Palette, Type, Image, LayoutGrid } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 interface AnimatedFolderProps {
   title: string;
   subtitle?: string;
   href: string;
-  variant?: 'icons' | 'squares';
-  icons?: FC<SVGProps<SVGSVGElement>>[];
+  icon?: FC<SVGProps<SVGSVGElement>>;
 }
 
 // Aperol color only
@@ -21,15 +20,11 @@ const colors = {
   hex: '#fe5102',
 };
 
-// Default icons for brand assets
-const defaultBrandIcons = [Palette, Type, Image];
-
 export function AnimatedFolder({
   title,
   subtitle,
   href,
-  variant = 'icons',
-  icons = defaultBrandIcons,
+  icon: Icon = Download,
 }: AnimatedFolderProps) {
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
@@ -95,45 +90,9 @@ export function AnimatedFolder({
             />
           </motion.div>
 
-          {/* Icons that pop out */}
+          {/* Single icon that pops out on hover */}
           <AnimatePresence>
-            {isHovered && variant === 'icons' && (
-              <div className="absolute inset-0 flex items-center justify-center gap-0.5 overflow-visible">
-                {icons.slice(0, 3).map((Icon, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ y: 10, opacity: 0, scale: 0.8 }}
-                    animate={{ 
-                      y: -6 - (index * 2), 
-                      opacity: 1, 
-                      scale: 1,
-                      rotate: (index - 1) * 6,
-                    }}
-                    exit={{ y: 10, opacity: 0, scale: 0.8 }}
-                    transition={{ 
-                      delay: index * 0.04,
-                      type: 'spring',
-                      stiffness: 400,
-                      damping: 25,
-                    }}
-                    className="w-5 h-5 rounded-sm shadow-lg bg-white flex items-center justify-center p-0.5"
-                    style={{
-                      zIndex: 10 + index,
-                    }}
-                  >
-                    <Icon 
-                      className="w-full h-full"
-                      style={{ color: colors.hex, strokeWidth: 1.5 }}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </AnimatePresence>
-
-          {/* Four squares that pop out */}
-          <AnimatePresence>
-            {isHovered && variant === 'squares' && (
+            {isHovered && (
               <div className="absolute inset-0 flex items-center justify-center overflow-visible">
                 <motion.div
                   initial={{ y: 10, opacity: 0, scale: 0.8 }}
@@ -147,7 +106,7 @@ export function AnimatedFolder({
                   className="w-5 h-5 rounded-sm shadow-lg bg-white flex items-center justify-center p-0.5"
                   style={{ zIndex: 10 }}
                 >
-                  <LayoutGrid 
+                  <Icon 
                     className="w-full h-full"
                     style={{ color: colors.hex, strokeWidth: 1.5 }}
                   />

@@ -738,6 +738,20 @@ export function ChatInterface() {
     return parsedMessages.flatMap(m => m.images || []);
   }, [parsedMessages]);
 
+  // Extract resource cards from all assistant messages
+  const allResourceCards = useMemo(() => {
+    const cards = parsedMessages
+      .filter(m => m.role === 'assistant')
+      .flatMap(m => extractResourceCards(m.content));
+    // Deduplicate by href
+    const seen = new Set<string>();
+    return cards.filter(card => {
+      if (seen.has(card.href)) return false;
+      seen.add(card.href);
+      return true;
+    });
+  }, [parsedMessages]);
+
   // Get first query for thread title
   const threadTitle = useMemo(() => {
     const firstUserMessage = parsedMessages.find(m => m.role === 'user');
@@ -821,15 +835,11 @@ export function ChatInterface() {
                 )}
 
                 {activeTab === 'links' && (
-                  <div className="py-6">
-                    {/* Links view content */}
-                    <p className="text-[var(--fg-tertiary)] text-sm">
-                      {allSources.length > 0 
-                        ? `${allSources.length} sources found`
-                        : 'No links available'
-                      }
-                    </p>
-                  </div>
+                  <LinksView
+                    query={threadTitle}
+                    sources={allSources}
+                    resourceCards={allResourceCards}
+                  />
                 )}
 
                 {activeTab === 'images' && (

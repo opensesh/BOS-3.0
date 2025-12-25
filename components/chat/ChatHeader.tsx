@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowLeft, Globe, Image } from 'lucide-react';
+import { ArrowLeft, Globe, Folder } from 'lucide-react';
 import { OverflowMenu } from './OverflowMenu';
 import { ShareButton } from './ShareModal';
 import { SourceInfo } from './AnswerView';
@@ -46,8 +46,8 @@ export function ChatHeader({
     },
     {
       id: 'images' as ChatTab,
-      label: 'Images',
-      icon: Image,
+      label: 'Assets',
+      icon: Folder,
       available: hasImages,
       count: imagesCount,
     },

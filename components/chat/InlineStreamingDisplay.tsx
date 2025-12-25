@@ -67,6 +67,13 @@ const getToolLabel = (tool: ToolCall): string => {
   return tool.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
+interface SourceInfo {
+  id: string;
+  name: string;
+  url: string;
+  title?: string;
+}
+
 interface InlineStreamingDisplayProps {
   /** Claude's thinking/reasoning content */
   thinking?: string;
@@ -76,6 +83,8 @@ interface InlineStreamingDisplayProps {
   isStreaming: boolean;
   /** Whether any text content has arrived yet */
   hasContent: boolean;
+  /** Sources collected during tool execution */
+  sources?: SourceInfo[];
 }
 
 /**
@@ -89,12 +98,14 @@ export function InlineStreamingDisplay({
   toolCalls,
   isStreaming,
   hasContent,
+  sources = [],
 }: InlineStreamingDisplayProps) {
   // ALL HOOKS MUST BE CALLED FIRST - before any conditional returns
   const [isExpanded, setIsExpanded] = useState(false);
   
   const hasThinking = thinking && thinking.length > 0;
   const hasToolCalls = toolCalls && toolCalls.length > 0;
+  const hasSources = sources.length > 0;
   
   // De-duplicate tools by name - keep the most recent one (with latest input)
   const uniqueTools = useMemo(() => {
@@ -114,31 +125,8 @@ export function InlineStreamingDisplay({
     return uniqueTools.filter(t => t.status === 'completed');
   }, [uniqueTools]);
 
-  // Build the activity log content for expanded view
-  const activityContent = useMemo(() => {
-    const lines: string[] = [];
-    
-    // Add tool activity descriptions
-    uniqueTools.forEach(tool => {
-      const status = tool.status === 'completed' ? '✓' : tool.status === 'error' ? '✗' : '→';
-      const label = getToolLabel(tool);
-      const desc = getToolDescription(tool);
-      lines.push(`${status} ${label}: ${desc}`);
-    });
-    
-    // Add thinking if available
-    if (hasThinking && thinking) {
-      lines.push('');
-      lines.push('Reasoning:');
-      const thinkingPreview = thinking.length > 600 ? '...' + thinking.slice(-600) : thinking;
-      lines.push(thinkingPreview);
-    }
-    
-    return lines.join('\n');
-  }, [uniqueTools, hasThinking, thinking]);
-
-  // Always show if we have tool calls or thinking - even after streaming completes
-  const hasActivityToShow = hasToolCalls || hasThinking;
+  // Always show if we have tool calls, thinking, or sources - even after streaming completes
+  const hasActivityToShow = hasToolCalls || hasThinking || hasSources;
   
   // Don't show anything if nothing has happened yet
   if (!hasActivityToShow && !isStreaming) return null;
@@ -210,17 +198,17 @@ export function InlineStreamingDisplay({
                 <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin flex-shrink-0" />
               )}
               
-              {/* Show count if multiple tools */}
-              {uniqueTools.length > 1 && (
+              {/* Show source count if we have sources */}
+              {hasSources && (
                 <span className="text-[10px] text-[var(--fg-tertiary)] bg-[var(--bg-secondary)] px-1.5 py-0.5 rounded">
-                  +{uniqueTools.length - 1} more
+                  {sources.length} {sources.length === 1 ? 'source' : 'sources'}
                 </span>
               )}
             </div>
           </div>
         </button>
         
-        {/* Expandable activity log */}
+        {/* Expandable content - shows sources as they're collected */}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -230,18 +218,53 @@ export function InlineStreamingDisplay({
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="pl-6 pt-2 pb-1">
-                <p className="text-xs text-[var(--fg-tertiary)] leading-relaxed font-mono whitespace-pre-wrap">
-                  {activityContent}
-                  {/* Streaming cursor - only show while streaming */}
-                  {isStreaming && (
-                    <motion.span
-                      className="inline-block w-1 h-3 bg-[var(--fg-brand-primary)] ml-0.5 align-middle"
-                      animate={{ opacity: [1, 0] }}
-                      transition={{ duration: 0.5, repeat: Infinity }}
-                    />
-                  )}
-                </p>
+              <div className="pl-6 pt-2 pb-1 space-y-1">
+                {/* Show sources as they're collected */}
+                {sources.length > 0 ? (
+                  <div className="space-y-1">
+                    {sources.map((source, idx) => (
+                      <motion.div
+                        key={source.id || idx}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.15, delay: idx * 0.03 }}
+                        className="flex items-center gap-2 text-xs"
+                      >
+                        <CheckCircle className="w-3 h-3 text-[var(--fg-success-primary)] flex-shrink-0" />
+                        <span className="text-[var(--fg-tertiary)] truncate">
+                          {source.title || source.name}
+                        </span>
+                        <span className="text-[var(--fg-quaternary)] text-[10px]">
+                          {source.name}
+                        </span>
+                      </motion.div>
+                    ))}
+                    {/* Show streaming indicator while still searching */}
+                    {isStreaming && activeTools.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center gap-2 text-xs text-[var(--fg-tertiary)]"
+                      >
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Searching for more...</span>
+                      </motion.div>
+                    )}
+                  </div>
+                ) : isStreaming && activeTools.length > 0 ? (
+                  // Show searching indicator when no sources yet
+                  <div className="flex items-center gap-2 text-xs text-[var(--fg-tertiary)]">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Searching...</span>
+                  </div>
+                ) : (
+                  // Show thinking content if available and no sources
+                  hasThinking && thinking && (
+                    <p className="text-xs text-[var(--fg-tertiary)] leading-relaxed font-mono whitespace-pre-wrap">
+                      {thinking.length > 600 ? '...' + thinking.slice(-600) : thinking}
+                    </p>
+                  )
+                )}
               </div>
             </motion.div>
           )}

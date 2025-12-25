@@ -125,12 +125,13 @@ export function AnswerView({
           );
         })}
 
-        {/* Activity indicator - shows tool use and thinking, stays visible after complete */}
+        {/* Activity indicator - shows tool use, thinking, and sources as collected */}
         <InlineStreamingDisplay
           thinking={thinking}
           toolCalls={toolCalls}
           isStreaming={isStreaming}
           hasContent={sections.length > 0}
+          sources={sources}
         />
       </div>
     </div>

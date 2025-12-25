@@ -343,19 +343,26 @@ async function streamWithAnthropicNative(
               content: result.success ? 'Tool completed successfully' : `Error: ${result.error}` 
             }));
 
-            // Extract sources from web_search tool results
+            // Extract sources from web_search tool results and stream them immediately
             if (toolCall.name === 'web_search' && result.success && result.data) {
               const webSearchData = result.data as { sources?: Array<{ title: string; url: string }> };
               if (webSearchData.sources && Array.isArray(webSearchData.sources)) {
+                const newSources: SourceData[] = [];
                 for (const source of webSearchData.sources) {
-                  collectedSources.push({
+                  const sourceData: SourceData = {
                     id: `web-search-${collectedSources.length}`,
                     name: extractHostname(source.url),
                     url: source.url,
                     title: source.title || extractTitleFromUrl(source.url),
                     favicon: getFaviconUrl(source.url),
                     type: 'external',
-                  });
+                  };
+                  collectedSources.push(sourceData);
+                  newSources.push(sourceData);
+                }
+                // Stream sources immediately so UI can show them as they're found
+                if (newSources.length > 0) {
+                  controller.enqueue(sse.encode({ type: 'sources', sources: newSources }));
                 }
               }
             }

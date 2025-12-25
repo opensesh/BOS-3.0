@@ -23,14 +23,33 @@ export function IconHover3D({
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative w-full h-full rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-3 cursor-pointer text-left transition-colors duration-300 hover:border-[var(--border-brand)]"
+      className="group relative w-full h-full rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-colors duration-300 hover:border-[var(--border-brand)]"
       whileTap={{ scale: 0.98 }}
     >
-      <div className="flex flex-col">
-        {/* Icon Container - matching folder height */}
-        <div className="relative mb-2">
+      <div className="flex flex-col h-full">
+        {/* Text Content - TOP */}
+        <div className="mb-4">
+          {/* Title - vanilla by default, orange on hover */}
+          <h3 
+            className="text-base font-semibold mb-1 transition-colors duration-300"
+            style={{ color: isHovered ? 'var(--color-brand-500)' : 'var(--fg-primary)' }}
+          >
+            {title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-sm text-[var(--fg-tertiary)] line-clamp-2">
+            {description}
+          </p>
+        </div>
+
+        {/* Spacer to push icon to bottom */}
+        <div className="flex-1" />
+
+        {/* Icon Container - BOTTOM - Fixed 48x48 size to match folder */}
+        <div className="relative">
           <motion.div
-            className="w-10 h-8 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
+            className="w-12 h-12 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
             animate={{
               scale: isHovered ? 1.05 : 1,
             }}
@@ -41,7 +60,7 @@ export function IconHover3D({
             }}
           >
             <Icon 
-              className="w-5 h-5 transition-colors duration-300"
+              className="w-6 h-6 transition-colors duration-300"
               style={{
                 stroke: isHovered ? 'var(--color-brand-500)' : 'var(--fg-tertiary)',
                 strokeWidth: 1.5,
@@ -62,21 +81,7 @@ export function IconHover3D({
             transition={{ duration: 0.3 }}
           />
         </div>
-
-        {/* Title - vanilla by default, orange on hover */}
-        <h3 
-          className="text-sm font-semibold mb-0.5 transition-colors duration-300"
-          style={{ color: isHovered ? 'var(--color-brand-500)' : 'var(--fg-primary)' }}
-        >
-          {title}
-        </h3>
-
-        {/* Description */}
-        <p className="text-xs text-[var(--fg-tertiary)] line-clamp-2">
-          {description}
-        </p>
       </div>
     </motion.button>
   );
 }
-

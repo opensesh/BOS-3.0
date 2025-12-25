@@ -52,13 +52,13 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
-      className="w-full max-w-3xl mx-auto px-4 mt-3"
+      className="w-full max-w-4xl mx-auto px-4 mt-4"
     >
-      {/* 4-column Grid like Gemini */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+      {/* 4-column Grid like Gemini - larger gap and min-height for cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Quick Link Cards (Folders) */}
         {quickLinks.map((link) => (
-          <motion.div key={link.id} variants={fadeInUp}>
+          <motion.div key={link.id} variants={fadeInUp} className="min-h-[160px]">
             <AnimatedFolder
               title={link.title}
               subtitle={link.subtitle}
@@ -70,7 +70,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
 
         {/* Example Prompt Cards (Icon 3D) */}
         {examplePrompts.map((prompt) => (
-          <motion.div key={prompt.id} variants={fadeInUp}>
+          <motion.div key={prompt.id} variants={fadeInUp} className="min-h-[160px]">
             <IconHover3D
               icon={prompt.icon}
               title={prompt.title}

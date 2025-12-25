@@ -749,7 +749,7 @@ export function ChatInterface() {
       <BackgroundGradient fadeOut={hasMessages} />
       {hasMessages && <div className="fixed inset-x-0 bottom-0 top-14 lg:top-12 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)]" />}
 
-      <div className={`fixed inset-x-0 bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,top] duration-200 ease-out ${hasMessages ? '' : 'items-center justify-center lg:justify-start pt-10 lg:pt-[72px] pb-[430px] lg:pb-0'}`}>
+      <div className={`fixed inset-x-0 bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,top] duration-200 ease-out ${hasMessages ? '' : 'items-center pt-8 lg:pt-16'}`}>
         {/* Chat Mode */}
         {hasMessages && (
           <div className="flex flex-col h-full">
@@ -883,33 +883,40 @@ export function ChatInterface() {
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="contents"
+            className="flex flex-col h-full w-full"
           >
-            {/* Welcome Header */}
-            <WelcomeHeader />
-            
-            {/* Error display */}
-            {(error || submitError) && (
-              <motion.div 
-                className="w-full max-w-3xl px-4 mb-4"
-                variants={fadeInUp}
-              >
-                <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium">Error</p>
-                    <p className="mt-1">{error?.message || submitError}</p>
+            {/* Top Content Area */}
+            <div className="flex flex-col items-center">
+              {/* Welcome Header */}
+              <WelcomeHeader />
+              
+              {/* Error display */}
+              {(error || submitError) && (
+                <motion.div 
+                  className="w-full max-w-4xl px-4 mb-4"
+                  variants={fadeInUp}
+                >
+                  <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Error</p>
+                      <p className="mt-1">{error?.message || submitError}</p>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
 
-            {/* Pre-prompt Cards Grid - above input like Gemini */}
-            <PrePromptGrid 
-              onPromptSubmit={(prompt) => handleQueryClick(prompt, true)} 
-            />
+              {/* Pre-prompt Cards Grid */}
+              <PrePromptGrid 
+                onPromptSubmit={(prompt) => handleQueryClick(prompt, true)} 
+              />
+            </div>
 
-            <motion.div className="w-full mt-4" variants={fadeInUp}>
+            {/* Spacer to push input to bottom */}
+            <div className="flex-1 min-h-8" />
+
+            {/* Input Area - Fixed at bottom */}
+            <motion.div className="w-full pb-6" variants={fadeInUp}>
               <div className="max-w-3xl mx-auto px-4">
                 <form onSubmit={handleSubmit} className="relative">
                   {/* Hidden file input */}

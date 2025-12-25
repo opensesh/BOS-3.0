@@ -173,19 +173,25 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
         </button>
 
         {/* Cards - Desktop: 4, Tablet: 3, Mobile: 2 */}
-        <div className="overflow-hidden mx-12">
-          {/* Desktop layout - 4 cards */}
+        {/* Desktop - 4 visible, gap=12px */}
+        <div className="hidden lg:block overflow-hidden mx-10">
           <div 
-            className="hidden lg:flex gap-2 transition-transform duration-300 ease-out"
+            className="flex gap-3 transition-transform duration-300 ease-out"
             style={{
-              transform: `translateX(calc(-${currentIndex} * 25%))`,
+              // 8 cards of (25% - 9px each) + 7 gaps of 12px = 200% - 72px + 84px = 200% + 12px
+              width: 'calc(200% + 12px)',
+              // Move by (25% + 3px) per card - this accounts for card width + proportional gap
+              transform: `translateX(calc(-${currentIndex} * (25% + 3px)))`,
             }}
           >
             {allItems.map((item) => (
               <div 
                 key={item.id} 
                 className="flex-shrink-0 min-h-[140px]"
-                style={{ width: 'calc(25% - 6px)' }}
+                // Each card = (visible area - 3 gaps) / 4 = (100% of parent - 36px) / 4 = 25% - 9px
+                // But parent is 200%+12px, so: (200%+12px - 36px)/4 = 50% - 6px per 8 cards
+                // Or simpler: just use 12.5% of the flex container - gap adjustment
+                style={{ width: 'calc(12.5% - 10.5px)' }}
               >
                 {item.type === 'link' ? (
                   <AnimatedFolder
@@ -205,19 +211,23 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Tablet layout - 3 cards */}
+        {/* Tablet - 3 visible, gap=12px */}
+        <div className="hidden md:block lg:hidden overflow-hidden mx-10">
           <div 
-            className="hidden md:flex lg:hidden gap-2 transition-transform duration-300 ease-out"
+            className="flex gap-3 transition-transform duration-300 ease-out"
             style={{
-              transform: `translateX(calc(-${currentIndex} * 33.333%))`,
+              // 8 cards when showing 3: width = 8/3 * 100% + gaps
+              width: 'calc(266.67% + 12px)',
+              transform: `translateX(calc(-${currentIndex} * (33.333% + 4px)))`,
             }}
           >
             {allItems.map((item) => (
               <div 
                 key={item.id} 
                 className="flex-shrink-0 min-h-[140px]"
-                style={{ width: 'calc(33.333% - 5.33px)' }}
+                style={{ width: 'calc(12.5% - 10.5px)' }}
               >
                 {item.type === 'link' ? (
                   <AnimatedFolder
@@ -237,19 +247,23 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Mobile layout - 2 cards */}
+        {/* Mobile - 2 visible, gap=12px */}
+        <div className="md:hidden overflow-hidden mx-10">
           <div 
-            className="flex md:hidden gap-2 transition-transform duration-300 ease-out"
+            className="flex gap-3 transition-transform duration-300 ease-out"
             style={{
-              transform: `translateX(calc(-${currentIndex} * 50%))`,
+              // 8 cards when showing 2: width = 8/2 * 100% + gaps = 400% + 12px
+              width: 'calc(400% + 12px)',
+              transform: `translateX(calc(-${currentIndex} * (50% + 6px)))`,
             }}
           >
             {allItems.map((item) => (
               <div 
                 key={item.id} 
                 className="flex-shrink-0 min-h-[130px]"
-                style={{ width: 'calc(50% - 4px)' }}
+                style={{ width: 'calc(12.5% - 10.5px)' }}
               >
                 {item.type === 'link' ? (
                   <AnimatedFolder

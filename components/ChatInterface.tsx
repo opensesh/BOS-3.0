@@ -6,26 +6,21 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Mic,
-  Paperclip,
   Send,
-  Globe,
-  Brain,
-  Compass,
-  Palette,
   AlertCircle,
 } from 'lucide-react';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { BackgroundGradient } from './BackgroundGradient';
 import { WelcomeHeader, PrePromptGrid } from './home';
-import { SearchResearchToggle, SearchResearchSuggestions } from './ui/search-research-toggle';
-import { ConnectorDropdown } from './ui/connector-dropdown';
+import { PlusMenu, ProjectIndicator } from './ui/plus-menu';
+import { ExtendedThinkingToggle } from './ui/extended-thinking-toggle';
+import { DataSourcesDropdown } from './ui/data-sources-dropdown';
 import { ModelSelector } from './ui/model-selector';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
-import { useAttachments, Attachment } from '@/hooks/useAttachments';
-import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
+import { useAttachments } from '@/hooks/useAttachments';
 import { ModelId } from '@/lib/ai/providers';
 import { useChatContext } from '@/lib/chat-context';
-import { fadeIn, fadeInUp, staggerContainer } from '@/lib/motion';
+import { fadeInUp, staggerContainer } from '@/lib/motion';
 import type { PageContext } from '@/lib/brand-knowledge';
 import {
   FollowUpInput,
@@ -55,13 +50,6 @@ interface IdeaContext {
   generationLabel?: string;
 }
 
-interface Connector {
-  id: string;
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  enabled: boolean;
-}
 
 // Interface for parsed message with sources
 interface ParsedMessage {
@@ -83,18 +71,16 @@ export function ChatInterface() {
   const [selectedModel, setSelectedModel] = useState<ModelId>('auto');
   const [localInput, setLocalInput] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [showConnectorDropdown, setShowConnectorDropdown] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestionsMode, setSuggestionsMode] = useState<'search' | 'research'>('search');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [modelUsed, setModelUsed] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<'answer' | 'links' | 'images'>('answer');
   const [articleContext, setArticleContext] = useState<ArticleContext | null>(null);
   const [ideaContext, setIdeaContext] = useState<IdeaContext | null>(null);
   const [hasProcessedUrlParams, setHasProcessedUrlParams] = useState(false);
-  const [activeConnectors, setActiveConnectors] = useState<Set<string>>(new Set(['web', 'brand', 'brain', 'discover']));
+  // Simplified data sources: web and brand only
+  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
+  const [brandSearchEnabled, setBrandSearchEnabled] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const globeButtonRef = useRef<HTMLButtonElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -110,26 +96,19 @@ export function ChatInterface() {
     getSessionMessages,
     shouldScrollToBottom,
     acknowledgeShouldScrollToBottom,
+    // Projects
+    projects,
+    currentProject,
+    setCurrentProject,
+    createProject,
+    // Writing style
+    currentWritingStyle,
+    setCurrentWritingStyle,
+    // Extended thinking
+    extendedThinkingEnabled,
+    setExtendedThinkingEnabled,
   } = useChatContext();
 
-  // Search suggestions hook for autocomplete
-  const {
-    suggestions: fetchedSuggestions,
-    isLoading: suggestionsLoading,
-    fetchSuggestions,
-  } = useSearchSuggestions({
-    mode: suggestionsMode,
-    debounceMs: 200,
-    minQueryLength: 1,
-    maxSuggestions: 6,
-  });
-
-  // Fetch suggestions when input changes and suggestions panel is open
-  useEffect(() => {
-    if (showSuggestions) {
-      fetchSuggestions(localInput);
-    }
-  }, [localInput, showSuggestions, fetchSuggestions]);
 
   // Custom useChat hook for native SDK streaming
   const { messages, sendMessage, status, error, setMessages } = useChat({
@@ -435,29 +414,6 @@ export function ChatInterface() {
   const input = localInput;
   const setInput = setLocalInput;
 
-  const connectors: Connector[] = [
-    { id: 'web', icon: Globe, title: 'Web', description: 'Search across the entire internet', enabled: true },
-    { id: 'brand', icon: Palette, title: 'Brand', description: 'Access brand assets and guidelines', enabled: true },
-    { id: 'brain', icon: Brain, title: 'Brain', description: 'Search brand knowledge base', enabled: true },
-    { id: 'discover', icon: Compass, title: 'Discover', description: 'Search your curated news & design sources', enabled: true },
-  ];
-
-  const handleToggleConnector = (id: string) => {
-    setActiveConnectors((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  const updatedConnectors = connectors.map((connector) => ({
-    ...connector,
-    enabled: activeConnectors.has(connector.id),
-  }));
 
   const {
     isListening,

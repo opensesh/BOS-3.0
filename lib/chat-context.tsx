@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { chatService, type ChatSession, type ChatMessage } from '@/lib/supabase/chat-service';
+import { projectsService, type Project } from '@/lib/supabase/projects-service';
+import type { WritingStyle } from '@/components/ui/writing-style-selector';
 
 export interface ChatHistoryItem {
   id: string;
@@ -9,6 +11,7 @@ export interface ChatHistoryItem {
   preview: string;
   timestamp: Date;
   messages?: ChatMessage[];
+  projectId?: string | null;
 }
 
 interface ChatContextValue {
@@ -31,6 +34,20 @@ interface ChatContextValue {
   // For scrolling to bottom after session load
   shouldScrollToBottom: boolean;
   acknowledgeShouldScrollToBottom: () => void;
+  // Projects
+  projects: Project[];
+  currentProject: Project | null;
+  setCurrentProject: (project: Project | null) => void;
+  loadProjects: () => Promise<void>;
+  createProject: (name: string) => Promise<Project | null>;
+  assignChatToProject: (chatId: string, projectId: string | null) => Promise<void>;
+  isLoadingProjects: boolean;
+  // Writing style
+  currentWritingStyle: WritingStyle | null;
+  setCurrentWritingStyle: (style: WritingStyle | null) => void;
+  // Extended thinking
+  extendedThinkingEnabled: boolean;
+  setExtendedThinkingEnabled: (enabled: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -43,6 +60,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
   const [sessionToLoad, setSessionToLoad] = useState<string | null>(null);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
+  // Projects state
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+  const [hasLoadedProjects, setHasLoadedProjects] = useState(false);
+  // Writing style state
+  const [currentWritingStyle, setCurrentWritingStyle] = useState<WritingStyle | null>(null);
+  // Extended thinking state (per conversation)
+  const [extendedThinkingEnabled, setExtendedThinkingEnabled] = useState(false);
 
   // Load chat history from Supabase on mount
   const loadHistory = useCallback(async () => {
@@ -71,6 +97,59 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setHasLoadedInitial(true);
     }
   }, [hasLoadedInitial, loadHistory]);
+
+  // Load projects
+  const loadProjects = useCallback(async () => {
+    setIsLoadingProjects(true);
+    try {
+      const loadedProjects = await projectsService.getProjects();
+      setProjects(loadedProjects);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    } finally {
+      setIsLoadingProjects(false);
+    }
+  }, []);
+
+  // Load projects on initial mount
+  useEffect(() => {
+    if (!hasLoadedProjects) {
+      loadProjects();
+      setHasLoadedProjects(true);
+    }
+  }, [hasLoadedProjects, loadProjects]);
+
+  // Create a new project
+  const createProject = useCallback(async (name: string): Promise<Project | null> => {
+    try {
+      const project = await projectsService.createProject({ name });
+      if (project) {
+        setProjects(prev => [project, ...prev]);
+        return project;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error creating project:', error);
+      return null;
+    }
+  }, []);
+
+  // Assign a chat to a project
+  const assignChatToProject = useCallback(async (chatId: string, projectId: string | null) => {
+    try {
+      const success = await projectsService.assignChatToProject(chatId, projectId);
+      if (success) {
+        // Update local chat history state
+        setChatHistory(prev =>
+          prev.map(item =>
+            item.id === chatId ? { ...item, projectId } : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error assigning chat to project:', error);
+    }
+  }, []);
 
   const addToHistory = useCallback(async (title: string, preview: string, messages?: ChatMessage[]) => {
     // Save to Supabase
@@ -205,6 +284,20 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       acknowledgeSessionLoad,
       shouldScrollToBottom,
       acknowledgeShouldScrollToBottom,
+      // Projects
+      projects,
+      currentProject,
+      setCurrentProject,
+      loadProjects,
+      createProject,
+      assignChatToProject,
+      isLoadingProjects,
+      // Writing style
+      currentWritingStyle,
+      setCurrentWritingStyle,
+      // Extended thinking
+      extendedThinkingEnabled,
+      setExtendedThinkingEnabled,
     }}>
       {children}
     </ChatContext.Provider>

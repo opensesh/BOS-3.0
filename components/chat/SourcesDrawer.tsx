@@ -61,12 +61,12 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
       />
 
       {/* Drawer - top-12 aligns with bottom of chat header */}
-      <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] border-l border-[var(--border-primary)]/30 z-50 flex flex-col animate-slide-in-right shadow-2xl">
+      <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-50 flex flex-col animate-slide-in-right shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-primary)]/20">
+        <div className="flex items-center justify-between px-5 py-4 bg-[var(--bg-secondary)]/30">
           <h2 className="text-[15px] font-semibold text-[var(--fg-primary)]">
             Sources
-            <span className="text-xs text-[var(--fg-tertiary)]/60 font-normal ml-2">
+            <span className="text-xs text-[var(--fg-tertiary)]/50 font-normal ml-2">
               {totalCount}
             </span>
           </h2>
@@ -85,8 +85,8 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
             <div className="pt-4 pb-2">
               <div className="px-5 mb-3">
                 <div className="flex items-center gap-2">
-                  <Hexagon className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
-                  <span className="text-[11px] font-medium text-[var(--fg-brand-primary)] uppercase tracking-wider">
+                  <Hexagon className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/50" />
+                  <span className="text-[11px] font-medium text-[var(--fg-tertiary)]/60 uppercase tracking-wider">
                     Brand Context
                   </span>
                 </div>
@@ -97,25 +97,25 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
                     key={`brand-${idx}`}
                     href={card.href}
                     onClick={onClose}
-                    className="flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-[var(--bg-brand-primary)]/30 transition-all duration-200 group"
+                    className="flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-[var(--bg-secondary)]/30 transition-all duration-200 group"
                   >
                     {/* Icon */}
-                    <div className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)]/50 flex items-center justify-center flex-shrink-0">
-                      <Hexagon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
+                    <div className="w-8 h-8 rounded-lg bg-[var(--bg-secondary)]/50 flex items-center justify-center flex-shrink-0">
+                      <Hexagon className="w-4 h-4 text-[var(--fg-tertiary)]/60" />
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0 pt-0.5">
-                      <h3 className="text-[13px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors leading-snug">
+                      <h3 className="text-[13px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-primary)] transition-colors leading-snug">
                         {card.title}
                       </h3>
-                      <p className="text-[12px] text-[var(--fg-tertiary)]/70 mt-0.5 line-clamp-1">
+                      <p className="text-[12px] text-[var(--fg-tertiary)]/50 mt-0.5 line-clamp-1">
                         {card.description}
                       </p>
                     </div>
 
                     {/* Arrow */}
-                    <ArrowRight className="w-4 h-4 text-[var(--fg-brand-primary)] opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 mt-1 translate-x-0 group-hover:translate-x-0.5" />
+                    <ArrowRight className="w-4 h-4 text-[var(--fg-tertiary)]/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 mt-1 translate-x-0 group-hover:translate-x-0.5" />
                   </Link>
                 ))}
               </div>

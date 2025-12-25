@@ -19,14 +19,14 @@ export function SourcePopover({ sources, position = 'above' }: SourcePopoverProp
 
   // Using span-based elements to avoid hydration errors when rendered inside <p> tags
   return (
-    <span className={`absolute left-0 ${positionClasses} w-72 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)]/30 shadow-2xl z-50 overflow-hidden block`}>
+    <span className={`absolute left-0 ${positionClasses} w-72 bg-[var(--bg-secondary)] rounded-xl shadow-2xl z-50 overflow-hidden block`}>
       {/* Header */}
-      <span className="px-3 py-2.5 border-b border-[var(--border-primary)]/20 flex items-center gap-2">
-        <Globe className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/60" />
-        <span className="text-[11px] font-medium text-[var(--fg-tertiary)]/70 uppercase tracking-wider">
+      <span className="px-3 py-2.5 flex items-center gap-2 bg-[var(--bg-primary)]/30">
+        <Globe className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/50" />
+        <span className="text-[11px] font-medium text-[var(--fg-tertiary)]/60 uppercase tracking-wider">
           Citations
         </span>
-        <span className="text-[10px] text-[var(--fg-tertiary)]/50 ml-auto">
+        <span className="text-[10px] text-[var(--fg-tertiary)]/40 ml-auto">
           {sources.length}
         </span>
       </span>

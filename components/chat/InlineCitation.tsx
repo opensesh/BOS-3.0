@@ -53,20 +53,19 @@ export function InlineCitation({
   // External sources for regular popover
   const externalSources = sources.filter((s) => !s.type || s.type === 'external');
 
-  // Calculate popover position based on available space
+  // Calculate popover position based on available space - be very conservative
   const calculatePosition = useCallback(() => {
     if (!containerRef.current) return;
     
     const rect = containerRef.current.getBoundingClientRect();
-    // Estimate popover height (header + items, roughly 200-300px max)
-    const estimatedPopoverHeight = Math.min(sources.length * 60 + 50, 300);
-    
-    // If there's not enough space above (less than estimated popover height + some margin), show below
+    // Be very conservative - always show below if within 350px of top
+    // This accounts for header (48px) + popover height (~280px) + comfortable margin
+    const safeThreshold = 350;
     const spaceAbove = rect.top;
-    const shouldShowBelow = spaceAbove < estimatedPopoverHeight + 20;
+    const shouldShowBelow = spaceAbove < safeThreshold;
     
     setPopoverPosition(shouldShowBelow ? 'below' : 'above');
-  }, [sources.length]);
+  }, []);
 
   // Recalculate position when showing popover
   useEffect(() => {
@@ -94,7 +93,7 @@ export function InlineCitation({
     }
   };
 
-  // Unified styling for both brand and external sources
+  // Styling: brand colors for external sources to make them visible, subtle for brand sources
   return (
     <span
       ref={containerRef}
@@ -104,11 +103,17 @@ export function InlineCitation({
     >
       <span
         onClick={handleClick}
-        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs cursor-pointer transition-all duration-200 font-mono bg-[var(--bg-secondary)]/60 text-[var(--fg-tertiary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-primary)] border border-transparent hover:border-[var(--border-primary)]/30"
+        className={`
+          inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs cursor-pointer transition-all duration-200 font-mono
+          ${isBrandSource
+            ? 'bg-[var(--bg-secondary)]/50 text-[var(--fg-tertiary)] hover:bg-[var(--bg-secondary)]/80 hover:text-[var(--fg-primary)]'
+            : 'bg-[var(--fg-brand-primary)]/15 text-[var(--fg-brand-primary)] hover:bg-[var(--fg-brand-primary)]/25'
+          }
+        `}
       >
         <span className="lowercase">{primarySource}</span>
         {additionalCount > 0 && (
-          <span className="text-[10px] text-[var(--fg-tertiary)]/60">
+          <span className={`text-[10px] ${isBrandSource ? 'opacity-60' : 'opacity-70'}`}>
             +{additionalCount}
           </span>
         )}

@@ -104,49 +104,46 @@ export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps
   return (
     <div className="py-6">
       {/* Summary header */}
-      <div className="flex items-center gap-2 mb-6">
-        <LinkIcon className="w-4 h-4 text-[var(--fg-tertiary)]" />
-        <span className="text-sm text-[var(--fg-tertiary)]">
+      <div className="flex items-center gap-2 mb-5">
+        <LinkIcon className="w-4 h-4 text-[var(--fg-quaternary)]" />
+        <span className="text-sm text-[var(--fg-quaternary)]">
           {totalCount} source{totalCount !== 1 ? 's' : ''} referenced
         </span>
       </div>
 
       {/* Brand Context Section */}
       {hasBrandResources && (
-        <div className="mb-10">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--fg-brand-primary)]/20">
-            <Hexagon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
-            <span className="text-xs font-medium text-[var(--fg-brand-primary)] uppercase tracking-wider">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <Hexagon className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
+            <span className="text-[10px] font-medium text-[var(--fg-brand-primary)] uppercase tracking-wider">
               Brand Context
             </span>
-            <span className="text-xs text-[var(--fg-tertiary)]/50 ml-auto">
-              {resourceCards.length}
-            </span>
           </div>
-          <div>
+          <div className="-mx-1">
             {resourceCards.map((card, idx) => (
               <Link
                 key={`brand-${idx}`}
                 href={card.href}
-                className="flex items-start gap-3 px-2 py-3 hover:bg-[var(--bg-secondary)]/20 transition-all duration-200 group border-b border-[var(--border-secondary)]/30 last:border-b-0"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors duration-150 group"
               >
                 {/* Icon */}
-                <div className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)]/30 flex items-center justify-center flex-shrink-0">
-                  <Hexagon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
-                </div>
+                <Hexagon className="w-4 h-4 text-[var(--fg-brand-primary)] flex-shrink-0" />
 
                 {/* Content */}
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <h3 className="text-[14px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors leading-snug">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[13px] text-[var(--fg-secondary)] group-hover:text-[var(--fg-primary)] transition-colors truncate">
                     {card.title}
                   </h3>
-                  <p className="text-[12px] text-[var(--fg-tertiary)]/60 mt-0.5 line-clamp-2">
-                    {card.description}
-                  </p>
+                  {card.description && (
+                    <p className="text-[11px] text-[var(--fg-quaternary)] truncate mt-0.5">
+                      {card.description}
+                    </p>
+                  )}
                 </div>
 
                 {/* Arrow */}
-                <ArrowRight className="w-4 h-4 text-[var(--fg-tertiary)]/30 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 mt-1 translate-x-0 group-hover:translate-x-0.5" />
+                <ArrowRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)] opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0" />
               </Link>
             ))}
           </div>
@@ -155,17 +152,14 @@ export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps
 
       {/* Discover/News Sources Section */}
       {hasDiscoverSources && (
-        <div className="mb-10">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-cyan-400/20">
-            <Compass className="w-4 h-4 text-cyan-400" />
-            <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider">
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <Compass className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
+            <span className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
               News Sources
             </span>
-            <span className="text-xs text-[var(--fg-tertiary)]/50 ml-auto">
-              {discoverSources.length}
-            </span>
           </div>
-          <div>
+          <div className="-mx-1">
             {discoverSources.map((source, idx) => {
               const categoryConfig = source.category 
                 ? CATEGORY_CONFIG[source.category] 
@@ -177,42 +171,30 @@ export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start gap-3 px-2 py-3 hover:bg-cyan-500/5 transition-all duration-200 group border-b border-[var(--border-secondary)]/30 last:border-b-0"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors duration-150 group"
                 >
-                  {/* Icon with category color */}
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-                    <Rss className="w-4 h-4 text-cyan-400" />
-                  </div>
+                  {/* Icon */}
+                  <Rss className="w-4 h-4 text-[var(--fg-tertiary)] flex-shrink-0" />
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0 pt-0.5">
-                    {/* Title */}
-                    <h3 className="text-[14px] font-medium text-[var(--fg-primary)] group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-[13px] text-[var(--fg-secondary)] group-hover:text-[var(--fg-primary)] transition-colors truncate">
                       {source.title || source.name}
                     </h3>
-
-                    {/* Source name and category */}
-                    <div className="flex items-center gap-2 mt-1">
-                      <p className="text-[11px] text-[var(--fg-tertiary)]/50">
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-[var(--fg-quaternary)] truncate">
                         {source.name}
-                      </p>
+                      </span>
                       {categoryConfig && (
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--bg-secondary)]/30 ${categoryConfig.color}`}>
+                        <span className={`text-[9px] ${categoryConfig.color}`}>
                           {categoryConfig.label}
                         </span>
                       )}
                     </div>
-
-                    {/* Published time */}
-                    {source.publishedAt && (
-                      <p className="text-[10px] text-[var(--fg-tertiary)]/40 mt-0.5">
-                        {source.publishedAt}
-                      </p>
-                    )}
                   </div>
 
                   {/* External link icon */}
-                  <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)]/30 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 mt-1" />
+                  <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-quaternary)] opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0" />
                 </a>
               );
             })}
@@ -223,31 +205,28 @@ export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps
       {/* Web Citations Section */}
       {hasWebSources && (
         <div>
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--border-secondary)]/30">
-            <Globe className="w-4 h-4 text-[var(--fg-tertiary)]/60" />
-            <span className="text-xs font-medium text-[var(--fg-tertiary)]/70 uppercase tracking-wider">
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <Globe className="w-3.5 h-3.5 text-[var(--fg-quaternary)]" />
+            <span className="text-[10px] font-medium text-[var(--fg-quaternary)] uppercase tracking-wider">
               Web Citations
             </span>
-            <span className="text-xs text-[var(--fg-tertiary)]/50 ml-auto">
-              {webSources.length}
-            </span>
           </div>
-          <div>
+          <div className="-mx-1">
             {webSources.map((source, idx) => (
               <a
                 key={source.id || idx}
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-3 px-2 py-3 hover:bg-[var(--bg-secondary)]/15 transition-all duration-200 group border-b border-[var(--border-secondary)]/20 last:border-b-0"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-[var(--bg-tertiary)] transition-colors duration-150 group"
               >
                 {/* Favicon */}
-                <div className="w-8 h-8 rounded-lg bg-[var(--bg-secondary)]/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-4 h-4 flex items-center justify-center flex-shrink-0">
                   {source.favicon ? (
                     <img
                       src={source.favicon}
                       alt=""
-                      className="w-4 h-4 rounded"
+                      className="w-4 h-4 rounded-sm"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         const fallback = e.currentTarget.nextElementSibling as HTMLElement;
@@ -255,36 +234,26 @@ export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps
                       }}
                     />
                   ) : null}
-                  <Globe className={`w-4 h-4 text-[var(--fg-tertiary)]/40 ${source.favicon ? 'hidden' : ''}`} />
+                  <Globe className={`w-4 h-4 text-[var(--fg-quaternary)] ${source.favicon ? 'hidden' : ''}`} />
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0 pt-0.5">
-                  {/* Title */}
-                  <h3 className="text-[14px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors line-clamp-2 leading-snug">
-                    {source.title && source.title !== source.name ? source.title : `Article from ${source.name}`}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[13px] text-[var(--fg-secondary)] group-hover:text-[var(--fg-primary)] transition-colors truncate">
+                    {source.title && source.title !== source.name ? source.title : source.name}
                   </h3>
-
-                  {/* Snippet */}
-                  {source.snippet && (
-                    <p className="text-[12px] text-[var(--fg-secondary)]/60 mt-0.5 line-clamp-2 leading-relaxed">
-                      {source.snippet}
-                    </p>
-                  )}
-
-                  {/* Source site name and citation index */}
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[11px] text-[var(--fg-tertiary)]/40 truncate">
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[10px] text-[var(--fg-quaternary)] truncate">
                       {source.name}
                     </span>
-                    <span className="text-[10px] text-[var(--fg-tertiary)]/30 bg-[var(--bg-secondary)]/30 px-1.5 py-0.5 rounded">
+                    <span className="text-[9px] text-[var(--fg-quinary)]">
                       [{idx + 1}]
                     </span>
                   </div>
                 </div>
 
                 {/* External link icon */}
-                <ExternalLink className="w-4 h-4 text-[var(--fg-tertiary)]/30 opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0 mt-1" />
+                <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-quaternary)] opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex-shrink-0" />
               </a>
             ))}
           </div>

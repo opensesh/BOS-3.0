@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ChevronLeft, 
@@ -22,7 +22,7 @@ interface PrePromptGridProps {
   onPromptSubmit: (prompt: string) => void;
 }
 
-// Quick links to subpages
+// Quick links to subpages (folder cards)
 const quickLinks = [
   {
     id: 'logos',
@@ -54,7 +54,7 @@ const quickLinks = [
   },
 ];
 
-// Pre-prompts for common tasks
+// Pre-prompts for common tasks (icon cards)
 const prePrompts = [
   {
     id: 'social-post',
@@ -86,15 +86,36 @@ const prePrompts = [
   },
 ];
 
-// Combined for carousel
+// Combined for carousel: 4 folders (0-3) + 4 icons (4-7)
 const allItems = [
   ...quickLinks.map(link => ({ ...link, type: 'link' as const })),
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
+// Initial indices to center between folder and icon cards per breakpoint:
+// - Desktop (4 visible): index 2 → Colors, Spaces, Create a post, Plan a campaign (2 folders + 2 icons)
+// - Tablet (3 visible): index 2 → Colors, Spaces, Create a post (2 folders + 1 icon)
+// - Mobile (2 visible): index 3 → Spaces, Create a post (1 folder + 1 icon)
+const INITIAL_INDEX_DESKTOP = 2;
+const INITIAL_INDEX_TABLET = 2;
+const INITIAL_INDEX_MOBILE = 3;
+
 export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
-  // Start centered
-  const [currentIndex, setCurrentIndex] = useState(2);
+  // Default to desktop index for SSR, will adjust on mount for smaller screens
+  const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX_DESKTOP);
+  
+  // Adjust initial index based on screen size on mount
+  useEffect(() => {
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+    
+    if (isMobile) {
+      setCurrentIndex(INITIAL_INDEX_MOBILE);
+    } else if (isTablet) {
+      setCurrentIndex(INITIAL_INDEX_TABLET);
+    }
+    // Desktop keeps the default INITIAL_INDEX_DESKTOP
+  }, []);
   
   // Responsive: 4 desktop, 3 tablet, 2 mobile
   const getMaxIndex = (visibleCount: number) => allItems.length - visibleCount;
@@ -178,19 +199,20 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
           <div 
             className="flex gap-3 transition-transform duration-300 ease-out"
             style={{
-              // 8 cards of (25% - 9px each) + 7 gaps of 12px = 200% - 72px + 84px = 200% + 12px
+              // Track holds all 8 cards: 8 * card_width + 7 * gap
+              // Card width relative to track = 12.5% - 10.5px (so 8 cards fit)
+              // Track = 200% + 12px of viewport
               width: 'calc(200% + 12px)',
-              // Move by (25% + 3px) per card - this accounts for card width + proportional gap
-              transform: `translateX(calc(-${currentIndex} * (25% + 3px)))`,
+              // To move by 1 card position: (card_width + gap) = (12.5% + 1.5px) of track
+              // Since % in transform is relative to element's own width (the track)
+              transform: `translateX(calc(-${currentIndex} * (12.5% + 1.5px)))`,
             }}
           >
             {allItems.map((item) => (
               <div 
                 key={item.id} 
                 className="flex-shrink-0 min-h-[140px]"
-                // Each card = (visible area - 3 gaps) / 4 = (100% of parent - 36px) / 4 = 25% - 9px
-                // But parent is 200%+12px, so: (200%+12px - 36px)/4 = 50% - 6px per 8 cards
-                // Or simpler: just use 12.5% of the flex container - gap adjustment
+                // Each card = 12.5% of track - gap adjustment
                 style={{ width: 'calc(12.5% - 10.5px)' }}
               >
                 {item.type === 'link' ? (
@@ -218,9 +240,10 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
           <div 
             className="flex gap-3 transition-transform duration-300 ease-out"
             style={{
-              // 8 cards when showing 3: width = 8/3 * 100% + gaps
+              // Track = 266.67% + 12px of viewport (8/3 ratio)
               width: 'calc(266.67% + 12px)',
-              transform: `translateX(calc(-${currentIndex} * (33.333% + 4px)))`,
+              // Card + gap = 12.5% + 1.5px of track (same formula, track is just wider)
+              transform: `translateX(calc(-${currentIndex} * (12.5% + 1.5px)))`,
             }}
           >
             {allItems.map((item) => (
@@ -254,9 +277,10 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
           <div 
             className="flex gap-3 transition-transform duration-300 ease-out"
             style={{
-              // 8 cards when showing 2: width = 8/2 * 100% + gaps = 400% + 12px
+              // Track = 400% + 12px of viewport (8/2 ratio)
               width: 'calc(400% + 12px)',
-              transform: `translateX(calc(-${currentIndex} * (50% + 6px)))`,
+              // Card + gap = 12.5% + 1.5px of track
+              transform: `translateX(calc(-${currentIndex} * (12.5% + 1.5px)))`,
             }}
           >
             {allItems.map((item) => (

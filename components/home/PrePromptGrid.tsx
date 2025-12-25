@@ -157,11 +157,21 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
 
         {/* Cards container with gradient edges */}
         <div className="relative flex-1 overflow-hidden">
-          {/* Left fade gradient */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[var(--bg-primary)] to-transparent z-10 pointer-events-none" />
+          {/* Left fade gradient - progressive */}
+          <div 
+            className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none" 
+            style={{
+              background: 'linear-gradient(to right, var(--bg-primary) 0%, var(--bg-primary) 20%, transparent 100%)',
+            }}
+          />
           
-          {/* Right fade gradient */}
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[var(--bg-primary)] to-transparent z-10 pointer-events-none" />
+          {/* Right fade gradient - progressive */}
+          <div 
+            className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none" 
+            style={{
+              background: 'linear-gradient(to left, var(--bg-primary) 0%, var(--bg-primary) 20%, transparent 100%)',
+            }}
+          />
 
           <div 
             ref={containerRef}

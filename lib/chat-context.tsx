@@ -28,6 +28,9 @@ interface ChatContextValue {
   sessionToLoad: string | null;
   loadSession: (id: string) => void;
   acknowledgeSessionLoad: () => void;
+  // For scrolling to bottom after session load
+  shouldScrollToBottom: boolean;
+  acknowledgeShouldScrollToBottom: () => void;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -39,6 +42,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
   const [sessionToLoad, setSessionToLoad] = useState<string | null>(null);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
 
   // Load chat history from Supabase on mount
   const loadHistory = useCallback(async () => {
@@ -163,10 +167,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const loadSession = useCallback((id: string) => {
     setSessionToLoad(id);
     setCurrentSessionId(id);
+    setShouldScrollToBottom(true);
   }, []);
 
   const acknowledgeSessionLoad = useCallback(() => {
     setSessionToLoad(null);
+  }, []);
+
+  const acknowledgeShouldScrollToBottom = useCallback(() => {
+    setShouldScrollToBottom(false);
   }, []);
 
   return (
@@ -186,6 +195,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       sessionToLoad,
       loadSession,
       acknowledgeSessionLoad,
+      shouldScrollToBottom,
+      acknowledgeShouldScrollToBottom,
     }}>
       {children}
     </ChatContext.Provider>

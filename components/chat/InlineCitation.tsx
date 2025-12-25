@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Image } from 'lucide-react';
 import { SourceInfo } from './AnswerView';
 import { SourcePopover } from './SourcePopover';
 import { BrandSourcePopover, BrandSourceInfo } from './BrandSourcePopover';
@@ -95,6 +94,7 @@ export function InlineCitation({
     }
   };
 
+  // Unified styling for both brand and external sources
   return (
     <span
       ref={containerRef}
@@ -104,30 +104,17 @@ export function InlineCitation({
     >
       <span
         onClick={handleClick}
-        className={`
-          inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs cursor-pointer transition-colors font-mono
-          ${isBrandSource
-            ? 'bg-bg-brand-primary text-fg-brand-primary hover:bg-bg-brand-primary-alt'
-            : 'bg-[var(--bg-secondary)]/80 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)]'
-          }
-        `}
+        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs cursor-pointer transition-all duration-200 font-mono bg-[var(--bg-secondary)]/60 text-[var(--fg-tertiary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-primary)] border border-transparent hover:border-[var(--border-primary)]/30"
       >
-        {isBrandSource && (
-          primarySourceData?.type === 'asset' ? (
-            <Image className="w-3 h-3" />
-          ) : (
-            <FileText className="w-3 h-3" />
-          )
-        )}
         <span className="lowercase">{primarySource}</span>
         {additionalCount > 0 && (
-          <span className={`text-[10px] ${isBrandSource ? 'opacity-70' : 'text-[var(--fg-tertiary)]/70'}`}>
+          <span className="text-[10px] text-[var(--fg-tertiary)]/60">
             +{additionalCount}
           </span>
         )}
       </span>
 
-      {/* Popover - use brand popover for brand sources */}
+      {/* Popover - use brand popover for brand sources, external popover for web sources */}
       {showPopover && sources.length > 0 && (
         isBrandSource && brandSources.length > 0 ? (
           <BrandSourcePopover sources={brandSources} position={popoverPosition} />

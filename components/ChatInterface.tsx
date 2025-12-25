@@ -101,6 +101,8 @@ export function ChatInterface() {
     sessionToLoad,
     acknowledgeSessionLoad,
     getSessionMessages,
+    shouldScrollToBottom,
+    acknowledgeShouldScrollToBottom,
   } = useChatContext();
 
   // Search suggestions hook for autocomplete
@@ -486,6 +488,18 @@ export function ChatInterface() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Scroll to bottom when loading a chat session from history
+  useEffect(() => {
+    if (shouldScrollToBottom && messages.length > 0) {
+      // Use a small delay to ensure messages are rendered
+      const timeoutId = setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        acknowledgeShouldScrollToBottom();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [shouldScrollToBottom, messages.length, acknowledgeShouldScrollToBottom]);
 
   // Keyboard shortcuts
   const shortcuts = useMemo(

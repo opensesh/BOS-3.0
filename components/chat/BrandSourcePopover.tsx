@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { FileText, Image as ImageIcon, Copy, Check, ExternalLink } from 'lucide-react';
+import { Hexagon, Image as ImageIcon, Copy, Check, ArrowRight } from 'lucide-react';
 
 export interface BrandSourceInfo {
   id: string;
@@ -30,16 +30,20 @@ export function BrandSourcePopover({ sources, position = 'above' }: BrandSourceP
 
   // Using span-based elements to avoid hydration errors when rendered inside <p> tags
   return (
-    <span className={`absolute left-0 ${positionClasses} w-80 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]/50 shadow-xl z-50 overflow-hidden block`}>
+    <span className={`absolute left-0 ${positionClasses} w-72 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)]/30 shadow-2xl z-50 overflow-hidden block`}>
       {/* Header */}
-      <span className="px-3 py-2 border-b border-[var(--border-primary)]/30 flex">
-        <span className="text-xs font-semibold text-[var(--fg-tertiary)]/80">
-          Brand Sources • {sources.length}
+      <span className="px-3 py-2.5 border-b border-[var(--border-primary)]/20 flex items-center gap-2">
+        <Hexagon className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
+        <span className="text-[11px] font-medium text-[var(--fg-tertiary)]/70 uppercase tracking-wider">
+          Brand Context
+        </span>
+        <span className="text-[10px] text-[var(--fg-tertiary)]/50 ml-auto">
+          {sources.length}
         </span>
       </span>
 
       {/* Sources list */}
-      <span className="max-h-64 overflow-y-auto block">
+      <span className="max-h-64 overflow-y-auto block p-1.5">
         {sources.map((source, idx) => (
           <BrandSourceItem key={source.id || idx} source={source} />
         ))}
@@ -62,84 +66,68 @@ function BrandSourceItem({ source }: { source: BrandSourceInfo }) {
   };
 
   return (
-    <span className="flex items-start gap-3 px-3 py-2.5 hover:bg-[var(--bg-primary)] transition-colors group">
+    <span className="flex items-start gap-2.5 px-2.5 py-2 rounded-lg hover:bg-[var(--bg-primary)]/50 transition-all duration-200 group cursor-pointer">
       {/* Icon or Thumbnail */}
-      <span className="flex-shrink-0 mt-0.5">
+      <span className="flex-shrink-0">
         {isAsset && isImage && source.thumbnail ? (
-          <span className="w-10 h-10 rounded-lg overflow-hidden bg-[var(--border-primary)] block">
+          <span className="w-8 h-8 rounded-lg overflow-hidden bg-[var(--border-primary)]/30 block">
             <Image
               src={source.thumbnail}
               alt={source.title}
-              width={40}
-              height={40}
+              width={32}
+              height={32}
               className="w-full h-full object-contain"
               unoptimized
             />
           </span>
         ) : isAsset && isImage ? (
-          <span className="w-10 h-10 rounded-lg overflow-hidden bg-[var(--border-primary)] block">
+          <span className="w-8 h-8 rounded-lg overflow-hidden bg-[var(--border-primary)]/30 block">
             <Image
               src={source.path}
               alt={source.title}
-              width={40}
-              height={40}
+              width={32}
+              height={32}
               className="w-full h-full object-contain"
               unoptimized
             />
           </span>
         ) : isAsset ? (
-          <span className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)] flex items-center justify-center">
+          <span className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)]/30 flex items-center justify-center">
             <ImageIcon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
           </span>
         ) : (
-          <span className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)] flex items-center justify-center">
-            <FileText className="w-4 h-4 text-[var(--fg-brand-primary)]" />
+          <span className="w-8 h-8 rounded-lg bg-[var(--bg-brand-primary)]/30 flex items-center justify-center">
+            <Hexagon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
           </span>
         )}
       </span>
 
       {/* Content */}
-      <span className="flex-1 min-w-0 flex flex-col">
-        <span className="text-sm font-medium text-[var(--fg-primary)] line-clamp-1">
+      <span className="flex-1 min-w-0 flex flex-col pt-0.5">
+        <span className="text-[13px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors line-clamp-1">
           {source.title || source.name}
         </span>
-        {source.snippet && (
-          <span className="text-xs text-[var(--fg-tertiary)] mt-0.5 line-clamp-2">
-            {source.snippet}
-          </span>
-        )}
-        {isAsset && (
-          <code className="text-[10px] text-[var(--fg-brand-primary)]/80 font-mono mt-1 block truncate">
-            {source.path}
-          </code>
-        )}
+        <span className="text-[11px] text-[var(--fg-tertiary)]/60 mt-0.5">
+          Internal knowledge
+        </span>
       </span>
 
       {/* Actions */}
-      <span className="flex-shrink-0 flex items-center gap-1">
-        {isAsset && (
+      <span className="flex-shrink-0 flex items-center">
+        {isAsset ? (
           <button
             onClick={handleCopyPath}
-            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-[var(--border-primary)] transition-all"
+            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-[var(--bg-secondary)] transition-all"
             title="Copy path"
           >
             {copied ? (
               <Check className="w-3.5 h-3.5 text-[var(--fg-success-primary)]" />
             ) : (
-              <Copy className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
+              <Copy className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/50" />
             )}
           </button>
-        )}
-        {!isAsset && source.path && (
-          <a
-            href={source.path}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-[var(--border-primary)] transition-all"
-            title="Open document"
-          >
-            <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
-          </a>
+        ) : (
+          <ArrowRight className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/30 opacity-0 group-hover:opacity-100 transition-all" />
         )}
       </span>
     </span>

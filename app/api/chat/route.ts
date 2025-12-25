@@ -38,6 +38,7 @@ interface ChatOptions {
   enableThinking?: boolean;
   thinkingBudget?: number;
   enableTools?: boolean;
+  writingStyle?: string | null;
 }
 
 // Interface for file attachments from client
@@ -833,6 +834,35 @@ async function streamWithPerplexityNative(
 }
 
 // ============================================
+// WRITING STYLE HELPER
+// ============================================
+
+// Get writing style instructions based on style ID
+function getWritingStyleInstructions(styleId: string): string | null {
+  const styleInstructions: Record<string, string> = {
+    'learning': `You are in Learning Mode. Explain concepts clearly and educationally. Use analogies from design tools when relevant. Break complex logic into digestible steps. Connect technical decisions to user experience impacts.`,
+    
+    'concise': `Be concise and to the point. Use short sentences. Avoid unnecessary explanations. Get straight to the answer. Use bullet points where appropriate.`,
+    
+    'explanatory': `Provide detailed explanations. Walk through your reasoning step by step. Include relevant background context. Explain the "why" behind recommendations. Use examples to illustrate points.`,
+    
+    'formal': `Use a professional and formal tone. Avoid colloquialisms and casual language. Structure responses with clear headings and sections. Be precise in your language choices.`,
+    
+    'creative': `Be creative and artistic in your responses. Think outside the box. Offer innovative and unexpected solutions. Use vivid language and metaphors. Encourage experimentation.`,
+    
+    'long-form': `Write comprehensive, detailed responses. Include thorough explanations and examples. Structure content with clear sections. Cover multiple angles and considerations. Don't shy away from length when depth is needed.`,
+    
+    'short-form': `Keep responses brief and scannable. Use bullet points and short paragraphs. Focus on key takeaways only. Ideal for quick reference and busy readers.`,
+    
+    'strategic': `Take a strategic perspective. Focus on business outcomes and goals. Consider market positioning and competitive advantages. Think about long-term implications. Provide actionable recommendations with clear rationale.`,
+    
+    'blog': `Write in a conversational blog style. Use engaging hooks and transitions. Include personal touches and storytelling. Format for easy reading with headers and short paragraphs. End with clear takeaways or calls to action.`,
+  };
+
+  return styleInstructions[styleId] || null;
+}
+
+// ============================================
 // MAIN API HANDLER
 // ============================================
 
@@ -846,12 +876,16 @@ export async function POST(req: Request) {
       context, 
       connectors,
       options = {},
+      extendedThinking,
+      writingStyle,
     } = body as {
       messages: ClientMessage[];
       model?: string;
       context?: PageContext;
       connectors?: ConnectorSettings;
       options?: ChatOptions;
+      extendedThinking?: boolean;
+      writingStyle?: string | null;
     };
     
     // Default connector settings
@@ -864,9 +898,10 @@ export async function POST(req: Request) {
     
     // Default options - tools enabled by default for web search capability
     const chatOptions: ChatOptions = {
-      enableThinking: options.enableThinking ?? false, // Disabled by default until UI is ready
+      enableThinking: extendedThinking ?? options.enableThinking ?? false, // Use extendedThinking from UI
       thinkingBudget: options.thinkingBudget ?? DEFAULT_THINKING_BUDGET,
       enableTools: options.enableTools ?? true, // Enabled by default for web search
+      writingStyle: writingStyle ?? options.writingStyle ?? null, // Writing style from UI
     };
     
     console.log('Active connectors:', activeConnectors);
@@ -930,16 +965,25 @@ export async function POST(req: Request) {
       );
     }
 
-    // Build system prompt
-    const systemPrompt = buildBrandSystemPrompt({
+    // Build system prompt with optional writing style
+    let systemPrompt = buildBrandSystemPrompt({
       includeFullDocs: shouldIncludeFullDocs(messages),
       context: enrichedContext,
     });
+
+    // Add writing style instructions if specified
+    if (chatOptions.writingStyle && chatOptions.writingStyle !== 'normal') {
+      const styleInstructions = getWritingStyleInstructions(chatOptions.writingStyle);
+      if (styleInstructions) {
+        systemPrompt = `${systemPrompt}\n\n## Writing Style\n${styleInstructions}`;
+      }
+    }
 
     console.log('Selected model:', selectedModel);
     console.log('Message count:', validatedMessages.length);
     console.log('Thinking enabled:', chatOptions.enableThinking && supportsExtendedThinking(selectedModel));
     console.log('Tools enabled:', chatOptions.enableTools && supportsToolUse(selectedModel));
+    console.log('Writing style:', chatOptions.writingStyle || 'normal');
 
     // Route to appropriate streaming handler based on provider
     if (isPerplexityModel(selectedModel)) {

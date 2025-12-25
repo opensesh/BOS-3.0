@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
   FolderPlus,
+  Folder,
   LayoutGrid,
   Fingerprint,
   Palette,
@@ -47,7 +48,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
   const [position, setPosition] = useState({ top: 0, left: 0, height: 0 });
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const onCloseRef = useRef(onClose);
-  const { chatHistory, loadSession } = useChatContext();
+  const { chatHistory, loadSession, projects } = useChatContext();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
 
   // Handle clicking on a recent chat - load the session and navigate to home
@@ -226,7 +227,36 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
               <motion.div variants={fadeInUp} className="mb-2">
                 <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Home</h3>
               </motion.div>
+
+              {/* Projects section */}
+              {projects.length > 0 && (
+                <motion.div variants={fadeInUp} className="mb-4">
+                  <div className="flex items-center justify-between mb-2 px-2">
+                    <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Projects</h4>
+                    <button className="p-1 rounded hover:bg-[var(--bg-tertiary)] transition-colors">
+                      <FolderPlus className="w-3 h-3 text-[var(--fg-tertiary)]" />
+                    </button>
+                  </div>
+                  <div className="space-y-1">
+                    {projects.slice(0, 5).map((project, index) => (
+                      <motion.button
+                        key={project.id}
+                        variants={fadeInUp}
+                        custom={index}
+                        className="w-full text-left px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
+                      >
+                        <div
+                          className="w-3 h-3 rounded-sm flex-shrink-0"
+                          style={{ backgroundColor: project.color }}
+                        />
+                        <span className="truncate">{project.name}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
               
+              {/* Recent chats section */}
               <motion.div variants={fadeInUp} className="mb-4">
                 <div className="flex items-center justify-between mb-2 px-2">
                   <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Recent Chats</h4>

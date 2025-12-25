@@ -231,7 +231,7 @@ function CollapsedFlyout({
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { spaces: userSpaces } = useSpaces();
-  const { chatHistory, loadSession } = useChatContext();
+  const { chatHistory, loadSession, projects } = useChatContext();
 
   if (!item || !anchorRect) return null;
 
@@ -273,6 +273,27 @@ function CollapsedFlyout({
               <ArrowRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
             </Link>
             <div className="py-2 max-h-[300px] overflow-y-auto">
+              {/* Projects section */}
+              {projects.length > 0 && (
+                <>
+                  <div className="px-3 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Projects</div>
+                  {projects.slice(0, 3).map((project) => (
+                    <button
+                      key={project.id}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-left"
+                      role="menuitem"
+                    >
+                      <div
+                        className="w-3 h-3 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: project.color }}
+                      />
+                      <span className="truncate">{project.name}</span>
+                    </button>
+                  ))}
+                  <div className="my-1.5 mx-3 border-t border-[var(--border-secondary)]" />
+                </>
+              )}
+              {/* Recent chats section */}
               <div className="px-3 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Recent chats</div>
               {chatHistory.length > 0 ? (
                 chatHistory.slice(0, 5).map((chat) => (
@@ -452,7 +473,7 @@ export function Sidebar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const railRef = useRef<HTMLElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { chatHistory, triggerChatReset, loadSession } = useChatContext();
+  const { chatHistory, triggerChatReset, loadSession, projects } = useChatContext();
   const router = useRouter();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
 
@@ -719,9 +740,30 @@ export function Sidebar() {
                             className="overflow-hidden"
                           >
                             <div className="pl-4 py-1 space-y-0.5">
-                              {/* Home - show recent chats */}
+                              {/* Home - show projects and recent chats */}
                               {item.label === 'Home' && (
                                 <>
+                                  {/* Projects */}
+                                  {projects.length > 0 && (
+                                    <>
+                                      <div className="px-2 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Projects</div>
+                                      {projects.slice(0, 3).map((project) => (
+                                        <button
+                                          key={project.id}
+                                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                                        >
+                                          <div
+                                            className="w-3 h-3 rounded-sm flex-shrink-0"
+                                            style={{ backgroundColor: project.color }}
+                                          />
+                                          <span className="truncate">{project.name}</span>
+                                        </button>
+                                      ))}
+                                      <div className="my-1.5 mx-2 border-t border-[var(--border-secondary)]" />
+                                    </>
+                                  )}
+                                  {/* Recent chats */}
+                                  <div className="px-2 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Recent chats</div>
                                   {chatHistory.slice(0, 3).map((chat) => (
                                     <button
                                       key={chat.id}

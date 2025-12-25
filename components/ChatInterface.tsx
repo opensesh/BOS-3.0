@@ -323,12 +323,12 @@ export function ChatInterface() {
             };
             // Include current connector settings
             const currentConnectors = {
-              web: activeConnectors.has('web'),
-              brand: activeConnectors.has('brand'),
-              brain: activeConnectors.has('brain'),
-              discover: activeConnectors.has('discover'),
+              web: webSearchEnabled,
+              brand: brandSearchEnabled,
+              brain: false,
+              discover: false,
             };
-            await sendMessage({ text: decodedQuery }, { body: { model: selectedModel, context, connectors: currentConnectors } });
+            await sendMessage({ text: decodedQuery }, { body: { model: selectedModel, context, connectors: currentConnectors, extendedThinking: extendedThinkingEnabled, writingStyle: currentWritingStyle?.id || null } });
           } catch (err) {
             console.error('Failed to send article follow-up:', err);
             setSubmitError(err instanceof Error ? err.message : 'Failed to send message');
@@ -385,12 +385,12 @@ export function ChatInterface() {
             } : undefined;
             // Include current connector settings
             const currentConnectors = {
-              web: activeConnectors.has('web'),
-              brand: activeConnectors.has('brand'),
-              brain: activeConnectors.has('brain'),
-              discover: activeConnectors.has('discover'),
+              web: webSearchEnabled,
+              brand: brandSearchEnabled,
+              brain: false,
+              discover: false,
             };
-            await sendMessage({ text: decodedQuery }, { body: { model: selectedModel, context, connectors: currentConnectors } });
+            await sendMessage({ text: decodedQuery }, { body: { model: selectedModel, context, connectors: currentConnectors, extendedThinking: extendedThinkingEnabled, writingStyle: currentWritingStyle?.id || null } });
           } catch (err) {
             console.error('Failed to send idea generation:', err);
             setSubmitError(err instanceof Error ? err.message : 'Failed to send message');
@@ -398,7 +398,7 @@ export function ChatInterface() {
         }, 100);
       });
     }
-  }, [searchParams, router, sendMessage, setMessages, hasProcessedUrlParams, selectedModel, setSubmitError, activeConnectors]);
+  }, [searchParams, router, sendMessage, setMessages, hasProcessedUrlParams, selectedModel, setSubmitError, webSearchEnabled, brandSearchEnabled, extendedThinkingEnabled, currentWritingStyle]);
 
   // status can be: 'submitted' | 'streaming' | 'ready' | 'error'
   const isLoading = status === 'submitted' || status === 'streaming';
@@ -525,11 +525,11 @@ export function ChatInterface() {
 
   // Build connector settings object for API calls
   const connectorSettings = useMemo(() => ({
-    web: activeConnectors.has('web'),
-    brand: activeConnectors.has('brand'),
-    brain: activeConnectors.has('brain'),
-    discover: activeConnectors.has('discover'),
-  }), [activeConnectors]);
+    web: webSearchEnabled,
+    brand: brandSearchEnabled,
+    brain: false, // Removed - now handled via brand search
+    discover: false, // Removed
+  }), [webSearchEnabled, brandSearchEnabled]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -552,6 +552,14 @@ export function ChatInterface() {
 
     try {
       // Build message with attachments using FileUIPart format for AI SDK compatibility
+      const requestBody = {
+        model: selectedModel,
+        context: pageContext,
+        connectors: connectorSettings,
+        extendedThinking: extendedThinkingEnabled,
+        writingStyle: currentWritingStyle?.id || null,
+      };
+
       if (currentAttachments.length > 0) {
         // Convert attachments to FileUIPart format
         const files = currentAttachments.map(att => ({
@@ -563,10 +571,10 @@ export function ChatInterface() {
         // Use type assertion to satisfy AI SDK types
         await sendMessage(
           { text: userMessage || 'What do you see in this image?', files: files as unknown as FileList },
-          { body: { model: selectedModel, context: pageContext, connectors: connectorSettings } }
+          { body: requestBody }
         );
       } else {
-        await sendMessage({ text: userMessage }, { body: { model: selectedModel, context: pageContext, connectors: connectorSettings } });
+        await sendMessage({ text: userMessage }, { body: requestBody });
       }
     } catch (err) {
       console.error('Failed to send message:', err);
@@ -581,6 +589,14 @@ export function ChatInterface() {
     if (isLoading) return;
 
     try {
+      const requestBody = {
+        model: selectedModel,
+        context: pageContext,
+        connectors: connectorSettings,
+        extendedThinking: extendedThinkingEnabled,
+        writingStyle: currentWritingStyle?.id || null,
+      };
+
       // Build message with attachments using FileUIPart format for AI SDK compatibility
       if (followUpAttachments && followUpAttachments.length > 0) {
         // Convert attachments to FileUIPart format
@@ -593,10 +609,10 @@ export function ChatInterface() {
         // Use type assertion to satisfy AI SDK types
         await sendMessage(
           { text: query.trim() || 'What do you see in this image?', files: files as unknown as FileList },
-          { body: { model: selectedModel, context: pageContext, connectors: connectorSettings } }
+          { body: requestBody }
         );
       } else {
-        await sendMessage({ text: query.trim() }, { body: { model: selectedModel, context: pageContext, connectors: connectorSettings } });
+        await sendMessage({ text: query.trim() }, { body: requestBody });
       }
     } catch (err) {
       console.error('Failed to send follow-up:', err);
@@ -611,34 +627,6 @@ export function ChatInterface() {
     }
   };
 
-  const handleQueryClick = useCallback(async (queryText: string, submit = false) => {
-    setInput(queryText);
-    setShowSuggestions(false);
-    
-    if (submit && queryText.trim()) {
-      // Log the search to history
-      try {
-        const { logSearchQuery } = await import('@/hooks/useSearchSuggestions');
-        await logSearchQuery(queryText, suggestionsMode);
-      } catch (err) {
-        console.error('Error logging search:', err);
-      }
-      
-      // Submit the query immediately
-      if (!isLoading && typeof sendMessage === 'function') {
-        setInput('');
-        try {
-          await sendMessage({ text: queryText }, { body: { model: selectedModel, context: pageContext, connectors: connectorSettings } });
-        } catch (err) {
-          console.error('Failed to send message:', err);
-          setSubmitError(err instanceof Error ? err.message : 'Failed to send message');
-          setInput(queryText);
-        }
-      }
-    } else {
-      textareaRef.current?.focus();
-    }
-  }, [isLoading, sendMessage, selectedModel, suggestionsMode, pageContext, connectorSettings]);
 
   const handleMicClick = () => {
     if (isListening) {
@@ -648,41 +636,16 @@ export function ChatInterface() {
     }
   };
 
-  const handleModeChange = useCallback((show: boolean, mode: 'search' | 'research') => {
-    setShowSuggestions(show);
-    setSuggestionsMode(mode);
-  }, []);
-
-  // Handle input changes - show suggestions as user types
+  // Handle input changes
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setLocalInput(value);
-
-    // Show suggestions when user starts typing (at least 1 character)
-    if (value.trim().length >= 1 && !showSuggestions) {
-      setShowSuggestions(true);
-    }
-    // Hide suggestions when input is cleared
-    if (value.trim().length === 0 && showSuggestions) {
-      setShowSuggestions(false);
-    }
-  }, [showSuggestions]);
-
-  const handleConnectorDropdownClose = useCallback(() => {
-    setShowConnectorDropdown(false);
   }, []);
 
-  // Close all dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowConnectorDropdown(false);
-    };
-
-    if (showConnectorDropdown) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [showConnectorDropdown]);
+  // Handle project creation from the plus menu
+  const handleCreateProject = useCallback(async (name: string) => {
+    await createProject(name);
+  }, [createProject]);
 
   // Parse messages into our format
   const parsedMessages: ParsedMessage[] = useMemo(() => {
@@ -896,7 +859,7 @@ export function ChatInterface() {
 
               {/* Pre-prompt Cards Grid */}
               <PrePromptGrid 
-                onPromptSubmit={(prompt) => handleQueryClick(prompt, true)} 
+                onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)} 
               />
             </div>
 
@@ -971,14 +934,34 @@ export function ChatInterface() {
 
                     {/* Toolbar - always visible */}
                     <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-[var(--border-primary)] gap-2 sm:gap-4">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <SearchResearchToggle
-                          onQueryClick={handleQueryClick}
-                          onModeChange={handleModeChange}
-                          showSuggestions={showSuggestions}
+                      {/* Left side - Plus menu, Project indicator, Extended thinking */}
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <PlusMenu
+                          onAddFiles={openFilePicker}
+                          onProjectSelect={setCurrentProject}
+                          onStyleSelect={setCurrentWritingStyle}
+                          currentProject={currentProject}
+                          currentStyle={currentWritingStyle}
+                          projects={projects}
+                          onCreateProject={handleCreateProject}
+                          disabled={isLoading}
+                        />
+                        
+                        {currentProject && (
+                          <ProjectIndicator
+                            project={currentProject}
+                            onClick={() => {/* Could open project selector */}}
+                          />
+                        )}
+
+                        <ExtendedThinkingToggle
+                          enabled={extendedThinkingEnabled}
+                          onToggle={setExtendedThinkingEnabled}
+                          disabled={isLoading}
                         />
                       </div>
 
+                      {/* Right side - action buttons */}
                       <div className="flex items-center gap-1 sm:gap-2">
                         <ModelSelector
                           selectedModel={selectedModel}
@@ -987,56 +970,14 @@ export function ChatInterface() {
                         />
 
                         <div className="hidden sm:block w-px h-5 bg-[var(--border-primary)]" />
-                        <div className="relative">
-                          <button
-                            ref={globeButtonRef}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowConnectorDropdown(!showConnectorDropdown);
-                            }}
-                            className={`p-2 rounded-lg transition-all ${
-                              showConnectorDropdown
-                                ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
-                                : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
-                            }`}
-                            aria-label="Connectors"
-                            title="Connectors"
-                          >
-                            <Globe className="w-5 h-5" />
-                          </button>
-                          <ConnectorDropdown
-                            isOpen={showConnectorDropdown}
-                            onClose={handleConnectorDropdownClose}
-                            connectors={updatedConnectors}
-                            onToggleConnector={handleToggleConnector}
-                            triggerRef={globeButtonRef as React.RefObject<HTMLElement>}
-                          />
-                        </div>
 
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openFilePicker();
-                            }}
-                            className={`p-2 rounded-lg transition-all ${
-                              attachments.length > 0
-                                ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
-                                : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
-                            }`}
-                            aria-label="Attach images"
-                            title="Attach images (or paste/drag & drop)"
-                          >
-                            <Paperclip className="w-5 h-5" />
-                            {attachments.length > 0 && (
-                              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--bg-brand-solid)] text-white text-[10px] font-medium rounded-full flex items-center justify-center">
-                                {attachments.length}
-                              </span>
-                            )}
-                          </button>
-                        </div>
+                        <DataSourcesDropdown
+                          webEnabled={webSearchEnabled}
+                          brandEnabled={brandSearchEnabled}
+                          onWebToggle={setWebSearchEnabled}
+                          onBrandToggle={setBrandSearchEnabled}
+                          disabled={isLoading}
+                        />
 
                         <div className="relative">
                           {/* Pulsing rings when recording */}
@@ -1129,19 +1070,6 @@ export function ChatInterface() {
                         </button>
                       </div>
                     </div>
-
-                    {/* Suggestions - inside container, below toolbar */}
-                    {showSuggestions && (suggestionsLoading || fetchedSuggestions.length > 0) && (
-                      <div className="border-t border-[var(--border-primary)]/50">
-                        <SearchResearchSuggestions
-                          mode={suggestionsMode}
-                          onQueryClick={handleQueryClick}
-                          suggestions={fetchedSuggestions}
-                          inputValue={localInput}
-                          isLoading={suggestionsLoading}
-                        />
-                      </div>
-                    )}
                   </div>
                 </form>
               </div>

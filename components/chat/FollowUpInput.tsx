@@ -4,33 +4,22 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Mic,
-  Globe,
-  Paperclip,
   Send,
-  Brain,
-  Compass,
-  Palette,
 } from 'lucide-react';
 import { ModelId } from '@/lib/ai/providers';
 import { useAttachments } from '@/hooks/useAttachments';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { AttachmentPreview, DragOverlay } from './AttachmentPreview';
-import { SearchResearchToggle, SearchResearchSuggestions } from '../ui/search-research-toggle';
-import { ConnectorDropdown } from '../ui/connector-dropdown';
+import { PlusMenu, ProjectIndicator } from '../ui/plus-menu';
+import { ExtendedThinkingToggle } from '../ui/extended-thinking-toggle';
+import { DataSourcesDropdown } from '../ui/data-sources-dropdown';
 import { ModelSelector } from '../ui/model-selector';
+import { useChatContext } from '@/lib/chat-context';
 
 export interface FollowUpAttachment {
   type: 'image';
   data: string;
   mimeType: string;
-}
-
-interface Connector {
-  id: string;
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  enabled: boolean;
 }
 
 interface FollowUpInputProps {
@@ -50,38 +39,28 @@ export function FollowUpInput({
 }: FollowUpInputProps) {
   const [input, setInput] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [showConnectorDropdown, setShowConnectorDropdown] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestionsMode, setSuggestionsMode] = useState<'search' | 'research'>('search');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const globeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Connectors (matching homepage)
-  const connectors: Connector[] = [
-    { id: 'web', icon: Globe, title: 'Web', description: 'Search across the entire internet', enabled: true },
-    { id: 'brand', icon: Palette, title: 'Brand', description: 'Access brand assets and guidelines', enabled: true },
-    { id: 'brain', icon: Brain, title: 'Brain', description: 'Search brand knowledge base', enabled: true },
-    { id: 'discover', icon: Compass, title: 'Discover', description: 'Explore curated content and ideas', enabled: false },
-  ];
+  // Data sources state
+  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
+  const [brandSearchEnabled, setBrandSearchEnabled] = useState(true);
 
-  const [activeConnectors, setActiveConnectors] = useState<Set<string>>(new Set(['web', 'brand', 'brain']));
+  // Get context values for projects, writing style, and extended thinking
+  const {
+    projects,
+    currentProject,
+    setCurrentProject,
+    createProject,
+    currentWritingStyle,
+    setCurrentWritingStyle,
+    extendedThinkingEnabled,
+    setExtendedThinkingEnabled,
+  } = useChatContext();
 
-  const handleToggleConnector = (id: string) => {
-    setActiveConnectors((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  const updatedConnectors = connectors.map((connector) => ({
-    ...connector,
-    enabled: activeConnectors.has(connector.id),
-  }));
+  // Handle project creation
+  const handleCreateProject = useCallback(async (name: string) => {
+    await createProject(name);
+  }, [createProject]);
 
   // Voice recognition
   const {
@@ -131,18 +110,6 @@ export function FollowUpInput({
     }
   }, [input]);
 
-  // Close connector dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowConnectorDropdown(false);
-    };
-
-    if (showConnectorDropdown) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [showConnectorDropdown]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Allow submission with just attachments (no text required)
@@ -160,7 +127,6 @@ export function FollowUpInput({
 
     setInput('');
     clearAttachments();
-    setShowSuggestions(false);
     onSubmit(query, currentAttachments);
   };
 
@@ -179,26 +145,6 @@ export function FollowUpInput({
     }
   };
 
-  const handleModeChange = useCallback((show: boolean, mode: 'search' | 'research') => {
-    setShowSuggestions(show);
-    setSuggestionsMode(mode);
-  }, []);
-
-  const handleConnectorDropdownClose = useCallback(() => {
-    setShowConnectorDropdown(false);
-  }, []);
-
-  const handleQueryClick = useCallback((queryText: string, submit = false) => {
-    setInput(queryText);
-    setShowSuggestions(false);
-    
-    if (submit && queryText.trim() && !isLoading) {
-      setInput('');
-      onSubmit(queryText, undefined);
-    } else {
-      textareaRef.current?.focus();
-    }
-  }, [isLoading, onSubmit]);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -270,12 +216,30 @@ export function FollowUpInput({
 
           {/* Toolbar - matching homepage layout */}
           <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-[var(--border-primary)] gap-2 sm:gap-4">
-            {/* Left side - Search/Research Toggle */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <SearchResearchToggle
-                onQueryClick={handleQueryClick}
-                onModeChange={handleModeChange}
-                showSuggestions={showSuggestions}
+            {/* Left side - Plus menu, Project indicator, Extended thinking */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <PlusMenu
+                onAddFiles={openFilePicker}
+                onProjectSelect={setCurrentProject}
+                onStyleSelect={setCurrentWritingStyle}
+                currentProject={currentProject}
+                currentStyle={currentWritingStyle}
+                projects={projects}
+                onCreateProject={handleCreateProject}
+                disabled={isLoading}
+              />
+              
+              {currentProject && (
+                <ProjectIndicator
+                  project={currentProject}
+                  onClick={() => {/* Could open project selector */}}
+                />
+              )}
+
+              <ExtendedThinkingToggle
+                enabled={extendedThinkingEnabled}
+                onToggle={setExtendedThinkingEnabled}
+                disabled={isLoading}
               />
             </div>
 
@@ -290,58 +254,14 @@ export function FollowUpInput({
 
               <div className="hidden sm:block w-px h-5 bg-[var(--border-primary)]" />
 
-              {/* Connectors dropdown */}
-              <div className="relative">
-                <button
-                  ref={globeButtonRef}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowConnectorDropdown(!showConnectorDropdown);
-                  }}
-                  className={`p-2 rounded-lg transition-all ${
-                    showConnectorDropdown
-                      ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
-                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
-                  }`}
-                  aria-label="Connectors"
-                  title="Connectors"
-                >
-                  <Globe className="w-5 h-5" />
-                </button>
-                <ConnectorDropdown
-                  isOpen={showConnectorDropdown}
-                  onClose={handleConnectorDropdownClose}
-                  connectors={updatedConnectors}
-                  onToggleConnector={handleToggleConnector}
-                  triggerRef={globeButtonRef as React.RefObject<HTMLElement>}
-                />
-              </div>
-
-              {/* Attachment button */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openFilePicker();
-                  }}
-                  className={`p-2 rounded-lg transition-all ${
-                    attachments.length > 0
-                      ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
-                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
-                  }`}
-                  aria-label="Attach images"
-                  title="Attach images (or paste/drag & drop)"
-                >
-                  <Paperclip className="w-5 h-5" />
-                  {attachments.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--bg-brand-solid)] text-white text-[10px] font-medium rounded-full flex items-center justify-center">
-                      {attachments.length}
-                    </span>
-                  )}
-                </button>
-              </div>
+              {/* Data sources dropdown */}
+              <DataSourcesDropdown
+                webEnabled={webSearchEnabled}
+                brandEnabled={brandSearchEnabled}
+                onWebToggle={setWebSearchEnabled}
+                onBrandToggle={setBrandSearchEnabled}
+                disabled={isLoading}
+              />
 
               {/* Mic button with animation */}
               <div className="relative">
@@ -436,16 +356,6 @@ export function FollowUpInput({
               </button>
             </div>
           </div>
-
-          {/* Suggestions - inside container, below toolbar (matching homepage) */}
-          {showSuggestions && (
-            <div className="border-t border-[var(--border-primary)]">
-              <SearchResearchSuggestions 
-                mode={suggestionsMode} 
-                onQueryClick={handleQueryClick}
-              />
-            </div>
-          )}
         </div>
       </form>
     </div>

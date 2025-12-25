@@ -130,14 +130,8 @@ function CarouselRow({
         <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
       </button>
 
-      {/* Cards */}
-      <div 
-        className="relative flex-1 overflow-hidden"
-        style={{
-          maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
-          WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
-        }}
-      >
+      {/* Cards - no gradient mask on mobile, show full cards */}
+      <div className="relative flex-1 overflow-hidden">
         <div 
           className="flex gap-3 transition-transform duration-300 ease-out"
           style={{

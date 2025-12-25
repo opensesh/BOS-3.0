@@ -377,12 +377,11 @@ async function streamWithAnthropicNative(
             });
           }
 
-          // Continue conversation with tool results
-          console.log('Continuing with tool results:', toolResults.length, 'results');
+          // Continue conversation with tool results using STREAMING
+          // This provides real-time feedback instead of blocking until full response
+          console.log('Continuing with tool results (streaming):', toolResults.length, 'results');
           
-          // Use non-streaming request for the continuation to ensure we get the full response
-          // This is more reliable than streaming for tool result continuations
-          const continueResponse = await client.messages.create({
+          const continueStream = await client.messages.stream({
             model: modelId,
             max_tokens: 16000,
             system: systemPrompt,
@@ -393,32 +392,44 @@ async function streamWithAnthropicNative(
             ],
           });
 
+          // Stream the continuation response in real-time
+          let hasText = false;
+          
+          continueStream.on('text', (text: string) => {
+            hasText = true;
+            controller.enqueue(sse.encode({ type: 'text', content: text }));
+          });
+
+          continueStream.on('contentBlock', (block: { type: string; thinking?: string }) => {
+            if (block.type === 'thinking' && block.thinking) {
+              controller.enqueue(sse.encode({ type: 'thinking', content: block.thinking }));
+            }
+          });
+
+          // Wait for the continuation to complete
+          const continueResponse = await continueStream.finalMessage();
+          
           console.log('Continuation complete:', {
             stopReason: continueResponse.stop_reason,
             contentBlocks: continueResponse.content?.length || 0,
+            hasText,
           });
           
-          // Extract and stream the text content from the continuation response
-          let hasText = false;
-          for (const block of continueResponse.content || []) {
-            if (block.type === 'text' && 'text' in block) {
-              hasText = true;
-              // Stream the text in chunks for smooth UI
-              const text = block.text;
-              const chunkSize = 20;
-              for (let i = 0; i < text.length; i += chunkSize) {
-                const chunk = text.slice(i, i + chunkSize);
-                controller.enqueue(sse.encode({ type: 'text', content: chunk }));
-                // Small delay for smooth streaming effect
-                await new Promise(resolve => setTimeout(resolve, 5));
-              }
-            } else if (block.type === 'thinking' && 'thinking' in block) {
-              controller.enqueue(sse.encode({ type: 'thinking', content: (block as { thinking: string }).thinking }));
-            }
-          }
-          
+          // If streaming didn't produce text, try to extract from final message
           if (!hasText) {
-            console.warn('Continuation produced no text content. Stop reason:', continueResponse.stop_reason);
+            console.warn('Continuation streaming produced no text, checking final message...');
+            for (const block of continueResponse.content || []) {
+              if (block.type === 'text' && 'text' in block && block.text) {
+                console.log('Found text in final message, streaming it...');
+                const text = block.text;
+                const chunkSize = 20;
+                for (let i = 0; i < text.length; i += chunkSize) {
+                  const chunk = text.slice(i, i + chunkSize);
+                  controller.enqueue(sse.encode({ type: 'text', content: chunk }));
+                  await new Promise(resolve => setTimeout(resolve, 5));
+                }
+              }
+            }
           }
         }
 

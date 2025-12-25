@@ -66,6 +66,10 @@ export async function executeWebSearch(
       return { success: false, error: 'Perplexity API key not configured' };
     }
 
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -82,7 +86,10 @@ export async function executeWebSearch(
         ],
         max_tokens: 1024,
       }),
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       return { success: false, error: `Search failed: ${response.statusText}` };

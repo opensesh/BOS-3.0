@@ -364,8 +364,8 @@ async function streamWithAnthropicNative(
                   // Stream each source individually for a smooth "finding sources" feel
                   controller.enqueue(sse.encode({ type: 'sources', sources: [sourceData] }));
                   
-                  // Small delay between sources for visual effect (50-100ms feels natural)
-                  await new Promise(resolve => setTimeout(resolve, 60));
+                  // Quick delay between sources - fast enough to feel responsive (30ms = ~500ms for 18 sources)
+                  await new Promise(resolve => setTimeout(resolve, 30));
                 }
               }
             }

@@ -200,16 +200,23 @@ export function InlineStreamingDisplay({
                 </span>
               )}
               
-              {/* Status indicator */}
-              {isComplete && (
+              {/* Status indicator - show spinner while searching, checkmark when done */}
+              {isComplete ? (
                 <CheckCircle className="w-3 h-3 text-[var(--fg-success-primary)] flex-shrink-0" />
+              ) : (
+                <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin flex-shrink-0" />
               )}
               
-              {/* Show source count if we have sources */}
+              {/* Show source count - only when complete or when sources exist */}
               {hasSources && (
-                <span className="text-[10px] text-[var(--fg-tertiary)] bg-[var(--bg-secondary)] px-1.5 py-0.5 rounded">
+                <motion.span 
+                  key={sources.length}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-[10px] text-[var(--fg-tertiary)] bg-[var(--bg-secondary)] px-1.5 py-0.5 rounded tabular-nums"
+                >
                   {sources.length} {sources.length === 1 ? 'source' : 'sources'}
-                </span>
+                </motion.span>
               )}
             </div>
           </div>

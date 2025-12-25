@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ChevronLeft, 
@@ -24,7 +24,7 @@ interface PrePromptGridProps {
   onPromptSubmit: (prompt: string) => void;
 }
 
-// Quick links to subpages (shown on the left side of carousel)
+// Quick links to subpages
 const quickLinks = [
   {
     id: 'logos',
@@ -54,16 +54,9 @@ const quickLinks = [
     href: '/spaces',
     icon: LayoutGrid,
   },
-  {
-    id: 'guidelines',
-    title: 'Guidelines',
-    subtitle: 'Review brand standards',
-    href: '/brand-hub?tab=guidelines',
-    icon: FileText,
-  },
 ];
 
-// Pre-prompts for common tasks (shown on the right side of carousel)
+// Pre-prompts for common tasks
 const prePrompts = [
   {
     id: 'social-post',
@@ -87,13 +80,6 @@ const prePrompts = [
     prompt: 'Help me brainstorm creative ideas for [campaign/project]. I want fresh concepts that align with my brand values.',
   },
   {
-    id: 'write-copy',
-    icon: PenTool,
-    title: 'Write copy',
-    description: 'Craft headlines and taglines',
-    prompt: 'Help me write compelling copy for [where it will be used]. I need it to be catchy and on-brand.',
-  },
-  {
     id: 'get-feedback',
     icon: MessageSquare,
     title: 'Get feedback',
@@ -102,18 +88,16 @@ const prePrompts = [
   },
 ];
 
-// Combine all items: quick links first, then pre-prompts
+// Combined for desktop carousel
 const allItems = [
   ...quickLinks.map(link => ({ ...link, type: 'link' as const })),
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
 export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
-  // Start centered: show last 2 folders + first 2 prompts (index 3 shows items 3,4,5,6)
-  const [currentIndex, setCurrentIndex] = useState(3);
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Start centered: index 2 shows items 2,3,4,5 (Colors, Spaces, Create post, Plan campaign)
+  const [currentIndex, setCurrentIndex] = useState(2);
   
-  // Show 4 items on desktop, 2 on mobile
   const visibleCount = 4;
   const maxIndex = allItems.length - visibleCount;
 
@@ -128,9 +112,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
   const canGoPrev = currentIndex > 0;
   const canGoNext = currentIndex < maxIndex;
 
-  // Calculate card width percentage
   const cardWidthPercent = 100 / visibleCount;
-  const gapPercent = 1; // Small gap percentage
 
   return (
     <motion.div
@@ -139,102 +121,124 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
       animate="visible"
       className="w-full max-w-3xl mx-auto px-4 mt-4"
     >
-      {/* Carousel container with arrows outside */}
-      <div className="flex items-center gap-3">
-        {/* Left arrow - outside the carousel */}
-        <button
-          onClick={handlePrev}
-          disabled={!canGoPrev}
-          className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-            canGoPrev 
-              ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
-              : 'opacity-30 cursor-not-allowed'
-          }`}
-          aria-label="Previous"
-        >
-          <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
-        </button>
+      {/* Desktop: Carousel */}
+      <div className="hidden lg:block">
+        <div className="flex items-center gap-4">
+          {/* Left arrow */}
+          <button
+            onClick={handlePrev}
+            disabled={!canGoPrev}
+            className={`flex-shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+              canGoPrev 
+                ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+                : 'opacity-30 cursor-not-allowed'
+            }`}
+            aria-label="Previous"
+          >
+            <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
+          </button>
 
-        {/* Cards container with gradient edges */}
-        <div className="relative flex-1 overflow-hidden">
-          {/* Left fade gradient - progressive */}
+          {/* Cards container with CSS mask for soft fade */}
           <div 
-            className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none" 
+            className="relative flex-1 overflow-hidden"
             style={{
-              background: 'linear-gradient(to right, var(--bg-primary) 0%, var(--bg-primary) 20%, transparent 100%)',
-            }}
-          />
-          
-          {/* Right fade gradient - progressive */}
-          <div 
-            className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none" 
-            style={{
-              background: 'linear-gradient(to left, var(--bg-primary) 0%, var(--bg-primary) 20%, transparent 100%)',
-            }}
-          />
-
-          <div 
-            ref={containerRef}
-            className="flex gap-3 transition-transform duration-300 ease-out px-2"
-            style={{
-              transform: `translateX(-${currentIndex * (cardWidthPercent + gapPercent)}%)`,
+              maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
             }}
           >
-            {allItems.map((item) => (
-              <div 
-                key={item.id} 
-                className="flex-shrink-0 min-h-[140px]"
-                style={{ width: `calc(${cardWidthPercent}% - 9px)` }}
-              >
-                {item.type === 'link' ? (
-                  <AnimatedFolder
-                    title={item.title}
-                    subtitle={item.subtitle}
-                    href={item.href}
-                    icon={item.icon}
-                  />
-                ) : (
-                  <IconHover3D
-                    icon={item.icon}
-                    title={item.title}
-                    description={item.description}
-                    onClick={() => onPromptSubmit(item.prompt)}
-                  />
-                )}
-              </div>
-            ))}
+            <div 
+              className="flex gap-3 transition-transform duration-300 ease-out"
+              style={{
+                transform: `translateX(-${currentIndex * (cardWidthPercent + 0.5)}%)`,
+              }}
+            >
+              {allItems.map((item) => (
+                <div 
+                  key={item.id} 
+                  className="flex-shrink-0 min-h-[140px]"
+                  style={{ width: `calc(${cardWidthPercent}% - 9px)` }}
+                >
+                  {item.type === 'link' ? (
+                    <AnimatedFolder
+                      title={item.title}
+                      subtitle={item.subtitle}
+                      href={item.href}
+                      icon={item.icon}
+                    />
+                  ) : (
+                    <IconHover3D
+                      icon={item.icon}
+                      title={item.title}
+                      description={item.description}
+                      onClick={() => onPromptSubmit(item.prompt)}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Right arrow */}
+          <button
+            onClick={handleNext}
+            disabled={!canGoNext}
+            className={`flex-shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+              canGoNext 
+                ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
+                : 'opacity-30 cursor-not-allowed'
+            }`}
+            aria-label="Next"
+          >
+            <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+          </button>
         </div>
 
-        {/* Right arrow - outside the carousel */}
-        <button
-          onClick={handleNext}
-          disabled={!canGoNext}
-          className={`flex-shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
-            canGoNext 
-              ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer' 
-              : 'opacity-30 cursor-not-allowed'
-          }`}
-          aria-label="Next"
-        >
-          <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
-        </button>
+        {/* Progress dots */}
+        <div className="flex justify-center gap-1.5 mt-4">
+          {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`h-1.5 rounded-full transition-all duration-200 ${
+                idx === currentIndex 
+                  ? 'bg-[var(--color-brand-500)] w-4' 
+                  : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Progress dots */}
-      <div className="flex justify-center gap-1.5 mt-4">
-        {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            className={`h-1.5 rounded-full transition-all duration-200 ${
-              idx === currentIndex 
-                ? 'bg-[var(--color-brand-500)] w-4' 
-                : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
-            }`}
-            aria-label={`Go to slide ${idx + 1}`}
-          />
-        ))}
+      {/* Tablet & Mobile: Two rows */}
+      <div className="lg:hidden space-y-4">
+        {/* Row 1: Quick Links */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {quickLinks.map((link) => (
+            <div key={link.id} className="min-h-[130px]">
+              <AnimatedFolder
+                title={link.title}
+                subtitle={link.subtitle}
+                href={link.href}
+                icon={link.icon}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Row 2: Pre-prompts */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {prePrompts.map((prompt) => (
+            <div key={prompt.id} className="min-h-[130px]">
+              <IconHover3D
+                icon={prompt.icon}
+                title={prompt.title}
+                description={prompt.description}
+                onClick={() => onPromptSubmit(prompt.prompt)}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </motion.div>
   );

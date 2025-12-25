@@ -23,8 +23,8 @@ interface UseSuggestionsResult {
  */
 export function useSearchSuggestions({
   mode,
-  debounceMs = 150, // Fast debounce for responsive feel
-  minQueryLength = 2,
+  debounceMs = 300, // Balance between responsive feel and API efficiency
+  minQueryLength = 3, // Need enough context for smart suggestions
   maxSuggestions = 6,
 }: UseSuggestionsOptions): UseSuggestionsResult {
   const [suggestions, setSuggestions] = useState<string[]>([]);

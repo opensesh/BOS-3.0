@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export const maxDuration = 5; // Fast responses for autocomplete
-export const runtime = 'edge'; // Use edge runtime for fastest response
+export const maxDuration = 10;
 
 interface SuggestionRequest {
   query?: string;
@@ -10,31 +9,25 @@ interface SuggestionRequest {
 }
 
 /**
- * Fast autocomplete suggestions using DuckDuckGo's autocomplete API
- * Falls back to simple prefix matching if the API fails
+ * Smart autocomplete suggestions using Claude Haiku
+ * Fast, contextual, and intelligent - not generic internet searches
  */
 export async function POST(req: Request) {
   try {
     const body: SuggestionRequest = await req.json();
     const { query = '', mode = 'search', limit = 6 } = body;
 
-    // If no query or too short, return empty - don't show suggestions
+    // If no query or too short, return empty
     if (!query || query.trim().length < 2) {
       return NextResponse.json({ suggestions: [], source: 'empty' });
     }
 
     const trimmedQuery = query.trim();
 
-    // Try to get real search suggestions from DuckDuckGo
-    const suggestions = await getDuckDuckGoSuggestions(trimmedQuery, limit);
+    // Use Claude Haiku for intelligent suggestions
+    const suggestions = await getSmartSuggestions(trimmedQuery, mode, limit);
     
-    if (suggestions.length > 0) {
-      return NextResponse.json({ suggestions, source: 'duckduckgo' });
-    }
-
-    // Fallback: simple query extensions
-    const fallbackSuggestions = getSimpleSuggestions(trimmedQuery, mode, limit);
-    return NextResponse.json({ suggestions: fallbackSuggestions, source: 'fallback' });
+    return NextResponse.json({ suggestions, source: 'ai' });
 
   } catch (error) {
     console.error('Error generating suggestions:', error);
@@ -43,81 +36,125 @@ export async function POST(req: Request) {
 }
 
 /**
- * Get autocomplete suggestions from DuckDuckGo
- * This is a free, fast API that returns real search suggestions
+ * Generate intelligent autocomplete suggestions using Claude Haiku
+ * Fast (~200-500ms), cheap, and contextually aware
  */
-async function getDuckDuckGoSuggestions(query: string, limit: number): Promise<string[]> {
+async function getSmartSuggestions(
+  query: string,
+  mode: 'search' | 'research',
+  limit: number
+): Promise<string[]> {
+  const isResearch = mode === 'research';
+  
+  const prompt = `You are an intelligent autocomplete engine. The user is typing a query and you need to suggest helpful completions.
+
+User's partial query: "${query}"
+Mode: ${isResearch ? 'Deep research' : 'Quick search'}
+
+Generate ${limit} smart autocomplete suggestions that:
+1. Naturally complete or extend their query
+2. Are contextually relevant to what they seem to be asking about
+3. Are practical and useful - things someone would actually want to know
+4. Cover different angles or aspects of the topic
+
+${isResearch 
+  ? 'For research mode: Suggest comprehensive, analytical queries that invite deeper exploration.'
+  : 'For search mode: Suggest direct, specific questions that can be answered concisely.'}
+
+Rules:
+- Each suggestion should feel like a natural completion of "${query}"
+- Be intelligent about context - if they're asking about "branding", suggest branding-related completions, not unrelated topics
+- Vary the suggestions - don't just add different endings to the same base
+- Keep suggestions 5-15 words
+- Return ONLY the suggestions, one per line, no numbering, no bullets, no quotes
+- Do NOT suggest anything unrelated to their apparent topic`;
+
   try {
-    const encoded = encodeURIComponent(query);
-    const response = await fetch(
-      `https://duckduckgo.com/ac/?q=${encoded}&type=list`,
-      {
-        headers: {
-          'Accept': 'application/json',
-        },
-        // Short timeout for fast autocomplete
-        signal: AbortSignal.timeout(2000),
-      }
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
+    // Dynamic import to avoid issues
+    const { getAnthropicClient, getAnthropicModelId } = await import('@/lib/ai/providers');
     
-    // DuckDuckGo returns [query, [suggestions]]
-    if (Array.isArray(data) && Array.isArray(data[1])) {
-      return data[1].slice(0, limit);
-    }
-
-    return [];
+    const client = await getAnthropicClient();
+    const modelId = getAnthropicModelId('claude-haiku'); // Fast model for autocomplete
+    
+    const response = await client.messages.create({
+      model: modelId,
+      max_tokens: 250,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    
+    // Extract text from response
+    const text = response.content
+      .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
+      .map(block => block.text)
+      .join('');
+    
+    // Parse suggestions from response
+    const suggestions = text
+      .split('\n')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && s.length < 150)
+      .filter(s => !s.match(/^[\d\-\*\•\"\']/)) // Remove numbered/bulleted/quoted items
+      .filter(s => !s.startsWith('-'))
+      .slice(0, limit);
+    
+    return suggestions;
   } catch (error) {
-    // Silently fail - autocomplete should never block
-    console.error('DuckDuckGo autocomplete error:', error);
-    return [];
+    console.error('Error generating smart suggestions:', error);
+    // Return simple contextual fallbacks
+    return getContextualFallbacks(query, mode, limit);
   }
 }
 
 /**
- * Simple fallback suggestions when external API fails
- * Generates common query patterns based on the input
+ * Simple contextual fallbacks when AI fails
+ * These are generic but at least contextually relevant
  */
-function getSimpleSuggestions(query: string, mode: 'search' | 'research', limit: number): string[] {
+function getContextualFallbacks(
+  query: string,
+  mode: 'search' | 'research',
+  limit: number
+): string[] {
   const queryLower = query.toLowerCase();
   const suggestions: string[] = [];
   
-  // Common question starters
-  const questionStarters = ['what is', 'how to', 'why', 'when', 'where', 'who'];
-  const isQuestion = questionStarters.some(q => queryLower.startsWith(q));
+  // Detect if it's a question
+  const questionWords = ['what', 'how', 'why', 'when', 'where', 'who', 'which', 'can', 'should', 'is', 'are', 'do', 'does'];
+  const startsWithQuestion = questionWords.some(q => queryLower.startsWith(q));
   
-  if (isQuestion) {
+  if (startsWithQuestion) {
     // Extend questions naturally
-    suggestions.push(
-      `${query} in 2025`,
-      `${query} examples`,
-      `${query} best practices`,
-      `${query} explained`,
-    );
+    if (mode === 'research') {
+      suggestions.push(
+        `${query} and its implications`,
+        `${query} - a comprehensive analysis`,
+        `${query} compared to alternatives`,
+        `${query} - trends and future outlook`,
+      );
+    } else {
+      suggestions.push(
+        `${query} in 2025`,
+        `${query} - best practices`,
+        `${query} examples`,
+        `${query} explained simply`,
+      );
+    }
   } else {
-    // Add common query patterns
-    suggestions.push(
-      `what is ${query}`,
-      `how to ${query}`,
-      `${query} tutorial`,
-      `${query} examples`,
-      `${query} best practices`,
-      `${query} guide`,
-    );
-  }
-  
-  // For research mode, add more analytical suggestions
-  if (mode === 'research') {
-    suggestions.push(
-      `${query} analysis`,
-      `${query} trends`,
-      `${query} comparison`,
-    );
+    // Add common patterns for non-questions
+    if (mode === 'research') {
+      suggestions.push(
+        `${query} comprehensive guide`,
+        `${query} industry analysis`,
+        `${query} best practices and strategies`,
+        `${query} case studies`,
+      );
+    } else {
+      suggestions.push(
+        `what is ${query}`,
+        `${query} best practices`,
+        `${query} examples`,
+        `how to use ${query}`,
+      );
+    }
   }
   
   return suggestions.slice(0, limit);

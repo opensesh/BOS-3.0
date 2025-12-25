@@ -79,7 +79,7 @@ export function ExtendedThinkingToggle({
         <Clock className="w-5 h-5" />
       </button>
 
-      {/* Tooltip */}
+      {/* Tooltip - positioned relative to this container */}
       <AnimatePresence>
         {showTooltip && (
           <motion.div
@@ -87,7 +87,7 @@ export function ExtendedThinkingToggle({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50"
+            className="absolute bottom-full mb-2 left-0 z-[100] pointer-events-none"
           >
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-[var(--shadow-lg)] px-3 py-2 whitespace-nowrap">
               <div className="text-sm text-[var(--fg-primary)]">
@@ -100,8 +100,8 @@ export function ExtendedThinkingToggle({
               </div>
             </div>
             {/* Arrow pointing down */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
-              <div className="border-8 border-transparent border-t-[var(--bg-secondary)]" />
+            <div className="absolute top-full left-4 -mt-px">
+              <div className="border-6 border-transparent border-t-[var(--bg-secondary)]" style={{ borderWidth: '6px' }} />
             </div>
           </motion.div>
         )}

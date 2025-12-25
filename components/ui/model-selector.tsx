@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Sparkles } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 import { models, ModelId, ModelConfig } from '@/lib/ai/providers';
 
 // Claude (Anthropic) Logo SVG Component
@@ -24,11 +24,6 @@ function ClaudeLogo({ className }: { className?: string }) {
       />
     </svg>
   );
-}
-
-// Auto/Smart icon using Sparkles from Lucide
-function AutoIcon({ className }: { className?: string }) {
-  return <Sparkles className={className} />
 }
 
 // Perplexity Logo SVG Component
@@ -60,7 +55,7 @@ function getProviderLogo(provider: 'anthropic' | 'perplexity' | 'auto') {
     case 'perplexity':
       return PerplexityLogo;
     case 'auto':
-      return AutoIcon; // Use sparkles icon for auto
+      return null; // No icon for auto - just text
     default:
       return null;
   }
@@ -184,12 +179,11 @@ export function ModelSelector({ selectedModel, onModelChange, disabled }: ModelS
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <AutoIcon className="w-4 h-4 flex-shrink-0 text-[var(--fg-brand-primary)]" />
                   <span className="text-sm font-medium text-[var(--fg-primary)]">
                     {autoModel.name}
                   </span>
                 </div>
-                <p className="text-xs text-[var(--fg-tertiary)] mt-0.5 ml-6">
+                <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">
                   {autoModel.description}
                 </p>
               </div>

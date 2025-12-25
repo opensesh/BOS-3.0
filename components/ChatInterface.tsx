@@ -35,6 +35,8 @@ import {
   ChatContent,
   AttachmentPreview,
   DragOverlay,
+  LinksView,
+  extractResourceCards,
   type FollowUpAttachment,
 } from './chat';
 // Article reference context (kept for potential future use)

@@ -197,6 +197,9 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
                   <span className="text-[11px] font-medium text-[var(--fg-tertiary)]/60 uppercase tracking-wider">
                     Citations
                   </span>
+                  <span className="text-[10px] text-[var(--fg-tertiary)]/40 ml-auto">
+                    {webSources.length}
+                  </span>
                 </div>
               </div>
               <div className="px-3 space-y-1">
@@ -228,15 +231,27 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
 
                     {/* Content */}
                     <div className="flex-1 min-w-0 pt-0.5">
-                      {/* Title */}
+                      {/* Title - use extracted title, fallback to site name */}
                       <h3 className="text-[13px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors line-clamp-2 leading-snug">
-                        {source.title || source.name}
+                        {source.title && source.title !== source.name ? source.title : `Article from ${source.name}`}
                       </h3>
 
-                      {/* Domain / URL */}
-                      <p className="text-[11px] text-[var(--fg-tertiary)]/50 mt-1 truncate">
-                        {source.name}
-                      </p>
+                      {/* Snippet - show if available */}
+                      {source.snippet && (
+                        <p className="text-[12px] text-[var(--fg-secondary)]/70 mt-1 line-clamp-2 leading-relaxed">
+                          {source.snippet}
+                        </p>
+                      )}
+
+                      {/* Source site name and citation index */}
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-[11px] text-[var(--fg-tertiary)]/50 truncate">
+                          {source.name}
+                        </span>
+                        <span className="text-[10px] text-[var(--fg-tertiary)]/30 bg-[var(--bg-secondary)]/50 px-1.5 py-0.5 rounded">
+                          [{idx + 1}]
+                        </span>
+                      </div>
                     </div>
 
                     {/* External link icon */}

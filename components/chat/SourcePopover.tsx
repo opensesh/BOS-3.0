@@ -42,6 +42,11 @@ export function SourcePopover({ sources, position = 'above' }: SourcePopoverProp
 }
 
 function SourceItem({ source }: { source: SourceInfo }) {
+  // Get a display title - prefer extracted title, fallback to site name
+  const displayTitle = source.title && source.title !== source.name 
+    ? source.title 
+    : `Article from ${source.name}`;
+  
   return (
     <a
       href={source.url}
@@ -70,9 +75,15 @@ function SourceItem({ source }: { source: SourceInfo }) {
       {/* Content */}
       <span className="flex-1 min-w-0 flex flex-col pt-0.5">
         <span className="text-[13px] font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors line-clamp-2">
-          {source.title || source.name}
+          {displayTitle}
         </span>
-        <span className="text-[11px] text-[var(--fg-tertiary)]/60 mt-0.5 truncate">
+        {/* Show snippet if available */}
+        {source.snippet && (
+          <span className="text-[11px] text-[var(--fg-secondary)]/60 mt-0.5 line-clamp-1">
+            {source.snippet}
+          </span>
+        )}
+        <span className="text-[10px] text-[var(--fg-tertiary)]/50 mt-0.5 truncate">
           {source.name}
         </span>
       </span>

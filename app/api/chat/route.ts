@@ -428,28 +428,216 @@ function extractHostname(url: string): string {
   }
 }
 
+// Well-known site name mappings for cleaner display
+const SITE_NAME_MAPPINGS: Record<string, string> = {
+  'youtube.com': 'YouTube',
+  'youtu.be': 'YouTube',
+  'github.com': 'GitHub',
+  'stackoverflow.com': 'Stack Overflow',
+  'medium.com': 'Medium',
+  'dev.to': 'DEV Community',
+  'twitter.com': 'Twitter',
+  'x.com': 'X (Twitter)',
+  'linkedin.com': 'LinkedIn',
+  'reddit.com': 'Reddit',
+  'figma.com': 'Figma',
+  'dribbble.com': 'Dribbble',
+  'behance.net': 'Behance',
+  'notion.so': 'Notion',
+  'notion.site': 'Notion',
+  'vercel.com': 'Vercel',
+  'netlify.com': 'Netlify',
+  'aws.amazon.com': 'AWS',
+  'docs.google.com': 'Google Docs',
+  'drive.google.com': 'Google Drive',
+  'support.google.com': 'Google Support',
+  'developer.mozilla.org': 'MDN Web Docs',
+  'wikipedia.org': 'Wikipedia',
+  'en.wikipedia.org': 'Wikipedia',
+  'npmjs.com': 'npm',
+  'tailwindcss.com': 'Tailwind CSS',
+  'reactjs.org': 'React',
+  'react.dev': 'React',
+  'nextjs.org': 'Next.js',
+  'typescriptlang.org': 'TypeScript',
+  'freepik.com': 'Freepik',
+  'unsplash.com': 'Unsplash',
+  'pexels.com': 'Pexels',
+  'canva.com': 'Canva',
+  'adobe.com': 'Adobe',
+  'help.adobe.com': 'Adobe Help',
+  'hubspot.com': 'HubSpot',
+  'blog.hubspot.com': 'HubSpot Blog',
+  'mailchimp.com': 'Mailchimp',
+  'intercom.com': 'Intercom',
+  'stripe.com': 'Stripe',
+  'shopify.com': 'Shopify',
+  'webflow.com': 'Webflow',
+  'wix.com': 'Wix',
+  'squarespace.com': 'Squarespace',
+  'wordpress.com': 'WordPress',
+  'wordpress.org': 'WordPress',
+  'producthunt.com': 'Product Hunt',
+  'techcrunch.com': 'TechCrunch',
+  'theverge.com': 'The Verge',
+  'wired.com': 'WIRED',
+  'arstechnica.com': 'Ars Technica',
+  'smashingmagazine.com': 'Smashing Magazine',
+  'css-tricks.com': 'CSS-Tricks',
+  'uxdesign.cc': 'UX Collective',
+  'nngroup.com': 'Nielsen Norman Group',
+  'lawsofux.com': 'Laws of UX',
+  'designsystems.com': 'Design Systems',
+  'alistapart.com': 'A List Apart',
+  'sitepoint.com': 'SitePoint',
+  'creativebloq.com': 'Creative Bloq',
+  'designmodo.com': 'Designmodo',
+  'invisionapp.com': 'InVision',
+  'sketch.com': 'Sketch',
+  'principle.app': 'Principle',
+  'framer.com': 'Framer',
+  'zeplin.io': 'Zeplin',
+  'abstract.com': 'Abstract',
+  'miro.com': 'Miro',
+  'figjam.com': 'FigJam',
+  'loom.com': 'Loom',
+  'asana.com': 'Asana',
+  'trello.com': 'Trello',
+  'monday.com': 'Monday.com',
+  'slack.com': 'Slack',
+  'discord.com': 'Discord',
+  'zoom.us': 'Zoom',
+  'meet.google.com': 'Google Meet',
+  'teams.microsoft.com': 'Microsoft Teams',
+  'startupspells.com': 'Startup Spells',
+  'foreplay.co': 'Foreplay',
+  'orenjohn.com': 'Oren John',
+};
+
+// Helper to get a friendly site name from hostname
+function getSiteName(hostname: string): string {
+  // Check exact match first
+  if (SITE_NAME_MAPPINGS[hostname]) {
+    return SITE_NAME_MAPPINGS[hostname];
+  }
+  
+  // Check for subdomain matches (e.g., blog.example.com → example.com)
+  const parts = hostname.split('.');
+  if (parts.length > 2) {
+    const baseDomain = parts.slice(-2).join('.');
+    if (SITE_NAME_MAPPINGS[baseDomain]) {
+      return SITE_NAME_MAPPINGS[baseDomain];
+    }
+  }
+  
+  // Format the hostname nicely (e.g., "example-site.com" → "Example Site")
+  const domainName = hostname.replace(/\.(com|org|net|io|co|app|dev|ai|xyz|me|tv|cc)$/i, '');
+  return domainName
+    .split(/[.-]/)
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 // Helper to extract a readable title from URL path
 function extractTitleFromUrl(url: string): string {
   try {
     const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, '');
     const pathname = parsed.pathname;
+    const siteName = getSiteName(hostname);
     
-    // If path is just "/" or empty, use the hostname
+    // If path is just "/" or empty, return the site name
     if (!pathname || pathname === '/') {
-      return extractHostname(url);
+      return siteName;
     }
     
-    // Get the last meaningful segment of the path
+    // Get the path segments
     const segments = pathname.split('/').filter(Boolean);
     if (segments.length === 0) {
-      return extractHostname(url);
+      return siteName;
     }
     
-    // Take the last segment and clean it up
+    // Handle YouTube videos
+    if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+      const videoId = parsed.searchParams.get('v') || segments[segments.length - 1];
+      // Can't get actual title without API call, but indicate it's a video
+      if (segments.includes('watch') || hostname.includes('youtu.be')) {
+        return 'YouTube Video';
+      }
+      if (segments.includes('channel') || segments.includes('c') || segments.includes('@')) {
+        const channelName = segments[segments.length - 1].replace('@', '');
+        return `YouTube: ${channelName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`;
+      }
+      return 'YouTube';
+    }
+    
+    // Handle GitHub repos
+    if (hostname === 'github.com' && segments.length >= 2) {
+      const [owner, repo] = segments;
+      if (repo && !['settings', 'issues', 'pulls', 'actions', 'projects', 'wiki', 'security', 'pulse', 'graphs'].includes(repo)) {
+        return `${owner}/${repo}`;
+      }
+    }
+    
+    // Handle Medium articles
+    if (hostname.includes('medium.com')) {
+      const lastSegment = segments[segments.length - 1];
+      // Medium URLs often have the title in the last segment
+      if (lastSegment && lastSegment.length > 10) {
+        // Remove the hash at the end of Medium URLs
+        const cleanSegment = lastSegment.replace(/-[a-f0-9]+$/, '');
+        const title = cleanSegment.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        return title.length > 60 ? title.substring(0, 57) + '...' : title;
+      }
+    }
+    
+    // Handle Reddit
+    if (hostname.includes('reddit.com')) {
+      if (segments.includes('r') && segments.length > 1) {
+        const subredditIndex = segments.indexOf('r');
+        const subreddit = segments[subredditIndex + 1];
+        if (segments.includes('comments') && segments.length > subredditIndex + 4) {
+          const titleSegment = segments[subredditIndex + 4] || segments[segments.length - 1];
+          const title = titleSegment.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          return `r/${subreddit}: ${title.substring(0, 40)}${title.length > 40 ? '...' : ''}`;
+        }
+        return `r/${subreddit}`;
+      }
+    }
+    
+    // Handle Wikipedia
+    if (hostname.includes('wikipedia.org')) {
+      if (segments.includes('wiki') && segments.length > 1) {
+        const wikiIndex = segments.indexOf('wiki');
+        const article = segments[wikiIndex + 1];
+        if (article) {
+          return decodeURIComponent(article.replace(/_/g, ' '));
+        }
+      }
+    }
+    
+    // Handle Stack Overflow
+    if (hostname.includes('stackoverflow.com')) {
+      if (segments.includes('questions') && segments.length > 2) {
+        const questionIndex = segments.indexOf('questions');
+        const titleSegment = segments[questionIndex + 2];
+        if (titleSegment) {
+          const title = titleSegment.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          return title.length > 60 ? title.substring(0, 57) + '...' : title;
+        }
+      }
+    }
+    
+    // Generic path parsing - take the last meaningful segment
     let title = segments[segments.length - 1];
     
     // Remove file extensions
-    title = title.replace(/\.(html?|php|aspx?|jsp)$/i, '');
+    title = title.replace(/\.(html?|php|aspx?|jsp|md|txt)$/i, '');
+    
+    // Remove common URL suffixes like hashes or query strings that made it into the path
+    title = title.replace(/-[a-f0-9]{8,}$/i, ''); // Remove hash-like suffixes
+    title = title.replace(/\?.*$/, ''); // Remove query params
     
     // Replace hyphens and underscores with spaces
     title = title.replace(/[-_]/g, ' ');
@@ -457,19 +645,29 @@ function extractTitleFromUrl(url: string): string {
     // Decode URL encoding
     title = decodeURIComponent(title);
     
-    // Capitalize first letter of each word
+    // Capitalize words
     title = title.replace(/\b\w/g, c => c.toUpperCase());
     
-    // If title is too short, include more of the path
-    if (title.length < 10 && segments.length > 1) {
-      title = segments.slice(-2).join(' / ').replace(/[-_]/g, ' ');
-      title = decodeURIComponent(title);
-      title = title.replace(/\b\w/g, c => c.toUpperCase());
+    // If title is too short or generic, include more context
+    if (title.length < 8 && segments.length > 1) {
+      const contextSegment = segments[segments.length - 2];
+      const context = contextSegment.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      title = `${context}: ${title}`;
     }
     
-    return title || extractHostname(url);
+    // If still too short or looks like an ID, prepend site name
+    if (title.length < 5 || /^[a-f0-9-]+$/i.test(title.replace(/\s/g, ''))) {
+      return `${siteName} Article`;
+    }
+    
+    // Truncate if too long
+    if (title.length > 70) {
+      title = title.substring(0, 67) + '...';
+    }
+    
+    return title || siteName;
   } catch {
-    return 'Web Page';
+    return 'Web Article';
   }
 }
 
@@ -481,6 +679,36 @@ function getFaviconUrl(url: string): string {
   } catch {
     return '';
   }
+}
+
+// Helper to extract relevant snippet from content for a citation
+function extractSnippetForCitation(content: string, citationIndex: number): string {
+  // Look for text near the citation marker [N]
+  const citationMarker = `[${citationIndex}]`;
+  const markerIndex = content.indexOf(citationMarker);
+  
+  if (markerIndex === -1) {
+    // No marker found, try to get context from the beginning
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20);
+    if (sentences.length > citationIndex - 1) {
+      const sentence = sentences[citationIndex - 1]?.trim();
+      if (sentence) {
+        return sentence.length > 150 ? sentence.substring(0, 147) + '...' : sentence;
+      }
+    }
+    return '';
+  }
+  
+  // Get surrounding text (look back for the sentence)
+  const textBefore = content.substring(Math.max(0, markerIndex - 200), markerIndex);
+  const sentences = textBefore.split(/[.!?]+/);
+  const lastSentence = sentences[sentences.length - 1]?.trim();
+  
+  if (lastSentence && lastSentence.length > 20) {
+    return lastSentence.length > 150 ? lastSentence.substring(0, 147) + '...' : lastSentence;
+  }
+  
+  return '';
 }
 
 async function streamWithPerplexityNative(
@@ -512,34 +740,41 @@ async function streamWithPerplexityNative(
           stream: false,
         });
 
-        // Extract citations from the response
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rawCitations = (citationResponse as any).citations || [];
-        const sources: SourceData[] = rawCitations.map((url: string, index: number) => ({
-          id: `perplexity-${index}`,
-          name: extractHostname(url),
-          url: url,
-          title: extractTitleFromUrl(url),
-          favicon: getFaviconUrl(url),
-          type: 'external' as const,
-        }));
-
-        // Get the full response content
+        // Get the full response content first (needed for snippet extraction)
         const fullContent = citationResponse.choices?.[0]?.message?.content || '';
 
-        // Stream the content character by character for smooth UX
-        // We'll send it in chunks for better performance
+        // Extract citations from the response with enriched metadata
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rawCitations = (citationResponse as any).citations || [];
+        const sources: SourceData[] = rawCitations.map((url: string, index: number) => {
+          const hostname = extractHostname(url);
+          const siteName = getSiteName(hostname);
+          const extractedTitle = extractTitleFromUrl(url);
+          const snippet = extractSnippetForCitation(fullContent, index + 1);
+          
+          return {
+            id: `perplexity-${index}`,
+            name: siteName, // Use friendly site name instead of raw hostname
+            url: url,
+            title: extractedTitle,
+            snippet: snippet || undefined, // Context from the response that used this citation
+            favicon: getFaviconUrl(url),
+            type: 'external' as const,
+          };
+        });
+
+        // Stream the content in chunks for smooth UX
         const chunkSize = 20;
         for (let i = 0; i < fullContent.length; i += chunkSize) {
           const chunk = fullContent.slice(i, i + chunkSize);
           controller.enqueue(sse.encode({ type: 'text', content: chunk }));
-          // Small delay to simulate streaming (optional, can be removed for faster delivery)
+          // Small delay to simulate streaming
           await new Promise(resolve => setTimeout(resolve, 5));
         }
 
         // Send sources if we have any
         if (sources.length > 0) {
-          console.log('Perplexity citations found:', sources.length);
+          console.log('Perplexity citations found:', sources.length, sources.map(s => ({ name: s.name, title: s.title })));
           controller.enqueue(sse.encode({ type: 'sources', sources }));
         }
 

@@ -836,44 +836,57 @@ export function ChatInterface() {
             transition={{ duration: 0.4 }}
             className="flex flex-col h-full w-full justify-center"
           >
-            {/* All content in one centered column with equal spacing */}
-            <div className="w-full max-w-3xl mx-auto flex flex-col gap-6">
-              {/* Welcome Header - left aligned */}
-              <WelcomeHeader />
+            {/* Content container - shifted up slightly for better visual balance */}
+            <div className="w-full max-w-3xl mx-auto flex flex-col -mt-8 sm:-mt-12 lg:-mt-16">
+              {/* Welcome Header - stays fixed */}
+              <div className="mb-6">
+                <WelcomeHeader />
+              </div>
               
-              {/* Pre-prompt Cards Grid - fades when typing */}
-              <PrePromptGrid 
-                onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)}
-                isVisible={!input.trim()}
-              />
-              
-              {/* Error display */}
-              <AnimatePresence>
-                {(error || submitError) && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="w-full px-4"
-                  >
-                    <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
-                      <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Error</p>
-                        <p className="mt-1">{error?.message || submitError}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Chat Input - same gap as between other elements */}
-              <motion.div 
-                className="w-full px-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              {/* Carousel and Chat Input wrapper - animated together */}
+              <motion.div
+                className="flex flex-col gap-6"
+                animate={{ 
+                  y: input.trim() ? -20 : 0,
+                }}
+                transition={{ 
+                  duration: 0.4, 
+                  ease: [0.22, 1, 0.36, 1] 
+                }}
               >
+                {/* Pre-prompt Cards Grid - fades when typing */}
+                <PrePromptGrid 
+                  onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)}
+                  isVisible={!input.trim()}
+                />
+                
+                {/* Error display */}
+                <AnimatePresence>
+                  {(error || submitError) && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="w-full px-4"
+                    >
+                      <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
+                        <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">Error</p>
+                          <p className="mt-1">{error?.message || submitError}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Chat Input */}
+                <motion.div 
+                  className="w-full px-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                >
                 <form onSubmit={handleSubmit} className="relative">
                   {/* Hidden file input */}
                   <input
@@ -1080,6 +1093,7 @@ export function ChatInterface() {
                     </div>
                   </div>
                 </form>
+                </motion.div>
               </motion.div>
             </div>
           </motion.div>

@@ -382,15 +382,24 @@ async function streamWithAnthropicNative(
           // This provides real-time feedback instead of blocking until full response
           console.log('Continuing with tool results (streaming):', toolResults.length, 'results');
           
+          // Filter out thinking blocks from response content for the continuation
+          // We need to do this because the thinking blocks from the first response
+          // can't be sent back unless thinking is enabled in the continuation too
+          const filteredResponseContent = response.content.filter(
+            (block: { type: string }) => block.type !== 'thinking'
+          );
+          
           const continueStream = await client.messages.stream({
             model: modelId,
             max_tokens: 16000,
             system: systemPrompt,
             messages: [
               ...anthropicMessages,
-              { role: 'assistant', content: response.content },
+              { role: 'assistant', content: filteredResponseContent },
               { role: 'user', content: toolResults },
             ],
+            // Include thinking config if it was enabled for the original request
+            ...(thinkingConfig ? { thinking: thinkingConfig } : {}),
           });
 
           // Stream the continuation response in real-time

@@ -92,14 +92,19 @@ const allItems = [
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
-// Start from index 0 to show all content from the beginning
-const INITIAL_INDEX = 0;
+// Initial indices per breakpoint to center on 2 folders + 2 icons:
+// - Desktop (4 visible): index 2 → Colors, Spaces, Create a post, Plan a campaign
+// - Tablet (3 visible): index 2 → Colors, Spaces, Create a post  
+// - Mobile (2 visible): index 3 → Spaces, Create a post
+const INITIAL_INDEX_DESKTOP = 2;
+const INITIAL_INDEX_TABLET = 2;
+const INITIAL_INDEX_MOBILE = 3;
 
 // Swipe threshold in pixels
 const SWIPE_THRESHOLD = 50;
 
 export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGridProps) {
-  const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX);
+  const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX_DESKTOP);
   const [visibleCount, setVisibleCount] = useState(4); // Default to desktop
   
   // Touch handling state
@@ -107,7 +112,7 @@ export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGri
   const touchEndX = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Adjust visible count based on screen size
+  // Adjust visible count and initial index based on screen size
   useEffect(() => {
     const updateLayout = () => {
       const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -122,8 +127,20 @@ export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGri
       }
     };
     
-    // Set initial values
-    updateLayout();
+    // Set initial values based on screen size
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+    
+    if (isMobile) {
+      setVisibleCount(2);
+      setCurrentIndex(INITIAL_INDEX_MOBILE);
+    } else if (isTablet) {
+      setVisibleCount(3);
+      setCurrentIndex(INITIAL_INDEX_TABLET);
+    } else {
+      setVisibleCount(4);
+      setCurrentIndex(INITIAL_INDEX_DESKTOP);
+    }
     
     // Listen for resize
     window.addEventListener('resize', updateLayout);
@@ -186,49 +203,35 @@ export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGri
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-3xl mx-auto px-4"
         >
-          {/* Carousel container - touch-enabled */}
+          {/* Carousel with arrows outside - flex row layout */}
           <div 
             ref={containerRef}
-            className="relative"
+            className="flex items-center gap-3"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            {/* Cards container - full width to match welcome text */}
+            {/* Left arrow - outside cards */}
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex <= 0}
+              className={`shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+                currentIndex > 0 
+                  ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
+                  : 'opacity-30 cursor-not-allowed'
+              }`}
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
+            </button>
+
+            {/* Cards container */}
             <div 
-              className="overflow-hidden touch-pan-y relative"
+              className="flex-1 overflow-hidden touch-pan-y"
               role="region"
               aria-label="Quick action cards"
               aria-live="polite"
             >
-              {/* Left arrow - overlaid on cards */}
-              <button
-                onClick={handlePrev}
-                disabled={currentIndex <= 0}
-                className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 shadow-md ${
-                  currentIndex > 0 
-                    ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
-                    : 'opacity-0 pointer-events-none'
-                }`}
-                aria-label="Previous slide"
-              >
-                <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
-              </button>
-
-              {/* Right arrow - overlaid on cards */}
-              <button
-                onClick={handleNext}
-                disabled={currentIndex >= maxIndex}
-                className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 shadow-md ${
-                  currentIndex < maxIndex 
-                    ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
-                    : 'opacity-0 pointer-events-none'
-                }`}
-                aria-label="Next slide"
-              >
-                <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
-              </button>
-
               <div 
                 className="flex gap-3 transition-transform duration-300 ease-out will-change-transform"
                 style={{
@@ -263,30 +266,44 @@ export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGri
                 ))}
               </div>
             </div>
+
+            {/* Right arrow - outside cards */}
+            <button
+              onClick={handleNext}
+              disabled={currentIndex >= maxIndex}
+              className={`shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+                currentIndex < maxIndex 
+                  ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
+                  : 'opacity-30 cursor-not-allowed'
+              }`}
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+            </button>
           </div>
 
-        {/* Progress dots - unified */}
-        <div 
-          className="flex justify-center gap-1.5 mt-3 sm:mt-4"
-          role="tablist"
-          aria-label="Carousel navigation"
-        >
-          {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              role="tab"
-              aria-selected={idx === currentIndex}
-              aria-label={`Go to slide ${idx + 1} of ${maxIndex + 1}`}
-              className={`h-1.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2 ${
-                idx === currentIndex 
-                  ? 'bg-[var(--color-brand-500)] w-4' 
-                  : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
-              }`}
-            />
-          ))}
-        </div>
-      </motion.div>
+          {/* Progress dots */}
+          <div 
+            className="flex justify-center gap-1.5 mt-3 sm:mt-4"
+            role="tablist"
+            aria-label="Carousel navigation"
+          >
+            {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                role="tab"
+                aria-selected={idx === currentIndex}
+                aria-label={`Go to slide ${idx + 1} of ${maxIndex + 1}`}
+                className={`h-1.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2 ${
+                  idx === currentIndex 
+                    ? 'bg-[var(--color-brand-500)] w-4' 
+                    : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
+                }`}
+              />
+            ))}
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

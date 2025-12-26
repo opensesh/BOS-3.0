@@ -9,7 +9,6 @@ import {
   LayoutGrid,
   ScanFace,
   BrainCog,
-  Bell,
   MessageSquare,
   Plus,
   ChevronDown,
@@ -27,7 +26,6 @@ import {
   Layers,
   FolderPlus,
   ArrowRight,
-  HelpCircle,
 } from 'lucide-react';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
@@ -36,13 +34,12 @@ import { useChatContext } from '@/lib/chat-context';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { useSidebar, SidebarMode, SIDEBAR_WIDTH_EXPANDED, SIDEBAR_WIDTH_COLLAPSED } from '@/lib/sidebar-context';
 import { useSpaces } from '@/hooks/useSpaces';
-import { overlayFade, slideFromRight, staggerContainerFast, fadeInUp } from '@/lib/motion';
 import { NavigationDrawer } from './NavigationDrawer';
 import { 
-  ThemeSegmentedControl, 
   MobileAccountPanel, 
   MobileNotificationsPanel, 
-  MobileHelpPanel 
+  MobileHelpPanel,
+  MobileFullScreenMenu,
 } from './mobile';
 
 // Navigation structure with subitems
@@ -85,8 +82,6 @@ const navItems = [
     subItems: [] // Dynamic - populated from useSpaces
   },
 ];
-
-const VISIBLE_CHAT_COUNT = 3;
 
 // Helper to determine which section should be expanded based on pathname
 function getActiveSectionFromPathname(pathname: string): string | null {
@@ -469,11 +464,10 @@ function CollapsedFlyout({
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isMobileMenuOpen, closeMobileMenu, openPanel } = useMobileMenu();
+  const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu();
   const { sidebarMode, setIsSidebarHovered, sidebarWidth } = useSidebar();
   const [hoveredItem, setHoveredItem] = useState<typeof navItems[0] | null>(null);
   const [hoveredAnchorRect, setHoveredAnchorRect] = useState<DOMRect | null>(null);
-  const [isChatsExpanded, setIsChatsExpanded] = useState(false);
   const [isFlyoutHovered, setIsFlyoutHovered] = useState(false);
   // For hover mode - NavigationDrawer
   const [drawerItem, setDrawerItem] = useState<string | null>(null);
@@ -483,6 +477,17 @@ export function Sidebar() {
   const { chatHistory, triggerChatReset, loadSession, projects } = useChatContext();
   const router = useRouter();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
+  
+  // #region agent log
+  if (typeof window !== 'undefined') {
+    const emptyChats = chatHistory.filter(c => !c.id || c.id === '');
+    const emptyProjects = projects.filter(p => !p.id || p.id === '');
+    const emptySpaces = userSpaces.filter(s => !s.id || s.id === '');
+    if (emptyChats.length > 0 || emptyProjects.length > 0 || emptySpaces.length > 0) {
+      fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Sidebar.tsx:render',message:'Found items with empty IDs',data:{emptyChats:emptyChats.length,emptyProjects:emptyProjects.length,emptySpaces:emptySpaces.length,chatHistoryTotal:chatHistory.length,projectsTotal:projects.length,spacesTotal:userSpaces.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B-C-E'})}).catch(()=>{});
+    }
+  }
+  // #endregion
 
   // For expanded mode: only expand the section containing the current page
   const [expandedSections, setExpandedSections] = useState<string[]>(() => {
@@ -509,12 +514,6 @@ export function Sidebar() {
     }
     closeMobileMenu();
   }, [pathname, triggerChatReset, closeMobileMenu]);
-
-  useEffect(() => {
-    if (!isMobileMenuOpen) {
-      setIsChatsExpanded(false);
-    }
-  }, [isMobileMenuOpen]);
 
   const toggleSection = (label: string) => {
     setExpandedSections(prev => 
@@ -611,20 +610,6 @@ export function Sidebar() {
 
       {/* Mobile Header */}
       <MobileHeader onBrandClick={handleHomeClick} />
-
-      {/* Mobile Overlay */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            className="fixed inset-0 top-14 bg-[var(--bg-overlay)] z-40 lg:hidden"
-            onClick={closeMobileMenu}
-            variants={overlayFade}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          />
-        )}
-      </AnimatePresence>
 
       {/* Desktop Navigation Sidebar */}
       <aside
@@ -913,181 +898,13 @@ export function Sidebar() {
         />
       )}
 
-      {/* Mobile Drawer */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.aside
-            className="fixed lg:hidden top-14 bottom-0 right-0 z-40 w-80 max-w-[85vw] bg-[var(--bg-secondary)] border-l border-[var(--border-secondary)] flex flex-col"
-            variants={slideFromRight}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            role="dialog"
-            aria-label="Mobile navigation"
-          >
-            <motion.div 
-              className="flex-1 overflow-y-auto"
-              variants={staggerContainerFast}
-              initial="hidden"
-              animate="visible"
-            >
-              {/* New Chat Button */}
-              <motion.div variants={fadeInUp} className="p-4">
-                <Link
-                  href="/"
-                  onClick={handleNewChat}
-                  className="
-                    w-full flex items-center space-x-3
-                    py-3 px-4 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] 
-                    text-[var(--fg-primary)] rounded-lg font-medium border border-[var(--border-secondary)]
-                    transition-all hover:shadow-lg
-                  "
-                >
-                  <Plus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-                  <span>New Chat</span>
-                </Link>
-              </motion.div>
-
-              {/* Recent Chats */}
-              {chatHistory.length > 0 && (
-                <motion.div variants={fadeInUp} className="px-4 pb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
-                      Recent
-                    </p>
-                    {chatHistory.length > VISIBLE_CHAT_COUNT && (
-                      <button
-                        onClick={() => setIsChatsExpanded(!isChatsExpanded)}
-                        className="text-xs text-[var(--fg-brand-primary)] hover:text-[var(--fg-brand-secondary)] transition-colors flex items-center gap-1"
-                      >
-                        {isChatsExpanded ? 'Show less' : `+${chatHistory.length - VISIBLE_CHAT_COUNT} more`}
-                        <motion.div
-                          animate={{ rotate: isChatsExpanded ? 180 : 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <ChevronDown className="w-3 h-3" />
-                        </motion.div>
-                      </button>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <AnimatePresence initial={false}>
-                      {(isChatsExpanded ? chatHistory : chatHistory.slice(0, VISIBLE_CHAT_COUNT)).map((chat, index) => (
-                        <motion.button
-                          key={chat.id}
-                          initial={index >= VISIBLE_CHAT_COUNT ? { opacity: 0, height: 0 } : false}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2, ease: 'easeInOut' }}
-                          onClick={() => {
-                            loadSession(chat.id);
-                            if (pathname !== '/') {
-                              router.push('/');
-                            }
-                            closeMobileMenu();
-                          }}
-                          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
-                        >
-                          <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-sm truncate">{chat.title}</span>
-                        </motion.button>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Navigation Items */}
-              <nav className="px-3 space-y-1">
-                {navItems.map((item, index) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href || 
-                    (item.href !== '/' && pathname.startsWith(item.href));
-                  
-                  return (
-                    <motion.div key={item.href} variants={fadeInUp} custom={index}>
-                      <Link
-                        href={item.href}
-                        onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
-                        className={`
-                          flex items-center space-x-3 px-3 py-3 rounded-lg
-                          transition-all duration-200
-                          ${isActive
-                            ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]'
-                            : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                          }
-                        `}
-                      >
-                        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
-                        <span className="font-medium">{item.label}</span>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </nav>
-
-              {/* Bottom Section - Notifications, Help, Theme, Account */}
-              <motion.div variants={fadeInUp} className="border-t border-[var(--border-secondary)] mt-4 pt-3 px-3 pb-4 space-y-1">
-                {/* Notifications */}
-                <button 
-                  onClick={() => openPanel('notifications')}
-                  className="w-full flex items-center justify-between px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-all duration-200"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Bell className="w-5 h-5" />
-                    <span className="font-medium">Notifications</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
-                </button>
-
-                {/* Help */}
-                <button 
-                  onClick={() => openPanel('help')}
-                  className="w-full flex items-center justify-between px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-all duration-200"
-                >
-                  <div className="flex items-center space-x-3">
-                    <HelpCircle className="w-5 h-5" />
-                    <span className="font-medium">Help</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
-                </button>
-
-                {/* Theme Toggle */}
-                <div className="px-3 py-2">
-                  <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2">
-                    Appearance
-                  </p>
-                  <ThemeSegmentedControl />
-                </div>
-
-                {/* Account */}
-                <button 
-                  onClick={() => openPanel('account')}
-                  className="w-full flex items-center justify-between px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] transition-all duration-200"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-mono">A</span>
-                    </div>
-                    <div className="text-left">
-                      <p className="text-[var(--fg-primary)] font-medium text-sm">Account</p>
-                      <p className="text-[var(--fg-tertiary)] text-xs">Manage settings</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
-                </button>
-              </motion.div>
-            </motion.div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+      {/* Mobile Full-Screen Menu */}
+      <MobileFullScreenMenu />
 
       {/* Mobile Full-Screen Panels */}
-      <AnimatePresence>
-        <MobileAccountPanel />
-        <MobileNotificationsPanel />
-        <MobileHelpPanel />
-      </AnimatePresence>
+      <MobileAccountPanel />
+      <MobileNotificationsPanel />
+      <MobileHelpPanel />
     </>
   );
 }

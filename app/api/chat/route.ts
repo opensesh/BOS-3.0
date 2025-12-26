@@ -938,16 +938,24 @@ export async function POST(req: Request) {
       discover: true,
     };
     
-    // Default options - tools enabled by default for web search capability
+    // Default options - tools (web search) enabled ONLY if web connector is enabled
+    // This ensures user settings are respected: if they turn off web search, we don't search the web
     const chatOptions: ChatOptions = {
       enableThinking: extendedThinking ?? options.enableThinking ?? false, // Use extendedThinking from UI
       thinkingBudget: options.thinkingBudget ?? DEFAULT_THINKING_BUDGET,
-      enableTools: options.enableTools ?? true, // Enabled by default for web search
+      enableTools: activeConnectors.web && (options.enableTools ?? true), // Only enable tools if web search is enabled
       writingStyle: writingStyle ?? options.writingStyle ?? null, // Writing style from UI
     };
     
     console.log('Active connectors:', activeConnectors);
     console.log('Chat options:', chatOptions);
+    console.log('Web search enabled:', activeConnectors.web);
+    
+    // If web search is disabled but user selected 'sonar' (web search model), 
+    // fall back to Claude since we can't honor their request without web access
+    if (!activeConnectors.web && model === 'sonar') {
+      console.log('Web search disabled but sonar model requested - falling back to claude-sonnet');
+    }
     
     // Enrich article context
     let enrichedContext = context;
@@ -994,8 +1002,15 @@ export async function POST(req: Request) {
       return acc;
     }, []);
 
-    // Select model
-    const selectedModel: ModelId = model === 'auto' ? autoSelectModel(validatedMessages) : (model as ModelId) || 'claude-sonnet';
+    // Select model - respect web search settings
+    let selectedModel: ModelId = model === 'auto' ? autoSelectModel(validatedMessages) : (model as ModelId) || 'claude-sonnet';
+    
+    // If web search is disabled, don't use Perplexity/Sonar models (they're web search models)
+    // Fall back to Claude Sonnet instead
+    if (!activeConnectors.web && isPerplexityModel(selectedModel)) {
+      console.log(`Web search disabled - switching from ${selectedModel} to claude-sonnet`);
+      selectedModel = 'claude-sonnet';
+    }
 
     // Validate API key
     const keyCheck = hasRequiredApiKey(selectedModel);

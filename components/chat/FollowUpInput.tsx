@@ -42,11 +42,7 @@ export function FollowUpInput({
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Data sources state
-  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
-  const [brandSearchEnabled, setBrandSearchEnabled] = useState(true);
-
-  // Get context values for projects, writing style, and extended thinking
+  // Get context values for projects, writing style, extended thinking, and data connectors
   const {
     projects,
     currentProject,
@@ -56,6 +52,11 @@ export function FollowUpInput({
     setCurrentWritingStyle,
     extendedThinkingEnabled,
     setExtendedThinkingEnabled,
+    // Data connectors (from context for persistence across conversation)
+    webSearchEnabled,
+    setWebSearchEnabled,
+    brandSearchEnabled,
+    setBrandSearchEnabled,
   } = useChatContext();
 
   // Handle project creation

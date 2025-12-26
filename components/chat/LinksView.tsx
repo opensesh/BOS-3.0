@@ -32,6 +32,9 @@ const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps) {
+  // #region agent log
+  sources.forEach((s, i) => { if ((!s.id || s.id === '') && (!s.url || s.url === '')) fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LinksView.tsx:render',message:'Source with empty id AND url',data:{index:i,id:s.id,url:s.url,name:s.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{}); });
+  // #endregion
   // Separate sources by type
   const { discoverSources, webSources } = useMemo(() => {
     const discover: SourceInfo[] = [];

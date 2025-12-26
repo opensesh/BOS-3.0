@@ -48,6 +48,11 @@ interface ChatContextValue {
   // Extended thinking
   extendedThinkingEnabled: boolean;
   setExtendedThinkingEnabled: (enabled: boolean) => void;
+  // Data connectors (web search, brand search)
+  webSearchEnabled: boolean;
+  setWebSearchEnabled: (enabled: boolean) => void;
+  brandSearchEnabled: boolean;
+  setBrandSearchEnabled: (enabled: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -69,6 +74,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [currentWritingStyle, setCurrentWritingStyle] = useState<WritingStyle | null>(null);
   // Extended thinking state (per conversation)
   const [extendedThinkingEnabled, setExtendedThinkingEnabled] = useState(false);
+  // Data connector settings (persist across conversation)
+  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
+  const [brandSearchEnabled, setBrandSearchEnabled] = useState(true);
 
   // Load chat history from Supabase on mount
   const loadHistory = useCallback(async () => {
@@ -82,6 +90,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         timestamp: new Date(session.updated_at),
         messages: session.messages,
       }));
+      // #region agent log
+      historyItems.forEach((item, i) => { if (!item.id || item.id === '') fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-context.tsx:loadHistory',message:'Empty chat history ID detected',data:{index:i,id:item.id,title:item.title},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{}); });
+      // #endregion
       setChatHistory(historyItems);
     } catch (error) {
       console.error('Error loading chat history:', error);
@@ -103,6 +114,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setIsLoadingProjects(true);
     try {
       const loadedProjects = await projectsService.getProjects();
+      // #region agent log
+      loadedProjects.forEach((p, i) => { if (!p.id || p.id === '') fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-context.tsx:loadProjects',message:'Empty project ID detected',data:{index:i,id:p.id,name:p.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{}); });
+      // #endregion
       setProjects(loadedProjects);
     } catch (error) {
       console.error('Error loading projects:', error);
@@ -298,6 +312,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       // Extended thinking
       extendedThinkingEnabled,
       setExtendedThinkingEnabled,
+      // Data connectors
+      webSearchEnabled,
+      setWebSearchEnabled,
+      brandSearchEnabled,
+      setBrandSearchEnabled,
     }}>
       {children}
     </ChatContext.Provider>

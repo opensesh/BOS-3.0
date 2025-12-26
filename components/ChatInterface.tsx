@@ -78,9 +78,6 @@ export function ChatInterface() {
   const [articleContext, setArticleContext] = useState<ArticleContext | null>(null);
   const [ideaContext, setIdeaContext] = useState<IdeaContext | null>(null);
   const [hasProcessedUrlParams, setHasProcessedUrlParams] = useState(false);
-  // Simplified data sources: web and brand only
-  const [webSearchEnabled, setWebSearchEnabled] = useState(true);
-  const [brandSearchEnabled, setBrandSearchEnabled] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -108,6 +105,11 @@ export function ChatInterface() {
     // Extended thinking
     extendedThinkingEnabled,
     setExtendedThinkingEnabled,
+    // Data connectors (from context for persistence)
+    webSearchEnabled,
+    setWebSearchEnabled,
+    brandSearchEnabled,
+    setBrandSearchEnabled,
   } = useChatContext();
 
 
@@ -649,6 +651,9 @@ export function ChatInterface() {
 
   // Parse messages into our format
   const parsedMessages: ParsedMessage[] = useMemo(() => {
+    // #region agent log
+    messages.forEach((m, i) => { if (!m.id || m.id === '') fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:parsedMessages',message:'Empty message ID detected',data:{index:i,id:m.id,role:m.role},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{}); });
+    // #endregion
     return messages.map((message) => {
       // Extract extended data from the message if available
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

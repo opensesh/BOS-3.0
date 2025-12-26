@@ -704,7 +704,7 @@ export function ChatInterface() {
       <BackgroundGradient fadeOut={hasMessages} />
       {hasMessages && <div className="fixed inset-x-0 bottom-0 top-14 lg:top-12 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)]" />}
 
-      <div className={`fixed inset-x-0 bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,top] duration-200 ease-out ${hasMessages ? '' : 'items-center pt-8 lg:pt-16'}`}>
+      <div className={`fixed inset-x-0 bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,top] duration-200 ease-out ${hasMessages ? '' : 'items-center'}`}>
         {/* Chat Mode */}
         {hasMessages && (
           <div className="flex flex-col h-full">
@@ -834,10 +834,10 @@ export function ChatInterface() {
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="flex flex-col h-full w-full"
+            className="flex flex-col h-full w-full justify-center"
           >
-            {/* Top Content Area */}
-            <div className="flex flex-col items-center">
+            {/* Centered Content Area */}
+            <div className="flex flex-col items-center justify-center flex-1 pb-4 sm:pb-8">
               {/* Welcome Header */}
               <WelcomeHeader />
               
@@ -863,11 +863,8 @@ export function ChatInterface() {
               />
             </div>
 
-            {/* Spacer to push input to bottom */}
-            <div className="flex-1 min-h-8" />
-
-            {/* Input Area - Fixed at bottom */}
-            <motion.div className="w-full pb-6" variants={fadeInUp}>
+            {/* Input Area - Anchored at bottom */}
+            <motion.div className="w-full pb-4 sm:pb-6 mt-auto shrink-0" variants={fadeInUp}>
               <div className="max-w-3xl mx-auto px-4">
                 <form onSubmit={handleSubmit} className="relative">
                   {/* Hidden file input */}
@@ -887,13 +884,14 @@ export function ChatInterface() {
 
                   <div
                     className={`
-                      relative bg-[var(--bg-secondary)]/80 backdrop-blur-xl rounded-xl
+                      relative rounded-xl
                       border transition-all duration-200
+                      bg-[var(--bg-secondary)] shadow-sm
                       ${isDragging
-                        ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20'
+                        ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20 ring-2 ring-[var(--border-brand-solid)]/30'
                         : isFocused
-                          ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20'
-                          : 'border-[var(--border-primary)] hover:border-[var(--border-primary)]/60'
+                          ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20 ring-2 ring-[var(--border-brand-solid)]/30'
+                          : 'border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]'
                       }
                     `}
                     onDragOver={handleDragOver}

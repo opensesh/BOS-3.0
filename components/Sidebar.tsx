@@ -27,6 +27,7 @@ import {
   Layers,
   FolderPlus,
   ArrowRight,
+  HelpCircle,
 } from 'lucide-react';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
@@ -37,6 +38,12 @@ import { useSidebar, SidebarMode, SIDEBAR_WIDTH_EXPANDED, SIDEBAR_WIDTH_COLLAPSE
 import { useSpaces } from '@/hooks/useSpaces';
 import { overlayFade, slideFromRight, staggerContainerFast, fadeInUp } from '@/lib/motion';
 import { NavigationDrawer } from './NavigationDrawer';
+import { 
+  ThemeSegmentedControl, 
+  MobileAccountPanel, 
+  MobileNotificationsPanel, 
+  MobileHelpPanel 
+} from './mobile';
 
 // Navigation structure with subitems
 const navItems = [
@@ -462,7 +469,7 @@ function CollapsedFlyout({
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu();
+  const { isMobileMenuOpen, closeMobileMenu, openPanel } = useMobileMenu();
   const { sidebarMode, setIsSidebarHovered, sidebarWidth } = useSidebar();
   const [hoveredItem, setHoveredItem] = useState<typeof navItems[0] | null>(null);
   const [hoveredAnchorRect, setHoveredAnchorRect] = useState<DOMRect | null>(null);
@@ -1019,27 +1026,67 @@ export function Sidebar() {
                 })}
               </nav>
 
-              <motion.div variants={fadeInUp} className="border-t border-[var(--border-secondary)] my-4" />
-
-              <motion.div variants={fadeInUp} className="px-3 space-y-1">
-                <button className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-all duration-200">
-                  <Bell className="w-5 h-5" />
-                  <span className="font-medium">Notifications</span>
+              {/* Bottom Section - Notifications, Help, Theme, Account */}
+              <motion.div variants={fadeInUp} className="border-t border-[var(--border-secondary)] mt-4 pt-3 px-3 pb-4 space-y-1">
+                {/* Notifications */}
+                <button 
+                  onClick={() => openPanel('notifications')}
+                  className="w-full flex items-center justify-between px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-all duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Bell className="w-5 h-5" />
+                    <span className="font-medium">Notifications</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
                 </button>
 
-                <button className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] transition-all duration-200">
-                  <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-mono">A</span>
+                {/* Help */}
+                <button 
+                  onClick={() => openPanel('help')}
+                  className="w-full flex items-center justify-between px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-all duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <HelpCircle className="w-5 h-5" />
+                    <span className="font-medium">Help</span>
                   </div>
-                  <div className="text-left">
-                    <p className="text-[var(--fg-primary)] font-medium text-sm">Account</p>
-                    <p className="text-[var(--fg-tertiary)] text-xs">Manage settings</p>
+                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
+                </button>
+
+                {/* Theme Toggle */}
+                <div className="px-3 py-2">
+                  <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2">
+                    Appearance
+                  </p>
+                  <ThemeSegmentedControl />
+                </div>
+
+                {/* Account */}
+                <button 
+                  onClick={() => openPanel('account')}
+                  className="w-full flex items-center justify-between px-3 py-3 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] transition-all duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs font-mono">A</span>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-[var(--fg-primary)] font-medium text-sm">Account</p>
+                      <p className="text-[var(--fg-tertiary)] text-xs">Manage settings</p>
+                    </div>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
                 </button>
               </motion.div>
             </motion.div>
           </motion.aside>
         )}
+      </AnimatePresence>
+
+      {/* Mobile Full-Screen Panels */}
+      <AnimatePresence>
+        <MobileAccountPanel />
+        <MobileNotificationsPanel />
+        <MobileHelpPanel />
       </AnimatePresence>
     </>
   );

@@ -6,56 +6,35 @@ import { ChevronRight, ChevronDown, Loader2, Globe, Brain, Wrench, Calculator, C
 import { ThinkingDotFlow } from '@/components/ui/dot-flow';
 import type { ToolCall } from '@/hooks/useChat';
 
-// Tool name to icon and description mapping
+// Tool name to icon and label mapping (descriptions removed for cleaner UI)
 const toolConfig: Record<string, { 
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  getDescription: (input?: Record<string, unknown>) => string;
 }> = {
   'web_search': {
     icon: Globe,
     label: 'Web Search',
-    getDescription: (input) => input?.query ? `"${input.query}"` : '',
   },
   'search_brand_knowledge': {
     icon: Brain,
-    label: 'Brand Knowledge',
-    getDescription: (input) => input?.query ? `"${input.query}"` : 'Searching brand knowledge...',
+    label: 'Brand Context',
   },
   'calculator': {
     icon: Calculator,
     label: 'Calculator',
-    getDescription: (input) => input?.expression ? `${input.expression}` : 'Calculating...',
   },
   'get_current_time': {
     icon: Clock,
     label: 'Time',
-    getDescription: (input) => input?.timezone ? `${input.timezone}` : 'Getting current time...',
   },
   'read_file': {
     icon: FileText,
     label: 'File Read',
-    getDescription: () => 'Reading file...',
   },
   'create_artifact': {
     icon: Code,
     label: 'Artifact',
-    getDescription: (input) => input?.title ? `${input.title}` : 'Creating artifact...',
   },
-};
-
-// Helper to get tool description
-const getToolDescription = (tool: ToolCall): string => {
-  const config = toolConfig[tool.name];
-  if (config) {
-    return config.getDescription(tool.input);
-  }
-  // Fallback for unknown tools
-  if (tool.input?.query) {
-    return `"${tool.input.query}"`;
-  }
-  const formattedName = tool.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  return formattedName;
 };
 
 // Helper to get tool label
@@ -163,24 +142,25 @@ export function InlineStreamingDisplay({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.15 }}
       >
-        {/* Clickable header - always expandable */}
+        {/* Header - only expandable when there are sources */}
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-start gap-2 text-left w-full group cursor-pointer"
+          onClick={() => hasSources && setIsExpanded(!isExpanded)}
+          className={`flex items-start gap-2 text-left w-full ${hasSources ? 'group cursor-pointer' : 'cursor-default'}`}
+          disabled={!hasSources}
         >
-          {/* Chevron */}
+          {/* Chevron - only shown when expandable (has sources) */}
           <motion.div
             animate={{ rotate: isExpanded ? 0 : 0 }}
-            className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)] mt-0.5 flex-shrink-0"
+            className={`mt-0.5 flex-shrink-0 ${hasSources ? 'text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)]' : 'text-transparent'}`}
           >
             {isExpanded ? (
               <ChevronDown className="w-3.5 h-3.5" />
             ) : (
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className={`w-3.5 h-3.5 ${!hasSources ? 'invisible' : ''}`} />
             )}
           </motion.div>
           
-          {/* Tool info */}
+          {/* Tool info - simplified: just label + status indicator */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               {/* Tool icon */}
@@ -190,24 +170,19 @@ export function InlineStreamingDisplay({
                 return <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isComplete ? 'text-[var(--fg-tertiary)]' : 'text-[var(--fg-brand-primary)]'}`} />;
               })()}
               
-              {/* Tool label and query (if available) */}
+              {/* Tool label only - no description/query shown */}
               <span className={`text-xs ${isComplete ? 'text-[var(--fg-tertiary)]' : 'text-[var(--fg-secondary)]'}`}>
-                {primaryTool ? getToolLabel(primaryTool) : 'Processing'}
+                {primaryTool ? getToolLabel(primaryTool) : 'Web Search'}
               </span>
-              {primaryTool && getToolDescription(primaryTool) && (
-                <span className="text-xs text-[var(--fg-tertiary)]">
-                  {getToolDescription(primaryTool)}
-                </span>
-              )}
               
-              {/* Status indicator - show spinner while searching, checkmark when done */}
+              {/* Status indicator - spinner while searching, checkmark when done */}
               {isComplete ? (
                 <CheckCircle className="w-3 h-3 text-[var(--fg-success-primary)] flex-shrink-0" />
               ) : (
                 <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin flex-shrink-0" />
               )}
               
-              {/* Show source count - only when complete or when sources exist */}
+              {/* Source count badge - only shown when there are sources */}
               {hasSources && (
                 <motion.span 
                   key={sources.length}
@@ -222,9 +197,9 @@ export function InlineStreamingDisplay({
           </div>
         </button>
         
-        {/* Expandable content - shows sources as they're collected */}
+        {/* Expandable content - only shows when there are sources to display */}
         <AnimatePresence>
-          {isExpanded && (
+          {isExpanded && hasSources && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -233,54 +208,37 @@ export function InlineStreamingDisplay({
               className="overflow-hidden"
             >
               <div className="pl-6 pt-2 pb-1">
-                {/* Show sources as they're collected */}
-                {sources.length > 0 ? (
-                  <div className="divide-y divide-[var(--border-primary)]">
-                    {sources.map((source, idx) => (
-                      <motion.a
-                        key={`inline-source-${idx}-${source.id || source.url}`}
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.15, delay: idx * 0.03 }}
-                        className="flex items-center gap-2 text-xs py-1.5 first:pt-0 last:pb-0 hover:text-[var(--fg-primary)] transition-colors group"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <span className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] truncate">
-                          {source.title || source.name}
-                        </span>
-                        <span className="text-[var(--fg-quaternary)] text-[10px] flex-shrink-0">
-                          {source.name}
-                        </span>
-                      </motion.a>
-                    ))}
-                    {/* Show streaming indicator while still searching */}
-                    {isStreaming && activeTools.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex items-center gap-2 text-xs text-[var(--fg-tertiary)] py-1.5"
-                      >
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>Searching...</span>
-                      </motion.div>
-                    )}
-                  </div>
-                ) : isStreaming && activeTools.length > 0 ? (
-                  // Show searching indicator when no sources yet
-                  <div className="flex items-center gap-2 text-xs text-[var(--fg-tertiary)]">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    <span>Searching...</span>
-                  </div>
-                ) : (
-                  // Show thinking content if available and no sources
-                  hasThinking && thinking && (
+                {/* Sources list - each source animates in one-by-one */}
+                <div className="space-y-0.5">
+                  {sources.map((source, idx) => (
+                    <motion.a
+                      key={`inline-source-${idx}-${source.id || source.url}`}
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.05 }}
+                      className="flex items-center gap-2 text-xs py-1.5 hover:text-[var(--fg-primary)] transition-colors group"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] truncate">
+                        {source.title || source.name}
+                      </span>
+                      <span className="text-[var(--fg-quaternary)] text-[10px] flex-shrink-0">
+                        {source.name}
+                      </span>
+                    </motion.a>
+                  ))}
+                </div>
+                
+                {/* Show thinking content if available */}
+                {hasThinking && thinking && (
+                  <div className="mt-3 pt-2 border-t border-[var(--border-primary)]">
                     <p className="text-xs text-[var(--fg-tertiary)] leading-relaxed font-mono whitespace-pre-wrap">
                       {thinking.length > 600 ? '...' + thinking.slice(-600) : thinking}
                     </p>
-                  )
+                  </div>
                 )}
               </div>
             </motion.div>
@@ -339,18 +297,17 @@ export function InlineStreamingIndicator({
             const Icon = config?.icon || Wrench;
             return <Icon className="w-3 h-3 text-[var(--fg-brand-primary)]" />;
           })()}
-          <span className="text-[var(--fg-tertiary)] max-w-[200px] truncate">
-            {getToolDescription(uniqueActiveTools[0])}
+          {/* Just show tool label, no description */}
+          <span className="text-[var(--fg-tertiary)]">
+            {getToolLabel(uniqueActiveTools[0])}
           </span>
           <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
         </>
       )}
       
+      {/* No fallback "Processing..." - just show the spinner if nothing else */}
       {!hasThinking && uniqueActiveTools.length === 0 && (
-        <>
-          <Loader2 className="w-3 h-3 text-[var(--fg-tertiary)] animate-spin" />
-          <span className="text-[var(--fg-tertiary)]">Processing...</span>
-        </>
+        <Loader2 className="w-3 h-3 text-[var(--fg-tertiary)] animate-spin" />
       )}
     </motion.div>
   );

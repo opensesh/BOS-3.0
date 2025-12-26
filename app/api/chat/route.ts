@@ -851,10 +851,14 @@ async function streamWithPerplexityNative(
           await new Promise(resolve => setTimeout(resolve, 5));
         }
 
-        // Send sources if we have any
+        // Stream sources one-by-one for a smooth "finding sources" feel (matching Anthropic behavior)
         if (sources.length > 0) {
           console.log('Perplexity citations found:', sources.length, sources.map(s => ({ name: s.name, title: s.title })));
-          controller.enqueue(sse.encode({ type: 'sources', sources }));
+          for (let i = 0; i < sources.length; i++) {
+            controller.enqueue(sse.encode({ type: 'sources', sources: [sources[i]] }));
+            // Quick delay between sources - fast enough to feel responsive
+            await new Promise(resolve => setTimeout(resolve, 40));
+          }
         }
 
         controller.enqueue(sse.encode({ type: 'done' }));

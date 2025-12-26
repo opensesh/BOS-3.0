@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Search, Bell, HelpCircle, Menu } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { Brandmark } from './Brandmark';
 import { SearchModal } from './SearchModal';
-import { HelpDropdown } from './HelpDropdown';
-import { NotificationsDropdown } from './NotificationsDropdown';
-import { ProfileDropdown } from './ProfileDropdown';
 
 interface MobileHeaderProps {
   onBrandClick?: () => void;
@@ -18,38 +15,7 @@ interface MobileHeaderProps {
 export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
   const { isMobileMenuOpen, toggleMobileMenu } = useMobileMenu();
   const [isHovered, setIsHovered] = useState(false);
-  
-  // Dropdown states
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  const helpTriggerRef = useRef<HTMLButtonElement>(null);
-  const notificationsTriggerRef = useRef<HTMLButtonElement>(null);
-  const profileTriggerRef = useRef<HTMLButtonElement>(null);
-
-  // Close all dropdowns when one opens
-  const closeAllDropdowns = () => {
-    setIsHelpOpen(false);
-    setIsNotificationsOpen(false);
-    setIsProfileOpen(false);
-  };
-
-  const handleHelpClick = () => {
-    closeAllDropdowns();
-    setIsHelpOpen(!isHelpOpen);
-  };
-
-  const handleNotificationsClick = () => {
-    closeAllDropdowns();
-    setIsNotificationsOpen(!isNotificationsOpen);
-  };
-
-  const handleProfileClick = () => {
-    closeAllDropdowns();
-    setIsProfileOpen(!isProfileOpen);
-  };
 
   return (
     <>
@@ -80,88 +46,10 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
                 min-w-[44px] min-h-[44px]
               "
               title="Search"
+              aria-label="Search"
             >
               <Search className="w-5 h-5" />
             </button>
-
-            {/* Notifications - hidden on small mobile */}
-            <div className="relative hidden sm:block">
-              <button
-                ref={notificationsTriggerRef}
-                onClick={handleNotificationsClick}
-                className={`
-                  flex items-center justify-center
-                  p-2.5
-                  rounded-md
-                  text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-                  hover:bg-[var(--bg-tertiary)]
-                  transition-all duration-150
-                  min-w-[44px] min-h-[44px]
-                  ${isNotificationsOpen ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' : ''}
-                `}
-                title="Notifications"
-              >
-                <Bell className="w-5 h-5" />
-              </button>
-              <NotificationsDropdown
-                isOpen={isNotificationsOpen}
-                onClose={() => setIsNotificationsOpen(false)}
-                triggerRef={notificationsTriggerRef}
-              />
-            </div>
-
-            {/* Help - hidden on small mobile */}
-            <div className="relative hidden sm:block">
-              <button
-                ref={helpTriggerRef}
-                onClick={handleHelpClick}
-                className={`
-                  flex items-center justify-center
-                  p-2.5
-                  rounded-md
-                  text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-                  hover:bg-[var(--bg-tertiary)]
-                  transition-all duration-150
-                  min-w-[44px] min-h-[44px]
-                  ${isHelpOpen ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' : ''}
-                `}
-                title="Help"
-              >
-                <HelpCircle className="w-5 h-5" />
-              </button>
-              <HelpDropdown
-                isOpen={isHelpOpen}
-                onClose={() => setIsHelpOpen(false)}
-                triggerRef={helpTriggerRef}
-              />
-            </div>
-
-            {/* Profile */}
-            <div className="relative">
-              <button
-                ref={profileTriggerRef}
-                onClick={handleProfileClick}
-                className={`
-                  flex items-center justify-center
-                  p-2
-                  rounded-md
-                  hover:bg-[var(--bg-tertiary)]
-                  transition-all duration-150
-                  min-w-[44px] min-h-[44px]
-                  ${isProfileOpen ? 'bg-[var(--bg-tertiary)]' : ''}
-                `}
-                title="Profile"
-              >
-                <div className="w-7 h-7 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center">
-                  <span className="text-white text-[10px] font-mono">A</span>
-                </div>
-              </button>
-              <ProfileDropdown
-                isOpen={isProfileOpen}
-                onClose={() => setIsProfileOpen(false)}
-                triggerRef={profileTriggerRef}
-              />
-            </div>
 
             {/* Menu Toggle */}
             <motion.button
@@ -172,6 +60,7 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
               transition={{ duration: 0.4, ease: 'easeInOut' }}
               className="p-2 ml-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
             >
               <div className="w-6 h-6 relative flex items-center justify-center">
                 {/* Top bar */}

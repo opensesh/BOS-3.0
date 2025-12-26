@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, 
   ChevronRight,
@@ -16,10 +16,10 @@ import {
 } from 'lucide-react';
 import { AnimatedFolder } from './AnimatedFolder';
 import { IconHover3D } from './IconHover3D';
-import { fadeInUp } from '@/lib/motion';
 
 interface PrePromptGridProps {
   onPromptSubmit: (prompt: string) => void;
+  isVisible?: boolean;
 }
 
 // Quick links to subpages (folder cards)
@@ -92,20 +92,14 @@ const allItems = [
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
-// Initial indices to center between folder and icon cards per breakpoint:
-// - Desktop (4 visible): index 2 → Colors, Spaces, Create a post, Plan a campaign (2 folders + 2 icons)
-// - Tablet (3 visible): index 2 → Colors, Spaces, Create a post (2 folders + 1 icon)
-// - Mobile (2 visible): index 3 → Spaces, Create a post (1 folder + 1 icon)
-const INITIAL_INDEX_DESKTOP = 2;
-const INITIAL_INDEX_TABLET = 2;
-const INITIAL_INDEX_MOBILE = 3;
+// Start from index 0 to show all content from the beginning
+const INITIAL_INDEX = 0;
 
 // Swipe threshold in pixels
 const SWIPE_THRESHOLD = 50;
 
-export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
-  // Default to desktop index for SSR, will adjust on mount for smaller screens
-  const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX_DESKTOP);
+export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGridProps) {
+  const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX);
   const [visibleCount, setVisibleCount] = useState(4); // Default to desktop
   
   // Touch handling state
@@ -113,7 +107,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
   const touchEndX = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Adjust initial index and visible count based on screen size
+  // Adjust visible count based on screen size
   useEffect(() => {
     const updateLayout = () => {
       const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -121,30 +115,15 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
       
       if (isMobile) {
         setVisibleCount(2);
-        setCurrentIndex(prev => Math.min(prev, allItems.length - 2));
       } else if (isTablet) {
         setVisibleCount(3);
-        setCurrentIndex(prev => Math.min(prev, allItems.length - 3));
       } else {
         setVisibleCount(4);
-        setCurrentIndex(prev => Math.min(prev, allItems.length - 4));
       }
     };
     
     // Set initial values
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
-    
-    if (isMobile) {
-      setVisibleCount(2);
-      setCurrentIndex(INITIAL_INDEX_MOBILE);
-    } else if (isTablet) {
-      setVisibleCount(3);
-      setCurrentIndex(INITIAL_INDEX_TABLET);
-    } else {
-      setVisibleCount(4);
-      setCurrentIndex(INITIAL_INDEX_DESKTOP);
-    }
+    updateLayout();
     
     // Listen for resize
     window.addEventListener('resize', updateLayout);
@@ -198,117 +177,117 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
   };
   
   return (
-    <motion.div
-      variants={fadeInUp}
-      initial="hidden"
-      animate="visible"
-      className="w-full max-w-3xl mx-auto px-4 mt-2 sm:mt-4"
-    >
-      {/* Carousel container - arrows inside, touch-enabled */}
-      <div 
-        ref={containerRef}
-        className="relative"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Left arrow - visible on all screens */}
-        <button
-          onClick={handlePrev}
-          disabled={currentIndex <= 0}
-          className={`absolute -left-1 sm:left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 shadow-sm ${
-            currentIndex > 0 
-              ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
-              : 'opacity-30 cursor-not-allowed'
-          }`}
-          aria-label="Previous slide"
+    <AnimatePresence mode="wait">
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -10, scale: 0.98 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-3xl mx-auto px-4"
         >
-          <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
-        </button>
-
-        {/* Right arrow - visible on all screens */}
-        <button
-          onClick={handleNext}
-          disabled={currentIndex >= maxIndex}
-          className={`absolute -right-1 sm:right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 shadow-sm ${
-            currentIndex < maxIndex 
-              ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
-              : 'opacity-30 cursor-not-allowed'
-          }`}
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
-        </button>
-
-        {/* Cards container - unified for all breakpoints */}
-        <div 
-          className="overflow-hidden mx-8 sm:mx-10 touch-pan-y"
-          role="region"
-          aria-label="Quick action cards"
-          aria-live="polite"
-        >
+          {/* Carousel container - touch-enabled */}
           <div 
-            className="flex gap-3 transition-transform duration-300 ease-out will-change-transform"
-            style={{
-              width: getTrackWidth(),
-              transform: `translateX(calc(-${currentIndex} * (12.5% + 1.5px)))`,
-            }}
+            ref={containerRef}
+            className="relative"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            {allItems.map((item, idx) => (
-              <div 
-                key={item.id} 
-                className="flex-shrink-0 min-h-[120px] sm:min-h-[140px]"
-                style={{ width: 'calc(12.5% - 10.5px)' }}
-                role="group"
-                aria-label={`${item.title} - ${idx + 1} of ${allItems.length}`}
+            {/* Cards container - full width to match welcome text */}
+            <div 
+              className="overflow-hidden touch-pan-y relative"
+              role="region"
+              aria-label="Quick action cards"
+              aria-live="polite"
+            >
+              {/* Left arrow - overlaid on cards */}
+              <button
+                onClick={handlePrev}
+                disabled={currentIndex <= 0}
+                className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 shadow-md ${
+                  currentIndex > 0 
+                    ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
+                    : 'opacity-0 pointer-events-none'
+                }`}
+                aria-label="Previous slide"
               >
-                {item.type === 'link' ? (
-                  <AnimatedFolder
-                    title={item.title}
-                    subtitle={item.subtitle}
-                    href={item.href}
-                    icon={item.icon}
-                  />
-                ) : (
-                  <IconHover3D
-                    icon={item.icon}
-                    title={item.title}
-                    description={item.description}
-                    onClick={() => onPromptSubmit(item.prompt)}
-                  />
-                )}
+                <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
+              </button>
+
+              {/* Right arrow - overlaid on cards */}
+              <button
+                onClick={handleNext}
+                disabled={currentIndex >= maxIndex}
+                className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 shadow-md ${
+                  currentIndex < maxIndex 
+                    ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
+                    : 'opacity-0 pointer-events-none'
+                }`}
+                aria-label="Next slide"
+              >
+                <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+              </button>
+
+              <div 
+                className="flex gap-3 transition-transform duration-300 ease-out will-change-transform"
+                style={{
+                  width: getTrackWidth(),
+                  transform: `translateX(calc(-${currentIndex} * (12.5% + 1.5px)))`,
+                }}
+              >
+                {allItems.map((item, idx) => (
+                  <div 
+                    key={item.id} 
+                    className="flex-shrink-0 min-h-[120px] sm:min-h-[140px]"
+                    style={{ width: 'calc(12.5% - 10.5px)' }}
+                    role="group"
+                    aria-label={`${item.title} - ${idx + 1} of ${allItems.length}`}
+                  >
+                    {item.type === 'link' ? (
+                      <AnimatedFolder
+                        title={item.title}
+                        subtitle={item.subtitle}
+                        href={item.href}
+                        icon={item.icon}
+                      />
+                    ) : (
+                      <IconHover3D
+                        icon={item.icon}
+                        title={item.title}
+                        description={item.description}
+                        onClick={() => onPromptSubmit(item.prompt)}
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
 
-        {/* Swipe hint for mobile - only shown briefly */}
-        <div className="md:hidden flex justify-center mt-2 text-[10px] text-[var(--fg-quaternary)] select-none pointer-events-none">
-          <span>Swipe to explore</span>
+        {/* Progress dots - unified */}
+        <div 
+          className="flex justify-center gap-1.5 mt-3 sm:mt-4"
+          role="tablist"
+          aria-label="Carousel navigation"
+        >
+          {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              role="tab"
+              aria-selected={idx === currentIndex}
+              aria-label={`Go to slide ${idx + 1} of ${maxIndex + 1}`}
+              className={`h-1.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2 ${
+                idx === currentIndex 
+                  ? 'bg-[var(--color-brand-500)] w-4' 
+                  : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
+              }`}
+            />
+          ))}
         </div>
-      </div>
-
-      {/* Progress dots - unified */}
-      <div 
-        className="flex justify-center gap-1.5 mt-3 sm:mt-4"
-        role="tablist"
-        aria-label="Carousel navigation"
-      >
-        {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            role="tab"
-            aria-selected={idx === currentIndex}
-            aria-label={`Go to slide ${idx + 1} of ${maxIndex + 1}`}
-            className={`h-1.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2 ${
-              idx === currentIndex 
-                ? 'bg-[var(--color-brand-500)] w-4' 
-                : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
-            }`}
-          />
-        ))}
-      </div>
-    </motion.div>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

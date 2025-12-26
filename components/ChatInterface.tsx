@@ -21,7 +21,7 @@ import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { useAttachments } from '@/hooks/useAttachments';
 import { ModelId } from '@/lib/ai/providers';
 import { useChatContext } from '@/lib/chat-context';
-import { fadeInUp, staggerContainer } from '@/lib/motion';
+import { AnimatePresence } from 'framer-motion';
 import type { PageContext } from '@/lib/brand-knowledge';
 import {
   FollowUpInput,
@@ -831,41 +831,49 @@ export function ChatInterface() {
         {/* Landing Mode */}
         {!hasMessages && (
           <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
             className="flex flex-col h-full w-full justify-center"
           >
-            {/* Centered Content Area */}
-            <div className="flex flex-col items-center justify-center flex-1 pb-4 sm:pb-8">
-              {/* Welcome Header */}
+            {/* All content in one centered column with equal spacing */}
+            <div className="w-full max-w-3xl mx-auto flex flex-col gap-6">
+              {/* Welcome Header - left aligned */}
               <WelcomeHeader />
               
-              {/* Error display */}
-              {(error || submitError) && (
-                <motion.div 
-                  className="w-full max-w-3xl px-4 mb-4"
-                  variants={fadeInUp}
-                >
-                  <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
-                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Error</p>
-                      <p className="mt-1">{error?.message || submitError}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Pre-prompt Cards Grid */}
+              {/* Pre-prompt Cards Grid - fades when typing */}
               <PrePromptGrid 
-                onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)} 
+                onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)}
+                isVisible={!input.trim()}
               />
-            </div>
+              
+              {/* Error display */}
+              <AnimatePresence>
+                {(error || submitError) && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="w-full px-4"
+                  >
+                    <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-xl px-4 py-3 text-[var(--fg-error-primary)] text-sm flex items-start gap-3 text-left">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Error</p>
+                        <p className="mt-1">{error?.message || submitError}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            {/* Input Area - Anchored at bottom */}
-            <motion.div className="w-full pb-4 sm:pb-6 mt-auto shrink-0" variants={fadeInUp}>
-              <div className="max-w-3xl mx-auto px-4">
+              {/* Chat Input - same gap as between other elements */}
+              <motion.div 
+                className="w-full px-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <form onSubmit={handleSubmit} className="relative">
                   {/* Hidden file input */}
                   <input
@@ -1072,8 +1080,8 @@ export function ChatInterface() {
                     </div>
                   </div>
                 </form>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </div>

@@ -382,12 +382,41 @@ async function streamWithAnthropicNative(
           // This provides real-time feedback instead of blocking until full response
           console.log('Continuing with tool results (streaming):', toolResults.length, 'results');
           
-          // Filter out thinking blocks from response content for the continuation
-          // We need to do this because the thinking blocks from the first response
-          // can't be sent back unless thinking is enabled in the continuation too
-          const filteredResponseContent = response.content.filter(
-            (block: { type: string }) => block.type !== 'thinking'
+          // Debug: Log response content structure
+          const contentTypes = response.content.map((b: { type: string }) => b.type);
+          console.log('Response content blocks:', contentTypes);
+          
+          // Check if we have thinking blocks in the response
+          const hasThinkingBlocks = contentTypes.some(
+            (t: string) => t === 'thinking' || t === 'redacted_thinking'
           );
+          
+          // Determine if we should use thinking for continuation:
+          // - Only enable thinking if original request had it AND response contains thinking blocks
+          // - Anthropic requires thinking blocks in assistant messages when thinking is enabled
+          const useThinkingForContinuation = thinkingConfig && hasThinkingBlocks;
+          
+          // Handle thinking blocks in the assistant message based on thinking mode:
+          // - When thinking is ENABLED: Must include thinking blocks AND they must come FIRST
+          // - When thinking is DISABLED: Must filter out thinking blocks entirely
+          let assistantContent;
+          if (useThinkingForContinuation) {
+            // When thinking is enabled, ensure thinking blocks come first (Anthropic requirement)
+            const thinkingBlocks = response.content.filter(
+              (block: { type: string }) => block.type === 'thinking' || block.type === 'redacted_thinking'
+            );
+            const otherBlocks = response.content.filter(
+              (block: { type: string }) => block.type !== 'thinking' && block.type !== 'redacted_thinking'
+            );
+            assistantContent = [...thinkingBlocks, ...otherBlocks];
+            console.log('Using thinking for continuation, reordered blocks:', assistantContent.map((b: { type: string }) => b.type));
+          } else {
+            // When thinking is disabled (or no thinking blocks available), filter them out
+            assistantContent = response.content.filter(
+              (block: { type: string }) => block.type !== 'thinking' && block.type !== 'redacted_thinking'
+            );
+            console.log('Not using thinking for continuation, filtered blocks:', assistantContent.map((b: { type: string }) => b.type));
+          }
           
           const continueStream = await client.messages.stream({
             model: modelId,
@@ -395,11 +424,11 @@ async function streamWithAnthropicNative(
             system: systemPrompt,
             messages: [
               ...anthropicMessages,
-              { role: 'assistant', content: filteredResponseContent },
+              { role: 'assistant', content: assistantContent },
               { role: 'user', content: toolResults },
             ],
-            // Include thinking config if it was enabled for the original request
-            ...(thinkingConfig ? { thinking: thinkingConfig } : {}),
+            // Only include thinking config if we're actually using thinking for continuation
+            ...(useThinkingForContinuation ? { thinking: thinkingConfig } : {}),
           });
 
           // Stream the continuation response in real-time

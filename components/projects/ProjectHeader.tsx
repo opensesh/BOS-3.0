@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MoreHorizontal, Star, Check, X, Trash2, Pencil } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, Check, X, Trash2, Pencil } from 'lucide-react';
 import type { Project } from '@/lib/supabase/projects-service';
 
 interface ProjectHeaderProps {
@@ -164,21 +164,8 @@ export function ProjectHeader({ project, onUpdate, onDelete }: ProjectHeaderProp
           )}
         </div>
 
-        {/* Actions */}
+        {/* Actions - only more menu */}
         <div className="flex items-center gap-1">
-          <button
-            className="
-              p-2 rounded-lg
-              text-[var(--fg-tertiary)]
-              hover:text-[var(--fg-primary)]
-              hover:bg-[var(--bg-tertiary)]
-              transition-colors
-            "
-            title="Add to favorites"
-          >
-            <Star className="w-5 h-5" />
-          </button>
-
           {/* More menu */}
           <div className="relative" ref={menuRef}>
             <button
@@ -311,4 +298,3 @@ export function ProjectHeader({ project, onUpdate, onDelete }: ProjectHeaderProp
     </div>
   );
 }
-

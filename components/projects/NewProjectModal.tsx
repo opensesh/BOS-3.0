@@ -10,21 +10,12 @@ interface NewProjectModalProps {
   onSubmit: (name: string, description: string, color: string) => Promise<void>;
 }
 
-const PROJECT_COLORS = [
-  '#FE5102', // Orange (default)
-  '#10B981', // Emerald
-  '#3B82F6', // Blue
-  '#8B5CF6', // Violet
-  '#EC4899', // Pink
-  '#F59E0B', // Amber
-  '#06B6D4', // Cyan
-  '#6366F1', // Indigo
-];
+// Default project color
+const DEFAULT_COLOR = '#FE5102';
 
 export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedColor, setSelectedColor] = useState(PROJECT_COLORS[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -40,7 +31,6 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
     if (!isOpen) {
       setName('');
       setDescription('');
-      setSelectedColor(PROJECT_COLORS[0]);
     }
   }, [isOpen]);
 
@@ -50,7 +40,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
 
     setIsSubmitting(true);
     try {
-      await onSubmit(name.trim(), description.trim(), selectedColor);
+      await onSubmit(name.trim(), description.trim(), DEFAULT_COLOR);
       onClose();
     } catch (error) {
       console.error('Error creating project:', error);
@@ -79,26 +69,29 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
             onClick={onClose}
           />
 
-          {/* Modal */}
+          {/* Modal - centered with responsive margins */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="
-              fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-              w-full max-w-md
+              fixed inset-4 sm:inset-auto
+              sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2
+              w-auto sm:w-full sm:max-w-md
+              max-h-[calc(100vh-32px)] sm:max-h-[90vh]
               bg-[var(--bg-secondary)]
               border border-[var(--border-primary)]
               rounded-xl
               shadow-2xl
               z-50
               overflow-hidden
+              flex flex-col
             "
             onKeyDown={handleKeyDown}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-secondary)]">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[var(--border-secondary)] flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="
                   w-10 h-10 rounded-lg
@@ -131,8 +124,8 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit}>
-              <div className="px-6 py-5 space-y-5">
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="px-5 sm:px-6 py-5 space-y-5 overflow-y-auto flex-1">
                 {/* Name Input */}
                 <div>
                   <label
@@ -191,36 +184,10 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                     maxLength={500}
                   />
                 </div>
-
-                {/* Color Picker */}
-                <div>
-                  <label className="block text-sm font-medium text-[var(--fg-secondary)] mb-3">
-                    Color
-                  </label>
-                  <div className="flex items-center gap-2">
-                    {PROJECT_COLORS.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => setSelectedColor(color)}
-                        className={`
-                          w-8 h-8 rounded-full
-                          transition-all duration-150
-                          ${selectedColor === color 
-                            ? 'ring-2 ring-offset-2 ring-offset-[var(--bg-secondary)] ring-[var(--fg-primary)] scale-110' 
-                            : 'hover:scale-110'
-                          }
-                        `}
-                        style={{ backgroundColor: color }}
-                        title={color}
-                      />
-                    ))}
-                  </div>
-                </div>
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border-secondary)] bg-[var(--bg-tertiary)]/50">
+              <div className="flex items-center justify-end gap-3 px-5 sm:px-6 py-4 border-t border-[var(--border-secondary)] bg-[var(--bg-tertiary)]/50 flex-shrink-0">
                 <button
                   type="button"
                   onClick={onClose}
@@ -262,4 +229,3 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
     </AnimatePresence>
   );
 }
-

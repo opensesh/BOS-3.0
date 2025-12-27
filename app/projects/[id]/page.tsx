@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
+import { useChatContext } from '@/lib/chat-context';
 import {
   projectsService,
   type ProjectWithDetails,
@@ -14,14 +16,14 @@ import {
   ProjectChatList,
   ProjectSidebar,
 } from '@/components/projects';
-import { ProjectChatInput } from '@/components/projects/ProjectChatList';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquarePlus } from 'lucide-react';
 
 export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
   const projectId = params.id as string;
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { setCurrentProject, triggerChatReset } = useChatContext();
 
   // State
   const [project, setProject] = useState<ProjectWithDetails | null>(null);
@@ -146,10 +148,25 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const handleNewChat = (query: string) => {
-    // TODO: Create new chat and assign to this project
-    // For now, navigate to home with the query
-    router.push(`/?q=${encodeURIComponent(query)}`);
+  // Start a new chat associated with this project
+  const handleStartChat = () => {
+    if (!project) return;
+    
+    // Set the current project in context so the chat gets associated with it
+    setCurrentProject({
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      color: project.color,
+      created_at: project.created_at,
+      updated_at: project.updated_at,
+    });
+    
+    // Reset any existing chat
+    triggerChatReset();
+    
+    // Navigate to home to start a fresh chat
+    router.push('/');
   };
 
   // Loading state
@@ -177,12 +194,12 @@ export default function ProjectDetailPage() {
             <h2 className="text-lg font-semibold text-[var(--fg-primary)] mb-2">
               {error || 'Project not found'}
             </h2>
-            <button
-              onClick={() => router.push('/projects')}
+            <Link
+              href="/projects"
               className="text-sm text-[var(--fg-brand-primary)] hover:underline"
             >
               Back to projects
-            </button>
+            </Link>
           </div>
         </MainContent>
       </div>
@@ -206,12 +223,40 @@ export default function ProjectDetailPage() {
                   onDelete={handleDeleteProject}
                 />
 
-                {/* Chat Input */}
+                {/* Start New Chat Button */}
                 <div className="mb-6">
-                  <ProjectChatInput
-                    projectId={projectId}
-                    onSubmit={handleNewChat}
-                  />
+                  <button
+                    onClick={handleStartChat}
+                    className="
+                      w-full flex items-center justify-center gap-3
+                      p-4
+                      bg-[var(--bg-secondary)]
+                      border border-[var(--border-secondary)]
+                      rounded-xl
+                      hover:border-[var(--fg-brand-primary)]
+                      hover:bg-[var(--bg-tertiary)]
+                      transition-all
+                      group
+                    "
+                  >
+                    <div className="
+                      w-10 h-10 rounded-full
+                      bg-[var(--bg-brand-primary)]
+                      group-hover:bg-[var(--bg-brand-secondary)]
+                      flex items-center justify-center
+                      transition-colors
+                    ">
+                      <MessageSquarePlus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-[var(--fg-primary)]">
+                        Start a conversation
+                      </p>
+                      <p className="text-xs text-[var(--fg-tertiary)]">
+                        New chats will be added to this project
+                      </p>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Conversations List */}
@@ -221,6 +266,14 @@ export default function ProjectDetailPage() {
                   rounded-xl
                   overflow-hidden
                 ">
+                  <div className="px-4 py-3 border-b border-[var(--border-secondary)]">
+                    <h3 className="text-sm font-medium text-[var(--fg-primary)]">
+                      Conversations
+                    </h3>
+                    <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">
+                      {project.chats.length} conversation{project.chats.length !== 1 ? 's' : ''} in this project
+                    </p>
+                  </div>
                   <ProjectChatList
                     chats={project.chats}
                     projectId={projectId}
@@ -247,4 +300,3 @@ export default function ProjectDetailPage() {
     </div>
   );
 }
-

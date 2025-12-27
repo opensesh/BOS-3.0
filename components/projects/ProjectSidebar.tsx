@@ -1,17 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
   Plus,
   FileText,
   FolderOpen,
-  Lock,
-  Sparkles,
+  Upload,
 } from 'lucide-react';
 import { ProjectFileCard } from './ProjectFileCard';
-import { ProjectFileUpload } from './ProjectFileUpload';
 import { ProjectInstructionsModal } from './ProjectInstructionsModal';
 import type { ProjectFile, ProjectInstructions } from '@/lib/supabase/projects-service';
 
@@ -111,9 +109,57 @@ export function ProjectSidebar({
   onDeleteFile,
 }: ProjectSidebarProps) {
   const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
-  const [isUploadVisible, setIsUploadVisible] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const usagePercent = Math.min((totalFileSize / maxFileSize) * 100, 100);
+
+  // File upload handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    if (droppedFiles.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      for (const file of droppedFiles) {
+        await onUploadFile(file);
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  }, [onUploadFile]);
+
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    if (!selectedFiles || selectedFiles.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      for (const file of Array.from(selectedFiles)) {
+        await onUploadFile(file);
+      }
+    } finally {
+      setIsUploading(false);
+      // Reset input
+      e.target.value = '';
+    }
+  }, [onUploadFile]);
 
   return (
     <>
@@ -124,28 +170,6 @@ export function ProjectSidebar({
         lg:h-full
         overflow-y-auto
       ">
-        {/* Memory Section - Placeholder for future AI-generated context */}
-        <CollapsibleSection
-          title="Memory"
-          icon={<Sparkles className="w-4 h-4 text-[var(--fg-tertiary)]" />}
-          rightElement={
-            <span className="flex items-center gap-1 text-[10px] text-[var(--fg-quaternary)]">
-              <Lock className="w-3 h-3" />
-              Only you
-            </span>
-          }
-          defaultOpen={false}
-        >
-          <div className="space-y-2">
-            <p className="text-xs text-[var(--fg-tertiary)]">
-              Claude will automatically remember context from your conversations in this project.
-            </p>
-            <p className="text-[10px] text-[var(--fg-quaternary)] italic">
-              Coming soon
-            </p>
-          </div>
-        </CollapsibleSection>
-
         {/* Instructions Section */}
         <CollapsibleSection
           title="Instructions"
@@ -201,7 +225,7 @@ export function ProjectSidebar({
               "
             >
               <p className="text-xs text-[var(--fg-tertiary)]">
-                Add instructions to tailor Claude&apos;s responses for this project.
+                Add instructions to tailor AI responses for this project.
               </p>
             </button>
           )}
@@ -211,24 +235,6 @@ export function ProjectSidebar({
         <CollapsibleSection
           title="Files"
           icon={<FolderOpen className="w-4 h-4 text-[var(--fg-tertiary)]" />}
-          rightElement={
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsUploadVisible(!isUploadVisible);
-              }}
-              className="
-                p-1 rounded
-                text-[var(--fg-tertiary)]
-                hover:text-[var(--fg-primary)]
-                hover:bg-[var(--bg-tertiary)]
-                transition-colors
-              "
-              title="Upload files"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          }
         >
           {/* Capacity bar */}
           <div className="mb-4">
@@ -256,22 +262,35 @@ export function ProjectSidebar({
             </div>
           </div>
 
-          {/* Upload zone - collapsible */}
-          <AnimatePresence>
-            {isUploadVisible && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="mb-4 overflow-hidden"
-              >
-                <ProjectFileUpload
-                  projectId={projectId}
-                  onUpload={onUploadFile}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Drop zone - always visible */}
+          <label
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`
+              block mb-4 cursor-pointer
+              border-2 border-dashed rounded-lg
+              p-4 text-center
+              transition-all
+              ${isDragOver 
+                ? 'border-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
+                : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)]/50'
+              }
+              ${isUploading ? 'opacity-50 pointer-events-none' : ''}
+            `}
+          >
+            <input
+              type="file"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+              disabled={isUploading}
+            />
+            <Upload className={`w-5 h-5 mx-auto mb-2 ${isDragOver ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-quaternary)]'}`} />
+            <p className={`text-xs ${isDragOver ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'}`}>
+              {isUploading ? 'Uploading...' : 'Drag files here or click to upload'}
+            </p>
+          </label>
 
           {/* Files grid */}
           {files.length > 0 ? (
@@ -286,7 +305,7 @@ export function ProjectSidebar({
               ))}
             </div>
           ) : (
-            <div className="text-center py-4">
+            <div className="text-center py-2">
               <p className="text-xs text-[var(--fg-quaternary)]">
                 No files uploaded yet
               </p>
@@ -306,4 +325,3 @@ export function ProjectSidebar({
     </>
   );
 }
-

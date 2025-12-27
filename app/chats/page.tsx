@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -24,21 +24,26 @@ type SortDirection = 'asc' | 'desc';
 export default function ChatsPage() {
   const router = useRouter();
   const { chatHistory, loadSession, triggerChatReset } = useChatContext();
-  const { setCustomBreadcrumbs } = useBreadcrumbs();
+  const { setBreadcrumbs } = useBreadcrumbs();
   
-  // Set breadcrumbs
-  useState(() => {
-    setCustomBreadcrumbs([
+  // Set breadcrumbs on mount
+  useEffect(() => {
+    setBreadcrumbs([
       { label: 'Home', href: '/' },
       { label: 'Recent Chats' },
     ]);
-    return () => setCustomBreadcrumbs(null);
-  });
+  }, [setBreadcrumbs]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+
+  // Helper to safely get timestamp as Date
+  const getTimestamp = (timestamp: Date | number | string): Date => {
+    if (timestamp instanceof Date) return timestamp;
+    return new Date(timestamp);
+  };
 
   // Filter and sort chats
   const filteredChats = useMemo(() => {
@@ -60,17 +65,17 @@ export default function ChatsPage() {
 
     if (selectedFilter === 'today') {
       result = result.filter(chat => {
-        const chatDate = new Date(chat.timestamp);
+        const chatDate = getTimestamp(chat.timestamp);
         return chatDate >= today;
       });
     } else if (selectedFilter === 'week') {
       result = result.filter(chat => {
-        const chatDate = new Date(chat.timestamp);
+        const chatDate = getTimestamp(chat.timestamp);
         return chatDate >= weekAgo;
       });
     } else if (selectedFilter === 'month') {
       result = result.filter(chat => {
-        const chatDate = new Date(chat.timestamp);
+        const chatDate = getTimestamp(chat.timestamp);
         return chatDate >= monthAgo;
       });
     }
@@ -81,7 +86,7 @@ export default function ChatsPage() {
         const comparison = a.title.localeCompare(b.title);
         return sortDirection === 'asc' ? comparison : -comparison;
       } else {
-        const comparison = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+        const comparison = getTimestamp(a.timestamp).getTime() - getTimestamp(b.timestamp).getTime();
         return sortDirection === 'asc' ? comparison : -comparison;
       }
     });
@@ -108,8 +113,8 @@ export default function ChatsPage() {
     router.push('/');
   };
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
+  const formatDate = (timestamp: Date | number | string) => {
+    const date = getTimestamp(timestamp);
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);

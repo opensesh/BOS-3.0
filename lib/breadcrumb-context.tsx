@@ -22,6 +22,7 @@ const routeLabels: Record<string, string> = {
   'brand-hub': 'Brand Hub',
   'brain': 'Brain',
   'spaces': 'Spaces',
+  'chats': 'Recent Chats',
   'demo': 'Demo',
   // Brand Hub subpages
   'logo': 'Logo',

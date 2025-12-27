@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, Clock, Brain, Sparkles } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
 
 interface ThinkingBubbleProps {
   /** The thinking content to display */
@@ -168,15 +168,15 @@ export function ThinkingBubble({
   // Determine header label based on state
   const getHeaderLabel = () => {
     if (isThinking) {
-      return 'Reasoning...';
+      return 'Thought process';
     }
     if (isGeneratingSummary) {
-      return 'Summarizing...';
+      return 'Thought process';
     }
     if (summary) {
       return summary;
     }
-    return 'Reasoned through the question';
+    return 'Thought process';
   };
 
   return (
@@ -184,11 +184,7 @@ export function ThinkingBubble({
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={`rounded-xl border overflow-hidden transition-colors ${
-        isThinking 
-          ? 'border-[var(--border-brand-primary)]/50 bg-[var(--bg-brand-primary)]/5' 
-          : 'border-[var(--border-secondary)] bg-[var(--bg-secondary)]/30'
-      }`}
+      className="rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)]/30 overflow-hidden"
     >
       {/* Fixed Header - Collapsible trigger */}
       <button
@@ -196,42 +192,15 @@ export function ThinkingBubble({
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)]/50 transition-colors group sticky top-0 backdrop-blur-sm z-10"
       >
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          {/* Brain icon with active indicator */}
-          <div className="relative flex-shrink-0">
-            <Brain className={`w-4 h-4 ${isThinking ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'}`} />
-            {isThinking && (
-              <motion.div
-                className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[var(--bg-brand-solid)] rounded-full"
-                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
-            )}
-          </div>
-          
           {/* Label text - shows status, then summary */}
-          <span className={`text-sm truncate ${
-            isThinking ? 'text-[var(--fg-brand-primary)] font-medium' : 'text-[var(--fg-secondary)]'
-          }`}>
+          <span className="text-sm text-[var(--fg-secondary)] truncate">
             {getHeaderLabel()}
           </span>
-          
-          {/* Processing sparkle indicator */}
-          {isThinking && (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex-shrink-0"
-            >
-              <Sparkles className="w-3 h-3 text-[var(--fg-brand-primary)]" />
-            </motion.span>
-          )}
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ml-3">
           {/* Timer display - always visible, actively counting during thinking */}
-          <div className={`flex items-center gap-1.5 text-xs ${
-            isThinking ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'
-          }`}>
+          <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
             <Clock className="w-3 h-3" />
             <span className="tabular-nums min-w-[24px]">
               {formatDuration(displayDuration)}
@@ -276,7 +245,7 @@ export function ThinkingBubble({
                     {/* Streaming cursor */}
                     {isThinking && (
                       <motion.span
-                        className="inline-block w-[2px] h-4 bg-[var(--fg-brand-primary)] ml-0.5 align-middle"
+                        className="inline-block w-[2px] h-4 bg-[var(--fg-tertiary)] ml-0.5 align-middle"
                         animate={{ opacity: [1, 0] }}
                         transition={{ duration: 0.5, repeat: Infinity }}
                       />
@@ -287,17 +256,17 @@ export function ThinkingBubble({
                      is started (empty string) but no content has arrived yet */
                   <div className="flex items-center gap-2 text-[var(--fg-tertiary)]/60">
                     <motion.div
-                      className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+                      className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
                       animate={{ opacity: [0.3, 1, 0.3] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
                     />
                     <motion.div
-                      className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+                      className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
                       animate={{ opacity: [0.3, 1, 0.3] }}
                       transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
                     />
                     <motion.div
-                      className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+                      className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
                       animate={{ opacity: [0.3, 1, 0.3] }}
                       transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
                     />
@@ -335,17 +304,17 @@ export function ThinkingIndicatorCompact({
       {isThinking ? (
         <div className="flex items-center gap-1">
           <motion.div
-            className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+            className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
             animate={{ opacity: [0.3, 1, 0.3] }}
             transition={{ duration: 1, repeat: Infinity }}
           />
           <motion.div
-            className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+            className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
             animate={{ opacity: [0.3, 1, 0.3] }}
             transition={{ duration: 1, repeat: Infinity, delay: 0.15 }}
           />
           <motion.div
-            className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+            className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
             animate={{ opacity: [0.3, 1, 0.3] }}
             transition={{ duration: 1, repeat: Infinity, delay: 0.3 }}
           />
@@ -353,7 +322,7 @@ export function ThinkingIndicatorCompact({
       ) : (
         <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
           <Clock className="w-3 h-3" />
-          <span>Reasoned for {thinkingDuration}s</span>
+          <span>Thought for {thinkingDuration}s</span>
         </div>
       )}
     </div>

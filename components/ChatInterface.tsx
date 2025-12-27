@@ -99,6 +99,7 @@ export function ChatInterface() {
     getSessionMessages,
     shouldScrollToBottom,
     acknowledgeShouldScrollToBottom,
+    renameChat,
     // Projects
     projects,
     currentProject,
@@ -829,9 +830,17 @@ export function ChatInterface() {
               resourcesCount={allSources.length + allResourceCards.length + allImages.length}
               threadTitle={threadTitle}
               onBack={resetChat}
-              onRenameThread={(newTitle) => {
-                // TODO: Implement rename in chat history
-                console.log('Rename thread to:', newTitle);
+              onRenameThread={async (newTitle) => {
+                // Update the local generated title immediately for UI responsiveness
+                setGeneratedTitle(newTitle);
+                
+                // Update in database if we have a session ID
+                if (currentSessionId) {
+                  const success = await renameChat(currentSessionId, newTitle);
+                  if (!success) {
+                    console.error('Failed to update chat title in database');
+                  }
+                }
               }}
               onDeleteThread={() => {
                 // Delete and go back to home

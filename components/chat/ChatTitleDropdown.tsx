@@ -222,37 +222,44 @@ export function ChatTitleDropdown({
         onClick={() => !isEditing && setIsOpen(!isOpen)}
       >
         {isEditing ? (
-          <div className="flex items-center gap-1 flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <input
               ref={inputRef}
               type="text"
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              onBlur={handleSave}
+              onBlur={(e) => {
+                // Don't save on blur if clicking one of the buttons
+                const relatedTarget = e.relatedTarget as HTMLElement;
+                if (relatedTarget?.closest('button')) return;
+                handleSave();
+              }}
               className="flex-1 min-w-0 bg-transparent text-sm text-[var(--fg-primary)] outline-none"
               onClick={(e) => e.stopPropagation()}
             />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSave();
-              }}
-              className="p-0.5 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]"
-              title="Save"
-            >
-              <Check className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCancel();
-              }}
-              className="p-0.5 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]"
-              title="Cancel"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSave();
+                }}
+                className="p-1 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] transition-colors"
+                title="Save (Enter)"
+              >
+                <Check className="w-4 h-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCancel();
+                }}
+                className="p-1 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] transition-colors"
+                title="Cancel (Escape)"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         ) : (
           <>

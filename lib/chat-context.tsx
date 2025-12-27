@@ -20,6 +20,7 @@ interface ChatContextValue {
   clearHistory: () => void;
   loadHistory: () => Promise<void>;
   deleteFromHistory: (id: string) => Promise<void>;
+  renameChat: (id: string, newTitle: string) => Promise<boolean>;
   getSessionMessages: (id: string) => Promise<ChatMessage[] | null>;
   shouldResetChat: boolean;
   triggerChatReset: () => void;
@@ -233,6 +234,25 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   }, [currentSessionId]);
 
+  const renameChat = useCallback(async (id: string, newTitle: string): Promise<boolean> => {
+    try {
+      const success = await chatService.updateChatTitle(id, newTitle);
+      if (success) {
+        // Update local state
+        setChatHistory(prev =>
+          prev.map(item =>
+            item.id === id ? { ...item, title: newTitle } : item
+          )
+        );
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error renaming chat:', error);
+      return false;
+    }
+  }, []);
+
   const getSessionMessages = useCallback(async (id: string): Promise<ChatMessage[] | null> => {
     // First check if we already have the messages in local state
     // This handles cases where sessions were saved locally or already loaded
@@ -286,6 +306,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       clearHistory,
       loadHistory,
       deleteFromHistory,
+      renameChat,
       getSessionMessages,
       shouldResetChat,
       triggerChatReset,

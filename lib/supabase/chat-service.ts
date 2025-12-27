@@ -418,6 +418,35 @@ export const chatService = {
   async searchQueries(_partialQuery: string, _limit = 5): Promise<string[]> {
     return [];
   },
+
+  /**
+   * Update a chat title
+   * Used when user manually renames a conversation
+   */
+  async updateChatTitle(id: string, newTitle: string): Promise<boolean> {
+    if (!(await checkTablesAvailable())) {
+      return false;
+    }
+
+    const supabase = createClient();
+
+    try {
+      const { error } = await supabase
+        .from('chats')
+        .update({ title: newTitle, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating chat title:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in updateChatTitle:', error);
+      return false;
+    }
+  },
 };
 
 export type { ChatSession, ChatMessage };

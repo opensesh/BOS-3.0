@@ -24,3 +24,4 @@ export { ToolExecutionCard, ToolExecutionList, ToolUseIndicator } from './ToolEx
 export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRenderer';
 export { InlineStreamingDisplay, InlineStreamingIndicator } from './InlineStreamingDisplay';
 export { UserMessageBubble } from './UserMessageBubble';
+export { DateFilterDropdown, type DateFilterValue } from './DateFilterDropdown';

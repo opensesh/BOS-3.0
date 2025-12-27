@@ -66,7 +66,7 @@ export default function ChatsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>({ type: 'preset', preset: 'all' });
 
   // Helper to safely get timestamp as Date
   const getTimestamp = (timestamp: Date | number | string): Date => {
@@ -88,24 +88,35 @@ export default function ChatsPage() {
 
     // Apply date filter
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekAgo = new Date(todayStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(todayStart.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    if (selectedFilter === 'today') {
+    if (dateFilter.type === 'preset') {
+      if (dateFilter.preset === 'today') {
+        result = result.filter(chat => {
+          const chatDate = getTimestamp(chat.timestamp);
+          return chatDate >= todayStart;
+        });
+      } else if (dateFilter.preset === 'week') {
+        result = result.filter(chat => {
+          const chatDate = getTimestamp(chat.timestamp);
+          return chatDate >= weekAgo;
+        });
+      } else if (dateFilter.preset === 'month') {
+        result = result.filter(chat => {
+          const chatDate = getTimestamp(chat.timestamp);
+          return chatDate >= monthAgo;
+        });
+      }
+      // 'all' doesn't filter
+    } else if (dateFilter.type === 'custom') {
+      const startOfDay = new Date(dateFilter.startDate.getFullYear(), dateFilter.startDate.getMonth(), dateFilter.startDate.getDate());
+      const endOfDay = new Date(dateFilter.endDate.getFullYear(), dateFilter.endDate.getMonth(), dateFilter.endDate.getDate(), 23, 59, 59, 999);
+      
       result = result.filter(chat => {
         const chatDate = getTimestamp(chat.timestamp);
-        return chatDate >= today;
-      });
-    } else if (selectedFilter === 'week') {
-      result = result.filter(chat => {
-        const chatDate = getTimestamp(chat.timestamp);
-        return chatDate >= weekAgo;
-      });
-    } else if (selectedFilter === 'month') {
-      result = result.filter(chat => {
-        const chatDate = getTimestamp(chat.timestamp);
-        return chatDate >= monthAgo;
+        return chatDate >= startOfDay && chatDate <= endOfDay;
       });
     }
 
@@ -121,7 +132,7 @@ export default function ChatsPage() {
     });
 
     return result;
-  }, [chatHistory, searchQuery, sortField, sortDirection, selectedFilter]);
+  }, [chatHistory, searchQuery, sortField, sortDirection, dateFilter]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -166,12 +177,8 @@ export default function ChatsPage() {
     }
   };
 
-  const filterOptions = [
-    { id: 'all', label: 'All time' },
-    { id: 'today', label: 'Today' },
-    { id: 'week', label: 'This week' },
-    { id: 'month', label: 'This month' },
-  ] as const;
+  // Check if any filter is active
+  const hasActiveFilter = dateFilter.type === 'custom' || (dateFilter.type === 'preset' && dateFilter.preset !== 'all');
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)]">
@@ -179,7 +186,7 @@ export default function ChatsPage() {
       <MainContent className="overflow-hidden">
         <div className="flex flex-col h-full">
           {/* Chat-style Header */}
-          <ChatsPageHeader onBack={handleBack} onNewChat={handleNewChat} />
+          <ChatsPageHeader onBack={handleBack} />
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -222,26 +229,11 @@ export default function ChatsPage() {
                   )}
                 </div>
 
-                {/* Filter Pills */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-                  <Filter className="w-4 h-4 text-[var(--fg-tertiary)] flex-shrink-0" />
-                  {filterOptions.map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setSelectedFilter(option.id)}
-                      className={`
-                        px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap
-                        transition-colors
-                        ${selectedFilter === option.id
-                          ? 'bg-[var(--fg-brand-primary)] text-white'
-                          : 'bg-[var(--bg-secondary)] text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] border border-[var(--border-secondary)]'
-                        }
-                      `}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
+                {/* Date Filter Dropdown */}
+                <DateFilterDropdown
+                  value={dateFilter}
+                  onChange={setDateFilter}
+                />
               </div>
 
               {/* Results */}
@@ -325,7 +317,7 @@ export default function ChatsPage() {
                   ">
                     <MessageSquare className="w-7 h-7 text-[var(--fg-quaternary)]" />
                   </div>
-                  {searchQuery || selectedFilter !== 'all' ? (
+                  {searchQuery || hasActiveFilter ? (
                     <>
                       <h3 className="text-lg font-semibold text-[var(--fg-primary)] mb-1">
                         No results found
@@ -336,7 +328,7 @@ export default function ChatsPage() {
                       <button
                         onClick={() => {
                           setSearchQuery('');
-                          setSelectedFilter('all');
+                          setDateFilter({ type: 'preset', preset: 'all' });
                         }}
                         className="text-sm text-[var(--fg-brand-primary)] hover:underline"
                       >

@@ -773,8 +773,9 @@ export function Sidebar() {
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* New Chat Button */}
-        <div className={`flex py-3 ${isExpandedMode ? 'px-3' : 'justify-center'}`}>
+        {/* Chat Actions Group - New Chat + Recent Chats */}
+        <div className={`flex flex-col ${isExpandedMode ? 'px-3 pt-3 pb-2 gap-1' : 'items-center pt-3 pb-1 gap-0.5'}`}>
+          {/* New Chat Button */}
           <Link
             href="/"
             onClick={handleNewChat}
@@ -804,55 +805,58 @@ export function Sidebar() {
               <span className="text-sm font-medium">New Chat</span>
             )}
           </Link>
+
+          {/* Recent Chats Link */}
+          <div 
+            className={`flex ${isExpandedMode ? '' : 'justify-center'}`}
+            onMouseEnter={handleRecentChatsMouseEnter}
+            onMouseLeave={handleRecentChatsMouseLeave}
+          >
+            {(() => {
+              const isRecentChatsActive = pathname === '/chats';
+              return (
+                <Link
+                  href="/chats"
+                  className={`
+                    flex items-center gap-2
+                    transition-colors duration-150
+                    group
+                    ${isExpandedMode 
+                      ? `w-full py-2 px-3 rounded-md ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}` 
+                      : `p-2 ${isRecentChatsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`
+                    }
+                  `}
+                  title="Recent Chats"
+                  aria-label="View recent chats"
+                  aria-current={isRecentChatsActive ? 'page' : undefined}
+                >
+                  <div className={`
+                    flex items-center justify-center rounded-md transition-all duration-150
+                    ${isExpandedMode 
+                      ? '' 
+                      : `w-8 h-8 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'group-hover:bg-[var(--bg-tertiary)]'}`
+                    }
+                  `}>
+                    <History className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
+                  </div>
+                  {isExpandedMode && (
+                    <>
+                      <span className="text-sm flex-1">Recent Chats</span>
+                      {chatHistory.length > 0 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
+                          {chatHistory.length}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </Link>
+              );
+            })()}
+          </div>
         </div>
 
-        {/* Recent Chats Link */}
-        <div 
-          className={`flex ${isExpandedMode ? 'px-3 pb-3' : 'justify-center pb-2'}`}
-          onMouseEnter={handleRecentChatsMouseEnter}
-          onMouseLeave={handleRecentChatsMouseLeave}
-        >
-          {(() => {
-            const isRecentChatsActive = pathname === '/chats';
-            return (
-              <Link
-                href="/chats"
-                className={`
-                  flex items-center gap-2
-                  transition-colors duration-150
-                  group
-                  ${isExpandedMode 
-                    ? `w-full py-2 px-3 rounded-md border border-[var(--border-secondary)] ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] border-transparent' : 'hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}` 
-                    : `p-2 ${isRecentChatsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`
-                  }
-                `}
-                title="Recent Chats"
-                aria-label="View recent chats"
-                aria-current={isRecentChatsActive ? 'page' : undefined}
-              >
-                <div className={`
-                  flex items-center justify-center rounded-md transition-all duration-150
-                  ${isExpandedMode 
-                    ? '' 
-                    : `w-8 h-8 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'group-hover:bg-[var(--bg-tertiary)]'}`
-                  }
-                `}>
-                  <History className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
-                </div>
-                {isExpandedMode && (
-                  <>
-                    <span className="text-sm flex-1">Recent Chats</span>
-                    {chatHistory.length > 0 && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
-                        {chatHistory.length}
-                      </span>
-                    )}
-                  </>
-                )}
-              </Link>
-            );
-          })()}
-        </div>
+        {/* Separator between Chat Actions and Navigation */}
+        <div className={`${isExpandedMode ? 'mx-3 my-2' : 'mx-2 my-1.5'} border-t border-[var(--border-secondary)]`} />
 
         {/* Navigation Items */}
         <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-1 items-center px-1'}`}>

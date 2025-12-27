@@ -92,7 +92,7 @@ export function MobileFullScreenMenu() {
     <AnimatePresence>
       {isMobileMenuOpen && (
         <motion.div
-          className="fixed inset-0 top-0 z-50 bg-[var(--bg-primary)] lg:hidden flex flex-col"
+          className="fixed inset-0 top-0 z-[60] bg-[var(--bg-primary)] lg:hidden flex flex-col"
           variants={menuVariants}
           initial="hidden"
           animate="visible"
@@ -127,8 +127,8 @@ export function MobileFullScreenMenu() {
             initial="hidden"
             animate="visible"
           >
-            {/* New Chat Button + Recent Chats Link */}
-            <motion.div variants={itemVariants} className="p-4 space-y-2">
+            {/* New Chat Button */}
+            <motion.div variants={itemVariants} className="p-4">
               <button
                 onClick={handleNewChat}
                 className="
@@ -145,25 +145,6 @@ export function MobileFullScreenMenu() {
                 <Plus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
                 <span>New Chat</span>
               </button>
-              
-              {/* Recent Chats Link */}
-              <Link
-                href="/chats"
-                onClick={handleNavClick}
-                className="
-                  w-full flex items-center justify-center gap-2
-                  py-2.5 px-4
-                  text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-                  transition-colors
-                  text-sm
-                "
-              >
-                <History className="w-4 h-4" />
-                <span>View recent chats</span>
-                {chatHistory.length > 0 && (
-                  <span className="text-[var(--fg-quaternary)]">({chatHistory.length})</span>
-                )}
-              </Link>
             </motion.div>
 
             {/* Navigation Section */}
@@ -195,6 +176,29 @@ export function MobileFullScreenMenu() {
                     </Link>
                   );
                 })}
+
+                {/* Separator before chat items */}
+                <div className="my-2 border-t border-[var(--border-secondary)]" />
+
+                {/* Recent Chats Link */}
+                <Link
+                  href="/chats"
+                  onClick={handleNavClick}
+                  className={`
+                    flex items-center gap-3 px-4 py-3.5 rounded-xl
+                    transition-colors
+                    ${pathname === '/chats'
+                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]' 
+                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                    }
+                  `}
+                >
+                  <History className={`w-5 h-5 flex-shrink-0 ${pathname === '/chats' ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                  <span className="font-medium flex-1">Recent Chats</span>
+                  {chatHistory.length > 0 && (
+                    <span className="text-xs text-[var(--fg-quaternary)]">({chatHistory.length})</span>
+                  )}
+                </Link>
               </nav>
             </motion.div>
 

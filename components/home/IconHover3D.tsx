@@ -24,7 +24,16 @@ export function IconHover3D({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="group relative w-full h-full rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-colors duration-300 hover:border-[var(--border-brand)]"
+      whileHover={{ 
+        y: -4,
+        boxShadow: '0 8px 24px -8px rgba(0,0,0,0.15)',
+      }}
       whileTap={{ scale: 0.98 }}
+      transition={{
+        type: 'spring',
+        stiffness: 400,
+        damping: 25,
+      }}
     >
       <div className="flex flex-col h-full">
         {/* Text Content - TOP */}

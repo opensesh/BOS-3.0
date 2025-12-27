@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   ChevronLeft, 
   ChevronRight,
@@ -19,7 +19,6 @@ import { IconHover3D } from './IconHover3D';
 
 interface PrePromptGridProps {
   onPromptSubmit: (prompt: string) => void;
-  isVisible?: boolean;
 }
 
 // Quick links to subpages (folder cards)
@@ -103,7 +102,7 @@ const INITIAL_INDEX_MOBILE = 3;
 // Swipe threshold in pixels
 const SWIPE_THRESHOLD = 50;
 
-export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGridProps) {
+export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
   const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX_DESKTOP);
   const [visibleCount, setVisibleCount] = useState(4); // Default to desktop
   
@@ -194,15 +193,7 @@ export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGri
   };
   
   return (
-    <AnimatePresence mode="wait">
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: 10, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -10, scale: 0.98 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-3xl mx-auto px-4"
-        >
+    <div className="w-full max-w-3xl mx-auto px-4">
           {/* Carousel with arrows outside - flex row layout */}
           <div 
             ref={containerRef}
@@ -212,18 +203,25 @@ export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGri
             onTouchEnd={handleTouchEnd}
           >
             {/* Left arrow - outside cards */}
-            <button
+            <motion.button
               onClick={handlePrev}
               disabled={currentIndex <= 0}
-              className={`shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+              className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center ${
                 currentIndex > 0 
-                  ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
+                  ? 'cursor-pointer' 
                   : 'opacity-30 cursor-not-allowed'
               }`}
+              whileHover={currentIndex > 0 ? { 
+                scale: 1.05,
+                borderColor: 'var(--border-brand)',
+                backgroundColor: 'var(--bg-tertiary)',
+              } : {}}
+              whileTap={currentIndex > 0 ? { scale: 0.95 } : {}}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               aria-label="Previous slide"
             >
               <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
-            </button>
+            </motion.button>
 
             {/* Cards container */}
             <div 
@@ -232,11 +230,19 @@ export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGri
               aria-label="Quick action cards"
               aria-live="polite"
             >
-              <div 
-                className="flex gap-3 transition-transform duration-300 ease-out will-change-transform"
+              <motion.div 
+                className="flex gap-3 will-change-transform"
                 style={{
                   width: getTrackWidth(),
-                  transform: `translateX(calc(-${currentIndex} * (12.5% + 1.5px)))`,
+                }}
+                animate={{
+                  x: `calc(-${currentIndex} * (12.5% + 1.5px))`,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  mass: 1,
                 }}
               >
                 {allItems.map((item, idx) => (
@@ -264,47 +270,66 @@ export function PrePromptGrid({ onPromptSubmit, isVisible = true }: PrePromptGri
                     )}
                   </div>
                 ))}
-              </div>
+              </motion.div>
             </div>
 
             {/* Right arrow - outside cards */}
-            <button
+            <motion.button
               onClick={handleNext}
               disabled={currentIndex >= maxIndex}
-              className={`shrink-0 w-8 h-8 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-all duration-200 ${
+              className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center ${
                 currentIndex < maxIndex 
-                  ? 'hover:border-[var(--border-brand)] hover:bg-[var(--bg-tertiary)] cursor-pointer active:scale-95' 
+                  ? 'cursor-pointer' 
                   : 'opacity-30 cursor-not-allowed'
               }`}
+              whileHover={currentIndex < maxIndex ? { 
+                scale: 1.05,
+                borderColor: 'var(--border-brand)',
+                backgroundColor: 'var(--bg-tertiary)',
+              } : {}}
+              whileTap={currentIndex < maxIndex ? { scale: 0.95 } : {}}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               aria-label="Next slide"
             >
               <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
-            </button>
+            </motion.button>
           </div>
 
           {/* Progress dots */}
           <div 
-            className="flex justify-center gap-1.5 mt-3 sm:mt-4"
+            className="flex justify-center gap-2 mt-4 sm:mt-5"
             role="tablist"
             aria-label="Carousel navigation"
           >
             {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
-              <button
+              <motion.button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
                 role="tab"
                 aria-selected={idx === currentIndex}
                 aria-label={`Go to slide ${idx + 1} of ${maxIndex + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2 ${
-                  idx === currentIndex 
-                    ? 'bg-[var(--color-brand-500)] w-4' 
-                    : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)] w-1.5'
-                }`}
+                className="h-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2"
+                animate={{
+                  width: idx === currentIndex ? 20 : 6,
+                  backgroundColor: idx === currentIndex 
+                    ? 'var(--color-brand-500)' 
+                    : 'var(--border-primary)',
+                }}
+                whileHover={{
+                  backgroundColor: idx === currentIndex 
+                    ? 'var(--color-brand-500)' 
+                    : 'var(--fg-tertiary)',
+                  scale: 1.1,
+                }}
+                whileTap={{ scale: 0.95 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 400,
+                  damping: 25,
+                }}
               />
             ))}
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        </div>
   );
 }

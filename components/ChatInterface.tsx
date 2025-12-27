@@ -240,6 +240,9 @@ export function ChatInterface() {
             setActiveTab('answer');
             setLocalInput('');
             setSubmitError(null);
+            // Reset scroll tracking for loaded session
+            isNearBottomRef.current = true;
+            userHasScrolledUpRef.current = false;
           }
         } catch (error) {
           console.error('Error loading session:', error);
@@ -509,10 +512,54 @@ export function ChatInterface() {
     }
   }, [input]);
 
-  // Scroll to bottom when new messages arrive
+  // Handle scroll events to detect if user has scrolled up
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    // Calculate distance from bottom (threshold: 150px)
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    const nearBottom = distanceFromBottom < 150;
+    
+    isNearBottomRef.current = nearBottom;
+    
+    // If user scrolled up significantly, mark it
+    if (!nearBottom) {
+      userHasScrolledUpRef.current = true;
+    }
+    
+    // If user scrolled back to bottom, clear the flag
+    if (nearBottom && userHasScrolledUpRef.current) {
+      userHasScrolledUpRef.current = false;
+    }
+  }, []);
+
+  // Attach scroll listener to the scroll container
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [handleScroll, hasMessages]);
+
+  // Smart auto-scroll: only scroll to bottom if user hasn't scrolled up
+  // This respects the user's position when they're reviewing earlier content
+  useEffect(() => {
+    // Skip if user has intentionally scrolled up to review content
+    if (userHasScrolledUpRef.current) return;
+    
+    // Only auto-scroll if near bottom or this is a new user message
+    if (isNearBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
+
+  // Reset scroll tracking when a new conversation starts (user submits a message)
+  const resetScrollTracking = useCallback(() => {
+    isNearBottomRef.current = true;
+    userHasScrolledUpRef.current = false;
+  }, []);
 
   // Scroll to bottom when loading a chat session from history
   useEffect(() => {
@@ -586,6 +633,9 @@ export function ChatInterface() {
     // Allow submission with just attachments (no text required)
     if (!input.trim() && attachments.length === 0) return;
     if (isLoading) return;
+    
+    // Reset scroll tracking - user wants to see the new response
+    resetScrollTracking();
 
     if (typeof sendMessage !== 'function') {
       setSubmitError('Chat is not ready. Please refresh the page and try again.');
@@ -634,6 +684,9 @@ export function ChatInterface() {
     // Allow submission with just attachments (no text required)
     if (!query.trim() && (!followUpAttachments || followUpAttachments.length === 0)) return;
     if (isLoading) return;
+    
+    // Reset scroll tracking - user wants to see the new response
+    resetScrollTracking();
 
     try {
       const requestBody = {

@@ -19,6 +19,10 @@ interface ChatResponseProps {
   modelUsed?: string;
   onFollowUpClick: (question: string) => void;
   onRegenerate?: () => void;
+  /** Unique message ID for feedback tracking */
+  messageId?: string;
+  /** Chat/session ID for feedback context */
+  chatId?: string;
 }
 
 export function ChatResponse({
@@ -30,6 +34,8 @@ export function ChatResponse({
   modelUsed,
   onFollowUpClick,
   onRegenerate,
+  messageId,
+  chatId,
 }: ChatResponseProps) {
   const [activeTab, setActiveTab] = useState<ChatTab>('answer');
 
@@ -94,6 +100,9 @@ export function ChatResponse({
                   sources={sources}
                   resourceCards={resourceCards}
                   content={content}
+                  query={query}
+                  messageId={messageId}
+                  chatId={chatId}
                   onRegenerate={onRegenerate}
                   showSources={showCitations && hasLinks}
                   modelUsed={modelUsed}

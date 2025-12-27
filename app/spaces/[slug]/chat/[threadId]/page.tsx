@@ -330,6 +330,7 @@ export default function SpaceChatPage() {
                           onFollowUpClick={handleFollowUpSubmit}
                           onRegenerate={() => handleFollowUpSubmit(message.content)}
                           isLastResponse={idx === parsedMessages.length - 2}
+                          messageId={nextMessage.id}
                         />
                       );
                     }

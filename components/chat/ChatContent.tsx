@@ -19,6 +19,10 @@ interface ChatContentProps {
   thinking?: string;
   /** Tool calls made during the response */
   toolCalls?: ToolCall[];
+  /** Unique message ID for feedback tracking */
+  messageId?: string;
+  /** Chat/session ID for feedback context */
+  chatId?: string;
 }
 
 export function ChatContent({
@@ -32,6 +36,8 @@ export function ChatContent({
   isLastResponse = true,
   thinking,
   toolCalls,
+  messageId,
+  chatId,
 }: ChatContentProps) {
   // Check if we should show citations (only for Perplexity models)
   const showCitations = modelUsed?.includes('sonar') || modelUsed?.includes('perplexity');
@@ -68,6 +74,8 @@ export function ChatContent({
           resourceCards={resourceCards}
           content={content}
           query={query}
+          messageId={messageId}
+          chatId={chatId}
           onRegenerate={onRegenerate}
           showSources={hasLinks}
           modelUsed={modelUsed}

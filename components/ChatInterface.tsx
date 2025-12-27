@@ -749,6 +749,7 @@ export function ChatInterface() {
                               isLastResponse={idx === parsedMessages.length - 2}
                               thinking={nextMessage.thinking}
                               toolCalls={nextMessage.toolCalls}
+                              messageId={nextMessage.id}
                             />
                           );
                         }

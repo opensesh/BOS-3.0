@@ -1,34 +1,33 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  Share2,
-  Download,
   RefreshCw,
   ThumbsUp,
   ThumbsDown,
   Copy,
   Check,
-  SquareSlash,
-  FileText,
-  FileCode,
-  FileDown,
   Globe,
   Hexagon,
-  Compass,
   Rss,
 } from 'lucide-react';
 import { SourceInfo } from './AnswerView';
 import { BrandResourceCardProps } from './BrandResourceCard';
-import { ShortcutModal } from './ShortcutModal';
 import { SourcesDrawer } from './SourcesDrawer';
+import {
+  submitFeedback,
+  removeFeedback,
+  getFeedback,
+  type FeedbackType,
+} from '@/lib/supabase/feedback-service';
 
 interface ResponseActionsProps {
   sources?: SourceInfo[];
   resourceCards?: BrandResourceCardProps[];
   content?: string;
   query?: string;
-  onShare?: () => void;
+  messageId?: string;
+  chatId?: string;
   onRegenerate?: () => void;
   showSources?: boolean;
   modelUsed?: string;
@@ -51,32 +50,27 @@ export function ResponseActions({
   resourceCards = [],
   content = '',
   query = '',
-  onShare,
+  messageId,
+  chatId,
   onRegenerate,
   showSources = false,
   modelUsed,
 }: ResponseActionsProps) {
-  const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackType | null>(null);
   const [copied, setCopied] = useState(false);
-  const [shared, setShared] = useState(false);
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const [showShortcutModal, setShowShortcutModal] = useState(false);
   const [showSourcesDrawer, setShowSourcesDrawer] = useState(false);
-  const exportMenuRef = useRef<HTMLDivElement>(null);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
-  // Close export menu when clicking outside
+  // Load existing feedback on mount
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
-        setShowExportMenu(false);
-      }
-    };
-
-    if (showExportMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+    if (messageId) {
+      getFeedback(messageId).then(existingFeedback => {
+        if (existingFeedback) {
+          setFeedback(existingFeedback);
+        }
+      });
     }
-  }, [showExportMenu]);
+  }, [messageId]);
 
   const handleCopy = async () => {
     try {
@@ -88,63 +82,40 @@ export function ResponseActions({
     }
   };
 
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setShared(true);
-      if (onShare) onShare();
-      setTimeout(() => setShared(false), 3000);
-    } catch (err) {
-      console.error('Failed to share:', err);
-    }
-  };
-
-  const handleExport = async (format: 'pdf' | 'markdown' | 'docx') => {
-    setShowExportMenu(false);
+  const handleFeedback = useCallback(async (type: FeedbackType) => {
+    if (isSubmittingFeedback) return;
     
-    if (format === 'markdown') {
-      // Download as markdown
-      const blob = new Blob([content], { type: 'text/markdown' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'response.md';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } else if (format === 'pdf') {
-      // For PDF, we'll use the browser's print functionality
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head><title>Export</title></head>
-            <body style="font-family: system-ui; padding: 40px; max-width: 800px; margin: 0 auto;">
-              ${content.split('\n').map(line => `<p>${line}</p>`).join('')}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
+    setIsSubmittingFeedback(true);
+    
+    try {
+      if (feedback === type) {
+        // Toggle off - remove feedback
+        if (messageId) {
+          await removeFeedback(messageId);
+        }
+        setFeedback(null);
+      } else {
+        // Set new feedback
+        const newFeedback = await submitFeedback({
+          messageId: messageId || `msg_${Date.now()}`,
+          chatId,
+          feedbackType: type,
+          query,
+          responseContent: content.slice(0, 1000), // Store first 1000 chars for context
+          modelUsed,
+        });
+        
+        if (newFeedback) {
+          setFeedback(type);
+        }
       }
-    } else if (format === 'docx') {
-      // For DOCX, download as text file (simplified)
-      const blob = new Blob([content], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'response.txt';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to submit feedback:', err);
+    } finally {
+      setIsSubmittingFeedback(false);
     }
-  };
+  }, [feedback, messageId, chatId, query, content, modelUsed, isSubmittingFeedback]);
 
-  // Check if Perplexity model is used
-  const isPerplexityModel = modelUsed?.includes('sonar') || modelUsed?.includes('perplexity');
-  
   // Separate sources by type
   const { discoverSources, webSources } = useMemo(() => {
     const discover: SourceInfo[] = [];
@@ -170,93 +141,13 @@ export function ResponseActions({
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2 py-3 mt-4">
-        {/* Left side - action buttons */}
+        {/* Left side - Sources/Citations */}
         <div className="flex items-center gap-0.5 flex-wrap">
-          {/* Share button */}
-          <Tooltip label={shared ? 'Link copied!' : 'Share'}>
-            <button
-              onClick={handleShare}
-              className={`
-                p-2 rounded-lg transition-colors
-                ${shared 
-                  ? 'text-[var(--fg-success-primary)]' 
-                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]'
-                }
-              `}
-            >
-              {shared ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-            </button>
-          </Tooltip>
-
-          {/* Export dropdown */}
-          <div className="relative" ref={exportMenuRef}>
-            <Tooltip label="Export">
-              <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                className={`
-                  p-2 rounded-lg transition-colors
-                  ${showExportMenu 
-                    ? 'text-[var(--fg-primary)] bg-[var(--bg-secondary)]' 
-                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]'
-                  }
-                `}
-              >
-                <Download className="w-4 h-4" />
-              </button>
-            </Tooltip>
-
-            {showExportMenu && (
-              <div className="absolute left-0 top-full mt-1 w-40 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] shadow-xl z-50 py-1">
-                <button
-                  onClick={() => handleExport('pdf')}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--fg-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>PDF</span>
-                </button>
-                <button
-                  onClick={() => handleExport('markdown')}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--fg-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-                >
-                  <FileCode className="w-4 h-4" />
-                  <span>Markdown</span>
-                </button>
-                <button
-                  onClick={() => handleExport('docx')}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--fg-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-                >
-                  <FileDown className="w-4 h-4" />
-                  <span>DOCX</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Regenerate */}
-          <Tooltip label="Regenerate">
-            <button
-              onClick={onRegenerate}
-              className="p-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          </Tooltip>
-
-          {/* Shortcut button - SquareSlash icon */}
-          <Tooltip label="Save as shortcut">
-            <button
-              onClick={() => setShowShortcutModal(true)}
-              className="p-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
-            >
-              <SquareSlash className="w-4 h-4" />
-            </button>
-          </Tooltip>
-
           {/* Sources button - only interactive when sources exist */}
           {hasAnySourcesData ? (
             <button
               onClick={() => setShowSourcesDrawer(true)}
-              className="flex items-center gap-2 ml-2 px-2.5 py-1.5 rounded-full bg-[var(--bg-secondary)]/80 hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] transition-colors group"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-[var(--bg-secondary)]/80 hover:bg-[var(--bg-secondary)] border border-[var(--border-secondary)] transition-colors group"
             >
               {/* Stacked source icons - show up to 4 icons representing different source types */}
               <div className="flex -space-x-1">
@@ -296,22 +187,38 @@ export function ResponseActions({
           ) : (
             /* Disabled icon when no sources - just the icon, no button styling */
             <Tooltip label="No related links">
-              <div className="p-2 ml-2">
+              <div className="p-2">
                 <Globe className="w-4 h-4 text-[var(--fg-tertiary)]/50" />
               </div>
             </Tooltip>
           )}
         </div>
 
-        {/* Right side - feedback and copy */}
+        {/* Right side - Regenerate, Feedback, Copy */}
         <div className="flex items-center gap-0.5 flex-shrink-0">
+          {/* Regenerate */}
+          <Tooltip label="Regenerate">
+            <button
+              onClick={onRegenerate}
+              className="p-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </Tooltip>
+
+          {/* Divider */}
+          <div className="w-px h-4 bg-[var(--border-primary)] mx-1" />
+
+          {/* Like */}
           <Tooltip label="Good response">
             <button
-              onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
+              onClick={() => handleFeedback('like')}
+              disabled={isSubmittingFeedback}
               className={`
                 p-2 rounded-lg transition-colors
+                ${isSubmittingFeedback ? 'opacity-50 cursor-not-allowed' : ''}
                 ${
-                  feedback === 'up'
+                  feedback === 'like'
                     ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]'
                     : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]'
                 }
@@ -321,13 +228,16 @@ export function ResponseActions({
             </button>
           </Tooltip>
 
+          {/* Dislike */}
           <Tooltip label="Poor response">
             <button
-              onClick={() => setFeedback(feedback === 'down' ? null : 'down')}
+              onClick={() => handleFeedback('dislike')}
+              disabled={isSubmittingFeedback}
               className={`
                 p-2 rounded-lg transition-colors
+                ${isSubmittingFeedback ? 'opacity-50 cursor-not-allowed' : ''}
                 ${
-                  feedback === 'down'
+                  feedback === 'dislike'
                     ? 'text-[var(--fg-error-primary)] bg-[var(--bg-error-primary)]'
                     : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]'
                 }
@@ -337,6 +247,10 @@ export function ResponseActions({
             </button>
           </Tooltip>
 
+          {/* Divider */}
+          <div className="w-px h-4 bg-[var(--border-primary)] mx-1" />
+
+          {/* Copy */}
           <Tooltip label={copied ? 'Copied!' : 'Copy'}>
             <button
               onClick={handleCopy}
@@ -351,22 +265,6 @@ export function ResponseActions({
           </Tooltip>
         </div>
       </div>
-
-      {/* Share toast notification */}
-      {shared && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-xl animate-fade-in">
-          <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
-          <span className="text-sm text-[var(--fg-primary)]">Link copied. Paste to share</span>
-        </div>
-      )}
-
-      {/* Shortcut Modal */}
-      <ShortcutModal
-        isOpen={showShortcutModal}
-        onClose={() => setShowShortcutModal(false)}
-        defaultInstructions=""
-        defaultName={query ? `/${query.slice(0, 30).toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : '/new-shortcut'}
-      />
 
       {/* Sources Drawer */}
       <SourcesDrawer

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
 import { ThinkingDotFlow } from '@/components/ui/dot-flow';
 
 interface ThinkingBubbleProps {
@@ -10,10 +10,12 @@ interface ThinkingBubbleProps {
   thinking?: string;
   /** Whether thinking is still in progress (streaming) */
   isThinking?: boolean;
-  /** Duration of thinking in seconds (available after thinking completes) */
-  thinkingDuration?: number;
   /** Whether to start collapsed (default: true) */
   defaultCollapsed?: boolean;
+  /** Callback when thinking summary is requested */
+  onSummaryRequest?: (thinking: string) => void;
+  /** Summary of the thinking content (provided after LLM summarization) */
+  summary?: string;
 }
 
 /**
@@ -21,33 +23,80 @@ interface ThinkingBubbleProps {
  * 
  * A Claude-inspired collapsible component that displays the AI's reasoning process.
  * 
+ * **Features:**
+ * - Live timer during thinking phase
+ * - Fixed header with scrollable content
+ * - Summary display when collapsed (after thinking completes)
+ * 
  * **Collapsed state:** 
- * - Shows: DotFlow animation (during thinking) or "Thought process" label + "{duration}s" + chevron
+ * - Shows: DotFlow animation (during thinking) + live timer
+ * - Or: Summary text + final duration (after complete)
  * 
  * **Expanded state:**
- * - Full thinking text in muted monospace style, scrollable if content exceeds max height
- * 
- * **Behavior:**
- * - Only renders when thinking content exists or is streaming
- * - Starts collapsed by default
- * - Stays visible after streaming completes so users can review reasoning
+ * - Fixed header with timer/duration
+ * - Scrollable thinking content in monospace style
  */
 export function ThinkingBubble({
   thinking,
   isThinking = false,
-  thinkingDuration,
   defaultCollapsed = true,
+  summary,
 }: ThinkingBubbleProps) {
   const [isExpanded, setIsExpanded] = useState(!defaultCollapsed);
   const contentRef = useRef<HTMLDivElement>(null);
   const [hasOverflow, setHasOverflow] = useState(false);
+  
+  // Live timer state
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [finalDuration, setFinalDuration] = useState<number | null>(null);
+  const timerStartRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Check if content overflows (for scroll indicator)
+  // Start timer when thinking begins
+  useEffect(() => {
+    if (isThinking && timerStartRef.current === null) {
+      // Start the timer
+      timerStartRef.current = Date.now();
+      setElapsedSeconds(0);
+      setFinalDuration(null);
+      
+      timerIntervalRef.current = setInterval(() => {
+        if (timerStartRef.current) {
+          const elapsed = Math.floor((Date.now() - timerStartRef.current) / 1000);
+          setElapsedSeconds(elapsed);
+        }
+      }, 1000);
+    } else if (!isThinking && timerStartRef.current !== null) {
+      // Stop the timer and save final duration
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      const duration = Math.floor((Date.now() - timerStartRef.current) / 1000);
+      setFinalDuration(duration);
+      timerStartRef.current = null;
+    }
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [isThinking]);
+
+  // Check if content overflows
   useEffect(() => {
     if (contentRef.current && thinking) {
       setHasOverflow(contentRef.current.scrollHeight > 200);
     }
   }, [thinking]);
+
+  // Auto-scroll content during streaming
+  useEffect(() => {
+    if (isThinking && contentRef.current && isExpanded) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
+    }
+  }, [thinking, isThinking, isExpanded]);
 
   // Don't render if no thinking content and not currently thinking
   const hasThinking = thinking && thinking.length > 0;
@@ -56,13 +105,15 @@ export function ThinkingBubble({
   }
 
   // Format duration display
-  const formatDuration = (seconds: number | undefined): string => {
-    if (!seconds) return '';
+  const formatDuration = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
   };
+
+  const displayDuration = isThinking ? elapsedSeconds : (finalDuration ?? 0);
+  const showTimer = isThinking || finalDuration !== null;
 
   return (
     <motion.div
@@ -71,28 +122,37 @@ export function ThinkingBubble({
       transition={{ duration: 0.2 }}
       className="rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)]/30 overflow-hidden"
     >
-      {/* Header - Collapsible trigger */}
+      {/* Fixed Header - Collapsible trigger */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)]/50 transition-colors group"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)]/50 transition-colors group sticky top-0 bg-[var(--bg-secondary)]/30 backdrop-blur-sm z-10"
       >
-        <div className="flex items-center gap-3">
-          {/* Dot animation during thinking, or static indicator when done */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           {isThinking ? (
-            <ThinkingDotFlow className="scale-75 origin-left" />
+            // During thinking: show dot animation
+            <ThinkingDotFlow className="scale-75 origin-left shrink-0" />
+          ) : summary ? (
+            // After thinking with summary: show truncated summary
+            <span className="text-sm text-[var(--fg-secondary)] truncate">
+              {summary}
+            </span>
           ) : (
+            // After thinking without summary: show generic label
             <span className="text-sm text-[var(--fg-secondary)]">
               Thought process
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Duration badge - only shown when thinking is complete */}
-          {!isThinking && thinkingDuration && (
-            <span className="text-xs text-[var(--fg-tertiary)] tabular-nums">
-              {formatDuration(thinkingDuration)}
-            </span>
+        <div className="flex items-center gap-2 shrink-0 ml-3">
+          {/* Timer display */}
+          {showTimer && (
+            <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
+              <Clock className="w-3 h-3" />
+              <span className="tabular-nums">
+                {formatDuration(displayDuration)}
+              </span>
+            </div>
           )}
           
           {/* Chevron toggle */}
@@ -106,7 +166,7 @@ export function ThinkingBubble({
         </div>
       </button>
 
-      {/* Expandable content */}
+      {/* Expandable scrollable content */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -117,13 +177,10 @@ export function ThinkingBubble({
             className="overflow-hidden"
           >
             <div className="border-t border-[var(--border-secondary)]">
+              {/* Scrollable content area with max height */}
               <div
                 ref={contentRef}
-                className={`
-                  px-4 py-3 text-[13px] text-[var(--fg-tertiary)]
-                  font-mono leading-relaxed whitespace-pre-wrap
-                  ${hasOverflow ? 'max-h-[300px] overflow-y-auto' : ''}
-                `}
+                className="px-4 py-3 text-[13px] text-[var(--fg-tertiary)] font-mono leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto"
               >
                 {hasThinking ? (
                   <>
@@ -159,13 +216,9 @@ export function ThinkingBubble({
                 )}
               </div>
 
-              {/* Scroll hint when content overflows */}
-              {hasOverflow && !isThinking && (
-                <div className="px-4 py-2 border-t border-[var(--border-secondary)] bg-[var(--bg-secondary)]/20">
-                  <span className="text-[11px] text-[var(--fg-quaternary)]">
-                    Scroll to see more
-                  </span>
-                </div>
+              {/* Scroll fade indicator when content overflows */}
+              {hasOverflow && (
+                <div className="h-4 bg-gradient-to-t from-[var(--bg-secondary)]/80 to-transparent pointer-events-none -mt-4 relative z-[1]" />
               )}
             </div>
           </motion.div>
@@ -193,13 +246,13 @@ export function ThinkingIndicatorCompact({
       {isThinking ? (
         <ThinkingDotFlow className="scale-75 origin-left" />
       ) : (
-        <span className="text-xs text-[var(--fg-tertiary)]">
-          Reasoned for {thinkingDuration}s
-        </span>
+        <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
+          <Clock className="w-3 h-3" />
+          <span>Reasoned for {thinkingDuration}s</span>
+        </div>
       )}
     </div>
   );
 }
 
 export default ThinkingBubble;
-

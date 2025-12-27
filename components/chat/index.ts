@@ -23,3 +23,4 @@ export { ThinkingBubble, ThinkingIndicatorCompact } from './ThinkingBubble';
 export { ToolExecutionCard, ToolExecutionList, ToolUseIndicator } from './ToolExecutionCard';
 export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRenderer';
 export { InlineStreamingDisplay, InlineStreamingIndicator } from './InlineStreamingDisplay';
+export { UserMessageBubble } from './UserMessageBubble';

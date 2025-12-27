@@ -4,7 +4,6 @@ import React from 'react';
 import { AnswerView, parseContentToSections, extractResourceCards, SourceInfo } from './AnswerView';
 import { ResponseActions } from './ResponseActions';
 import { RelatedQuestions } from './RelatedQuestions';
-import type { ToolCall } from '@/hooks/useChat';
 
 interface ChatContentProps {
   query: string;
@@ -17,10 +16,6 @@ interface ChatContentProps {
   isLastResponse?: boolean;
   /** Claude's thinking/reasoning content during extended thinking */
   thinking?: string;
-  /** Duration of thinking in seconds (available after thinking completes) */
-  thinkingDuration?: number;
-  /** Tool calls made during the response */
-  toolCalls?: ToolCall[];
   /** Unique message ID for feedback tracking */
   messageId?: string;
   /** Chat/session ID for feedback context */
@@ -37,8 +32,6 @@ export function ChatContent({
   onRegenerate,
   isLastResponse = true,
   thinking,
-  thinkingDuration,
-  toolCalls,
   messageId,
   chatId,
 }: ChatContentProps) {
@@ -67,8 +60,6 @@ export function ChatContent({
         showCitations={showCitations}
         resourceCards={resourceCards}
         thinking={thinking}
-        thinkingDuration={thinkingDuration}
-        toolCalls={toolCalls}
       />
 
       {/* Response actions - shown for all completed responses */}

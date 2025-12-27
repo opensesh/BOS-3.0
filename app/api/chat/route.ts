@@ -459,14 +459,9 @@ async function streamWithAnthropicNative(
             console.warn('Continuation streaming produced no text, checking final message...');
             for (const block of continueResponse.content || []) {
               if (block.type === 'text' && 'text' in block && block.text) {
-                console.log('Found text in final message, streaming it...');
-                const text = block.text;
-                const chunkSize = 20;
-                for (let i = 0; i < text.length; i += chunkSize) {
-                  const chunk = text.slice(i, i + chunkSize);
-                  controller.enqueue(sse.encode({ type: 'text', content: chunk }));
-                  await new Promise(resolve => setTimeout(resolve, 5));
-                }
+                console.log('Found text in final message, sending immediately...');
+                // Send immediately without artificial delays
+                controller.enqueue(sse.encode({ type: 'text', content: block.text }));
               }
             }
           }
@@ -842,14 +837,9 @@ async function streamWithPerplexityNative(
           };
         });
 
-        // Stream the content in chunks for smooth UX
-        const chunkSize = 20;
-        for (let i = 0; i < fullContent.length; i += chunkSize) {
-          const chunk = fullContent.slice(i, i + chunkSize);
-          controller.enqueue(sse.encode({ type: 'text', content: chunk }));
-          // Small delay to simulate streaming
-          await new Promise(resolve => setTimeout(resolve, 5));
-        }
+        // Stream the entire content immediately for real-time display
+        // No artificial delays - text should appear as fast as possible
+        controller.enqueue(sse.encode({ type: 'text', content: fullContent }));
 
         // Stream sources one-by-one for a smooth "finding sources" feel (matching Anthropic behavior)
         if (sources.length > 0) {

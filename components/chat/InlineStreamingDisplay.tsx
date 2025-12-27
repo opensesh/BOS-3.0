@@ -1,59 +1,12 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Loader2, Globe, Brain, Wrench, Calculator, Clock, FileText, Code } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ThinkingDotFlow } from '@/components/ui/dot-flow';
 import { ThinkingBubble } from './ThinkingBubble';
-import type { ToolCall } from '@/hooks/useChat';
-
-// Tool name to icon and label mapping
-const toolConfig: Record<string, { 
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-}> = {
-  'web_search': {
-    icon: Globe,
-    label: 'Web Search',
-  },
-  'search_brand_knowledge': {
-    icon: Brain,
-    label: 'Brand Context',
-  },
-  'calculator': {
-    icon: Calculator,
-    label: 'Calculator',
-  },
-  'get_current_time': {
-    icon: Clock,
-    label: 'Time',
-  },
-  'read_file': {
-    icon: FileText,
-    label: 'File Read',
-  },
-  'create_artifact': {
-    icon: Code,
-    label: 'Artifact',
-  },
-};
-
-// Helper to get tool label
-const getToolLabel = (tool: ToolCall): string => {
-  const config = toolConfig[tool.name];
-  if (config) {
-    return config.label;
-  }
-  return tool.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-};
 
 interface InlineStreamingDisplayProps {
   /** Claude's thinking/reasoning content */
   thinking?: string;
-  /** Duration of thinking in seconds (available after thinking completes) */
-  thinkingDuration?: number;
-  /** Tool calls being executed */
-  toolCalls?: ToolCall[];
   /** Whether the response is still streaming */
   isStreaming: boolean;
   /** Whether any text content has arrived yet */
@@ -63,64 +16,90 @@ interface InlineStreamingDisplayProps {
 /**
  * InlineStreamingDisplay Component
  * 
- * Simplified streaming display that:
- * - Shows DotFlow animation as a "trailblazer" during initial streaming
+ * Simplified streaming display:
+ * - ALWAYS shows DotFlow animation first when streaming starts
  * - Shows ThinkingBubble when extended thinking content is present
- * - Removed: "Web Search X sources" collapsible (handled by ResponseActions footer)
+ * - Fetches summary from LLM when thinking completes
+ * - NO tool indicators (removed entirely)
  * 
- * Two modes:
- * 1. Extended thinking OFF: Just animation leading text
- * 2. Extended thinking ON: ThinkingBubble with expandable reasoning
+ * Flow:
+ * 1. Streaming starts → DotFlow animation
+ * 2. If extended thinking ON → ThinkingBubble replaces DotFlow
+ * 3. Thinking completes → Fetch summary for collapsed header
+ * 4. Text arrives → Display fades out
  */
 export function InlineStreamingDisplay({
   thinking,
-  thinkingDuration,
-  toolCalls,
   isStreaming,
   hasContent,
 }: InlineStreamingDisplayProps) {
   const hasThinking = thinking && thinking.length > 0;
-  const hasToolCalls = toolCalls && toolCalls.length > 0;
+  const [summary, setSummary] = useState<string | undefined>(undefined);
+  const [hasFetchedSummary, setHasFetchedSummary] = useState(false);
+  const lastThinkingRef = useRef<string | undefined>(undefined);
   
-  // Check if we're actively thinking (thinking content but no text yet)
-  const isThinking = Boolean(hasThinking && !hasContent && isStreaming);
-  
-  // De-duplicate tools by name - keep the most recent one
-  const uniqueTools = useMemo(() => {
-    if (!toolCalls) return [];
-    const toolMap = new Map<string, ToolCall>();
-    toolCalls.forEach(tool => {
-      toolMap.set(tool.name, tool);
-    });
-    return Array.from(toolMap.values());
-  }, [toolCalls]);
-  
-  const activeTools = useMemo(() => {
-    return uniqueTools.filter(t => t.status === 'running' || t.status === 'pending');
-  }, [uniqueTools]);
+  // Check if we're actively thinking (thinking content arriving but no text yet)
+  const isActivelyThinking = Boolean(hasThinking && !hasContent && isStreaming);
 
-  // Determine what to show:
-  // 1. If we have thinking content → show ThinkingBubble
-  // 2. If streaming with no content yet → show animation
-  // 3. If tool is running → show tool indicator
-  // 4. Otherwise → show nothing
+  // Fetch summary when thinking completes (transition from thinking to text)
+  useEffect(() => {
+    // Only fetch if:
+    // 1. We have thinking content
+    // 2. We're no longer actively thinking (text has started or streaming ended)
+    // 3. We haven't already fetched a summary for this thinking content
+    if (
+      hasThinking && 
+      !isActivelyThinking && 
+      !hasFetchedSummary &&
+      thinking !== lastThinkingRef.current
+    ) {
+      lastThinkingRef.current = thinking;
+      setHasFetchedSummary(true);
+      
+      // Fetch summary asynchronously
+      fetch('/api/summarize-thinking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ thinking }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.summary) {
+            setSummary(data.summary);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch thinking summary:', err);
+        });
+    }
+  }, [hasThinking, isActivelyThinking, hasFetchedSummary, thinking]);
 
-  // Mode 1: Extended thinking content present → ThinkingBubble
+  // Reset when thinking content changes significantly
+  useEffect(() => {
+    if (!hasThinking) {
+      setSummary(undefined);
+      setHasFetchedSummary(false);
+      lastThinkingRef.current = undefined;
+    }
+  }, [hasThinking]);
+
+  // If we have thinking content, show ThinkingBubble
+  // This handles both active thinking AND completed thinking (for review)
   if (hasThinking) {
     return (
       <div className="py-2">
         <ThinkingBubble
           thinking={thinking}
-          isThinking={isThinking}
-          thinkingDuration={thinkingDuration}
-          defaultCollapsed={true}
+          isThinking={isActivelyThinking}
+          summary={summary}
         />
       </div>
     );
   }
 
-  // Mode 2: Initial streaming with no content → DotFlow animation
-  if (isStreaming && !hasContent && !hasToolCalls) {
+  // If streaming with no content yet, show DotFlow animation
+  // This is the "trailblazer" that leads all responses
+  if (isStreaming && !hasContent) {
     return (
       <div className="py-2">
         <ThinkingDotFlow />
@@ -128,30 +107,7 @@ export function InlineStreamingDisplay({
     );
   }
 
-  // Mode 3: Tool is actively running → show minimal tool indicator
-  if (isStreaming && activeTools.length > 0) {
-    const activeTool = activeTools[activeTools.length - 1];
-    const config = toolConfig[activeTool.name];
-    const Icon = config?.icon || Wrench;
-    
-    return (
-      <div className="py-2">
-        <motion.div
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2"
-        >
-          <Icon className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
-          <span className="text-xs text-[var(--fg-secondary)]">
-            {getToolLabel(activeTool)}
-          </span>
-          <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
-        </motion.div>
-      </div>
-    );
-  }
-
-  // Nothing to show
+  // Nothing to show - text is streaming or complete
   return null;
 }
 
@@ -159,60 +115,13 @@ export function InlineStreamingDisplay({
  * Compact version for minimal UI
  */
 export function InlineStreamingIndicator({
-  thinking,
-  toolCalls,
   isStreaming,
-}: Omit<InlineStreamingDisplayProps, 'hasContent' | 'thinkingDuration'>) {
-  const hasThinking = thinking && thinking.length > 0;
-  
-  // De-duplicate tools by name, keep most recent
-  const uniqueActiveTools = useMemo(() => {
-    if (!toolCalls) return [];
-    const toolMap = new Map<string, ToolCall>();
-    toolCalls
-      .filter(t => t.status === 'running' || t.status === 'pending')
-      .forEach(tool => {
-        toolMap.set(tool.name, tool);
-      });
-    return Array.from(toolMap.values());
-  }, [toolCalls]);
-
+}: {
+  isStreaming: boolean;
+}) {
   if (!isStreaming) return null;
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className="inline-flex items-center gap-2 text-xs"
-    >
-      {hasThinking && (
-        <>
-          <Brain className="w-3 h-3 text-[var(--fg-brand-primary)]" />
-          <span className="text-[var(--fg-tertiary)]">Thinking...</span>
-          <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
-        </>
-      )}
-      
-      {uniqueActiveTools.length > 0 && !hasThinking && (
-        <>
-          {(() => {
-            const config = toolConfig[uniqueActiveTools[0].name];
-            const Icon = config?.icon || Wrench;
-            return <Icon className="w-3 h-3 text-[var(--fg-brand-primary)]" />;
-          })()}
-          <span className="text-[var(--fg-tertiary)]">
-            {getToolLabel(uniqueActiveTools[0])}
-          </span>
-          <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
-        </>
-      )}
-      
-      {!hasThinking && uniqueActiveTools.length === 0 && (
-        <Loader2 className="w-3 h-3 text-[var(--fg-tertiary)] animate-spin" />
-      )}
-    </motion.div>
-  );
+  return <ThinkingDotFlow className="scale-75" />;
 }
 
 export default InlineStreamingDisplay;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useChat, type ToolCall } from '@/hooks/useChat';
+import { useChat } from '@/hooks/useChat';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -62,10 +62,6 @@ interface ParsedMessage {
   modelUsed?: string;
   /** Claude's thinking/reasoning content during extended thinking */
   thinking?: string;
-  /** Duration of thinking in seconds (available after thinking completes) */
-  thinkingDuration?: number;
-  /** Tool calls made during the response */
-  toolCalls?: ToolCall[];
 }
 
 export function ChatInterface() {
@@ -662,8 +658,6 @@ export function ChatInterface() {
       const messageAny = message as any;
       const messageSources = messageAny.sources as SourceInfo[] | undefined;
       const messageThinking = messageAny.thinking as string | undefined;
-      const messageThinkingDuration = messageAny.thinkingDuration as number | undefined;
-      const messageToolCalls = messageAny.toolCalls as ToolCall[] | undefined;
       
       return {
         id: message.id,
@@ -673,8 +667,6 @@ export function ChatInterface() {
         images: [],
         modelUsed,
         thinking: messageThinking,
-        thinkingDuration: messageThinkingDuration,
-        toolCalls: messageToolCalls,
       };
     });
   }, [messages, modelUsed, getMessageContent]);
@@ -752,8 +744,6 @@ export function ChatInterface() {
                               onRegenerate={() => handleFollowUpSubmit(message.content)}
                               isLastResponse={idx === parsedMessages.length - 2}
                               thinking={nextMessage.thinking}
-                              thinkingDuration={nextMessage.thinkingDuration}
-                              toolCalls={nextMessage.toolCalls}
                               messageId={nextMessage.id}
                             />
                           );
@@ -764,12 +754,6 @@ export function ChatInterface() {
                           const streamingThinking = lastRawMessage?.role === 'assistant' 
                             ? (lastRawMessage as { thinking?: string }).thinking 
                             : undefined;
-                          const streamingThinkingDuration = lastRawMessage?.role === 'assistant'
-                            ? (lastRawMessage as { thinkingDuration?: number }).thinkingDuration
-                            : undefined;
-                          const streamingToolCalls = lastRawMessage?.role === 'assistant'
-                            ? (lastRawMessage as { toolCalls?: ToolCall[] }).toolCalls
-                            : undefined;
                           return (
                             <ChatContent
                               key={message.id}
@@ -779,8 +763,6 @@ export function ChatInterface() {
                               onFollowUpClick={handleFollowUpSubmit}
                               isLastResponse={true}
                               thinking={streamingThinking}
-                              thinkingDuration={streamingThinkingDuration}
-                              toolCalls={streamingToolCalls}
                             />
                           );
                         }

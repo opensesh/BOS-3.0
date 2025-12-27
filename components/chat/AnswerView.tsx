@@ -4,11 +4,11 @@ import React from 'react';
 import { InlineCitation } from './InlineCitation';
 import { BrandResourceCardProps } from './BrandResourceCard';
 import { InlineStreamingDisplay } from './InlineStreamingDisplay';
+import { UserMessageBubble } from './UserMessageBubble';
 import {
   BRAND_PAGE_ROUTES,
   BRAND_SOURCES,
 } from '@/lib/brand-knowledge';
-import type { ToolCall } from '@/hooks/useChat';
 
 /**
  * Renders text with inline markdown formatting (bold, italic)
@@ -83,10 +83,6 @@ interface AnswerViewProps {
   resourceCards?: BrandResourceCardProps[];
   /** Claude's thinking/reasoning content during extended thinking */
   thinking?: string;
-  /** Duration of thinking in seconds (available after thinking completes) */
-  thinkingDuration?: number;
-  /** Tool calls made during the response */
-  toolCalls?: ToolCall[];
 }
 
 export function AnswerView({
@@ -97,8 +93,6 @@ export function AnswerView({
   showCitations = true,
   resourceCards = [],
   thinking,
-  thinkingDuration,
-  toolCalls,
 }: AnswerViewProps) {
   // Group sources by index for citation display
   const getSourcesForCitation = (citations?: SourceInfo[]): SourceInfo[] => {
@@ -108,12 +102,8 @@ export function AnswerView({
 
   return (
     <div>
-      {/* User Query Display - Right aligned bubble */}
-      <div className="flex justify-end mb-6">
-        <div className="bg-[var(--bg-secondary)]/50 rounded-2xl px-4 py-2.5 max-w-[85%]">
-          <p className="text-[15px] text-[var(--fg-primary)]">{query}</p>
-        </div>
-      </div>
+      {/* User Query Display - Right aligned bubble with show more */}
+      <UserMessageBubble query={query} />
 
       {/* Answer Content - Tighter spacing like Perplexity */}
       <div className="space-y-3">
@@ -171,8 +161,6 @@ export function AnswerView({
         {/* Activity indicator - shows ThinkingBubble or DotFlow animation */}
         <InlineStreamingDisplay
           thinking={thinking}
-          thinkingDuration={thinkingDuration}
-          toolCalls={toolCalls}
           isStreaming={isStreaming}
           hasContent={sections.length > 0}
         />

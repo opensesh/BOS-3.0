@@ -126,49 +126,6 @@ export function MobileFullScreenMenu() {
             initial="hidden"
             animate="visible"
           >
-            {/* Chat Actions - New Chat + Recent Chats */}
-            <motion.div variants={itemVariants} className="p-4 space-y-2">
-              {/* New Chat - Primary Button */}
-              <button
-                onClick={handleNewChat}
-                className="
-                  w-full flex items-center justify-center gap-2
-                  py-3.5 px-4
-                  bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)]
-                  active:bg-[var(--bg-quaternary)]
-                  text-[var(--fg-primary)] 
-                  rounded-xl font-medium 
-                  border border-[var(--border-secondary)]
-                  transition-all
-                "
-              >
-                <Plus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-                <span>New Chat</span>
-              </button>
-
-              {/* Recent Chats - Secondary Outline Button */}
-              <Link
-                href="/chats"
-                onClick={handleNavClick}
-                className="
-                  w-full flex items-center justify-center gap-2
-                  py-3.5 px-4
-                  bg-transparent hover:bg-[var(--bg-tertiary)]
-                  active:bg-[var(--bg-tertiary)]
-                  text-[var(--fg-primary)] 
-                  rounded-xl font-medium 
-                  border border-[var(--border-secondary)]
-                  transition-all
-                "
-              >
-                <History className="w-5 h-5 text-[var(--fg-tertiary)]" />
-                <span>Recent Chats</span>
-                {chatHistory.length > 0 && (
-                  <span className="text-[var(--fg-quaternary)]">({chatHistory.length})</span>
-                )}
-              </Link>
-            </motion.div>
-
             {/* Navigation Section */}
             <motion.div variants={itemVariants} className="px-4 pb-2">
               <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
@@ -248,6 +205,49 @@ export function MobileFullScreenMenu() {
                   <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
                 </button>
               </div>
+            </motion.div>
+
+            {/* Chat Actions - New Chat + Recent Chats */}
+            <motion.div variants={itemVariants} className="p-4 pt-2 space-y-2 border-t border-[var(--border-secondary)]">
+              {/* New Chat - Primary Button */}
+              <button
+                onClick={handleNewChat}
+                className="
+                  w-full flex items-center justify-center gap-2
+                  py-3.5 px-4
+                  bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)]
+                  active:bg-[var(--bg-quaternary)]
+                  text-[var(--fg-primary)] 
+                  rounded-xl font-medium 
+                  border border-[var(--border-secondary)]
+                  transition-all
+                "
+              >
+                <Plus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+                <span>New Chat</span>
+              </button>
+
+              {/* Recent Chats - Secondary Outline Button */}
+              <Link
+                href="/chats"
+                onClick={handleNavClick}
+                className="
+                  w-full flex items-center justify-center gap-2
+                  py-3.5 px-4
+                  bg-transparent hover:bg-[var(--bg-tertiary)]
+                  active:bg-[var(--bg-tertiary)]
+                  text-[var(--fg-primary)] 
+                  rounded-xl font-medium 
+                  border border-[var(--border-secondary)]
+                  transition-all
+                "
+              >
+                <History className="w-5 h-5 text-[var(--fg-tertiary)]" />
+                <span>Recent Chats</span>
+                {chatHistory.length > 0 && (
+                  <span className="text-[var(--fg-quaternary)]">({chatHistory.length})</span>
+                )}
+              </Link>
             </motion.div>
           </motion.div>
         </motion.div>

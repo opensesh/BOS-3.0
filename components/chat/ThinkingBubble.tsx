@@ -60,7 +60,12 @@ export function ThinkingBubble({
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Track if we have thinking content
-  const hasThinking = Boolean(thinking && thinking.length > 0);
+  // Note: thinking can be an empty string when "thinking has started" but no content yet
+  // We treat both undefined/null and empty string differently:
+  // - undefined/null = no extended thinking at all
+  // - empty string = extended thinking started, waiting for content
+  // - non-empty string = extended thinking with content
+  const hasThinking = thinking !== undefined && thinking !== null;
   
   // Timer should run while streaming AND we have thinking content
   const shouldTimerRun = hasThinking && isStreaming;
@@ -260,7 +265,8 @@ export function ThinkingBubble({
                 ref={contentRef}
                 className="px-4 py-3 text-[13px] text-[var(--fg-tertiary)] leading-relaxed max-h-[300px] overflow-y-auto"
               >
-                {hasThinking ? (
+                {/* Show content if we have actual thinking text */}
+                {thinking && thinking.length > 0 ? (
                   <div>
                     {/* Natural flowing thinking content - no artificial structure */}
                     <div className="font-mono whitespace-pre-wrap">
@@ -277,7 +283,8 @@ export function ThinkingBubble({
                     )}
                   </div>
                 ) : (
-                  /* Placeholder while waiting for first thinking chunk */
+                  /* Placeholder while waiting for first thinking chunk - shows when thinking 
+                     is started (empty string) but no content has arrived yet */
                   <div className="flex items-center gap-2 text-[var(--fg-tertiary)]/60">
                     <motion.div
                       className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"

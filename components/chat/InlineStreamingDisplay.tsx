@@ -36,7 +36,12 @@ export function InlineStreamingDisplay({
   isStreaming,
   hasContent,
 }: InlineStreamingDisplayProps) {
-  const hasThinking = thinking && thinking.length > 0;
+  // Note: thinking can be an empty string when "thinking has started" but no content yet
+  // We treat both undefined/null and empty string differently:
+  // - undefined/null = no extended thinking at all  
+  // - empty string = extended thinking started, waiting for content (show bubble with placeholder)
+  // - non-empty string = extended thinking with content
+  const hasThinking = thinking !== undefined && thinking !== null;
   const [summary, setSummary] = useState<string | undefined>(undefined);
   const [hasFetchedSummary, setHasFetchedSummary] = useState(false);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);

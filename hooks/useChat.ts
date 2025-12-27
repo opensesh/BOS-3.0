@@ -203,15 +203,20 @@ export function useChat(options: UseChatOptions = {}) {
                 }
                 return newMessages;
               });
-            } else if (chunk.type === 'thinking' && chunk.content) {
-              // Append thinking to assistant message
+            } else if (chunk.type === 'thinking') {
+              // Handle thinking chunks - including empty ones that signal "thinking started"
+              // This ensures the thinking bubble appears immediately when extended thinking begins
               setMessages(prev => {
                 const newMessages = [...prev];
                 const lastIndex = newMessages.length - 1;
                 if (newMessages[lastIndex]?.role === 'assistant') {
+                  // For empty thinking chunks, initialize with empty string if not already set
+                  // For non-empty chunks, append the content
+                  const currentThinking = newMessages[lastIndex].thinking || '';
+                  const newThinking = chunk.content ? currentThinking + chunk.content : currentThinking || '';
                   newMessages[lastIndex] = {
                     ...newMessages[lastIndex],
-                    thinking: (newMessages[lastIndex].thinking || '') + chunk.content,
+                    thinking: newThinking,
                   };
                 }
                 return newMessages;

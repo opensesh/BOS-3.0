@@ -273,6 +273,17 @@ async function streamWithAnthropicNative(
       const collectedSources: SourceData[] = [];
 
       try {
+        // IMMEDIATE FEEDBACK: When extended thinking is enabled, send a signal 
+        // right away so the UI can show the thinking bubble immediately
+        // This prevents the "dead air" while waiting for the first thinking delta
+        if (thinkingConfig) {
+          console.log('[Extended Thinking] Sending immediate thinking_start signal');
+          controller.enqueue(sse.encode({ 
+            type: 'thinking', 
+            content: '' // Empty content signals "thinking has started"
+          }));
+        }
+
         // Create stream with native Anthropic SDK
         const stream = await client.messages.stream({
           model: modelId,
@@ -286,6 +297,7 @@ async function streamWithAnthropicNative(
         let currentToolUse: { id: string; name: string; input: string } | null = null;
         let pendingToolCalls: Array<{ id: string; name: string; input: Record<string, unknown> }> = [];
         let hasStreamedText = false;
+        let thinkingEventCount = 0;
 
         // Process text events - strip any raw <thinking> tags the model might output
         stream.on('text', (text: string) => {
@@ -299,6 +311,10 @@ async function streamWithAnthropicNative(
         // Stream thinking deltas in real-time using the official SDK event
         // This provides word-by-word streaming for Extended Thinking content
         stream.on('thinking', (thinkingDelta: string) => {
+          thinkingEventCount++;
+          if (thinkingEventCount === 1) {
+            console.log('[Extended Thinking] First thinking delta received');
+          }
           controller.enqueue(sse.encode({ 
             type: 'thinking', 
             content: thinkingDelta 
@@ -1085,6 +1101,15 @@ export async function POST(req: Request) {
     // Fall back to Claude Sonnet instead
     if (!activeConnectors.web && isPerplexityModel(selectedModel)) {
       console.log(`Web search disabled - switching from ${selectedModel} to claude-sonnet`);
+      selectedModel = 'claude-sonnet';
+    }
+    
+    // IMPORTANT: If extended thinking is enabled and the selected model doesn't support it,
+    // switch to Claude Sonnet which does support extended thinking.
+    // This ensures users who enable extended thinking get the feature, even for queries
+    // that would normally route to web search (Sonar).
+    if (chatOptions.enableThinking && !supportsExtendedThinking(selectedModel)) {
+      console.log(`Extended thinking enabled but ${selectedModel} doesn't support it - switching to claude-sonnet`);
       selectedModel = 'claude-sonnet';
     }
 

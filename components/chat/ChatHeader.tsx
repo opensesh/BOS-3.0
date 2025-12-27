@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowLeft, Layers } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { ChatTitleDropdown } from './ChatTitleDropdown';
 import { ShareButton } from './ShareModal';
 
@@ -43,13 +43,11 @@ export function ChatHeader({
     {
       id: 'answer' as ChatTab,
       label: 'Chat',
-      icon: null,
       available: true,
     },
     {
       id: 'resources' as ChatTab,
-      label: 'Resources',
-      icon: Layers,
+      label: 'Links',
       available: hasResources,
       count: resourcesCount,
     },
@@ -75,7 +73,6 @@ export function ChatHeader({
             {/* Tabs */}
             <div className="flex items-center">
               {tabs.map((tab) => {
-                const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
                 const isAvailable = tab.available;
 
@@ -95,7 +92,6 @@ export function ChatHeader({
                       }
                     `}
                   >
-                    {Icon && <Icon className={`w-4 h-4 ${!isAvailable ? 'opacity-50' : ''}`} />}
                     <span>{tab.label}</span>
                     {/* Count badge - only shown when NOT streaming to avoid distraction */}
                     {!isStreaming && isAvailable && tab.count !== undefined && tab.count > 0 && (

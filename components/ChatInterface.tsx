@@ -76,6 +76,8 @@ export function ChatInterface() {
   const [articleContext, setArticleContext] = useState<ArticleContext | null>(null);
   const [ideaContext, setIdeaContext] = useState<IdeaContext | null>(null);
   const [hasProcessedUrlParams, setHasProcessedUrlParams] = useState(false);
+  const [generatedTitle, setGeneratedTitle] = useState<string | null>(null);
+  const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -129,7 +131,39 @@ export function ChatInterface() {
     setActiveTab('answer');
     setLocalInput('');
     setSubmitError(null);
+    setGeneratedTitle(null);
+    setIsGeneratingTitle(false);
   }, [setMessages]);
+
+  // Generate a semantic title for the conversation
+  const generateTitle = useCallback(async (msgs: typeof messages) => {
+    if (isGeneratingTitle || generatedTitle) return;
+    
+    setIsGeneratingTitle(true);
+    try {
+      const response = await fetch('/api/generate-title', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: msgs.map(m => ({
+            role: m.role,
+            content: getMessageContent(m),
+          })),
+        }),
+      });
+      
+      if (response.ok) {
+        const { title } = await response.json();
+        if (title) {
+          setGeneratedTitle(title);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to generate title:', error);
+    } finally {
+      setIsGeneratingTitle(false);
+    }
+  }, [isGeneratingTitle, generatedTitle, getMessageContent]);
 
   // Helper to get message content (defined early for use in effect)
   const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
@@ -153,7 +187,8 @@ export function ChatInterface() {
         const firstUserMessage = messages.find(m => m.role === 'user');
         const firstAssistantMessage = messages.find(m => m.role === 'assistant');
         if (firstUserMessage) {
-          const title = getMessageContent(firstUserMessage).slice(0, 50) || 'Untitled Chat';
+          // Use generated title if available, otherwise fall back to first message
+          const title = generatedTitle || getMessageContent(firstUserMessage).slice(0, 50) || 'Untitled Chat';
           const preview = firstAssistantMessage 
             ? getMessageContent(firstAssistantMessage).slice(0, 100)
             : '';
@@ -179,7 +214,7 @@ export function ChatInterface() {
       setCurrentSessionId(null);
       acknowledgeChatReset();
     }
-  }, [shouldResetChat, acknowledgeChatReset, resetChat, messages, addToHistory, getMessageContent, setCurrentSessionId]);
+  }, [shouldResetChat, acknowledgeChatReset, resetChat, messages, addToHistory, getMessageContent, setCurrentSessionId, generatedTitle]);
 
   // Listen for session load signals from context (e.g., clicking chat history)
   useEffect(() => {
@@ -224,7 +259,14 @@ export function ChatInterface() {
       const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant');
       
       if (firstUserMessage && lastAssistantMessage) {
-        const title = getMessageContent(firstUserMessage).slice(0, 100) || 'Untitled Chat';
+        // Generate semantic title if we haven't already
+        // Only generate after first response (2 messages: user + assistant)
+        if (!generatedTitle && messages.length >= 2) {
+          generateTitle(messages);
+        }
+        
+        // Use generated title if available, otherwise fall back to first message
+        const title = generatedTitle || getMessageContent(firstUserMessage).slice(0, 100) || 'Untitled Chat';
         const preview = getMessageContent(lastAssistantMessage).slice(0, 150);
         
         // Convert messages to chat history format
@@ -246,7 +288,7 @@ export function ChatInterface() {
       }
     }
     prevStatusRef.current = status;
-  }, [status, messages, addToHistory, getMessageContent]);
+  }, [status, messages, addToHistory, getMessageContent, generatedTitle, generateTitle]);
 
   // Process URL search params for article follow-up queries or prompt pre-fill
   useEffect(() => {
@@ -694,11 +736,15 @@ export function ChatInterface() {
     });
   }, [parsedMessages]);
 
-  // Get first query for thread title
+  // Get thread title - use generated semantic title if available
   const threadTitle = useMemo(() => {
+    if (generatedTitle) {
+      return generatedTitle;
+    }
+    // Fallback to first message (truncated) while generating
     const firstUserMessage = parsedMessages.find(m => m.role === 'user');
     return firstUserMessage?.content.slice(0, 50) || 'New Thread';
-  }, [parsedMessages]);
+  }, [parsedMessages, generatedTitle]);
 
   return (
     <>
@@ -852,8 +898,8 @@ export function ChatInterface() {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col h-full w-full justify-center"
           >
-            {/* Content container - centered for visual balance */}
-            <div className="w-full max-w-3xl mx-auto flex flex-col">
+            {/* Content container - centered for visual balance, relative for absolute children */}
+            <div className="w-full max-w-3xl mx-auto flex flex-col relative">
               {/* Welcome Header - fixed position */}
               <div className="mb-8">
                 <WelcomeHeader />
@@ -1091,24 +1137,23 @@ export function ChatInterface() {
               </AnimatePresence>
               
               {/* Pre-prompt Cards Grid - below input, fades when typing */}
-              <AnimatePresence mode="wait">
-                {!input.trim() && (
-                  <motion.div
-                    className="mt-8"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ 
-                      duration: 0.5, 
-                      ease: [0.4, 0, 0.2, 1] 
-                    }}
-                  >
-                    <PrePromptGrid 
-                      onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Uses opacity animation without unmounting to prevent layout shift */}
+              <motion.div
+                className="mt-8"
+                initial={{ opacity: 1 }}
+                animate={{ 
+                  opacity: input.trim() ? 0 : 1,
+                  pointerEvents: input.trim() ? 'none' : 'auto',
+                }}
+                transition={{ 
+                  duration: 0.3, 
+                  ease: [0.4, 0, 0.2, 1] 
+                }}
+              >
+                <PrePromptGrid 
+                  onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)}
+                />
+              </motion.div>
             </div>
           </motion.div>
         )}

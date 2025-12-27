@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -11,7 +10,6 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Filter,
   X,
   Plus,
   ArrowLeft,
@@ -21,6 +19,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useChatContext } from '@/lib/chat-context';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
+import { DateFilterDropdown, type DateFilterValue } from '@/components/chat/DateFilterDropdown';
 
 type SortField = 'title' | 'date';
 type SortDirection = 'asc' | 'desc';

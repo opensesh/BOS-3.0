@@ -212,8 +212,8 @@ export function ChatTitleDropdown({
       {/* Title container - Claude-style */}
       <div
         className={`
-          flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-all cursor-pointer
-          max-w-[280px]
+          flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg border transition-all cursor-pointer
+          max-w-[140px] sm:max-w-[200px] md:max-w-[280px]
           ${isOpen
             ? 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'
             : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50'

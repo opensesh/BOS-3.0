@@ -174,7 +174,14 @@ export function parseContentToSections(
   content: string,
   sources: SourceInfo[] = []
 ): ContentSection[] {
-  const lines = content.split('\n');
+  // Strip out any raw <thinking>...</thinking> tags that the model might output
+  // This can happen when extended thinking is off but the model still outputs thinking-style text
+  const cleanedContent = content
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+    .replace(/<thinking>[\s\S]*/gi, '') // Handle unclosed tags (still streaming)
+    .trim();
+  
+  const lines = cleanedContent.split('\n');
   const sections: ContentSection[] = [];
   let currentParagraph = '';
   let currentList: string[] = [];

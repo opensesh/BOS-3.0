@@ -228,6 +228,15 @@ function createSSEEncoder() {
   };
 }
 
+// Strip raw <thinking> tags from text content
+// This handles cases where the model outputs thinking-style text even when extended thinking is off
+function stripThinkingTags(text: string): string {
+  return text
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+    .replace(/<thinking>[\s\S]*/gi, '') // Handle unclosed tags
+    .replace(/<\/thinking>/gi, ''); // Handle orphaned closing tags
+}
+
 // ============================================
 // NATIVE ANTHROPIC STREAMING (Extended Thinking + Tools)
 // ============================================
@@ -278,10 +287,13 @@ async function streamWithAnthropicNative(
         let pendingToolCalls: Array<{ id: string; name: string; input: Record<string, unknown> }> = [];
         let hasStreamedText = false;
 
-        // Process text events
+        // Process text events - strip any raw <thinking> tags the model might output
         stream.on('text', (text: string) => {
-          hasStreamedText = true;
-          controller.enqueue(sse.encode({ type: 'text', content: text }));
+          const cleanText = stripThinkingTags(text);
+          if (cleanText) {
+            hasStreamedText = true;
+            controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+          }
         });
 
         // Stream thinking deltas in real-time using the official SDK event
@@ -441,8 +453,11 @@ async function streamWithAnthropicNative(
           let hasText = false;
           
           continueStream.on('text', (text: string) => {
-            hasText = true;
-            controller.enqueue(sse.encode({ type: 'text', content: text }));
+            const cleanText = stripThinkingTags(text);
+            if (cleanText) {
+              hasText = true;
+              controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+            }
           });
 
           // Stream thinking deltas in real-time for continuation response
@@ -464,9 +479,11 @@ async function streamWithAnthropicNative(
             console.warn('Continuation streaming produced no text, checking final message...');
             for (const block of continueResponse.content || []) {
               if (block.type === 'text' && 'text' in block && block.text) {
-                console.log('Found text in final message, sending immediately...');
-                // Send immediately without artificial delays
-                controller.enqueue(sse.encode({ type: 'text', content: block.text }));
+                const cleanText = stripThinkingTags(block.text);
+                if (cleanText) {
+                  console.log('Found text in final message, sending immediately...');
+                  controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+                }
               }
             }
           }
@@ -484,9 +501,12 @@ async function streamWithAnthropicNative(
           console.warn('No text streamed during response, checking final message for text blocks...');
           for (const block of response.content || []) {
             if (block.type === 'text' && 'text' in block && block.text) {
-              console.log('Found text in final message, sending now...');
-              controller.enqueue(sse.encode({ type: 'text', content: block.text }));
-              hasStreamedText = true;
+              const cleanText = stripThinkingTags(block.text);
+              if (cleanText) {
+                console.log('Found text in final message, sending now...');
+                controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+                hasStreamedText = true;
+              }
             }
           }
           
@@ -865,7 +885,10 @@ async function streamWithPerplexityNative(
 
         // Stream the entire content immediately for real-time display
         // No artificial delays - text should appear as fast as possible
-        controller.enqueue(sse.encode({ type: 'text', content: fullContent }));
+        const cleanContent = stripThinkingTags(fullContent);
+        if (cleanContent) {
+          controller.enqueue(sse.encode({ type: 'text', content: cleanContent }));
+        }
 
         // Stream sources one-by-one for a smooth "finding sources" feel (matching Anthropic behavior)
         if (sources.length > 0) {

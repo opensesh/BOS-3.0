@@ -310,6 +310,97 @@ function RecentChatsFlyout({
   );
 }
 
+// Projects flyout for collapsed mode
+function ProjectsFlyout({
+  isOpen,
+  anchorRect,
+  onClose,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  isOpen: boolean;
+  anchorRect: DOMRect | null;
+  onClose: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) {
+  const { projects } = useChatContext();
+
+  if (!anchorRect) return null;
+
+  const iconCenter = anchorRect.top + anchorRect.height / 2;
+  const flyoutTop = Math.max(iconCenter - 20, 60);
+
+  return (
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, x: -4, scale: 0.98 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{
+            duration: 0.2,
+            ease: [0.4, 0, 0.2, 1],
+            exit: { duration: 0.3, ease: [0.4, 0, 1, 1] },
+          }}
+          className="fixed z-[60] w-[240px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
+          style={{
+            left: SIDEBAR_WIDTH_COLLAPSED + 8,
+            top: flyoutTop,
+          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          role="menu"
+          aria-label="Projects menu"
+        >
+          <Link
+            href="/projects"
+            onClick={onClose}
+            className="px-3 py-2.5 border-b border-[var(--border-secondary)] flex items-center justify-between group hover:bg-[var(--bg-tertiary)] transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Folder className="w-4 h-4 text-[var(--fg-tertiary)]" />
+              <span className="text-sm font-medium text-[var(--fg-primary)]">Projects</span>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+          </Link>
+          <div className="py-2 max-h-[300px] overflow-y-auto">
+            {projects.length > 0 ? (
+              projects.slice(0, 8).map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/projects/${project.id}`}
+                  onClick={onClose}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-left"
+                  role="menuitem"
+                >
+                  <div
+                    className="w-3 h-3 rounded-sm flex-shrink-0"
+                    style={{ backgroundColor: project.color }}
+                  />
+                  <span className="truncate">{project.name}</span>
+                </Link>
+              ))
+            ) : (
+              <p className="px-3 py-2 text-xs text-[var(--fg-quaternary)]">No projects yet</p>
+            )}
+            {projects.length > 8 && (
+              <Link
+                href="/projects"
+                onClick={onClose}
+                className="w-full flex items-center justify-center gap-1 px-3 py-2 mt-1 text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors border-t border-[var(--border-secondary)]"
+              >
+                View all {projects.length} projects
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // Flyout drawer for collapsed mode (small tooltip-style flyout on hover)
 function CollapsedFlyout({ 
   item, 
@@ -571,6 +662,11 @@ export function Sidebar() {
   const [recentChatsAnchorRect, setRecentChatsAnchorRect] = useState<DOMRect | null>(null);
   const [isRecentChatsFlyoutHovered, setIsRecentChatsFlyoutHovered] = useState(false);
   const recentChatsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Projects flyout state for collapsed mode
+  const [isProjectsFlyoutOpen, setIsProjectsFlyoutOpen] = useState(false);
+  const [projectsAnchorRect, setProjectsAnchorRect] = useState<DOMRect | null>(null);
+  const [isProjectsFlyoutHovered, setIsProjectsFlyoutHovered] = useState(false);
+  const projectsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // For hover mode - NavigationDrawer
   const [drawerItem, setDrawerItem] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -732,6 +828,52 @@ export function Sidebar() {
     setIsRecentChatsFlyoutHovered(false);
   };
 
+  // Projects flyout handlers for collapsed mode
+  const handleProjectsMouseEnter = (event: React.MouseEvent) => {
+    if (shouldShowFlyout) {
+      if (projectsTimeoutRef.current) {
+        clearTimeout(projectsTimeoutRef.current);
+        projectsTimeoutRef.current = null;
+      }
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      setProjectsAnchorRect(rect);
+      setIsProjectsFlyoutOpen(true);
+    }
+  };
+
+  const handleProjectsMouseLeave = () => {
+    if (shouldShowFlyout) {
+      projectsTimeoutRef.current = setTimeout(() => {
+        if (!isProjectsFlyoutHovered) {
+          setIsProjectsFlyoutOpen(false);
+          setProjectsAnchorRect(null);
+        }
+      }, 600);
+    }
+  };
+
+  const handleProjectsFlyoutMouseEnter = () => {
+    setIsProjectsFlyoutHovered(true);
+    if (projectsTimeoutRef.current) {
+      clearTimeout(projectsTimeoutRef.current);
+      projectsTimeoutRef.current = null;
+    }
+  };
+
+  const handleProjectsFlyoutMouseLeave = () => {
+    setIsProjectsFlyoutHovered(false);
+    projectsTimeoutRef.current = setTimeout(() => {
+      setIsProjectsFlyoutOpen(false);
+      setProjectsAnchorRect(null);
+    }, 800);
+  };
+
+  const handleProjectsFlyoutClose = () => {
+    setIsProjectsFlyoutOpen(false);
+    setProjectsAnchorRect(null);
+    setIsProjectsFlyoutHovered(false);
+  };
+
   const handleDrawerClose = () => {
     setIsDrawerOpen(false);
     setDrawerItem(null);
@@ -856,7 +998,11 @@ export function Sidebar() {
           </div>
 
           {/* Projects Link */}
-          <div className={`flex ${isExpandedMode ? '' : 'justify-center'}`}>
+          <div 
+            className={`flex ${isExpandedMode ? '' : 'justify-center'}`}
+            onMouseEnter={handleProjectsMouseEnter}
+            onMouseLeave={handleProjectsMouseLeave}
+          >
             {(() => {
               const isProjectsActive = pathname.startsWith('/projects');
               return (
@@ -1137,6 +1283,13 @@ export function Sidebar() {
             onClose={handleRecentChatsFlyoutClose}
             onMouseEnter={handleRecentChatsFlyoutMouseEnter}
             onMouseLeave={handleRecentChatsFlyoutMouseLeave}
+          />
+          <ProjectsFlyout
+            isOpen={isProjectsFlyoutOpen}
+            anchorRect={projectsAnchorRect}
+            onClose={handleProjectsFlyoutClose}
+            onMouseEnter={handleProjectsFlyoutMouseEnter}
+            onMouseLeave={handleProjectsFlyoutMouseLeave}
           />
         </>
       )}

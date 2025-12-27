@@ -4,6 +4,15 @@ import { useState, useEffect } from 'react';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
 import { SettingsTabs } from '@/components/settings/SettingsTabs';
 import { ProfileForm } from '@/components/settings/ProfileForm';
+import { MyDetailsForm } from '@/components/settings/MyDetailsForm';
+import { PasswordForm } from '@/components/settings/PasswordForm';
+import { TeamForm } from '@/components/settings/TeamForm';
+import { PlanForm } from '@/components/settings/PlanForm';
+import { BillingForm } from '@/components/settings/BillingForm';
+import { EmailForm } from '@/components/settings/EmailForm';
+import { NotificationsForm } from '@/components/settings/NotificationsForm';
+import { IntegrationsForm } from '@/components/settings/IntegrationsForm';
+import { APIForm } from '@/components/settings/APIForm';
 import type { UserProfile } from '@/lib/supabase/types';
 
 // Tab configuration
@@ -69,6 +78,8 @@ export default function AccountPage() {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'my-details':
+        return <MyDetailsForm />;
       case 'profile':
         return (
           <ProfileForm
@@ -77,20 +88,22 @@ export default function AccountPage() {
             onUpdate={handleProfileUpdate}
           />
         );
-      case 'my-details':
       case 'password':
+        return <PasswordForm />;
       case 'team':
+        return <TeamForm />;
       case 'plan':
+        return <PlanForm />;
       case 'billing':
+        return <BillingForm />;
       case 'email':
+        return <EmailForm />;
       case 'notifications':
+        return <NotificationsForm />;
       case 'integrations':
+        return <IntegrationsForm />;
       case 'api':
-        return (
-          <div className="flex items-center justify-center h-64 text-[var(--fg-tertiary)]">
-            <p className="text-sm">{SETTINGS_TABS.find(t => t.id === activeTab)?.label} settings coming soon...</p>
-          </div>
-        );
+        return <APIForm />;
       default:
         return null;
     }
@@ -121,4 +134,3 @@ export default function AccountPage() {
     </div>
   );
 }
-

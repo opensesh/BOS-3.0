@@ -161,42 +161,8 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
   };
 
   return (
-    <div className="relative">
-      {/* Trigger Button */}
-      <button
-        ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
-        className={`
-          flex items-center gap-2 px-3 py-1.5
-          text-sm font-medium
-          rounded-lg
-          border border-[var(--border-secondary)]
-          transition-all duration-150
-          ${isOpen 
-            ? 'bg-[var(--bg-tertiary)] ring-2 ring-brand-aperol/20 border-brand-aperol' 
-            : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--fg-primary)]'
-          }
-        `}
-        aria-expanded={isOpen}
-        aria-haspopup="dialog"
-      >
-        <CalendarDays className="w-4 h-4 text-[var(--fg-tertiary)]" />
-        <span className="text-[var(--fg-primary)]">{formatDateRange(value)}</span>
-        {value.type === 'custom' || (value.type === 'preset' && value.preset !== 'all') ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onChange({ type: 'preset', preset: 'all' });
-            }}
-            className="p-0.5 -mr-1 rounded hover:bg-[var(--bg-quaternary)] text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)] transition-colors"
-            aria-label="Clear filter"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        ) : null}
-      </button>
-
-      {/* Backdrop - blurs content behind */}
+    <>
+      {/* Backdrop - blurs content behind (rendered at root level via portal-like fixed positioning) */}
       {isOpen && (
         <div 
           className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in duration-150"
@@ -208,23 +174,57 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
         />
       )}
 
-      {/* Dropdown Panel */}
-      {isOpen && (
-        <div
-          ref={dropdownRef}
-          className="
-            absolute top-full right-0 mt-2 z-50
-            bg-[var(--bg-primary)]
-            border border-[var(--border-secondary)]
-            rounded-xl
-            shadow-xl shadow-black/20
-            overflow-hidden
-            animate-in fade-in slide-in-from-top-2 duration-150
-            w-[320px]
-          "
-          role="dialog"
-          aria-label="Date filter"
-        >
+      <div className="relative z-50">
+        {/* Trigger Button - stays above backdrop */}
+        <div className="flex items-center gap-1">
+          <button
+            ref={buttonRef}
+            onClick={() => setIsOpen(!isOpen)}
+            className={`
+              flex items-center gap-2 px-3 py-1.5
+              text-sm font-medium
+              rounded-lg
+              border border-[var(--border-secondary)]
+              transition-all duration-150
+              ${isOpen 
+                ? 'bg-[var(--bg-tertiary)] ring-2 ring-brand-aperol/20 border-brand-aperol' 
+                : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--fg-primary)]'
+              }
+            `}
+            aria-expanded={isOpen}
+            aria-haspopup="dialog"
+          >
+            <CalendarDays className="w-4 h-4 text-[var(--fg-tertiary)]" />
+            <span className="text-[var(--fg-primary)]">{formatDateRange(value)}</span>
+          </button>
+          {(value.type === 'custom' || (value.type === 'preset' && value.preset !== 'all')) && (
+            <button
+              onClick={() => onChange({ type: 'preset', preset: 'all' })}
+              className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)] transition-colors"
+              aria-label="Clear filter"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Dropdown Panel */}
+        {isOpen && (
+          <div
+            ref={dropdownRef}
+            className="
+              absolute top-full right-0 mt-2
+              bg-[var(--bg-primary)]
+              border border-[var(--border-secondary)]
+              rounded-xl
+              shadow-xl shadow-black/20
+              overflow-hidden
+              animate-in fade-in slide-in-from-top-2 duration-150
+              w-[320px]
+            "
+            role="dialog"
+            aria-label="Date filter"
+          >
           {/* Calendar Header */}
           <div className="px-4 pt-4 pb-2 border-b border-[var(--border-secondary)]">
             <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
@@ -324,7 +324,8 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

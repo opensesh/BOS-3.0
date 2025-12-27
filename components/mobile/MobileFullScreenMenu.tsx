@@ -127,8 +127,8 @@ export function MobileFullScreenMenu() {
             animate="visible"
           >
             {/* Navigation Section */}
-            <motion.div variants={itemVariants} className="px-4 pb-2">
-              <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
+            <motion.div variants={itemVariants} className="px-4 py-4">
+              <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-3 px-1">
                 Navigate
               </p>
               <nav className="space-y-1">
@@ -160,7 +160,7 @@ export function MobileFullScreenMenu() {
 
             {/* Settings Section */}
             <motion.div variants={itemVariants} className="px-4 py-4 border-t border-[var(--border-secondary)]">
-              <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
+              <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-3 px-1">
                 Settings
               </p>
               <div className="space-y-1">
@@ -208,7 +208,7 @@ export function MobileFullScreenMenu() {
             </motion.div>
 
             {/* Chat Actions - New Chat + Recent Chats */}
-            <motion.div variants={itemVariants} className="p-4 pt-2 space-y-2 border-t border-[var(--border-secondary)]">
+            <motion.div variants={itemVariants} className="px-4 py-4 space-y-2 border-t border-[var(--border-secondary)]">
               {/* New Chat - Primary Button */}
               <button
                 onClick={handleNewChat}

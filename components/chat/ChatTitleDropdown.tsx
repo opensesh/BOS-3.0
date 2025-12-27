@@ -212,8 +212,8 @@ export function ChatTitleDropdown({
       {/* Title container - Claude-style */}
       <div
         className={`
-          flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg border transition-all cursor-pointer
-          max-w-[140px] sm:max-w-[200px] md:max-w-[280px]
+          flex items-center gap-2 px-3 py-2 rounded-lg border transition-all cursor-pointer
+          max-w-[160px] sm:max-w-[220px] md:max-w-[300px]
           ${isOpen
             ? 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'
             : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50'
@@ -222,7 +222,7 @@ export function ChatTitleDropdown({
         onClick={() => !isEditing && setIsOpen(!isOpen)}
       >
         {isEditing ? (
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <input
               ref={inputRef}
               type="text"
@@ -238,33 +238,33 @@ export function ChatTitleDropdown({
               className="flex-1 min-w-0 bg-transparent text-sm text-[var(--fg-primary)] outline-none"
               onClick={(e) => e.stopPropagation()}
             />
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSave();
                 }}
-                className="p-1 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] transition-colors"
+                className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] transition-colors"
                 title="Save (Enter)"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCancel();
                 }}
-                className="p-1 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] transition-colors"
+                className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] transition-colors"
                 title="Cancel (Escape)"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         ) : (
           <>
             <span
-              className="text-sm text-[var(--fg-primary)] truncate flex-1"
+              className="text-sm font-medium text-[var(--fg-primary)] truncate flex-1"
               onDoubleClick={handleDoubleClick}
               title={`${title} (double-click to rename)`}
             >
@@ -281,22 +281,22 @@ export function ChatTitleDropdown({
 
       {/* Dropdown menu */}
       {isOpen && !isEditing && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] shadow-xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1.5 w-56 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] shadow-xl z-50 overflow-hidden">
           {/* Date header */}
-          <div className="px-4 py-2.5 border-b border-[var(--border-primary)]">
+          <div className="px-3.5 py-2.5 border-b border-[var(--border-primary)]">
             <p className="text-xs text-[var(--fg-tertiary)]">
               Created {formatDate(createdAt)}
             </p>
           </div>
 
           {/* Menu items */}
-          <div className="py-1">
+          <div className="py-1.5">
             {menuItems.map((item, idx) => {
               if ('type' in item && item.type === 'divider') {
                 return (
                   <div
                     key={idx}
-                    className="my-1 border-t border-[var(--border-primary)]"
+                    className="my-1.5 border-t border-[var(--border-primary)]"
                   />
                 );
               }
@@ -309,7 +309,7 @@ export function ChatTitleDropdown({
                   key={idx}
                   onClick={'onClick' in item ? item.onClick : undefined}
                   className={`
-                    w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors
+                    w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors
                     ${
                       isDanger
                         ? 'text-[var(--fg-error-primary)] hover:bg-[var(--bg-error-primary)]'

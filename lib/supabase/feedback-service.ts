@@ -184,7 +184,13 @@ export async function getFeedback(messageId: string): Promise<FeedbackType | nul
     return data ? (data.feedback_type as FeedbackType) : null;
   } catch (err) {
     // Only log actual errors, not missing feedback (which is expected)
-    if (err && typeof err === 'object' && 'code' in err && err.code !== 'PGRST116') {
+    // Check for Supabase error structure: must have 'code' property that isn't empty
+    const isSupabaseError = err && typeof err === 'object' && 'code' in err;
+    const errorCode = isSupabaseError ? (err as { code?: string }).code : null;
+    
+    // PGRST116 = "no rows returned" - this is expected when no feedback exists
+    // Empty error objects ({}) or errors without codes should be silently ignored
+    if (errorCode && errorCode !== 'PGRST116') {
       console.error('Failed to get feedback:', err);
     }
     return null;

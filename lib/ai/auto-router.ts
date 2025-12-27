@@ -49,14 +49,22 @@ const CURRENT_EVENTS_KEYWORDS = [
   'today',
   'recent',
   'now',
+  'new',
   'this week',
   'this month',
   '2024',
   '2025',
   'happening',
   'update',
+  'updates',
   'trending',
   'breaking',
+  'announced',
+  'released',
+  'launched',
+  'just',
+  'coming out',
+  'coming soon',
 ];
 
 const SIMPLE_QUERY_PATTERNS = [

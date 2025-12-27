@@ -38,11 +38,7 @@ export function AnimatedFolder({
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative w-full h-full rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-colors duration-300 hover:border-[var(--border-brand)]"
-      whileHover={{ 
-        y: -4,
-        boxShadow: '0 8px 24px -8px rgba(0,0,0,0.15)',
-      }}
+      className="group relative w-full h-full rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-all duration-300 hover:border-[var(--border-brand)] hover:shadow-lg hover:shadow-black/10"
       whileTap={{ scale: 0.98 }}
       transition={{
         type: 'spring',
@@ -73,77 +69,80 @@ export function AnimatedFolder({
         {/* Spacer to push folder to bottom */}
         <div className="flex-1" />
 
-        {/* 3D Folder - BOTTOM - compact size */}
+        {/* 3D Folder - BOTTOM - square container to match icons */}
         <div 
-          className="relative w-10 h-8"
+          className="relative w-10 h-10"
           style={{ perspective: '1000px' }}
         >
-          {/* Back Panel */}
-          <motion.div
-            className="absolute inset-0 rounded-md"
-            style={{
-              background: colors.dark,
-              transformStyle: 'preserve-3d',
-            }}
-          />
-
-          {/* Folder Tab */}
-          <motion.div
-            className="absolute -top-1 left-1 w-4 h-1 rounded-t-sm"
-            style={{
-              background: colors.main,
-            }}
-          />
-
-          {/* Front Panel (opens on hover) */}
-          <motion.div
-            className="absolute inset-0 rounded-md origin-bottom"
-            style={{
-              background: `linear-gradient(180deg, ${colors.light} 0%, ${colors.main} 100%)`,
-              transformStyle: 'preserve-3d',
-            }}
-            animate={{
-              rotateX: isHovered ? -45 : 0,
-            }}
-            transition={{
-              type: 'spring',
-              stiffness: 300,
-              damping: 20,
-            }}
-          >
-            {/* Shine effect */}
-            <div 
-              className="absolute inset-0 rounded-md opacity-30"
+          {/* Folder positioned to fit within square including tab */}
+          <div className="absolute bottom-0 left-0 right-0 h-8">
+            {/* Back Panel */}
+            <motion.div
+              className="absolute inset-0 rounded-md"
               style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)',
+                background: colors.dark,
+                transformStyle: 'preserve-3d',
               }}
             />
-          </motion.div>
 
-          {/* Single icon that pops out on hover */}
-          <AnimatePresence>
-            {isHovered && (
-              <div className="absolute inset-0 flex items-center justify-center overflow-visible">
-                <motion.div
-                  initial={{ y: 8, opacity: 0, scale: 0.8 }}
-                  animate={{ y: -6, opacity: 1, scale: 1 }}
-                  exit={{ y: 8, opacity: 0, scale: 0.8 }}
-                  transition={{ 
-                    type: 'spring',
-                    stiffness: 400,
-                    damping: 25,
-                  }}
-                  className="w-4 h-4 rounded-sm shadow-lg bg-white flex items-center justify-center p-0.5"
-                  style={{ zIndex: 10 }}
-                >
-                  <Icon 
-                    className="w-full h-full"
-                    style={{ color: colors.hex, strokeWidth: 1.5 }}
-                  />
-                </motion.div>
-              </div>
-            )}
-          </AnimatePresence>
+            {/* Folder Tab - positioned above the folder body */}
+            <motion.div
+              className="absolute -top-1.5 left-1 w-4 h-1.5 rounded-t-sm"
+              style={{
+                background: colors.main,
+              }}
+            />
+
+            {/* Front Panel (opens on hover) */}
+            <motion.div
+              className="absolute inset-0 rounded-md origin-bottom"
+              style={{
+                background: `linear-gradient(180deg, ${colors.light} 0%, ${colors.main} 100%)`,
+                transformStyle: 'preserve-3d',
+              }}
+              animate={{
+                rotateX: isHovered ? -45 : 0,
+              }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 20,
+              }}
+            >
+              {/* Shine effect */}
+              <div 
+                className="absolute inset-0 rounded-md opacity-30"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)',
+                }}
+              />
+            </motion.div>
+
+            {/* Single icon that pops out on hover */}
+            <AnimatePresence>
+              {isHovered && (
+                <div className="absolute inset-0 flex items-center justify-center overflow-visible">
+                  <motion.div
+                    initial={{ y: 6, opacity: 0, scale: 0.8 }}
+                    animate={{ y: -4, opacity: 1, scale: 1 }}
+                    exit={{ y: 6, opacity: 0, scale: 0.8 }}
+                    transition={{ 
+                      type: 'spring',
+                      stiffness: 400,
+                      damping: 25,
+                    }}
+                    className="w-4 h-4 rounded-sm shadow-lg bg-white flex items-center justify-center p-0.5"
+                    style={{ zIndex: 10 }}
+                  >
+                    <Icon 
+                      className="w-full h-full"
+                      style={{ color: colors.hex, strokeWidth: 1.5 }}
+                    />
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </motion.button>

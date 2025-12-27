@@ -23,11 +23,7 @@ export function IconHover3D({
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative w-full h-full rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-colors duration-300 hover:border-[var(--border-brand)]"
-      whileHover={{ 
-        y: -4,
-        boxShadow: '0 8px 24px -8px rgba(0,0,0,0.15)',
-      }}
+      className="group relative w-full h-full rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 cursor-pointer text-left transition-all duration-300 hover:border-[var(--border-brand)] hover:shadow-lg hover:shadow-black/10"
       whileTap={{ scale: 0.98 }}
       transition={{
         type: 'spring',
@@ -55,41 +51,28 @@ export function IconHover3D({
         {/* Spacer to push icon to bottom */}
         <div className="flex-1" />
 
-        {/* Icon Container - BOTTOM - compact size to match folder */}
-        <div className="relative">
-          <motion.div
-            className="w-10 h-8 rounded-md border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
-            animate={{
-              scale: isHovered ? 1.05 : 1,
-            }}
-            transition={{
-              type: 'spring',
-              stiffness: 400,
-              damping: 25,
-            }}
-          >
-            <Icon 
-              className="w-4 h-4 transition-colors duration-300"
-              style={{
-                stroke: isHovered ? 'var(--color-brand-500)' : 'var(--fg-tertiary)',
-                strokeWidth: 1.5,
-                fill: 'none',
-              }}
-            />
-          </motion.div>
-
-          {/* Glow effect */}
-          <motion.div
-            className="absolute -inset-1 rounded-lg blur-md -z-10"
+        {/* Icon Container - BOTTOM - square to match folder */}
+        <motion.div
+          className="w-10 h-10 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
+          animate={{
+            scale: isHovered ? 1.05 : 1,
+            borderColor: isHovered ? 'var(--color-brand-500)' : 'var(--border-primary)',
+          }}
+          transition={{
+            type: 'spring',
+            stiffness: 400,
+            damping: 25,
+          }}
+        >
+          <Icon 
+            className="w-5 h-5 transition-colors duration-300"
             style={{
-              background: 'var(--color-brand-500)',
+              stroke: isHovered ? 'var(--color-brand-500)' : 'var(--fg-tertiary)',
+              strokeWidth: 1.5,
+              fill: 'none',
             }}
-            animate={{
-              opacity: isHovered ? 0.15 : 0,
-            }}
-            transition={{ duration: 0.3 }}
           />
-        </div>
+        </motion.div>
       </div>
     </motion.button>
   );

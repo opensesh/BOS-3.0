@@ -854,23 +854,13 @@ export function ChatInterface() {
           >
             {/* Content container - centered for visual balance */}
             <div className="w-full max-w-3xl mx-auto flex flex-col">
-              {/* Welcome Header with staggered animation */}
-              <motion.div 
-                className="mb-8"
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              >
+              {/* Welcome Header - fixed position */}
+              <div className="mb-8">
                 <WelcomeHeader />
-              </motion.div>
+              </div>
               
-              {/* Chat Input - central focus */}
-              <motion.div 
-                className="w-full px-4"
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              >
+              {/* Chat Input - fixed position */}
+              <div className="w-full px-4">
                 <form onSubmit={handleSubmit} className="relative">
                   {/* Hidden file input */}
                   <input
@@ -1077,7 +1067,7 @@ export function ChatInterface() {
                     </div>
                   </div>
                 </form>
-              </motion.div>
+              </div>
 
               {/* Error display */}
               <AnimatePresence>
@@ -1101,24 +1091,16 @@ export function ChatInterface() {
               </AnimatePresence>
               
               {/* Pre-prompt Cards Grid - below input, fades when typing */}
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 {!input.trim() && (
                   <motion.div
                     className="mt-8"
-                    initial={{ opacity: 0, y: 20, scale: 0.98 }}
-                    animate={{ 
-                      opacity: 1, 
-                      y: 0,
-                      scale: 1,
-                    }}
-                    exit={{ 
-                      opacity: 0, 
-                      y: 12,
-                      scale: 0.98,
-                    }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     transition={{ 
-                      duration: 0.35, 
-                      ease: [0.22, 1, 0.36, 1] 
+                      duration: 0.5, 
+                      ease: [0.4, 0, 0.2, 1] 
                     }}
                   >
                     <PrePromptGrid 

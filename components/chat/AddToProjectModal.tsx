@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FolderPlus, Check, Plus, Loader2 } from 'lucide-react';
 
@@ -16,7 +17,9 @@ interface AddToProjectModalProps {
   onClose: () => void;
   projects: Project[];
   currentProject: Project | null;
+  chatId?: string | null; // The current chat session ID
   onSelectProject: (project: Project | null) => void;
+  onAssignChatToProject?: (chatId: string, projectId: string | null) => Promise<boolean>;
   onCreateProject: (name: string) => Promise<void>;
 }
 
@@ -25,12 +28,15 @@ export function AddToProjectModal({
   onClose,
   projects,
   currentProject,
+  chatId,
   onSelectProject,
+  onAssignChatToProject,
   onCreateProject,
 }: AddToProjectModalProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleCreate = async () => {
     if (!newProjectName.trim()) return;
@@ -47,9 +53,28 @@ export function AddToProjectModal({
     }
   };
 
-  const handleSelect = (project: Project | null) => {
+  const handleSelect = async (project: Project | null) => {
+    // Always update the context
     onSelectProject(project);
-    onClose();
+
+    // If we have a chat ID and an assignment handler, save to database
+    if (chatId && onAssignChatToProject) {
+      setIsSaving(true);
+      try {
+        const success = await onAssignChatToProject(chatId, project?.id || null);
+        if (success) {
+          onClose();
+        } else {
+          console.error('Failed to assign chat to project');
+        }
+      } catch (error) {
+        console.error('Error assigning chat to project:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      onClose();
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -66,7 +91,10 @@ export function AddToProjectModal({
     }
   };
 
-  return (
+  // Don't render on server
+  if (typeof window === 'undefined') return null;
+
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -76,26 +104,26 @@ export function AddToProjectModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 bg-black/50 z-[9999]"
             onClick={onClose}
           />
 
-          {/* Modal */}
+          {/* Modal - using portal to render at document root */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="
-              fixed inset-4 sm:inset-auto
-              sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2
-              w-auto sm:w-full sm:max-w-sm
-              max-h-[calc(100vh-32px)] sm:max-h-[70vh]
+              fixed
+              left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+              w-[calc(100%-32px)] max-w-sm
+              max-h-[calc(100vh-64px)]
               bg-[var(--bg-secondary)]
               border border-[var(--border-primary)]
               rounded-xl
               shadow-2xl
-              z-50
+              z-[10000]
               flex flex-col
               overflow-hidden
             "
@@ -113,7 +141,8 @@ export function AddToProjectModal({
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                disabled={isSaving}
+                className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors disabled:opacity-50"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -121,13 +150,21 @@ export function AddToProjectModal({
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto py-2">
+              {isSaving && (
+                <div className="absolute inset-0 bg-[var(--bg-secondary)]/80 flex items-center justify-center z-10">
+                  <Loader2 className="w-6 h-6 text-[var(--fg-brand-primary)] animate-spin" />
+                </div>
+              )}
+
               {/* None option */}
               <button
                 type="button"
                 onClick={() => handleSelect(null)}
+                disabled={isSaving}
                 className={`
                   w-full flex items-center justify-between px-5 py-2.5
                   text-left transition-colors duration-150
+                  disabled:opacity-50
                   ${!currentProject
                     ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
                     : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
@@ -148,9 +185,11 @@ export function AddToProjectModal({
                     key={project.id}
                     type="button"
                     onClick={() => handleSelect(project)}
+                    disabled={isSaving}
                     className={`
                       w-full flex items-center justify-between px-5 py-2.5
                       text-left transition-colors duration-150
+                      disabled:opacity-50
                       ${isSelected
                         ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
                         : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
@@ -195,12 +234,12 @@ export function AddToProjectModal({
                         focus:outline-none focus:border-[var(--fg-brand-primary)]
                       "
                       autoFocus
-                      disabled={isLoading}
+                      disabled={isLoading || isSaving}
                     />
                     <button
                       type="button"
                       onClick={handleCreate}
-                      disabled={!newProjectName.trim() || isLoading}
+                      disabled={!newProjectName.trim() || isLoading || isSaving}
                       className="p-1.5 rounded-lg text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isLoading ? (
@@ -215,7 +254,7 @@ export function AddToProjectModal({
                         setIsCreating(false);
                         setNewProjectName('');
                       }}
-                      disabled={isLoading}
+                      disabled={isLoading || isSaving}
                       className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]"
                     >
                       <X className="w-4 h-4" />
@@ -226,11 +265,13 @@ export function AddToProjectModal({
                 <button
                   type="button"
                   onClick={() => setIsCreating(true)}
+                  disabled={isSaving}
                   className="
                     w-full flex items-center gap-2.5 px-5 py-2.5
                     text-left text-[var(--fg-tertiary)]
                     hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]
                     transition-colors
+                    disabled:opacity-50
                   "
                 >
                   <Plus className="w-4 h-4" />
@@ -243,5 +284,7 @@ export function AddToProjectModal({
       )}
     </AnimatePresence>
   );
-}
 
+  // Render using portal to document.body for proper centering
+  return createPortal(modalContent, document.body);
+}

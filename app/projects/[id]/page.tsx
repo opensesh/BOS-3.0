@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
-import { useChatContext } from '@/lib/chat-context';
 import {
   projectsService,
   type ProjectWithDetails,
@@ -14,16 +13,16 @@ import {
 import {
   ProjectHeader,
   ProjectChatList,
+  ProjectChatInput,
   ProjectSidebar,
 } from '@/components/projects';
-import { Loader2, Send, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { Loader2, PanelRightClose, PanelRightOpen } from 'lucide-react';
 
 export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
   const projectId = params.id as string;
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { setCurrentProject, triggerChatReset } = useChatContext();
 
   // State
   const [project, setProject] = useState<ProjectWithDetails | null>(null);
@@ -31,8 +30,6 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [totalFileSize, setTotalFileSize] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [chatInput, setChatInput] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load project with all details
   const loadProject = useCallback(async () => {
@@ -67,14 +64,6 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     loadProject();
   }, [loadProject]);
-
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
-    }
-  }, [chatInput]);
 
   // Handlers
   const handleUpdateProject = async (updates: { name?: string; description?: string }) => {
@@ -159,35 +148,6 @@ export default function ProjectDetailPage() {
     }
   };
 
-  // Start a new chat with the typed message
-  const handleSubmitChat = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!project || !chatInput.trim()) return;
-    
-    // Set the current project in context so the chat gets associated with it
-    setCurrentProject({
-      id: project.id,
-      name: project.name,
-      description: project.description,
-      color: project.color,
-      created_at: project.created_at,
-      updated_at: project.updated_at,
-    });
-    
-    // Reset any existing chat
-    triggerChatReset();
-    
-    // Navigate to home with the query
-    router.push(`/?q=${encodeURIComponent(chatInput.trim())}`);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmitChat();
-    }
-  };
-
   // Loading state
   if (isLoading) {
     return (
@@ -266,57 +226,10 @@ export default function ProjectDetailPage() {
                   </button>
                 </div>
 
-                {/* Chat Input */}
-                <form onSubmit={handleSubmitChat} className="mb-6">
-                  <div className="
-                    relative
-                    bg-[var(--bg-secondary)]
-                    border border-[var(--border-secondary)]
-                    rounded-xl
-                    hover:border-[var(--border-primary)]
-                    focus-within:border-[var(--fg-brand-primary)]
-                    focus-within:ring-2 focus-within:ring-[var(--fg-brand-primary)]/20
-                    transition-all
-                    shadow-sm
-                  ">
-                    <textarea
-                      ref={textareaRef}
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Start a conversation..."
-                      rows={1}
-                      className="
-                        w-full px-4 py-3 pr-12
-                        bg-transparent
-                        text-sm text-[var(--fg-primary)]
-                        placeholder:text-[var(--fg-quaternary)]
-                        resize-none
-                        focus:outline-none
-                        min-h-[48px]
-                        max-h-[150px]
-                      "
-                    />
-                    <button
-                      type="submit"
-                      disabled={!chatInput.trim()}
-                      className="
-                        absolute right-2 bottom-2
-                        p-2 rounded-lg
-                        transition-all
-                        disabled:opacity-40 disabled:cursor-not-allowed
-                        bg-[var(--bg-brand-solid)]
-                        hover:bg-[var(--bg-brand-solid)]/90
-                        text-white
-                      "
-                    >
-                      <Send className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <p className="text-xs text-[var(--fg-quaternary)] mt-2 text-center">
-                    Press Enter to send • Shift+Enter for new line
-                  </p>
-                </form>
+                {/* Chat Input - Full featured like home page */}
+                <div className="mb-6">
+                  <ProjectChatInput project={project} />
+                </div>
 
                 {/* Conversations List */}
                 <div className="

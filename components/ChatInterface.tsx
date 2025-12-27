@@ -107,6 +107,7 @@ export function ChatInterface() {
     currentProject,
     setCurrentProject,
     createProject,
+    assignChatToProject,
     // Writing style
     currentWritingStyle,
     setCurrentWritingStyle,
@@ -1243,9 +1244,14 @@ export function ChatInterface() {
         onClose={() => setIsAddToProjectModalOpen(false)}
         projects={projects}
         currentProject={currentProject}
+        chatId={currentSessionId}
         onSelectProject={setCurrentProject}
+        onAssignChatToProject={async (chatId, projectId) => {
+          await assignChatToProject(chatId, projectId);
+          return true;
+        }}
         onCreateProject={async (name) => {
-          await createProject(name, '', '#FE5102');
+          await createProject(name);
         }}
       />
     </>

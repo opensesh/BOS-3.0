@@ -2,6 +2,7 @@
 export { ProjectCard } from './ProjectCard';
 export { ProjectHeader } from './ProjectHeader';
 export { ProjectChatList } from './ProjectChatList';
+export { ProjectChatInput } from './ProjectChatInput';
 export { ProjectSidebar } from './ProjectSidebar';
 export { ProjectInstructionsModal } from './ProjectInstructionsModal';
 export { ProjectFileUpload } from './ProjectFileUpload';

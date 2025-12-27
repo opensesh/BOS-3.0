@@ -403,6 +403,107 @@ export interface McpConnectionUpdate {
 }
 
 // ============================================
+// USER PROFILES (Account Settings)
+// ============================================
+
+export interface NotificationPreferences {
+  email_marketing: boolean;
+  email_updates: boolean;
+  email_security: boolean;
+  push_enabled: boolean;
+}
+
+export interface DbUserProfile {
+  id: string;
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  email: string | null;
+  alt_email: string | null;
+  website: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  job_title: string | null;
+  show_job_title: boolean;
+  timezone: string;
+  locale: string;
+  notification_preferences: NotificationPreferences;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserProfile {
+  id: string;
+  userId: string;
+  username?: string;
+  displayName?: string;
+  email?: string;
+  altEmail?: string;
+  website?: string;
+  avatarUrl?: string;
+  bio?: string;
+  jobTitle?: string;
+  showJobTitle: boolean;
+  timezone: string;
+  locale: string;
+  notificationPreferences: NotificationPreferences;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserProfileInsert {
+  user_id: string;
+  username?: string;
+  display_name?: string;
+  email?: string;
+  alt_email?: string;
+  website?: string;
+  avatar_url?: string;
+  bio?: string;
+  job_title?: string;
+  show_job_title?: boolean;
+  timezone?: string;
+  locale?: string;
+  notification_preferences?: NotificationPreferences;
+}
+
+export interface UserProfileUpdate {
+  username?: string;
+  display_name?: string;
+  email?: string;
+  alt_email?: string;
+  website?: string;
+  avatar_url?: string;
+  bio?: string;
+  job_title?: string;
+  show_job_title?: boolean;
+  timezone?: string;
+  locale?: string;
+  notification_preferences?: NotificationPreferences;
+}
+
+export function dbUserProfileToApp(db: DbUserProfile): UserProfile {
+  return {
+    id: db.id,
+    userId: db.user_id,
+    username: db.username || undefined,
+    displayName: db.display_name || undefined,
+    email: db.email || undefined,
+    altEmail: db.alt_email || undefined,
+    website: db.website || undefined,
+    avatarUrl: db.avatar_url || undefined,
+    bio: db.bio || undefined,
+    jobTitle: db.job_title || undefined,
+    showJobTitle: db.show_job_title,
+    timezone: db.timezone,
+    locale: db.locale,
+    notificationPreferences: db.notification_preferences,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// ============================================
 // LEGACY TYPES (backwards compatibility)
 // ============================================
 
@@ -462,6 +563,11 @@ export interface Database {
         Row: SearchHistoryItem;
         Insert: SearchHistoryInsert;
         Update: Partial<SearchHistoryInsert>;
+      };
+      user_profiles: {
+        Row: DbUserProfile;
+        Insert: UserProfileInsert;
+        Update: UserProfileUpdate;
       };
     };
   };

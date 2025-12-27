@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
 import { 
   Settings,
   Flag,
@@ -29,6 +30,7 @@ const themeOptions: { id: ThemeOption; label: string; icon: typeof Moon }[] = [
 
 export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -128,7 +130,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
           <div className="py-1 border-b border-[var(--border-secondary)]">
             <button
               onClick={() => {
-                // Navigate to account preferences
+                router.push('/account');
                 onClose();
               }}
               className="

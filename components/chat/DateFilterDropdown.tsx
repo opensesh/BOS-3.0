@@ -201,14 +201,14 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
         <div
           ref={dropdownRef}
           className="
-            absolute top-full left-0 mt-2 z-50
+            absolute top-full right-0 mt-2 z-50
             bg-[var(--bg-primary)]
             border border-[var(--border-secondary)]
             rounded-xl
             shadow-lg shadow-black/10
             overflow-hidden
             animate-in fade-in slide-in-from-top-2 duration-150
-            min-w-[280px]
+            w-[320px]
           "
           role="dialog"
           aria-label="Date filter"

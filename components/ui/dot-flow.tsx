@@ -230,6 +230,31 @@ export const ThinkingDotFlow = ({ className }: { className?: string }) => {
 };
 
 // ============================================
+// DotLoaderOnly - Just the dot animation, no text
+// Use this when you don't want the animated text label
+// ============================================
+
+export const DotLoaderOnly = ({ className }: { className?: string }) => {
+  const [index, setIndex] = useState(0);
+
+  const handleComplete = () => {
+    setIndex((prev) => (prev + 1) % animationPresets.length);
+  };
+
+  return (
+    <div className={className}>
+      <DotLoader
+        frames={animationPresets[index].frames}
+        onComplete={handleComplete}
+        repeatCount={animationPresets[index].repeatCount ?? 1}
+        duration={animationPresets[index].duration ?? 150}
+        dotClassName="bg-brand-aperol/20 [&.active]:bg-brand-aperol"
+      />
+    </div>
+  );
+};
+
+// ============================================
 // Main DotFlow Component
 // ============================================
 

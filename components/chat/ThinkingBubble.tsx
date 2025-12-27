@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
-import { ThinkingDotFlow } from '@/components/ui/dot-flow';
+import { DotLoaderOnly } from '@/components/ui/dot-flow';
 
 interface ThinkingBubbleProps {
   /** The thinking content to display */
@@ -12,8 +12,6 @@ interface ThinkingBubbleProps {
   isThinking?: boolean;
   /** Whether to start collapsed (default: true) */
   defaultCollapsed?: boolean;
-  /** Callback when thinking summary is requested */
-  onSummaryRequest?: (thinking: string) => void;
   /** Summary of the thinking content (provided after LLM summarization) */
   summary?: string;
 }
@@ -24,17 +22,10 @@ interface ThinkingBubbleProps {
  * A Claude-inspired collapsible component that displays the AI's reasoning process.
  * 
  * **Features:**
- * - Live timer during thinking phase
+ * - Live counting timer during thinking phase
+ * - "Thought process" label (no animated text)
  * - Fixed header with scrollable content
  * - Summary display when collapsed (after thinking completes)
- * 
- * **Collapsed state:** 
- * - Shows: DotFlow animation (during thinking) + live timer
- * - Or: Summary text + final duration (after complete)
- * 
- * **Expanded state:**
- * - Fixed header with timer/duration
- * - Scrollable thinking content in monospace style
  */
 export function ThinkingBubble({
   thinking,
@@ -46,40 +37,47 @@ export function ThinkingBubble({
   const contentRef = useRef<HTMLDivElement>(null);
   const [hasOverflow, setHasOverflow] = useState(false);
   
-  // Live timer state
+  // Live timer state - actively counts during thinking
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [finalDuration, setFinalDuration] = useState<number | null>(null);
   const timerStartRef = useRef<number | null>(null);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Start timer when thinking begins
+  // Start/stop timer based on isThinking state
   useEffect(() => {
-    if (isThinking && timerStartRef.current === null) {
-      // Start the timer
-      timerStartRef.current = Date.now();
-      setElapsedSeconds(0);
-      setFinalDuration(null);
-      
-      timerIntervalRef.current = setInterval(() => {
-        if (timerStartRef.current) {
-          const elapsed = Math.floor((Date.now() - timerStartRef.current) / 1000);
-          setElapsedSeconds(elapsed);
-        }
-      }, 1000);
-    } else if (!isThinking && timerStartRef.current !== null) {
-      // Stop the timer and save final duration
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
+    if (isThinking) {
+      // Start the timer if not already started
+      if (timerStartRef.current === null) {
+        timerStartRef.current = Date.now();
+        setElapsedSeconds(0);
+        setFinalDuration(null);
+        
+        // Update every second
+        timerIntervalRef.current = setInterval(() => {
+          if (timerStartRef.current) {
+            const elapsed = Math.floor((Date.now() - timerStartRef.current) / 1000);
+            setElapsedSeconds(elapsed);
+          }
+        }, 1000);
       }
-      const duration = Math.floor((Date.now() - timerStartRef.current) / 1000);
-      setFinalDuration(duration);
-      timerStartRef.current = null;
+    } else {
+      // Stop the timer when thinking ends
+      if (timerStartRef.current !== null) {
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+        }
+        const duration = Math.floor((Date.now() - timerStartRef.current) / 1000);
+        setFinalDuration(duration);
+        timerStartRef.current = null;
+      }
     }
 
+    // Cleanup on unmount
     return () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
       }
     };
   }, [isThinking]);
@@ -112,8 +110,8 @@ export function ThinkingBubble({
     return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
   };
 
-  const displayDuration = isThinking ? elapsedSeconds : (finalDuration ?? 0);
-  const showTimer = isThinking || finalDuration !== null;
+  // Display the current elapsed time OR the final duration
+  const displayDuration = isThinking ? elapsedSeconds : (finalDuration ?? elapsedSeconds);
 
   return (
     <motion.div
@@ -128,16 +126,17 @@ export function ThinkingBubble({
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)]/50 transition-colors group sticky top-0 bg-[var(--bg-secondary)]/30 backdrop-blur-sm z-10"
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {isThinking ? (
-            // During thinking: show dot animation
-            <ThinkingDotFlow className="scale-75 origin-left shrink-0" />
-          ) : summary ? (
-            // After thinking with summary: show truncated summary
+          {/* Dot loader indicator when actively thinking */}
+          {isThinking && (
+            <DotLoaderOnly className="shrink-0" />
+          )}
+          
+          {/* Label text - always shows "Thought process" or summary */}
+          {summary && !isThinking ? (
             <span className="text-sm text-[var(--fg-secondary)] truncate">
               {summary}
             </span>
           ) : (
-            // After thinking without summary: show generic label
             <span className="text-sm text-[var(--fg-secondary)]">
               Thought process
             </span>
@@ -145,15 +144,13 @@ export function ThinkingBubble({
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ml-3">
-          {/* Timer display */}
-          {showTimer && (
-            <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
-              <Clock className="w-3 h-3" />
-              <span className="tabular-nums">
-                {formatDuration(displayDuration)}
-              </span>
-            </div>
-          )}
+          {/* Timer display - always visible, actively counting during thinking */}
+          <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
+            <Clock className="w-3 h-3" />
+            <span className="tabular-nums min-w-[24px]">
+              {formatDuration(displayDuration)}
+            </span>
+          </div>
           
           {/* Chevron toggle */}
           <div className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)] transition-colors">
@@ -244,7 +241,7 @@ export function ThinkingIndicatorCompact({
   return (
     <div className="flex items-center gap-2">
       {isThinking ? (
-        <ThinkingDotFlow className="scale-75 origin-left" />
+        <DotLoaderOnly className="scale-75 origin-left" />
       ) : (
         <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
           <Clock className="w-3 h-3" />

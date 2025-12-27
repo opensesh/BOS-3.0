@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ThinkingDotFlow } from '@/components/ui/dot-flow';
+import { DotLoaderOnly } from '@/components/ui/dot-flow';
 import { ThinkingBubble } from './ThinkingBubble';
 
 interface InlineStreamingDisplayProps {
@@ -18,15 +18,15 @@ interface InlineStreamingDisplayProps {
  * 
  * Simplified streaming display:
  * - Shows ThinkingBubble when extended thinking content is present
- * - Shows DotFlow animation at the BOTTOM during ALL streaming (trails the text)
- * - Fetches summary from LLM when thinking completes
+ * - Shows DotLoaderOnly (just dots, no text) at the BOTTOM during streaming
+ * - The dot loader acts as a "trailblazer" that trails behind the text
  * - NO tool indicators (removed entirely)
  * 
  * Flow:
- * 1. Streaming starts → DotFlow animation at bottom
- * 2. Text arrives → DotFlow stays at bottom, trailing the text
- * 3. If extended thinking ON → ThinkingBubble shown BEFORE content
- * 4. Streaming ends → DotFlow disappears
+ * 1. Streaming starts → Dot animation at bottom (no text)
+ * 2. Text arrives → Dot animation stays at bottom
+ * 3. If extended thinking ON → ThinkingBubble shown with "Thought process" label
+ * 4. Streaming ends → Dot animation disappears
  */
 export function InlineStreamingDisplay({
   thinking,
@@ -91,11 +91,11 @@ export function InlineStreamingDisplay({
         </div>
       )}
 
-      {/* DotFlow animation - shown at the BOTTOM during ALL streaming
+      {/* Dot animation (no text) - shown at the BOTTOM during ALL streaming
           This is the "trailblazer" that stays visible while text streams */}
       {isStreaming && (
         <div className="py-2">
-          <ThinkingDotFlow />
+          <DotLoaderOnly />
         </div>
       )}
     </>
@@ -112,7 +112,7 @@ export function InlineStreamingIndicator({
 }) {
   if (!isStreaming) return null;
 
-  return <ThinkingDotFlow className="scale-75" />;
+  return <DotLoaderOnly className="scale-75" />;
 }
 
 export default InlineStreamingDisplay;

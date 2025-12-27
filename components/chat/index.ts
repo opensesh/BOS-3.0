@@ -3,7 +3,7 @@ export { ChatTabNav, type ChatTab } from './ChatTabNav';
 export { AnswerView, parseContentToSections, extractResourceCards, cleanResourceMarkers, type SourceInfo, type ContentSection } from './AnswerView';
 export { LinksView } from './LinksView';
 export { ImagesView, type ImageResult } from './ImagesView';
-export { OverflowMenu } from './OverflowMenu';
+export { ChatTitleDropdown } from './ChatTitleDropdown';
 export { ShareButton, ShareModal } from './ShareModal';
 export { ResponseActions } from './ResponseActions';
 export { InlineCitation } from './InlineCitation';

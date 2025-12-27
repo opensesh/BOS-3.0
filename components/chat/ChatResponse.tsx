@@ -7,7 +7,7 @@ import { LinksView } from './LinksView';
 import { ImagesView, ImageResult } from './ImagesView';
 import { ResponseActions } from './ResponseActions';
 import { RelatedQuestions } from './RelatedQuestions';
-import { OverflowMenu } from './OverflowMenu';
+import { ChatTitleDropdown } from './ChatTitleDropdown';
 import { ShareButton } from './ShareModal';
 
 interface ChatResponseProps {
@@ -54,8 +54,8 @@ export function ChatResponse({
     return extractResourceCards(content);
   }, [content]);
 
-  const hasLinks = sources.length > 0;
-  const hasImages = images.length > 0;
+  const hasResources = sources.length > 0 || images.length > 0;
+  const resourcesCount = sources.length + images.length;
 
   return (
     <div className="flex flex-col h-full">
@@ -66,14 +66,12 @@ export function ChatResponse({
             <ChatTabNav
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              hasLinks={hasLinks}
-              hasImages={hasImages}
-              linksCount={sources.length}
-              imagesCount={images.length}
+              hasResources={hasResources}
+              resourcesCount={resourcesCount}
             />
 
             <div className="flex items-center gap-2 flex-shrink-0">
-              <OverflowMenu threadTitle={query} />
+              <ChatTitleDropdown title={query.slice(0, 50) || 'Chat'} />
               <ShareButton />
             </div>
           </div>
@@ -104,7 +102,7 @@ export function ChatResponse({
                   messageId={messageId}
                   chatId={chatId}
                   onRegenerate={onRegenerate}
-                  showSources={showCitations && hasLinks}
+                  showSources={showCitations && hasResources}
                   modelUsed={modelUsed}
                 />
               )}
@@ -121,12 +119,18 @@ export function ChatResponse({
             </>
           )}
 
-          {activeTab === 'links' && (
-            <LinksView query={query} sources={sources} />
-          )}
-
-          {activeTab === 'images' && (
-            <ImagesView query={query} images={images} />
+          {activeTab === 'resources' && (
+            <div className="space-y-8">
+              {sources.length > 0 && (
+                <LinksView query={query} sources={sources} />
+              )}
+              {images.length > 0 && (
+                <ImagesView query={query} images={images} />
+              )}
+              {sources.length === 0 && images.length === 0 && (
+                <p className="text-[var(--fg-tertiary)] text-sm">No resources available</p>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -5,8 +5,8 @@ export const maxDuration = 30;
 /**
  * POST /api/summarize-thinking
  * 
- * Generates a short summary of thinking/reasoning content.
- * Used by ThinkingBubble to show a concise description when collapsed.
+ * Generates a rich summary of thinking/reasoning content.
+ * Captures the key reasoning journey, not just a generic label.
  */
 export async function POST(req: Request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     if (!thinking || thinking.length < 20) {
       return new Response(
-        JSON.stringify({ summary: 'Analyzed the request' }),
+        JSON.stringify({ summary: 'Quick analysis' }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -25,29 +25,43 @@ export async function POST(req: Request) {
     // Use Claude Haiku for fast, cheap summarization
     const response = await client.messages.create({
       model: 'claude-3-5-haiku-latest',
-      max_tokens: 100,
-      system: `You are a concise summarizer. Generate a very short (5-10 words max) summary of what the AI was thinking about. The summary should:
-- Start with an action verb (e.g., "Analyzed", "Synthesized", "Evaluated", "Considered")
-- Be specific to the content
-- Not include phrases like "I thought about" or "The AI considered"
-- Sound natural as a label for a collapsible section
+      max_tokens: 150,
+      system: `You summarize AI reasoning into a brief, insightful phrase that captures what was actually considered—not generic labels.
 
-Examples:
-- "Analyzed user requirements for dashboard design"
-- "Synthesized research findings on brand identity"
-- "Evaluated technical approaches for streaming UI"
-- "Considered accessibility implications for modal"`,
+RULES:
+- 8-15 words max
+- Capture the SPECIFIC reasoning, not just "analyzed the request"
+- Include key considerations, trade-offs, or conclusions when possible
+- Start with what was examined, weighed, or decided
+- Sound like a thoughtful colleague describing their thought process
+- NO quotes, NO periods at the end
+
+GOOD examples (specific, insightful):
+- "Weighed brand voice consistency against casual tone for general questions"
+- "Considered web search relevance—decided direct answer better serves user"
+- "Evaluated typography guidelines and font pairing for headline hierarchy"
+- "Balanced technical accuracy with accessible explanation for design terms"
+- "Assessed whether question needs brand context or general knowledge"
+
+BAD examples (generic, vague):
+- "Analyzed the user's question" (too generic)
+- "Thought about the response" (says nothing)
+- "Considered various factors" (meaningless)
+- "Processed the request" (robotic)`,
       messages: [
         {
           role: 'user',
-          content: `Summarize this thinking in 5-10 words:\n\n${thinking.slice(0, 2000)}`,
+          content: `Summarize what was reasoned through here (8-15 words, specific and insightful):\n\n${thinking.slice(0, 3000)}`,
         },
       ],
     });
 
     // Extract text from response
     const textBlock = response.content.find((block) => block.type === 'text');
-    const summary = textBlock && 'text' in textBlock ? textBlock.text.trim() : 'Analyzed the request';
+    let summary = textBlock && 'text' in textBlock ? textBlock.text.trim() : 'Weighed context and crafted response';
+    
+    // Clean up any quotes or periods
+    summary = summary.replace(/^["']|["']$/g, '').replace(/\.$/, '');
 
     return new Response(
       JSON.stringify({ summary }),
@@ -58,7 +72,7 @@ Examples:
     
     // Return a fallback summary on error
     return new Response(
-      JSON.stringify({ summary: 'Analyzed the request' }),
+      JSON.stringify({ summary: 'Weighed context and crafted response' }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   }

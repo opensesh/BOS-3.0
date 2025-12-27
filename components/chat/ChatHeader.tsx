@@ -1,23 +1,25 @@
 'use client';
 
 import React from 'react';
-import { ArrowLeft, Globe, Folder } from 'lucide-react';
-import { OverflowMenu } from './OverflowMenu';
+import { ArrowLeft, Layers } from 'lucide-react';
+import { ChatTitleDropdown } from './ChatTitleDropdown';
 import { ShareButton } from './ShareModal';
-import { SourceInfo } from './AnswerView';
-import { ImageResult } from './ImagesView';
 
-export type ChatTab = 'answer' | 'links' | 'images';
+export type ChatTab = 'answer' | 'resources';
 
 interface ChatHeaderProps {
   activeTab: ChatTab;
   onTabChange: (tab: ChatTab) => void;
-  hasLinks?: boolean;
-  hasImages?: boolean;
-  linksCount?: number;
-  imagesCount?: number;
+  hasResources?: boolean;
+  resourcesCount?: number;
   threadTitle?: string;
+  threadCreatedAt?: Date;
   onBack?: () => void;
+  onRenameThread?: (newTitle: string) => void;
+  onAddToProject?: () => void;
+  onAddToSpace?: () => void;
+  onDeleteThread?: () => void;
+  content?: string;
   /** Whether the response is still streaming - hides counts during streaming */
   isStreaming?: boolean;
 }
@@ -25,34 +27,31 @@ interface ChatHeaderProps {
 export function ChatHeader({
   activeTab,
   onTabChange,
-  hasLinks = false,
-  hasImages = false,
-  linksCount = 0,
-  imagesCount = 0,
+  hasResources = false,
+  resourcesCount = 0,
   threadTitle = 'New Thread',
+  threadCreatedAt,
   onBack,
+  onRenameThread,
+  onAddToProject,
+  onAddToSpace,
+  onDeleteThread,
+  content = '',
   isStreaming = false,
 }: ChatHeaderProps) {
   const tabs = [
     {
       id: 'answer' as ChatTab,
       label: 'Chat',
-      icon: null, // No icon for Chat tab
+      icon: null,
       available: true,
     },
     {
-      id: 'links' as ChatTab,
-      label: 'Links',
-      icon: Globe,
-      available: hasLinks,
-      count: linksCount,
-    },
-    {
-      id: 'images' as ChatTab,
-      label: 'Assets',
-      icon: Folder,
-      available: hasImages,
-      count: imagesCount,
+      id: 'resources' as ChatTab,
+      label: 'Resources',
+      icon: Layers,
+      available: hasResources,
+      count: resourcesCount,
     },
   ];
 
@@ -114,9 +113,17 @@ export function ChatHeader({
             </div>
           </div>
 
-          {/* Right side - Actions */}
-          <div className="flex items-center gap-1">
-            <OverflowMenu threadTitle={threadTitle} />
+          {/* Right side - Title dropdown and Share */}
+          <div className="flex items-center gap-2">
+            <ChatTitleDropdown
+              title={threadTitle}
+              createdAt={threadCreatedAt}
+              onRename={onRenameThread}
+              onAddToProject={onAddToProject}
+              onAddToSpace={onAddToSpace}
+              onDelete={onDeleteThread}
+              content={content}
+            />
             <ShareButton />
           </div>
         </div>

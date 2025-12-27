@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clock, Lightbulb, Search, Sparkles, Target } from 'lucide-react';
 import { DotLoaderOnly } from '@/components/ui/dot-flow';
 
 interface ThinkingBubbleProps {
@@ -14,6 +14,79 @@ interface ThinkingBubbleProps {
   defaultCollapsed?: boolean;
   /** Summary of the thinking content (provided after LLM summarization) */
   summary?: string;
+}
+
+/**
+ * Thinking phase types for structured display
+ */
+type ThinkingPhase = 'understand' | 'contextualize' | 'analyze' | 'synthesize' | 'general';
+
+interface ThinkingSection {
+  phase: ThinkingPhase;
+  content: string;
+}
+
+/**
+ * Phase metadata for visual styling
+ */
+const PHASE_CONFIG: Record<ThinkingPhase, { label: string; icon: typeof Lightbulb; color: string }> = {
+  understand: { label: 'Understanding', icon: Target, color: 'text-blue-500' },
+  contextualize: { label: 'Contextualizing', icon: Search, color: 'text-purple-500' },
+  analyze: { label: 'Analyzing', icon: Lightbulb, color: 'text-amber-500' },
+  synthesize: { label: 'Synthesizing', icon: Sparkles, color: 'text-emerald-500' },
+  general: { label: 'Reasoning', icon: Lightbulb, color: 'text-[var(--fg-tertiary)]' },
+};
+
+/**
+ * Parse thinking content into structured sections based on phase markers
+ * Looks for patterns like "**Understand**:", "1. **Understand**:", or natural language cues
+ */
+function parseThinkingSections(thinking: string): ThinkingSection[] {
+  if (!thinking) return [];
+  
+  const sections: ThinkingSection[] = [];
+  
+  // Pattern to match structured phase markers (e.g., "**Understand**:", "1. **Understand**:")
+  const phasePattern = /(?:^|\n)(?:\d+\.\s*)?\*?\*?(Understand|Contextualize|Analyze|Synthesize)\*?\*?:?\s*/gi;
+  
+  // Check if content has structured phases
+  const matches = thinking.match(phasePattern);
+  
+  if (matches && matches.length >= 2) {
+    // Content has structured phases - parse them
+    let lastIndex = 0;
+    let lastPhase: ThinkingPhase = 'general';
+    
+    const regex = /(?:^|\n)(?:\d+\.\s*)?\*?\*?(Understand|Contextualize|Analyze|Synthesize)\*?\*?:?\s*/gi;
+    let match;
+    
+    while ((match = regex.exec(thinking)) !== null) {
+      // Save content before this match
+      if (match.index > lastIndex) {
+        const content = thinking.slice(lastIndex, match.index).trim();
+        if (content) {
+          sections.push({ phase: lastPhase, content });
+        }
+      }
+      
+      // Update phase for next section
+      lastPhase = match[1].toLowerCase() as ThinkingPhase;
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining content
+    if (lastIndex < thinking.length) {
+      const content = thinking.slice(lastIndex).trim();
+      if (content) {
+        sections.push({ phase: lastPhase, content });
+      }
+    }
+  } else {
+    // No structured phases - return as single general section
+    sections.push({ phase: 'general', content: thinking });
+  }
+  
+  return sections;
 }
 
 /**
@@ -102,6 +175,14 @@ export function ThinkingBubble({
     return null;
   }
 
+  // Parse thinking into structured sections
+  const thinkingSections = useMemo(() => {
+    return parseThinkingSections(thinking || '');
+  }, [thinking]);
+  
+  // Check if we have structured phases (more than just 'general')
+  const hasStructuredPhases = thinkingSections.some(s => s.phase !== 'general');
+
   // Format duration display
   const formatDuration = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -177,11 +258,47 @@ export function ThinkingBubble({
               {/* Scrollable content area with max height */}
               <div
                 ref={contentRef}
-                className="px-4 py-3 text-[13px] text-[var(--fg-tertiary)] font-mono leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto"
+                className="px-4 py-3 text-[13px] text-[var(--fg-tertiary)] leading-relaxed max-h-[300px] overflow-y-auto"
               >
                 {hasThinking ? (
-                  <>
-                    {thinking}
+                  <div className="space-y-3">
+                    {hasStructuredPhases ? (
+                      // Structured phase display with visual hierarchy
+                      thinkingSections.map((section, idx) => {
+                        const config = PHASE_CONFIG[section.phase];
+                        const Icon = config.icon;
+                        
+                        return (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, x: -4 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            className="relative"
+                          >
+                            {/* Phase header */}
+                            {section.phase !== 'general' && (
+                              <div className={`flex items-center gap-1.5 mb-1.5 ${config.color}`}>
+                                <Icon className="w-3.5 h-3.5" />
+                                <span className="text-xs font-medium uppercase tracking-wide">
+                                  {config.label}
+                                </span>
+                              </div>
+                            )}
+                            {/* Phase content */}
+                            <div className="font-mono whitespace-pre-wrap text-[var(--fg-tertiary)] pl-0.5">
+                              {section.content}
+                            </div>
+                          </motion.div>
+                        );
+                      })
+                    ) : (
+                      // Unstructured thinking - show as flowing text
+                      <div className="font-mono whitespace-pre-wrap">
+                        {thinking}
+                      </div>
+                    )}
+                    
                     {/* Streaming cursor */}
                     {isThinking && (
                       <motion.span
@@ -190,7 +307,7 @@ export function ThinkingBubble({
                         transition={{ duration: 0.5, repeat: Infinity }}
                       />
                     )}
-                  </>
+                  </div>
                 ) : (
                   /* Placeholder while waiting for first thinking chunk */
                   <div className="flex items-center gap-2 text-[var(--fg-tertiary)]/60">

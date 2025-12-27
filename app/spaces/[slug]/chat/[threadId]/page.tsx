@@ -42,7 +42,7 @@ export default function SpaceChatPage() {
   const [selectedModel, setSelectedModel] = useState<ModelId>('auto');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [modelUsed, setModelUsed] = useState<string | undefined>();
-  const [activeTab, setActiveTab] = useState<'answer' | 'links' | 'images'>('answer');
+  const [activeTab, setActiveTab] = useState<'answer' | 'resources'>('answer');
   const [hasSubmittedInitial, setHasSubmittedInitial] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -282,10 +282,8 @@ export default function SpaceChatPage() {
         <ChatHeader
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          hasLinks={false}
-          hasImages={false}
-          linksCount={0}
-          imagesCount={0}
+          hasResources={false}
+          resourcesCount={0}
           threadTitle={threadTitle}
           onBack={handleBack}
         />
@@ -368,15 +366,9 @@ export default function SpaceChatPage() {
               </>
             )}
 
-            {activeTab === 'links' && (
+            {activeTab === 'resources' && (
               <div className="py-6">
-                <p className="text-os-text-secondary-dark text-sm">No links available</p>
-              </div>
-            )}
-
-            {activeTab === 'images' && (
-              <div className="py-6">
-                <p className="text-os-text-secondary-dark text-sm">No images available</p>
+                <p className="text-os-text-secondary-dark text-sm">No resources available</p>
               </div>
             )}
           </div>

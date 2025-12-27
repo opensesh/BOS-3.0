@@ -1,25 +1,21 @@
 'use client';
 
-import { Sparkles, Globe, Image } from 'lucide-react';
+import { Sparkles, Layers } from 'lucide-react';
 
-export type ChatTab = 'answer' | 'links' | 'images';
+export type ChatTab = 'answer' | 'resources';
 
 interface ChatTabNavProps {
   activeTab: ChatTab;
   onTabChange: (tab: ChatTab) => void;
-  hasLinks?: boolean;
-  hasImages?: boolean;
-  linksCount?: number;
-  imagesCount?: number;
+  hasResources?: boolean;
+  resourcesCount?: number;
 }
 
 export function ChatTabNav({
   activeTab,
   onTabChange,
-  hasLinks = false,
-  hasImages = false,
-  linksCount = 0,
-  imagesCount = 0,
+  hasResources = false,
+  resourcesCount = 0,
 }: ChatTabNavProps) {
   const tabs = [
     {
@@ -29,18 +25,11 @@ export function ChatTabNav({
       available: true,
     },
     {
-      id: 'links' as ChatTab,
-      label: 'Links',
-      icon: Globe,
-      available: hasLinks,
-      count: linksCount,
-    },
-    {
-      id: 'images' as ChatTab,
-      label: 'Images',
-      icon: Image,
-      available: hasImages,
-      count: imagesCount,
+      id: 'resources' as ChatTab,
+      label: 'Resources',
+      icon: Layers,
+      available: hasResources,
+      count: resourcesCount,
     },
   ];
 

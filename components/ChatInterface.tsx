@@ -72,7 +72,7 @@ export function ChatInterface() {
   const [isFocused, setIsFocused] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [modelUsed, setModelUsed] = useState<string | undefined>();
-  const [activeTab, setActiveTab] = useState<'answer' | 'links' | 'images'>('answer');
+  const [activeTab, setActiveTab] = useState<'answer' | 'resources'>('answer');
   const [articleContext, setArticleContext] = useState<ArticleContext | null>(null);
   const [ideaContext, setIdeaContext] = useState<IdeaContext | null>(null);
   const [hasProcessedUrlParams, setHasProcessedUrlParams] = useState(false);
@@ -713,12 +713,18 @@ export function ChatInterface() {
             <ChatHeader
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              hasLinks={allSources.length > 0 || allResourceCards.length > 0}
-              hasImages={allImages.length > 0}
-              linksCount={allSources.length + allResourceCards.length}
-              imagesCount={allImages.length}
+              hasResources={allSources.length > 0 || allResourceCards.length > 0 || allImages.length > 0}
+              resourcesCount={allSources.length + allResourceCards.length + allImages.length}
               threadTitle={threadTitle}
               onBack={resetChat}
+              onRenameThread={(newTitle) => {
+                // TODO: Implement rename in chat history
+                console.log('Rename thread to:', newTitle);
+              }}
+              onDeleteThread={() => {
+                // Delete and go back to home
+                resetChat();
+              }}
               isStreaming={isLoading}
             />
 
@@ -773,23 +779,35 @@ export function ChatInterface() {
                   </>
                 )}
 
-                {activeTab === 'links' && (
-                  <LinksView
-                    query={threadTitle}
-                    sources={allSources}
-                    resourceCards={allResourceCards}
-                  />
-                )}
+                {activeTab === 'resources' && (
+                  <div className="py-6 space-y-8">
+                    {/* Links section */}
+                    {(allSources.length > 0 || allResourceCards.length > 0) && (
+                      <LinksView
+                        query={threadTitle}
+                        sources={allSources}
+                        resourceCards={allResourceCards}
+                      />
+                    )}
 
-                {activeTab === 'images' && (
-                  <div className="py-6">
-                    {/* Images view content */}
-                    <p className="text-[var(--fg-tertiary)] text-sm">
-                      {allImages.length > 0 
-                        ? `${allImages.length} images found`
-                        : 'No images available'
-                      }
-                    </p>
+                    {/* Images section */}
+                    {allImages.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-medium text-[var(--fg-secondary)] mb-4">
+                          Images ({allImages.length})
+                        </h3>
+                        <p className="text-[var(--fg-tertiary)] text-sm">
+                          {allImages.length} images found
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Empty state */}
+                    {allSources.length === 0 && allResourceCards.length === 0 && allImages.length === 0 && (
+                      <p className="text-[var(--fg-tertiary)] text-sm">
+                        No resources available
+                      </p>
+                    )}
                   </div>
                 )}
 

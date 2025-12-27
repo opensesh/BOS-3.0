@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Link as LinkIcon } from 'lucide-react';
 
@@ -65,7 +66,10 @@ export function ProjectInstructionsModal({
     }
   };
 
-  return (
+  // Don't render on server
+  if (typeof window === 'undefined') return null;
+
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -74,45 +78,47 @@ export function ProjectInstructionsModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/60 z-50"
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/60 z-[9999]"
             onClick={onClose}
           />
 
-          {/* Modal - centered with responsive margins */}
+          {/* Modal - centered using portal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="
-              fixed inset-4 sm:inset-auto
-              sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2
-              w-auto sm:w-full sm:max-w-2xl
-              max-h-[calc(100vh-32px)] sm:max-h-[80vh]
+              fixed
+              left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+              w-[calc(100%-32px)] max-w-2xl
+              max-h-[calc(100vh-64px)]
               bg-[var(--bg-secondary)]
               border border-[var(--border-primary)]
               rounded-xl
               shadow-2xl
-              z-50
+              z-[10000]
               flex flex-col
               overflow-hidden
             "
             onKeyDown={handleKeyDown}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-secondary)]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-secondary)] flex-shrink-0">
               <h2 className="text-lg font-semibold text-[var(--fg-primary)]">
                 Set project instructions
               </h2>
               <button
                 onClick={onClose}
+                disabled={isSaving}
                 className="
                   p-2 rounded-lg
                   text-[var(--fg-tertiary)]
                   hover:text-[var(--fg-primary)]
                   hover:bg-[var(--bg-tertiary)]
                   transition-colors
+                  disabled:opacity-50
                 "
               >
                 <X className="w-5 h-5" />
@@ -143,6 +149,7 @@ export function ProjectInstructionsModal({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Break down large tasks and ask clarifying questions when needed."
+                disabled={isSaving}
                 className="
                   w-full h-64
                   px-4 py-3
@@ -154,12 +161,13 @@ export function ProjectInstructionsModal({
                   focus:outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/20 focus:border-[var(--fg-brand-primary)]
                   transition-all
                   resize-none
+                  disabled:opacity-50
                 "
               />
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border-secondary)] bg-[var(--bg-tertiary)]/30">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border-secondary)] bg-[var(--bg-tertiary)]/30 flex-shrink-0">
               <button
                 type="button"
                 onClick={onClose}
@@ -199,5 +207,7 @@ export function ProjectInstructionsModal({
       )}
     </AnimatePresence>
   );
-}
 
+  // Render using portal to document.body for proper centering
+  return createPortal(modalContent, document.body);
+}

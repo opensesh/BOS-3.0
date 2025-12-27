@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FolderPlus } from 'lucide-react';
 
@@ -55,7 +56,10 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
     }
   };
 
-  return (
+  // Don't render on server
+  if (typeof window === 'undefined') return null;
+
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -64,27 +68,27 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 z-50"
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/50 z-[9999]"
             onClick={onClose}
           />
 
-          {/* Modal - centered with responsive margins */}
+          {/* Modal - centered using portal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="
-              fixed inset-4 sm:inset-auto
-              sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2
-              w-auto sm:w-full sm:max-w-md
-              max-h-[calc(100vh-32px)] sm:max-h-[90vh]
+              fixed
+              left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+              w-[calc(100%-32px)] max-w-md
+              max-h-[calc(100vh-64px)]
               bg-[var(--bg-secondary)]
               border border-[var(--border-primary)]
               rounded-xl
               shadow-2xl
-              z-50
+              z-[10000]
               overflow-hidden
               flex flex-col
             "
@@ -111,12 +115,14 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
               </div>
               <button
                 onClick={onClose}
+                disabled={isSubmitting}
                 className="
                   p-2 rounded-lg
                   text-[var(--fg-tertiary)]
                   hover:text-[var(--fg-primary)]
                   hover:bg-[var(--bg-tertiary)]
                   transition-colors
+                  disabled:opacity-50
                 "
               >
                 <X className="w-5 h-5" />
@@ -152,6 +158,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                       transition-all
                     "
                     maxLength={100}
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -182,6 +189,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
                       resize-none
                     "
                     maxLength={500}
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -228,4 +236,7 @@ export function NewProjectModal({ isOpen, onClose, onSubmit }: NewProjectModalPr
       )}
     </AnimatePresence>
   );
+
+  // Render using portal to document.body for proper centering
+  return createPortal(modalContent, document.body);
 }

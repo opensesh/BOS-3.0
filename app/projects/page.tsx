@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Search, Plus, ArrowUpDown, X, Folder } from 'lucide-react';
+import Link from 'next/link';
+import { Search, ArrowUpDown, X, ArrowLeft } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
@@ -13,13 +13,19 @@ import { ProjectCard, NewProjectModal } from '@/components/projects';
 type SortField = 'name' | 'updated_at' | 'created_at';
 type SortDirection = 'asc' | 'desc';
 
-// Header component consistent with Recent Chats page
+// Header component - "Back to Home" navigation
 function ProjectsPageHeader() {
   return (
     <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
-      <div className="max-w-6xl mx-auto px-4 lg:px-8">
+      <div className="w-full max-w-6xl mx-auto px-6 md:px-12">
         <div className="flex items-center h-12">
-          <span className="text-sm font-medium text-[var(--fg-primary)]">Projects</span>
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Home</span>
+          </Link>
         </div>
       </div>
     </div>
@@ -140,22 +146,60 @@ export default function ProjectsPage() {
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
-              {/* Project count and sort row */}
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-[var(--fg-tertiary)]">
-                  {projects.length} project{projects.length !== 1 ? 's' : ''}
+            <div className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
+              {/* Page Title */}
+              <div className="flex flex-col gap-3 mb-10">
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)]">
+                  Projects
+                </h1>
+                <p className="text-base md:text-lg text-[var(--fg-secondary)] max-w-2xl">
+                  {projects.length} project{projects.length !== 1 ? 's' : ''} • Organize your conversations into focused workspaces.
                 </p>
+              </div>
+
+              {/* Search and Sort Row */}
+              <div className="flex items-center gap-4 mb-8">
+                {/* Search */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-quaternary)]" />
+                  <input
+                    type="text"
+                    placeholder="Search projects..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="
+                      w-full pl-10 pr-4 py-2.5
+                      bg-[var(--bg-secondary)]
+                      border border-[var(--border-secondary)]
+                      rounded-lg
+                      text-sm text-[var(--fg-primary)]
+                      placeholder:text-[var(--fg-quaternary)]
+                      focus:outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/20 focus:border-[var(--fg-brand-primary)]
+                      transition-all
+                    "
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Sort */}
                 <button
                   onClick={handleSortChange}
                   className="
                     flex items-center gap-2
-                    px-3 py-1.5
+                    px-3 py-2.5
                     text-sm text-[var(--fg-secondary)]
                     hover:text-[var(--fg-primary)]
                     hover:bg-[var(--bg-secondary)]
                     rounded-lg
                     transition-colors
+                    flex-shrink-0
                   "
                 >
                   <span>Sort by</span>
@@ -164,39 +208,10 @@ export default function ProjectsPage() {
                 </button>
               </div>
 
-              {/* Search - Full Width */}
-              <div className="relative mb-6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-quaternary)]" />
-                <input
-                  type="text"
-                  placeholder="Search projects..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="
-                    w-full pl-10 pr-4 py-2.5
-                    bg-[var(--bg-secondary)]
-                    border border-[var(--border-secondary)]
-                    rounded-lg
-                    text-sm text-[var(--fg-primary)]
-                    placeholder:text-[var(--fg-quaternary)]
-                    focus:outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/20 focus:border-[var(--fg-brand-primary)]
-                    transition-all
-                  "
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-
               {/* Projects Grid */}
               {isLoading ? (
                 // Loading skeleton
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
@@ -204,21 +219,29 @@ export default function ProjectsPage() {
                         bg-[var(--bg-secondary)]
                         border border-[var(--border-secondary)]
                         rounded-xl
-                        p-5
+                        p-6
+                        min-h-[200px]
                         animate-pulse
                       "
                     >
-                      <div className="h-5 w-32 bg-[var(--bg-tertiary)] rounded mb-4" />
+                      <div className="w-12 h-12 bg-[var(--bg-tertiary)] rounded-full mb-4" />
+                      <div className="h-5 w-32 bg-[var(--bg-tertiary)] rounded mb-3" />
                       <div className="space-y-2">
                         <div className="h-4 w-full bg-[var(--bg-tertiary)] rounded" />
                         <div className="h-4 w-3/4 bg-[var(--bg-tertiary)] rounded" />
                       </div>
-                      <div className="h-3 w-24 bg-[var(--bg-tertiary)] rounded mt-4" />
                     </div>
                   ))}
                 </div>
-              ) : filteredProjects.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Create Project Card - Always first */}
+                  <ProjectCard
+                    isCreate
+                    onCreateClick={() => setIsModalOpen(true)}
+                  />
+                  
+                  {/* Project Cards */}
                   {filteredProjects.map((project, index) => (
                     <ProjectCard
                       key={project.id}
@@ -228,63 +251,19 @@ export default function ProjectsPage() {
                     />
                   ))}
                 </div>
-              ) : (
-                // Empty State
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col items-center justify-center py-16 px-4"
-                >
-                  <div className="
-                    w-16 h-16 mb-4
-                    rounded-full
-                    bg-[var(--bg-secondary)]
-                    border border-[var(--border-secondary)]
-                    flex items-center justify-center
-                  ">
-                    <Folder className="w-7 h-7 text-[var(--fg-quaternary)]" />
-                  </div>
-                  {searchQuery ? (
-                    <>
-                      <h3 className="text-lg font-semibold text-[var(--fg-primary)] mb-1">
-                        No results found
-                      </h3>
-                      <p className="text-sm text-[var(--fg-tertiary)] text-center max-w-[280px] mb-4">
-                        Try adjusting your search to find what you&apos;re looking for.
-                      </p>
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="text-sm text-[var(--fg-brand-primary)] hover:underline"
-                      >
-                        Clear search
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="text-lg font-semibold text-[var(--fg-primary)] mb-1">
-                        No projects yet
-                      </h3>
-                      <p className="text-sm text-[var(--fg-tertiary)] text-center max-w-[280px] mb-4">
-                        Create a project to organize your conversations.
-                      </p>
-                      <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="
-                          flex items-center gap-2
-                          px-4 py-2
-                          bg-[var(--bg-brand-solid)]
-                          text-white
-                          rounded-lg font-medium text-sm
-                          hover:bg-[var(--bg-brand-solid)]/90
-                          transition-colors
-                        "
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>Create a project</span>
-                      </button>
-                    </>
-                  )}
-                </motion.div>
+              )}
+
+              {/* Empty state when searching with no results */}
+              {!isLoading && searchQuery && filteredProjects.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-[var(--fg-tertiary)] mb-2">No projects found matching &quot;{searchQuery}&quot;</p>
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="text-sm text-[var(--fg-brand-primary)] hover:underline"
+                  >
+                    Clear search
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -300,4 +279,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-

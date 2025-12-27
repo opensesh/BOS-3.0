@@ -91,13 +91,19 @@ const allItems = [
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
+// Mobile grid items: 2 folders + 2 icons (Colors, Spaces, Create a post, Plan a campaign)
+const mobileGridItems = [
+  { ...quickLinks[2], type: 'link' as const }, // Colors
+  { ...quickLinks[3], type: 'link' as const }, // Spaces
+  { ...prePrompts[0], type: 'prompt' as const }, // Create a post
+  { ...prePrompts[1], type: 'prompt' as const }, // Plan a campaign
+];
+
 // Initial indices per breakpoint to center on 2 folders + 2 icons:
 // - Desktop (4 visible): index 2 → Colors, Spaces, Create a post, Plan a campaign
 // - Tablet (3 visible): index 2 → Colors, Spaces, Create a post  
-// - Mobile (2 visible): index 3 → Spaces, Create a post
 const INITIAL_INDEX_DESKTOP = 2;
 const INITIAL_INDEX_TABLET = 2;
-const INITIAL_INDEX_MOBILE = 3;
 
 // Swipe threshold in pixels
 const SWIPE_THRESHOLD = 50;
@@ -111,34 +117,29 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
   const touchEndX = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Adjust visible count and initial index based on screen size
+  // Adjust visible count and initial index based on screen size (for carousel only)
   useEffect(() => {
     const updateLayout = () => {
-      const isMobile = window.matchMedia('(max-width: 767px)').matches;
-      const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+      const isTablet = window.matchMedia('(min-width: 640px) and (max-width: 1023px)').matches;
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
       
-      if (isMobile) {
-        setVisibleCount(2);
+      if (isDesktop) {
+        setVisibleCount(4);
       } else if (isTablet) {
         setVisibleCount(3);
-      } else {
-        setVisibleCount(4);
       }
     };
     
     // Set initial values based on screen size
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+    const isTablet = window.matchMedia('(min-width: 640px) and (max-width: 1023px)').matches;
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
     
-    if (isMobile) {
-      setVisibleCount(2);
-      setCurrentIndex(INITIAL_INDEX_MOBILE);
+    if (isDesktop) {
+      setVisibleCount(4);
+      setCurrentIndex(INITIAL_INDEX_DESKTOP);
     } else if (isTablet) {
       setVisibleCount(3);
       setCurrentIndex(INITIAL_INDEX_TABLET);
-    } else {
-      setVisibleCount(4);
-      setCurrentIndex(INITIAL_INDEX_DESKTOP);
     }
     
     // Listen for resize
@@ -194,142 +195,173 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
   
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
-          {/* Carousel with arrows outside - flex row layout */}
-          <div 
-            ref={containerRef}
-            className="flex items-center gap-3"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {/* Left arrow - outside cards */}
-            <motion.button
-              onClick={handlePrev}
-              disabled={currentIndex <= 0}
-              className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center ${
-                currentIndex > 0 
-                  ? 'cursor-pointer' 
-                  : 'opacity-30 cursor-not-allowed'
-              }`}
-              whileHover={currentIndex > 0 ? { 
-                scale: 1.05,
-                borderColor: 'var(--border-brand)',
-                backgroundColor: 'var(--bg-tertiary)',
-              } : {}}
-              whileTap={currentIndex > 0 ? { scale: 0.95 } : {}}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              aria-label="Previous slide"
-            >
-              <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
-            </motion.button>
-
-            {/* Cards container */}
+      {/* Mobile: 2x2 grid layout (hidden on sm and up) */}
+      <div className="sm:hidden">
+        <div className="grid grid-cols-2 gap-3">
+          {mobileGridItems.map((item) => (
             <div 
-              className="flex-1 overflow-hidden touch-pan-y"
-              role="region"
-              aria-label="Quick action cards"
-              aria-live="polite"
+              key={item.id} 
+              className="min-h-[130px]"
             >
-              <motion.div 
-                className="flex gap-3 will-change-transform"
-                style={{
-                  width: getTrackWidth(),
-                }}
-                animate={{
-                  x: `calc(-${currentIndex} * (12.5% + 1.5px))`,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                  mass: 1,
-                }}
-              >
-                {allItems.map((item, idx) => (
-                  <div 
-                    key={item.id} 
-                    className="flex-shrink-0 min-h-[120px] sm:min-h-[140px]"
-                    style={{ width: 'calc(12.5% - 10.5px)' }}
-                    role="group"
-                    aria-label={`${item.title} - ${idx + 1} of ${allItems.length}`}
-                  >
-                    {item.type === 'link' ? (
-                      <AnimatedFolder
-                        title={item.title}
-                        subtitle={item.subtitle}
-                        href={item.href}
-                        icon={item.icon}
-                      />
-                    ) : (
-                      <IconHover3D
-                        icon={item.icon}
-                        title={item.title}
-                        description={item.description}
-                        onClick={() => onPromptSubmit(item.prompt)}
-                      />
-                    )}
-                  </div>
-                ))}
-              </motion.div>
+              {item.type === 'link' ? (
+                <AnimatedFolder
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  href={item.href}
+                  icon={item.icon}
+                />
+              ) : (
+                <IconHover3D
+                  icon={item.icon}
+                  title={item.title}
+                  description={item.description}
+                  onClick={() => onPromptSubmit(item.prompt)}
+                />
+              )}
             </div>
-
-            {/* Right arrow - outside cards */}
-            <motion.button
-              onClick={handleNext}
-              disabled={currentIndex >= maxIndex}
-              className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center ${
-                currentIndex < maxIndex 
-                  ? 'cursor-pointer' 
-                  : 'opacity-30 cursor-not-allowed'
-              }`}
-              whileHover={currentIndex < maxIndex ? { 
-                scale: 1.05,
-                borderColor: 'var(--border-brand)',
-                backgroundColor: 'var(--bg-tertiary)',
-              } : {}}
-              whileTap={currentIndex < maxIndex ? { scale: 0.95 } : {}}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              aria-label="Next slide"
-            >
-              <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
-            </motion.button>
-          </div>
-
-          {/* Progress dots */}
-          <div 
-            className="flex justify-center gap-2 mt-4 sm:mt-5"
-            role="tablist"
-            aria-label="Carousel navigation"
-          >
-            {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
-              <motion.button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                role="tab"
-                aria-selected={idx === currentIndex}
-                aria-label={`Go to slide ${idx + 1} of ${maxIndex + 1}`}
-                className="h-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2"
-                animate={{
-                  width: idx === currentIndex ? 20 : 6,
-                  backgroundColor: idx === currentIndex 
-                    ? 'var(--color-brand-500)' 
-                    : 'var(--border-primary)',
-                }}
-                whileHover={{
-                  backgroundColor: idx === currentIndex 
-                    ? 'var(--color-brand-500)' 
-                    : 'var(--fg-tertiary)',
-                  scale: 1.1,
-                }}
-                whileTap={{ scale: 0.95 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 400,
-                  damping: 25,
-                }}
-              />
-            ))}
-          </div>
+          ))}
         </div>
+      </div>
+
+      {/* Tablet & Desktop: Carousel layout (hidden on mobile) */}
+      <div className="hidden sm:block">
+        {/* Carousel with arrows outside - flex row layout */}
+        <div 
+          ref={containerRef}
+          className="flex items-center gap-3"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Left arrow - outside cards */}
+          <motion.button
+            onClick={handlePrev}
+            disabled={currentIndex <= 0}
+            className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center ${
+              currentIndex > 0 
+                ? 'cursor-pointer' 
+                : 'opacity-30 cursor-not-allowed'
+            }`}
+            whileHover={currentIndex > 0 ? { 
+              scale: 1.05,
+              borderColor: 'var(--border-brand)',
+              backgroundColor: 'var(--bg-tertiary)',
+            } : {}}
+            whileTap={currentIndex > 0 ? { scale: 0.95 } : {}}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-4 h-4 text-[var(--fg-secondary)]" />
+          </motion.button>
+
+          {/* Cards container */}
+          <div 
+            className="flex-1 overflow-hidden touch-pan-y"
+            role="region"
+            aria-label="Quick action cards"
+            aria-live="polite"
+          >
+            <motion.div 
+              className="flex gap-3 will-change-transform"
+              style={{
+                width: getTrackWidth(),
+              }}
+              animate={{
+                x: `calc(-${currentIndex} * (12.5% + 1.5px))`,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+                mass: 1,
+              }}
+            >
+              {allItems.map((item, idx) => (
+                <div 
+                  key={item.id} 
+                  className="flex-shrink-0 min-h-[140px]"
+                  style={{ width: 'calc(12.5% - 10.5px)' }}
+                  role="group"
+                  aria-label={`${item.title} - ${idx + 1} of ${allItems.length}`}
+                >
+                  {item.type === 'link' ? (
+                    <AnimatedFolder
+                      title={item.title}
+                      subtitle={item.subtitle}
+                      href={item.href}
+                      icon={item.icon}
+                    />
+                  ) : (
+                    <IconHover3D
+                      icon={item.icon}
+                      title={item.title}
+                      description={item.description}
+                      onClick={() => onPromptSubmit(item.prompt)}
+                    />
+                  )}
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Right arrow - outside cards */}
+          <motion.button
+            onClick={handleNext}
+            disabled={currentIndex >= maxIndex}
+            className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center ${
+              currentIndex < maxIndex 
+                ? 'cursor-pointer' 
+                : 'opacity-30 cursor-not-allowed'
+            }`}
+            whileHover={currentIndex < maxIndex ? { 
+              scale: 1.05,
+              borderColor: 'var(--border-brand)',
+              backgroundColor: 'var(--bg-tertiary)',
+            } : {}}
+            whileTap={currentIndex < maxIndex ? { scale: 0.95 } : {}}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-4 h-4 text-[var(--fg-secondary)]" />
+          </motion.button>
+        </div>
+
+        {/* Progress dots */}
+        <div 
+          className="flex justify-center gap-2 mt-5"
+          role="tablist"
+          aria-label="Carousel navigation"
+        >
+          {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+            <motion.button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              role="tab"
+              aria-selected={idx === currentIndex}
+              aria-label={`Go to slide ${idx + 1} of ${maxIndex + 1}`}
+              className="h-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2"
+              animate={{
+                width: idx === currentIndex ? 20 : 6,
+                backgroundColor: idx === currentIndex 
+                  ? 'var(--color-brand-500)' 
+                  : 'var(--border-primary)',
+              }}
+              whileHover={{
+                backgroundColor: idx === currentIndex 
+                  ? 'var(--color-brand-500)' 
+                  : 'var(--fg-tertiary)',
+                scale: 1.1,
+              }}
+              whileTap={{ scale: 0.95 }}
+              transition={{
+                type: 'spring',
+                stiffness: 400,
+                damping: 25,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

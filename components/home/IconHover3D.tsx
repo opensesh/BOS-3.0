@@ -53,10 +53,9 @@ export function IconHover3D({
 
         {/* Icon Container - BOTTOM - square to match folder */}
         <motion.div
-          className="w-10 h-10 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center"
+          className="w-10 h-10 rounded-lg bg-[var(--bg-tertiary)] flex items-center justify-center"
           animate={{
             scale: isHovered ? 1.05 : 1,
-            borderColor: isHovered ? 'var(--color-brand-500)' : 'var(--border-primary)',
           }}
           transition={{
             type: 'spring',

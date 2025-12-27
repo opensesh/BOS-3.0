@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronUp, ChevronDown, Clock, Lightbulb, Search, Sparkles, Target } from 'lucide-react';
-import { DotLoaderOnly } from '@/components/ui/dot-flow';
 
 interface ThinkingBubbleProps {
   /** The thinking content to display */
@@ -110,40 +109,43 @@ export function ThinkingBubble({
   const contentRef = useRef<HTMLDivElement>(null);
   const [hasOverflow, setHasOverflow] = useState(false);
   
-  // Live timer state - actively counts during thinking
+  // Live timer state - actively counts while we have thinking content and streaming
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [finalDuration, setFinalDuration] = useState<number | null>(null);
   const timerStartRef = useRef<number | null>(null);
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hasStartedTimerRef = useRef(false);
 
-  // Start/stop timer based on isThinking state
+  // Track if we have thinking content
+  const hasThinking = Boolean(thinking && thinking.length > 0);
+
+  // Start timer when thinking content first appears, stop when isThinking becomes false
   useEffect(() => {
-    if (isThinking) {
-      // Start the timer if not already started
-      if (timerStartRef.current === null) {
-        timerStartRef.current = Date.now();
-        setElapsedSeconds(0);
-        setFinalDuration(null);
-        
-        // Update every second
-        timerIntervalRef.current = setInterval(() => {
-          if (timerStartRef.current) {
-            const elapsed = Math.floor((Date.now() - timerStartRef.current) / 1000);
-            setElapsedSeconds(elapsed);
-          }
-        }, 1000);
-      }
-    } else {
-      // Stop the timer when thinking ends
-      if (timerStartRef.current !== null) {
-        if (timerIntervalRef.current) {
-          clearInterval(timerIntervalRef.current);
-          timerIntervalRef.current = null;
+    // Start timer when thinking content first appears (regardless of isThinking prop)
+    if (hasThinking && !hasStartedTimerRef.current) {
+      hasStartedTimerRef.current = true;
+      timerStartRef.current = Date.now();
+      setElapsedSeconds(0);
+      setFinalDuration(null);
+      
+      // Update every 100ms for smoother counting
+      timerIntervalRef.current = setInterval(() => {
+        if (timerStartRef.current) {
+          const elapsed = Math.floor((Date.now() - timerStartRef.current) / 1000);
+          setElapsedSeconds(elapsed);
         }
-        const duration = Math.floor((Date.now() - timerStartRef.current) / 1000);
-        setFinalDuration(duration);
-        timerStartRef.current = null;
+      }, 100);
+    }
+    
+    // Stop timer when thinking is no longer active (streaming ended or moved to text phase)
+    if (!isThinking && timerStartRef.current !== null && hasStartedTimerRef.current) {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
       }
+      const duration = Math.floor((Date.now() - timerStartRef.current) / 1000);
+      setFinalDuration(duration);
+      timerStartRef.current = null;
     }
 
     // Cleanup on unmount
@@ -153,7 +155,21 @@ export function ThinkingBubble({
         timerIntervalRef.current = null;
       }
     };
-  }, [isThinking]);
+  }, [hasThinking, isThinking]);
+  
+  // Reset timer state when thinking content is cleared (new message)
+  useEffect(() => {
+    if (!hasThinking) {
+      hasStartedTimerRef.current = false;
+      setElapsedSeconds(0);
+      setFinalDuration(null);
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      timerStartRef.current = null;
+    }
+  }, [hasThinking]);
 
   // Check if content overflows
   useEffect(() => {
@@ -170,7 +186,6 @@ export function ThinkingBubble({
   }, [thinking, isThinking, isExpanded]);
 
   // Don't render if no thinking content and not currently thinking
-  const hasThinking = thinking && thinking.length > 0;
   if (!hasThinking && !isThinking) {
     return null;
   }
@@ -207,12 +222,8 @@ export function ThinkingBubble({
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)]/50 transition-colors group sticky top-0 bg-[var(--bg-secondary)]/30 backdrop-blur-sm z-10"
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Dot loader indicator when actively thinking */}
-          {isThinking && (
-            <DotLoaderOnly className="shrink-0" />
-          )}
-          
-          {/* Label text - always shows "Thought process" or summary */}
+          {/* Label text - always shows "Thought process" or summary 
+              Note: DotLoader is shown separately below via InlineStreamingDisplay */}
           {summary && !isThinking ? (
             <span className="text-sm text-[var(--fg-secondary)] truncate">
               {summary}

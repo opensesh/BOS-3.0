@@ -276,9 +276,11 @@ async function streamWithAnthropicNative(
 
         let currentToolUse: { id: string; name: string; input: string } | null = null;
         let pendingToolCalls: Array<{ id: string; name: string; input: Record<string, unknown> }> = [];
+        let hasStreamedText = false;
 
         // Process text events
         stream.on('text', (text: string) => {
+          hasStreamedText = true;
           controller.enqueue(sse.encode({ type: 'text', content: text }));
         });
 
@@ -471,6 +473,27 @@ async function streamWithAnthropicNative(
         // for a smooth "finding sources" feel. No need to send them again here.
         if (collectedSources.length > 0) {
           console.log('Web search sources streamed:', collectedSources.length);
+        }
+
+        // Fallback: If no text was streamed (can happen with extended thinking), 
+        // extract text from the final response
+        if (!hasStreamedText && response.stop_reason !== 'tool_use') {
+          console.warn('No text streamed during response, checking final message for text blocks...');
+          for (const block of response.content || []) {
+            if (block.type === 'text' && 'text' in block && block.text) {
+              console.log('Found text in final message, sending now...');
+              controller.enqueue(sse.encode({ type: 'text', content: block.text }));
+              hasStreamedText = true;
+            }
+          }
+          
+          // If still no text, something went wrong - log for debugging
+          if (!hasStreamedText) {
+            console.error('Extended thinking completed but no text was generated!', {
+              stopReason: response.stop_reason,
+              contentTypes: response.content?.map((b: { type: string }) => b.type) || [],
+            });
+          }
         }
 
         controller.enqueue(sse.encode({ type: 'done' }));

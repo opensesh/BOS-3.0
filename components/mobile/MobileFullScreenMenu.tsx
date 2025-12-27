@@ -14,6 +14,7 @@ import {
   HelpCircle,
   History,
   ChevronRight,
+  Folder,
 } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { useChatContext } from '@/lib/chat-context';
@@ -75,7 +76,7 @@ export function MobileFullScreenMenu() {
   const pathname = usePathname();
   const router = useRouter();
   const { isMobileMenuOpen, closeMobileMenu, openPanel } = useMobileMenu();
-  const { triggerChatReset, chatHistory } = useChatContext();
+  const { triggerChatReset, chatHistory, projects } = useChatContext();
 
   const handleNewChat = useCallback(() => {
     triggerChatReset();
@@ -236,6 +237,28 @@ export function MobileFullScreenMenu() {
                 <span>Recent Chats</span>
                 {chatHistory.length > 0 && (
                   <span className="text-[var(--fg-quaternary)]">({chatHistory.length})</span>
+                )}
+              </Link>
+
+              {/* Projects - Secondary Outline Button */}
+              <Link
+                href="/projects"
+                onClick={handleNavClick}
+                className="
+                  w-full flex items-center justify-center gap-2
+                  py-3.5 px-4
+                  bg-transparent hover:bg-[var(--bg-tertiary)]
+                  active:bg-[var(--bg-tertiary)]
+                  text-[var(--fg-primary)] 
+                  rounded-xl font-medium 
+                  border border-[var(--border-secondary)]
+                  transition-all
+                "
+              >
+                <Folder className="w-5 h-5 text-[var(--fg-tertiary)]" />
+                <span>Projects</span>
+                {projects.length > 0 && (
+                  <span className="text-[var(--fg-quaternary)]">({projects.length})</span>
                 )}
               </Link>
             </motion.div>

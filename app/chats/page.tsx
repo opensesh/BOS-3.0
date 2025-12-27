@@ -12,7 +12,6 @@ import {
   ArrowDown,
   X,
   Plus,
-  ArrowLeft,
 } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
@@ -23,23 +22,13 @@ import { DateFilterDropdown, type DateFilterValue } from '@/components/chat/Date
 type SortField = 'title' | 'date';
 type SortDirection = 'asc' | 'desc';
 
-// Header component similar to ChatHeader
-function ChatsPageHeader({ onBack }: { onBack: () => void }) {
+// Header component
+function ChatsPageHeader() {
   return (
     <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center h-12">
-          {/* Left side - Back button and title */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onBack}
-              className="p-1 -ml-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-              title="Back to home"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </button>
-            <span className="text-sm font-medium text-[var(--fg-primary)]">Recent Chats</span>
-          </div>
+          <span className="text-sm font-medium text-[var(--fg-primary)]">Recent Chats</span>
         </div>
       </div>
     </div>
@@ -149,10 +138,6 @@ export default function ChatsPage() {
     router.push('/');
   };
 
-  const handleBack = () => {
-    router.push('/');
-  };
-
   const formatDate = (timestamp: Date | number | string) => {
     const date = getTimestamp(timestamp);
     const now = new Date();
@@ -181,8 +166,8 @@ export default function ChatsPage() {
       <Sidebar />
       <MainContent className="overflow-hidden">
         <div className="flex flex-col h-full">
-          {/* Chat-style Header */}
-          <ChatsPageHeader onBack={handleBack} />
+          {/* Header */}
+          <ChatsPageHeader />
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">

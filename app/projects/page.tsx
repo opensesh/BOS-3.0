@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Search, Plus, ArrowUpDown, X, ArrowLeft, FolderKanban } from 'lucide-react';
+import { Search, Plus, ArrowUpDown, X, Folder } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
@@ -13,23 +13,13 @@ import { ProjectCard, NewProjectModal } from '@/components/projects';
 type SortField = 'name' | 'updated_at' | 'created_at';
 type SortDirection = 'asc' | 'desc';
 
-// Header component similar to other pages
-function ProjectsPageHeader({ onBack }: { onBack: () => void }) {
+// Header component consistent with Recent Chats page
+function ProjectsPageHeader() {
   return (
     <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
       <div className="max-w-6xl mx-auto px-4 lg:px-8">
         <div className="flex items-center h-12">
-          {/* Left side - Back button and title */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onBack}
-              className="p-1 -ml-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-              title="Back to home"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </button>
-            <span className="text-sm font-medium text-[var(--fg-primary)]">Projects</span>
-          </div>
+          <span className="text-sm font-medium text-[var(--fg-primary)]">Projects</span>
         </div>
       </div>
     </div>
@@ -120,10 +110,6 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleBack = () => {
-    router.push('/');
-  };
-
   const handleSortChange = () => {
     // Cycle through sort options
     if (sortField === 'updated_at' && sortDirection === 'desc') {
@@ -150,75 +136,21 @@ export default function ProjectsPage() {
       <MainContent className="overflow-hidden">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <ProjectsPageHeader onBack={handleBack} />
+          <ProjectsPageHeader />
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
-              {/* Page Header with New Project Button */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h1 className="text-2xl font-bold text-[var(--fg-primary)]">Projects</h1>
-                  <p className="text-sm text-[var(--fg-tertiary)] mt-1">
-                    {projects.length} project{projects.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="
-                    flex items-center gap-2
-                    px-4 py-2.5
-                    bg-[var(--bg-secondary)]
-                    border border-[var(--border-secondary)]
-                    rounded-lg
-                    text-sm font-medium text-[var(--fg-primary)]
-                    hover:bg-[var(--bg-tertiary)]
-                    hover:border-[var(--border-primary)]
-                    transition-colors
-                  "
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>New project</span>
-                </button>
-              </div>
-
-              {/* Search and Sort */}
-              <div className="flex items-center gap-4 mb-6">
-                {/* Search */}
-                <div className="relative flex-1 max-w-xl">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-quaternary)]" />
-                  <input
-                    type="text"
-                    placeholder="Search projects..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="
-                      w-full pl-10 pr-4 py-2.5
-                      bg-[var(--bg-secondary)]
-                      border border-[var(--border-secondary)]
-                      rounded-lg
-                      text-sm text-[var(--fg-primary)]
-                      placeholder:text-[var(--fg-quaternary)]
-                      focus:outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/20 focus:border-[var(--fg-brand-primary)]
-                      transition-all
-                    "
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Sort */}
+              {/* Project count and sort row */}
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-[var(--fg-tertiary)]">
+                  {projects.length} project{projects.length !== 1 ? 's' : ''}
+                </p>
                 <button
                   onClick={handleSortChange}
                   className="
                     flex items-center gap-2
-                    px-3 py-2.5
+                    px-3 py-1.5
                     text-sm text-[var(--fg-secondary)]
                     hover:text-[var(--fg-primary)]
                     hover:bg-[var(--bg-secondary)]
@@ -230,6 +162,35 @@ export default function ProjectsPage() {
                   <span className="font-medium text-[var(--fg-primary)]">{getSortLabel()}</span>
                   <ArrowUpDown className="w-3.5 h-3.5" />
                 </button>
+              </div>
+
+              {/* Search - Full Width */}
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-quaternary)]" />
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="
+                    w-full pl-10 pr-4 py-2.5
+                    bg-[var(--bg-secondary)]
+                    border border-[var(--border-secondary)]
+                    rounded-lg
+                    text-sm text-[var(--fg-primary)]
+                    placeholder:text-[var(--fg-quaternary)]
+                    focus:outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/20 focus:border-[var(--fg-brand-primary)]
+                    transition-all
+                  "
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </div>
 
               {/* Projects Grid */}
@@ -281,7 +242,7 @@ export default function ProjectsPage() {
                     border border-[var(--border-secondary)]
                     flex items-center justify-center
                   ">
-                    <FolderKanban className="w-7 h-7 text-[var(--fg-quaternary)]" />
+                    <Folder className="w-7 h-7 text-[var(--fg-quaternary)]" />
                   </div>
                   {searchQuery ? (
                     <>

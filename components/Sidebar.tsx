@@ -25,7 +25,7 @@ import {
   Zap,
   Layers,
   FolderPlus,
-  FolderKanban,
+  Folder,
   ArrowRight,
   History,
 } from 'lucide-react';
@@ -882,7 +882,7 @@ export function Sidebar() {
                       : `w-8 h-8 ${isProjectsActive ? 'bg-[var(--bg-brand-primary)]' : 'group-hover:bg-[var(--bg-tertiary)]'}`
                     }
                   `}>
-                    <FolderKanban className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
+                    <Folder className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
                   </div>
                   {isExpandedMode && (
                     <>

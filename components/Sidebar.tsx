@@ -26,6 +26,7 @@ import {
   Layers,
   FolderPlus,
   ArrowRight,
+  History,
 } from 'lucide-react';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
@@ -655,6 +656,38 @@ export function Sidebar() {
             </div>
             {isExpandedMode && (
               <span className="text-sm font-medium">New Chat</span>
+            )}
+          </Link>
+        </div>
+
+        {/* Recent Chats Link */}
+        <div className={`flex ${isExpandedMode ? 'px-3 pb-2' : 'justify-center pb-2'}`}>
+          <Link
+            href="/chats"
+            className={`
+              flex items-center gap-2
+              transition-colors duration-150
+              group
+              text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+              ${isExpandedMode 
+                ? 'w-full py-1.5 px-3 rounded-md hover:bg-[var(--bg-tertiary)]' 
+                : 'p-2'
+              }
+            `}
+            title="Recent Chats"
+            aria-label="View recent chats"
+          >
+            <div className={`
+              flex items-center justify-center rounded-md transition-all duration-150
+              ${isExpandedMode 
+                ? '' 
+                : 'w-8 h-8 group-hover:bg-[var(--bg-tertiary)]'
+              }
+            `}>
+              <History className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
+            </div>
+            {isExpandedMode && (
+              <span className="text-xs text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]">Recent Chats</span>
             )}
           </Link>
         </div>

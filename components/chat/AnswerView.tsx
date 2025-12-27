@@ -83,6 +83,8 @@ interface AnswerViewProps {
   resourceCards?: BrandResourceCardProps[];
   /** Claude's thinking/reasoning content during extended thinking */
   thinking?: string;
+  /** Duration of thinking in seconds (available after thinking completes) */
+  thinkingDuration?: number;
   /** Tool calls made during the response */
   toolCalls?: ToolCall[];
 }
@@ -95,6 +97,7 @@ export function AnswerView({
   showCitations = true,
   resourceCards = [],
   thinking,
+  thinkingDuration,
   toolCalls,
 }: AnswerViewProps) {
   // Group sources by index for citation display
@@ -165,13 +168,13 @@ export function AnswerView({
           );
         })}
 
-        {/* Activity indicator - shows tool use, thinking, and sources as collected */}
+        {/* Activity indicator - shows ThinkingBubble or DotFlow animation */}
         <InlineStreamingDisplay
           thinking={thinking}
+          thinkingDuration={thinkingDuration}
           toolCalls={toolCalls}
           isStreaming={isStreaming}
           hasContent={sections.length > 0}
-          sources={sources}
         />
       </div>
     </div>

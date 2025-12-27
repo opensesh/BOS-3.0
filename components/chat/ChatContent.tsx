@@ -17,6 +17,8 @@ interface ChatContentProps {
   isLastResponse?: boolean;
   /** Claude's thinking/reasoning content during extended thinking */
   thinking?: string;
+  /** Duration of thinking in seconds (available after thinking completes) */
+  thinkingDuration?: number;
   /** Tool calls made during the response */
   toolCalls?: ToolCall[];
   /** Unique message ID for feedback tracking */
@@ -35,6 +37,7 @@ export function ChatContent({
   onRegenerate,
   isLastResponse = true,
   thinking,
+  thinkingDuration,
   toolCalls,
   messageId,
   chatId,
@@ -64,6 +67,7 @@ export function ChatContent({
         showCitations={showCitations}
         resourceCards={resourceCards}
         thinking={thinking}
+        thinkingDuration={thinkingDuration}
         toolCalls={toolCalls}
       />
 

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronDown, Loader2, Globe, Brain, Wrench, Calculator, Clock, FileText, Code, CheckCircle } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Loader2, Globe, Brain, Wrench, Calculator, Clock, FileText, Code } from 'lucide-react';
 import { ThinkingDotFlow } from '@/components/ui/dot-flow';
+import { ThinkingBubble } from './ThinkingBubble';
 import type { ToolCall } from '@/hooks/useChat';
 
-// Tool name to icon and label mapping (descriptions removed for cleaner UI)
+// Tool name to icon and label mapping
 const toolConfig: Record<string, { 
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -46,56 +47,45 @@ const getToolLabel = (tool: ToolCall): string => {
   return tool.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
-interface SourceInfo {
-  id: string;
-  name: string;
-  url: string;
-  title?: string;
-}
-
 interface InlineStreamingDisplayProps {
   /** Claude's thinking/reasoning content */
   thinking?: string;
+  /** Duration of thinking in seconds (available after thinking completes) */
+  thinkingDuration?: number;
   /** Tool calls being executed */
   toolCalls?: ToolCall[];
   /** Whether the response is still streaming */
   isStreaming: boolean;
   /** Whether any text content has arrived yet */
   hasContent: boolean;
-  /** Sources collected during tool execution */
-  sources?: SourceInfo[];
 }
 
 /**
  * InlineStreamingDisplay Component
  * 
- * Displays Claude's thinking process and tool usage inline.
- * STAYS VISIBLE after streaming completes so users can always see reasoning.
+ * Simplified streaming display that:
+ * - Shows DotFlow animation as a "trailblazer" during initial streaming
+ * - Shows ThinkingBubble when extended thinking content is present
+ * - Removed: "Web Search X sources" collapsible (handled by ResponseActions footer)
+ * 
+ * Two modes:
+ * 1. Extended thinking OFF: Just animation leading text
+ * 2. Extended thinking ON: ThinkingBubble with expandable reasoning
  */
 export function InlineStreamingDisplay({
   thinking,
+  thinkingDuration,
   toolCalls,
   isStreaming,
   hasContent,
-  sources = [],
 }: InlineStreamingDisplayProps) {
-  // ALL HOOKS MUST BE CALLED FIRST - before any conditional returns
-  const [isExpanded, setIsExpanded] = useState(false);
-  const prevHasContent = useRef(hasContent);
-  
   const hasThinking = thinking && thinking.length > 0;
   const hasToolCalls = toolCalls && toolCalls.length > 0;
-  const hasSources = sources.length > 0;
   
-  // Auto-close dropdown when content starts arriving (saves viewport space)
-  useEffect(() => {
-    if (hasContent && !prevHasContent.current && isExpanded) {
-      setIsExpanded(false);
-    }
-    prevHasContent.current = hasContent;
-  }, [hasContent, isExpanded]);
+  // Check if we're actively thinking (thinking content but no text yet)
+  const isThinking = Boolean(hasThinking && !hasContent && isStreaming);
   
-  // De-duplicate tools by name - keep the most recent one (with latest input)
+  // De-duplicate tools by name - keep the most recent one
   const uniqueTools = useMemo(() => {
     if (!toolCalls) return [];
     const toolMap = new Map<string, ToolCall>();
@@ -108,145 +98,61 @@ export function InlineStreamingDisplay({
   const activeTools = useMemo(() => {
     return uniqueTools.filter(t => t.status === 'running' || t.status === 'pending');
   }, [uniqueTools]);
-  
-  const completedTools = useMemo(() => {
-    return uniqueTools.filter(t => t.status === 'completed');
-  }, [uniqueTools]);
 
-  // Always show if we have tool calls, thinking, or sources - even after streaming completes
-  const hasActivityToShow = hasToolCalls || hasThinking || hasSources;
-  
-  // Don't show anything if nothing has happened yet
-  if (!hasActivityToShow && !isStreaming) return null;
-  
-  // Show placeholder only during initial streaming with no activity yet
-  if (!hasActivityToShow && isStreaming && !hasContent) {
+  // Determine what to show:
+  // 1. If we have thinking content → show ThinkingBubble
+  // 2. If streaming with no content yet → show animation
+  // 3. If tool is running → show tool indicator
+  // 4. Otherwise → show nothing
+
+  // Mode 1: Extended thinking content present → ThinkingBubble
+  if (hasThinking) {
+    return (
+      <div className="py-2">
+        <ThinkingBubble
+          thinking={thinking}
+          isThinking={isThinking}
+          thinkingDuration={thinkingDuration}
+          defaultCollapsed={true}
+        />
+      </div>
+    );
+  }
+
+  // Mode 2: Initial streaming with no content → DotFlow animation
+  if (isStreaming && !hasContent && !hasToolCalls) {
     return (
       <div className="py-2">
         <ThinkingDotFlow />
       </div>
     );
   }
-  
-  // Don't show if no activity and we have content (just text response, no tools)
-  if (!hasActivityToShow) return null;
 
-  // Determine what to show in the header
-  const isComplete = !isStreaming || (completedTools.length > 0 && activeTools.length === 0);
-  const primaryTool = activeTools.length > 0 ? activeTools[activeTools.length - 1] : uniqueTools[uniqueTools.length - 1];
-
-  return (
-    <div className="py-2">
-      <motion.div
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.15 }}
-      >
-        {/* Header - only expandable when there are sources */}
-        <button
-          onClick={() => hasSources && setIsExpanded(!isExpanded)}
-          className={`flex items-start gap-2 text-left w-full ${hasSources ? 'group cursor-pointer' : 'cursor-default'}`}
-          disabled={!hasSources}
+  // Mode 3: Tool is actively running → show minimal tool indicator
+  if (isStreaming && activeTools.length > 0) {
+    const activeTool = activeTools[activeTools.length - 1];
+    const config = toolConfig[activeTool.name];
+    const Icon = config?.icon || Wrench;
+    
+    return (
+      <div className="py-2">
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2"
         >
-          {/* Chevron - only shown when expandable (has sources) */}
-          <motion.div
-            animate={{ rotate: isExpanded ? 0 : 0 }}
-            className={`mt-0.5 flex-shrink-0 ${hasSources ? 'text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)]' : 'text-transparent'}`}
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronRight className={`w-3.5 h-3.5 ${!hasSources ? 'invisible' : ''}`} />
-            )}
-          </motion.div>
-          
-          {/* Tool info - simplified: just label + status indicator */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              {/* Tool icon */}
-              {primaryTool && (() => {
-                const config = toolConfig[primaryTool.name];
-                const Icon = config?.icon || Wrench;
-                return <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isComplete ? 'text-[var(--fg-tertiary)]' : 'text-[var(--fg-brand-primary)]'}`} />;
-              })()}
-              
-              {/* Tool label only - no description/query shown */}
-              <span className={`text-xs ${isComplete ? 'text-[var(--fg-tertiary)]' : 'text-[var(--fg-secondary)]'}`}>
-                {primaryTool ? getToolLabel(primaryTool) : 'Web Search'}
-              </span>
-              
-              {/* Status indicator - spinner while searching, checkmark when done */}
-              {isComplete ? (
-                <CheckCircle className="w-3 h-3 text-[var(--fg-success-primary)] flex-shrink-0" />
-              ) : (
-                <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin flex-shrink-0" />
-              )}
-              
-              {/* Source count badge - only shown when there are sources */}
-              {hasSources && (
-                <motion.span 
-                  key={sources.length}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-[10px] text-[var(--fg-tertiary)] bg-[var(--bg-secondary)] px-1.5 py-0.5 rounded tabular-nums"
-                >
-                  {sources.length} {sources.length === 1 ? 'source' : 'sources'}
-                </motion.span>
-              )}
-            </div>
-          </div>
-        </button>
-        
-        {/* Expandable content - only shows when there are sources to display */}
-        <AnimatePresence>
-          {isExpanded && hasSources && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="pl-6 pt-2 pb-1">
-                {/* Sources list - each source animates in one-by-one */}
-                <div className="space-y-0.5">
-                  {sources.map((source, idx) => (
-                    <motion.a
-                      key={`inline-source-${idx}-${source.id || source.url}`}
-                      href={source.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2, delay: idx * 0.05 }}
-                      className="flex items-center gap-2 text-xs py-1.5 hover:text-[var(--fg-primary)] transition-colors group"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <span className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] truncate">
-                        {source.title || source.name}
-                      </span>
-                      <span className="text-[var(--fg-quaternary)] text-[10px] flex-shrink-0">
-                        {source.name}
-                      </span>
-                    </motion.a>
-                  ))}
-                </div>
-                
-                {/* Show thinking content if available */}
-                {hasThinking && thinking && (
-                  <div className="mt-3 pt-2 border-t border-[var(--border-primary)]">
-                    <p className="text-xs text-[var(--fg-tertiary)] leading-relaxed font-mono whitespace-pre-wrap">
-                      {thinking.length > 600 ? '...' + thinking.slice(-600) : thinking}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </div>
-  );
+          <Icon className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
+          <span className="text-xs text-[var(--fg-secondary)]">
+            {getToolLabel(activeTool)}
+          </span>
+          <Loader2 className="w-3 h-3 text-[var(--fg-brand-primary)] animate-spin" />
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Nothing to show
+  return null;
 }
 
 /**
@@ -256,8 +162,7 @@ export function InlineStreamingIndicator({
   thinking,
   toolCalls,
   isStreaming,
-}: Omit<InlineStreamingDisplayProps, 'hasContent'>) {
-  // ALL HOOKS FIRST - before any conditional returns
+}: Omit<InlineStreamingDisplayProps, 'hasContent' | 'thinkingDuration'>) {
   const hasThinking = thinking && thinking.length > 0;
   
   // De-duplicate tools by name, keep most recent
@@ -272,7 +177,6 @@ export function InlineStreamingIndicator({
     return Array.from(toolMap.values());
   }, [toolCalls]);
 
-  // NOW we can conditionally return
   if (!isStreaming) return null;
 
   return (
@@ -297,7 +201,6 @@ export function InlineStreamingIndicator({
             const Icon = config?.icon || Wrench;
             return <Icon className="w-3 h-3 text-[var(--fg-brand-primary)]" />;
           })()}
-          {/* Just show tool label, no description */}
           <span className="text-[var(--fg-tertiary)]">
             {getToolLabel(uniqueActiveTools[0])}
           </span>
@@ -305,7 +208,6 @@ export function InlineStreamingIndicator({
         </>
       )}
       
-      {/* No fallback "Processing..." - just show the spinner if nothing else */}
       {!hasThinking && uniqueActiveTools.length === 0 && (
         <Loader2 className="w-3 h-3 text-[var(--fg-tertiary)] animate-spin" />
       )}

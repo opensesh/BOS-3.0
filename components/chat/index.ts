@@ -19,6 +19,7 @@ export { SourcesDrawer } from './SourcesDrawer';
 
 // Extended features - Claude Desktop parity
 export { ThinkingDisplay, ThinkingIndicator } from './ThinkingDisplay';
+export { ThinkingBubble, ThinkingIndicatorCompact } from './ThinkingBubble';
 export { ToolExecutionCard, ToolExecutionList, ToolUseIndicator } from './ToolExecutionCard';
 export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRenderer';
 export { InlineStreamingDisplay, InlineStreamingIndicator } from './InlineStreamingDisplay';

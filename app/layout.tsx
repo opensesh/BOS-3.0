@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { ChatProvider } from '@/lib/chat-context';
@@ -8,9 +8,25 @@ import { BreadcrumbProvider } from '@/lib/breadcrumb-context';
 import { SidebarProvider } from '@/lib/sidebar-context';
 import { VercelAnalytics } from '@/components/VercelAnalytics';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
+const neueHaas = localFont({
+  src: [
+    {
+      path: '../public/fonts/NeueHaasDisplayRoman.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/NeueHaasDisplayMedium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/NeueHaasDisplayBold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-sans',
 });
 
 export const metadata: Metadata = {
@@ -25,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${neueHaas.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

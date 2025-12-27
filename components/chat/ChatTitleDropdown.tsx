@@ -38,7 +38,9 @@ export function ChatTitleDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(title);
+  const [lockedWidth, setLockedWidth] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Format the date for display
@@ -83,6 +85,10 @@ export function ChatTitleDropdown({
 
   // Handle double-click to start editing
   const handleDoubleClick = useCallback(() => {
+    // Lock the width before entering edit mode
+    if (triggerRef.current) {
+      setLockedWidth(triggerRef.current.offsetWidth);
+    }
     setEditValue(title);
     setIsEditing(true);
     setIsOpen(false);
@@ -95,12 +101,14 @@ export function ChatTitleDropdown({
       onRename?.(trimmedValue);
     }
     setIsEditing(false);
+    setLockedWidth(null);
   }, [editValue, title, onRename]);
 
   // Handle cancel rename
   const handleCancel = useCallback(() => {
     setEditValue(title);
     setIsEditing(false);
+    setLockedWidth(null);
   }, [title]);
 
   // Handle key events in edit mode
@@ -211,18 +219,20 @@ export function ChatTitleDropdown({
     <div className="relative" ref={containerRef}>
       {/* Title container - Claude-style */}
       <div
+        ref={triggerRef}
         className={`
-          flex items-center gap-2 px-3 py-2 rounded-lg border transition-all cursor-pointer
+          flex items-center gap-1.5 px-2.5 h-7 rounded-lg border transition-all cursor-pointer
           max-w-[160px] sm:max-w-[220px] md:max-w-[300px]
-          ${isOpen
+          ${isOpen || isEditing
             ? 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'
             : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50'
           }
         `}
+        style={lockedWidth ? { width: lockedWidth } : undefined}
         onClick={() => !isEditing && setIsOpen(!isOpen)}
       >
         {isEditing ? (
-          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
             <input
               ref={inputRef}
               type="text"
@@ -235,43 +245,43 @@ export function ChatTitleDropdown({
                 if (relatedTarget?.closest('button')) return;
                 handleSave();
               }}
-              className="flex-1 min-w-0 bg-transparent text-sm text-[var(--fg-primary)] outline-none"
+              className="flex-1 min-w-0 bg-transparent text-xs font-medium text-[var(--fg-primary)] outline-none"
               onClick={(e) => e.stopPropagation()}
             />
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-0.5 flex-shrink-0">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSave();
                 }}
-                className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] transition-colors"
+                className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] transition-colors"
                 title="Save (Enter)"
               >
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-3 h-3" />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCancel();
                 }}
-                className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] transition-colors"
+                className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] transition-colors"
                 title="Cancel (Escape)"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             </div>
           </div>
         ) : (
           <>
             <span
-              className="text-sm font-medium text-[var(--fg-primary)] truncate flex-1"
+              className="text-xs font-medium text-[var(--fg-primary)] truncate flex-1"
               onDoubleClick={handleDoubleClick}
               title={`${title} (double-click to rename)`}
             >
               {title}
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-[var(--fg-tertiary)] flex-shrink-0 transition-transform ${
+              className={`w-3.5 h-3.5 text-[var(--fg-tertiary)] flex-shrink-0 transition-transform ${
                 isOpen ? 'rotate-180' : ''
               }`}
             />

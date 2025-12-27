@@ -30,45 +30,46 @@ function IndicatorChip({ icon: Icon, tooltip, onRemove, disabled }: IndicatorChi
         setShowTooltip(false);
       }}
     >
-      <button
-        type="button"
-        onClick={(e) => {
-          if (!disabled) {
-            e.stopPropagation();
-            onRemove();
-          }
-        }}
-        disabled={disabled}
+      <div
         className={`
-          relative
-          flex items-center justify-center
-          w-9 h-9 rounded-lg
+          flex items-center
+          h-9 rounded-lg
           bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]
           transition-all duration-150
-          ${disabled ? 'cursor-default' : 'cursor-pointer hover:bg-[var(--bg-brand-secondary)]'}
+          overflow-hidden
         `}
       >
-        <Icon className="w-[18px] h-[18px]" />
+        {/* Icon - always visible */}
+        <div className="flex items-center justify-center w-9 h-9 flex-shrink-0">
+          <Icon className="w-[18px] h-[18px]" />
+        </div>
         
-        {/* X overlay - appears on hover */}
+        {/* X button - slides in from right on hover */}
         <AnimatePresence>
           {isHovered && !disabled && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              transition={{ duration: 0.1 }}
+            <motion.button
+              type="button"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 28, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove();
+              }}
               className="
-                absolute inset-0
                 flex items-center justify-center
-                bg-[var(--bg-brand-secondary)] rounded-lg
+                h-9 pr-2
+                hover:text-[var(--fg-brand-primary)]
+                transition-colors
               "
+              aria-label="Remove"
             >
               <X className="w-4 h-4" />
-            </motion.div>
+            </motion.button>
           )}
         </AnimatePresence>
-      </button>
+      </div>
 
       {/* Tooltip */}
       <AnimatePresence>

@@ -2,19 +2,18 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, FolderPlus, PenTool } from 'lucide-react';
+import { X, Folder, PenTool } from 'lucide-react';
 import { Project } from './project-selector';
 import { WritingStyle } from './writing-style-selector';
 
 interface IndicatorChipProps {
   icon: React.ComponentType<{ className?: string }>;
-  label: string;
   tooltip: string;
   onRemove: () => void;
   disabled?: boolean;
 }
 
-function IndicatorChip({ icon: Icon, label, tooltip, onRemove, disabled }: IndicatorChipProps) {
+function IndicatorChip({ icon: Icon, tooltip, onRemove, disabled }: IndicatorChipProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -24,44 +23,52 @@ function IndicatorChip({ icon: Icon, label, tooltip, onRemove, disabled }: Indic
       onMouseEnter={() => {
         setIsHovered(true);
         // Delay tooltip slightly
-        setTimeout(() => setShowTooltip(true), 300);
+        setTimeout(() => setShowTooltip(true), 400);
       }}
       onMouseLeave={() => {
         setIsHovered(false);
         setShowTooltip(false);
       }}
     >
-      <div
+      <button
+        type="button"
+        onClick={(e) => {
+          if (!disabled) {
+            e.stopPropagation();
+            onRemove();
+          }
+        }}
+        disabled={disabled}
         className={`
-          flex items-center gap-1.5 px-2 py-2 rounded-lg
+          relative
+          flex items-center justify-center
+          w-9 h-9 rounded-lg
           bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]
           transition-all duration-150
+          ${disabled ? 'cursor-default' : 'cursor-pointer hover:bg-[var(--bg-brand-secondary)]'}
         `}
       >
-        <Icon className="w-5 h-5 flex-shrink-0" />
-        <span className="text-xs font-medium truncate max-w-[100px]">{label}</span>
+        <Icon className="w-[18px] h-[18px]" />
         
-        {/* Remove button - appears on hover */}
+        {/* X overlay - appears on hover */}
         <AnimatePresence>
           {isHovered && !disabled && (
-            <motion.button
-              type="button"
-              initial={{ opacity: 0, scale: 0.8, width: 0 }}
-              animate={{ opacity: 1, scale: 1, width: 'auto' }}
-              exit={{ opacity: 0, scale: 0.8, width: 0 }}
-              transition={{ duration: 0.15 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove();
-              }}
-              className="flex items-center justify-center w-5 h-5 rounded hover:bg-[var(--bg-brand-secondary)] transition-colors ml-0.5"
-              aria-label={`Remove ${label}`}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              transition={{ duration: 0.1 }}
+              className="
+                absolute inset-0
+                flex items-center justify-center
+                bg-[var(--bg-brand-secondary)] rounded-lg
+              "
             >
-              <X className="w-3.5 h-3.5" />
-            </motion.button>
+              <X className="w-4 h-4" />
+            </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </button>
 
       {/* Tooltip */}
       <AnimatePresence>
@@ -73,14 +80,10 @@ function IndicatorChip({ icon: Icon, label, tooltip, onRemove, disabled }: Indic
             transition={{ duration: 0.15 }}
             className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
           >
-            <div className="bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-[var(--shadow-lg)] px-3 py-2 whitespace-nowrap max-w-[200px]">
-              <div className="text-xs text-[var(--fg-primary)] truncate">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg px-3 py-1.5 whitespace-nowrap">
+              <div className="text-xs font-medium text-[var(--fg-primary)]">
                 {tooltip}
               </div>
-            </div>
-            {/* Arrow pointing down */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
-              <div className="border-6 border-transparent border-t-[var(--bg-secondary)]" style={{ borderWidth: '6px' }} />
             </div>
           </motion.div>
         )}
@@ -111,7 +114,7 @@ export function ActiveSettingsIndicators({
   }
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center gap-1.5">
       <AnimatePresence mode="popLayout">
         {/* Project indicator */}
         {currentProject && (
@@ -123,9 +126,8 @@ export function ActiveSettingsIndicators({
             transition={{ duration: 0.15 }}
           >
             <IndicatorChip
-              icon={FolderPlus}
-              label={currentProject.name}
-              tooltip={`Project: ${currentProject.name}`}
+              icon={Folder}
+              tooltip={currentProject.name}
               onRemove={onRemoveProject}
               disabled={disabled}
             />
@@ -143,8 +145,7 @@ export function ActiveSettingsIndicators({
           >
             <IndicatorChip
               icon={PenTool}
-              label={currentWritingStyle.name}
-              tooltip={`Writing style: ${currentWritingStyle.name}${currentWritingStyle.description ? ` - ${currentWritingStyle.description}` : ''}`}
+              tooltip={currentWritingStyle.name}
               onRemove={onRemoveWritingStyle}
               disabled={disabled}
             />
@@ -154,4 +155,3 @@ export function ActiveSettingsIndicators({
     </div>
   );
 }
-

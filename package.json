@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "private": true,
   "scripts": {
-    "dev": "pkill -f 'next-server' 2>/dev/null; pkill -f 'next dev' 2>/dev/null; next dev",
+    "dev": "pkill -f 'next-server' 2>/dev/null; pkill -f 'next dev' 2>/dev/null; next dev -H 127.0.0.1",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -852,47 +852,61 @@ async function streamWithPerplexityNative(
   return new ReadableStream({
     async start(controller) {
       try {
-        // First, make a non-streaming request to get citations
-        // Perplexity only returns citations in non-streaming responses
-        const citationResponse = await client.chat.completions.create({
+        // Use TRUE STREAMING for real-time text display
+        // Citations arrive at the end of the stream (final chunk) - that's fine for UX
+        const stream = await client.chat.completions.create({
           model: modelId,
           messages: perplexityMessages,
-          stream: false,
+          stream: true,
         });
 
-        // Get the full response content first (needed for snippet extraction)
-        const fullContent = citationResponse.choices?.[0]?.message?.content || '';
-
-        // Extract citations from the response with enriched metadata
+        // Accumulate content for snippet extraction when citations arrive
+        let fullContent = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rawCitations = (citationResponse as any).citations || [];
-        const sources: SourceData[] = rawCitations.map((url: string, index: number) => {
-          const hostname = extractHostname(url);
-          const siteName = getSiteName(hostname);
-          const extractedTitle = extractTitleFromUrl(url);
-          const snippet = extractSnippetForCitation(fullContent, index + 1);
-          
-          return {
-            id: `perplexity-${index}`,
-            name: siteName, // Use friendly site name instead of raw hostname
-            url: url,
-            title: extractedTitle,
-            snippet: snippet || undefined, // Context from the response that used this citation
-            favicon: getFaviconUrl(url),
-            type: 'external' as const,
-          };
-        });
+        let rawCitations: string[] = [];
 
-        // Stream the entire content immediately for real-time display
-        // No artificial delays - text should appear as fast as possible
-        const cleanContent = stripThinkingTags(fullContent);
-        if (cleanContent) {
-          controller.enqueue(sse.encode({ type: 'text', content: cleanContent }));
+        // Process the stream - text arrives in real-time!
+        for await (const chunk of stream) {
+          // Stream text chunks immediately as they arrive
+          const textDelta = chunk.choices?.[0]?.delta?.content;
+          if (textDelta) {
+            const cleanDelta = stripThinkingTags(textDelta);
+            if (cleanDelta) {
+              fullContent += cleanDelta;
+              controller.enqueue(sse.encode({ type: 'text', content: cleanDelta }));
+            }
+          }
+
+          // Citations come in the final chunk (Perplexity API behavior as of Nov 2024)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const citations = (chunk as any).citations;
+          if (citations && Array.isArray(citations)) {
+            rawCitations = citations;
+          }
         }
 
-        // Stream sources one-by-one for a smooth "finding sources" feel (matching Anthropic behavior)
-        if (sources.length > 0) {
+        // Now that streaming is complete, process and send citations
+        if (rawCitations.length > 0) {
+          const sources: SourceData[] = rawCitations.map((url: string, index: number) => {
+            const hostname = extractHostname(url);
+            const siteName = getSiteName(hostname);
+            const extractedTitle = extractTitleFromUrl(url);
+            const snippet = extractSnippetForCitation(fullContent, index + 1);
+            
+            return {
+              id: `perplexity-${index}`,
+              name: siteName,
+              url: url,
+              title: extractedTitle,
+              snippet: snippet || undefined,
+              favicon: getFaviconUrl(url),
+              type: 'external' as const,
+            };
+          });
+
           console.log('Perplexity citations found:', sources.length, sources.map(s => ({ name: s.name, title: s.title })));
+          
+          // Stream sources one-by-one for a smooth "finding sources" feel
           for (let i = 0; i < sources.length; i++) {
             controller.enqueue(sse.encode({ type: 'sources', sources: [sources[i]] }));
             // Quick delay between sources - fast enough to feel responsive

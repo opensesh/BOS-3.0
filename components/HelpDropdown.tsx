@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  HelpCircle, 
-  Sparkles, 
   BookOpen, 
   Wrench, 
-  Activity, 
   Mail,
-  MessageCircle,
+  HelpCircle,
 } from 'lucide-react';
 
 interface HelpDropdownProps {
@@ -20,34 +17,22 @@ interface HelpDropdownProps {
 
 const helpMenuItems = [
   { 
-    id: 'assistant', 
-    label: 'BOS Assistant', 
-    icon: Sparkles,
-    description: 'Get AI-powered help',
-  },
-  { 
     id: 'docs', 
     label: 'Docs', 
     icon: BookOpen,
     description: 'Read the documentation',
   },
   { 
+    id: 'faqs', 
+    label: 'FAQs', 
+    icon: HelpCircle,
+    description: 'Frequently asked questions',
+  },
+  { 
     id: 'troubleshooting', 
     label: 'Troubleshooting', 
     icon: Wrench,
     description: 'Common issues & fixes',
-  },
-  { 
-    id: 'status', 
-    label: 'BOS status', 
-    icon: Activity,
-    description: 'Service health status',
-  },
-  { 
-    id: 'support', 
-    label: 'Contact support', 
-    icon: Mail,
-    description: 'Reach our support team',
   },
 ];
 
@@ -90,35 +75,52 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          ref={dropdownRef}
-          initial={{ opacity: 0, y: -4, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -4, scale: 0.95 }}
-          transition={{ duration: 0.15 }}
-          className="
-            absolute top-full right-0 mt-3
-            w-80
-            bg-[var(--bg-secondary)]
-            rounded-lg
-            border border-[var(--border-secondary)]
-            shadow-lg
-            z-[100]
-            overflow-hidden
-          "
-        >
-          {/* Header */}
-          <div className="px-4 py-3">
-            <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
-              Need help with your project?
-            </h3>
-            <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">
-              Start with our Assistant, docs, or community.
-            </p>
-          </div>
+        <>
+          {/* Backdrop blur overlay - covers main content area only */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="
+              fixed inset-0
+              top-12 left-12
+              backdrop-blur-sm
+              bg-black/5
+              z-[99]
+              pointer-events-none
+            "
+            aria-hidden="true"
+          />
+          
+          <motion.div
+            ref={dropdownRef}
+            initial={{ opacity: 0, y: -4, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="
+              absolute top-full right-0 mt-5
+              w-80
+              bg-[var(--bg-secondary)]
+              rounded-lg
+              border border-[var(--border-secondary)]
+              shadow-lg
+              z-[100]
+              overflow-hidden
+            "
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 min-h-[52px] border-b border-[var(--border-secondary)]">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
+                  Need help?
+                </h3>
+              </div>
+            </div>
 
           {/* Menu Items */}
-          <div className="border-t border-[var(--border-secondary)] py-1">
+          <div className="py-1">
             {helpMenuItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -151,34 +153,31 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
             })}
           </div>
 
-          {/* Community Section */}
+          {/* Contact Section */}
           <div className="border-t border-[var(--border-secondary)] px-4 py-3">
-            <h4 className="text-sm font-medium text-[var(--fg-primary)] mb-2">
-              Community support
-            </h4>
-            <p className="text-xs text-[var(--fg-tertiary)] mb-3">
-              Our community can help with code-related issues. Many questions are answered in minutes.
-            </p>
             <button
               onClick={() => {
-                // Handle community link - in real app, open in new tab
+                // Handle contact link - in real app, open contact form or email
                 onClose();
               }}
               className="
                 w-full flex items-center justify-center gap-2
                 px-4 py-2.5
-                bg-[#5865F2]
-                hover:bg-[#4752c4]
-                text-white text-sm font-medium
+                bg-[var(--bg-primary)]
+                hover:bg-[var(--bg-tertiary)]
+                text-[var(--fg-primary)]
+                text-sm font-medium
                 rounded-lg
+                border border-[var(--border-secondary)]
                 transition-colors
               "
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>Join us on Discord</span>
+              <Mail className="w-4 h-4" />
+              <span>Contact us</span>
             </button>
           </div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

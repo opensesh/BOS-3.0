@@ -339,6 +339,22 @@ async function streamWithAnthropicNative(
 
         // Wait for initial response
         const response = await stream.finalMessage();
+        
+        // CRITICAL FIX: For extended thinking, text blocks might come in the final message
+        // rather than being streamed via 'text' events. Check immediately after finalMessage.
+        if (!hasStreamedText && thinkingConfig) {
+          console.log('Extended thinking mode: checking final message for text blocks...');
+          for (const block of response.content || []) {
+            if (block.type === 'text' && 'text' in block && block.text) {
+              const cleanText = stripThinkingTags(block.text);
+              if (cleanText) {
+                console.log('Found text in final message after thinking, streaming now...');
+                controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+                hasStreamedText = true;
+              }
+            }
+          }
+        }
 
         // Handle tool calls if any
         if (response.stop_reason === 'tool_use' && pendingToolCalls.length > 0) {
@@ -510,12 +526,19 @@ async function streamWithAnthropicNative(
             }
           }
           
-          // If still no text, something went wrong - log for debugging
+          // If still no text, something went wrong - send a helpful error message to the user
           if (!hasStreamedText) {
             console.error('Extended thinking completed but no text was generated!', {
               stopReason: response.stop_reason,
               contentTypes: response.content?.map((b: { type: string }) => b.type) || [],
+              thinkingEnabled: !!thinkingConfig,
             });
+            
+            // Send a user-friendly error message instead of leaving the response empty
+            const errorMessage = thinkingConfig 
+              ? "I completed my reasoning but encountered an issue generating a response. Please try again or disable extended thinking if the problem persists."
+              : "I wasn't able to generate a response. Please try rephrasing your question.";
+            controller.enqueue(sse.encode({ type: 'text', content: errorMessage }));
           }
         }
 

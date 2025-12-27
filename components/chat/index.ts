@@ -22,6 +22,6 @@ export { ThinkingDisplay, ThinkingIndicator } from './ThinkingDisplay';
 export { ThinkingBubble, ThinkingIndicatorCompact } from './ThinkingBubble';
 export { ToolExecutionCard, ToolExecutionList, ToolUseIndicator } from './ToolExecutionCard';
 export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRenderer';
-export { InlineStreamingDisplay, InlineStreamingIndicator } from './InlineStreamingDisplay';
+export { InlineStreamingDisplay, InlineStreamingIndicator, StreamingTrailIndicator } from './InlineStreamingDisplay';
 export { UserMessageBubble } from './UserMessageBubble';
 export { DateFilterDropdown, type DateFilterValue } from './DateFilterDropdown';

@@ -3,7 +3,7 @@
 import React from 'react';
 import { InlineCitation } from './InlineCitation';
 import { BrandResourceCardProps } from './BrandResourceCard';
-import { InlineStreamingDisplay } from './InlineStreamingDisplay';
+import { InlineStreamingDisplay, StreamingTrailIndicator } from './InlineStreamingDisplay';
 import { UserMessageBubble } from './UserMessageBubble';
 import {
   BRAND_PAGE_ROUTES,
@@ -105,7 +105,28 @@ export function AnswerView({
       {/* User Query Display - Right aligned bubble with show more */}
       <UserMessageBubble query={query} />
 
-      {/* Answer Content - Tighter spacing like Perplexity */}
+      {/* 
+        IMPORTANT: Response Layout Structure
+        
+        The ThinkingBubble (reasoning) ALWAYS stays positioned ABOVE the response content.
+        This is intentional UX - users see the reasoning first, then the response.
+        The reasoning never moves to the bottom with other inline actions.
+        
+        Layout order:
+        1. User message bubble (above)
+        2. ThinkingBubble / reasoning display (if extended thinking is enabled)
+        3. Response content sections
+        4. Streaming indicator (only while text is arriving)
+      */}
+      
+      {/* Reasoning Display - ALWAYS positioned above response content */}
+      <InlineStreamingDisplay
+        thinking={thinking}
+        isStreaming={isStreaming}
+        hasContent={sections.length > 0}
+      />
+
+      {/* Answer Content - Appears below reasoning */}
       <div className="space-y-3">
         {sections.map((section, idx) => {
           if (section.type === 'heading') {
@@ -157,10 +178,9 @@ export function AnswerView({
             </p>
           );
         })}
-
-        {/* Activity indicator - shows ThinkingBubble or DotFlow animation */}
-        <InlineStreamingDisplay
-          thinking={thinking}
+        
+        {/* Streaming trail indicator - shows AFTER content while text is arriving */}
+        <StreamingTrailIndicator
           isStreaming={isStreaming}
           hasContent={sections.length > 0}
         />

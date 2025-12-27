@@ -87,25 +87,43 @@ export function NotificationsDropdown({ isOpen, onClose, triggerRef }: Notificat
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          ref={dropdownRef}
-          initial={{ opacity: 0, y: -4, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -4, scale: 0.95 }}
-          transition={{ duration: 0.15 }}
-          className="
-            absolute top-full right-0 mt-3
-            w-80
-            bg-[var(--bg-secondary)]
-            rounded-lg
-            border border-[var(--border-secondary)]
-            shadow-lg
-            z-[100]
-            overflow-hidden
-          "
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-secondary)]">
+        <>
+          {/* Backdrop blur overlay - covers main content area only */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="
+              fixed inset-0
+              top-12 left-12
+              backdrop-blur-sm
+              bg-black/5
+              z-[99]
+              pointer-events-none
+            "
+            aria-hidden="true"
+          />
+          
+          <motion.div
+            ref={dropdownRef}
+            initial={{ opacity: 0, y: -4, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="
+              absolute top-full right-0 mt-5
+              w-80
+              bg-[var(--bg-secondary)]
+              rounded-lg
+              border border-[var(--border-secondary)]
+              shadow-lg
+              z-[100]
+              overflow-hidden
+            "
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 min-h-[52px] border-b border-[var(--border-secondary)]">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
                 Notifications
@@ -238,7 +256,8 @@ export function NotificationsDropdown({ isOpen, onClose, triggerRef }: Notificat
               </button>
             </div>
           )}
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

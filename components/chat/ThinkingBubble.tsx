@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clock, Brain, Sparkles } from 'lucide-react';
 
 interface ThinkingBubbleProps {
   /** The thinking content to display */
@@ -11,34 +11,46 @@ interface ThinkingBubbleProps {
   isThinking?: boolean;
   /** Whether the response is still streaming */
   isStreaming?: boolean;
-  /** Whether to start collapsed (default: true) */
+  /** Whether to start collapsed (default: false - expanded during active thinking) */
   defaultCollapsed?: boolean;
   /** Summary of the thinking content (provided after LLM summarization) */
   summary?: string;
+  /** Whether the summary is being generated */
+  isGeneratingSummary?: boolean;
 }
 
 /**
  * ThinkingBubble Component
  * 
- * A collapsible component that displays the AI's natural reasoning process.
+ * A collapsible component that displays the AI's extended reasoning process.
+ * 
+ * **Visual Design**:
+ * - During active thinking: Expanded view with live streaming content and timer
+ * - After thinking completes: Collapsed view with intelligent summary
+ * - Clicking the header toggles between expanded/collapsed states
+ * 
+ * **Position Principle**:
+ * This bubble ALWAYS stays positioned ABOVE the response content.
+ * The response appears directly below after reasoning completes.
+ * It never moves to the bottom with other inline actions.
  * 
  * **Features:**
  * - Live counting timer during thinking phase
  * - Real-time streaming of reasoning content (word-by-word)
  * - Fixed header with scrollable content
- * - Summary display when collapsed (after thinking completes)
- * 
- * Note: This component shows raw, natural reasoning without artificial structure.
- * The AI's thinking flows organically without enforced phases.
+ * - Intelligent summary display when collapsed (after thinking completes)
+ * - Visual indicator showing thinking state vs completed state
  */
 export function ThinkingBubble({
   thinking,
   isThinking = false,
   isStreaming = false,
-  defaultCollapsed = true,
+  defaultCollapsed = false, // Default to expanded so users can see reasoning
   summary,
+  isGeneratingSummary = false,
 }: ThinkingBubbleProps) {
-  const [isExpanded, setIsExpanded] = useState(!defaultCollapsed);
+  // Start expanded during active thinking, collapse after completion
+  const [isExpanded, setIsExpanded] = useState(!defaultCollapsed || isThinking);
   const contentRef = useRef<HTMLDivElement>(null);
   const [hasOverflow, setHasOverflow] = useState(false);
   
@@ -51,8 +63,20 @@ export function ThinkingBubble({
   const hasThinking = Boolean(thinking && thinking.length > 0);
   
   // Timer should run while streaming AND we have thinking content
-  // This ensures the timer keeps counting even after text content arrives
   const shouldTimerRun = hasThinking && isStreaming;
+  
+  // Thinking is "complete" when we have content but streaming ended
+  const isThinkingComplete = hasThinking && !isStreaming;
+
+  // Auto-expand when actively thinking, collapse when complete
+  useEffect(() => {
+    if (isThinking) {
+      setIsExpanded(true);
+    } else if (isThinkingComplete && summary) {
+      // Auto-collapse once we have a summary
+      setIsExpanded(false);
+    }
+  }, [isThinking, isThinkingComplete, summary]);
 
   // Timer effect - start when thinking appears, stop when streaming ends
   useEffect(() => {
@@ -135,35 +159,74 @@ export function ThinkingBubble({
 
   // Display the current elapsed seconds
   const displayDuration = displaySeconds;
+  
+  // Determine header label based on state
+  const getHeaderLabel = () => {
+    if (isThinking) {
+      return 'Reasoning...';
+    }
+    if (isGeneratingSummary) {
+      return 'Summarizing...';
+    }
+    if (summary) {
+      return summary;
+    }
+    return 'Reasoned through the question';
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)]/30 overflow-hidden"
+      className={`rounded-xl border overflow-hidden transition-colors ${
+        isThinking 
+          ? 'border-[var(--border-brand-primary)]/50 bg-[var(--bg-brand-primary)]/5' 
+          : 'border-[var(--border-secondary)] bg-[var(--bg-secondary)]/30'
+      }`}
     >
       {/* Fixed Header - Collapsible trigger */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)]/50 transition-colors group sticky top-0 bg-[var(--bg-secondary)]/30 backdrop-blur-sm z-10"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)]/50 transition-colors group sticky top-0 backdrop-blur-sm z-10"
       >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Label text - shows "Reasoning" or summary */}
-          {summary && !isThinking ? (
-            <span className="text-sm text-[var(--fg-secondary)] truncate">
-              {summary}
-            </span>
-          ) : (
-            <span className="text-sm text-[var(--fg-secondary)]">
-              Reasoning
-            </span>
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          {/* Brain icon with active indicator */}
+          <div className="relative flex-shrink-0">
+            <Brain className={`w-4 h-4 ${isThinking ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'}`} />
+            {isThinking && (
+              <motion.div
+                className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[var(--bg-brand-solid)] rounded-full"
+                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+            )}
+          </div>
+          
+          {/* Label text - shows status, then summary */}
+          <span className={`text-sm truncate ${
+            isThinking ? 'text-[var(--fg-brand-primary)] font-medium' : 'text-[var(--fg-secondary)]'
+          }`}>
+            {getHeaderLabel()}
+          </span>
+          
+          {/* Processing sparkle indicator */}
+          {isThinking && (
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex-shrink-0"
+            >
+              <Sparkles className="w-3 h-3 text-[var(--fg-brand-primary)]" />
+            </motion.span>
           )}
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ml-3">
           {/* Timer display - always visible, actively counting during thinking */}
-          <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
+          <div className={`flex items-center gap-1.5 text-xs ${
+            isThinking ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'
+          }`}>
             <Clock className="w-3 h-3" />
             <span className="tabular-nums min-w-[24px]">
               {formatDuration(displayDuration)}

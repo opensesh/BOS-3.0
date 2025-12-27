@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X,
   Plus,
   Home,
   LayoutGrid,
@@ -27,28 +26,38 @@ const navItems = [
   { label: 'Spaces', href: '/spaces', icon: LayoutGrid },
 ];
 
-// Animation variants
+// Animation variants - smooth slide and fade
 const menuVariants = {
-  hidden: { opacity: 0 },
+  hidden: { 
+    opacity: 0,
+    y: -8,
+  },
   visible: { 
     opacity: 1,
-    transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
+    y: 0,
+    transition: { 
+      duration: 0.25, 
+      ease: [0.32, 0.72, 0, 1] // Custom ease for smooth deceleration
+    }
   },
   exit: { 
     opacity: 0,
-    transition: { duration: 0.15, ease: [0.4, 0, 1, 1] }
+    y: -8,
+    transition: { 
+      duration: 0.2, 
+      ease: [0.32, 0, 0.67, 0] // Custom ease for smooth acceleration out
+    }
   }
 };
 
 const contentVariants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0 },
   visible: { 
     opacity: 1, 
-    y: 0,
     transition: { 
-      duration: 0.25, 
-      ease: [0.4, 0, 0.2, 1],
-      staggerChildren: 0.03
+      duration: 0.15,
+      delay: 0.05,
+      staggerChildren: 0.04
     }
   }
 };
@@ -91,7 +100,7 @@ export function MobileFullScreenMenu() {
     <AnimatePresence>
       {isMobileMenuOpen && (
         <motion.div
-          className="fixed inset-0 top-0 z-[60] bg-[var(--bg-primary)] lg:hidden flex flex-col"
+          className="fixed inset-x-0 top-14 bottom-0 z-[45] bg-[var(--bg-primary)] lg:hidden flex flex-col"
           variants={menuVariants}
           initial="hidden"
           animate="visible"
@@ -100,26 +109,7 @@ export function MobileFullScreenMenu() {
           aria-modal="true"
           aria-label="Navigation menu"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between h-14 px-4 border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)]">
-            <span className="text-base font-semibold text-[var(--fg-primary)]">Menu</span>
-            <button
-              onClick={closeMobileMenu}
-              className="
-                flex items-center justify-center
-                w-10 h-10 -mr-2
-                rounded-lg
-                text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-                hover:bg-[var(--bg-tertiary)]
-                transition-colors
-              "
-              aria-label="Close menu"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Scrollable Content */}
+          {/* Scrollable Content - Menu slides in below header */}
           <motion.div 
             className="flex-1 overflow-y-auto"
             variants={contentVariants}

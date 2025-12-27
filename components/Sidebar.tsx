@@ -25,6 +25,7 @@ import {
   Zap,
   Layers,
   FolderPlus,
+  FolderKanban,
   ArrowRight,
   History,
 } from 'lucide-react';
@@ -845,6 +846,50 @@ export function Sidebar() {
                       {chatHistory.length > 0 && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
                           {chatHistory.length}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </Link>
+              );
+            })()}
+          </div>
+
+          {/* Projects Link */}
+          <div className={`flex ${isExpandedMode ? '' : 'justify-center'}`}>
+            {(() => {
+              const isProjectsActive = pathname.startsWith('/projects');
+              return (
+                <Link
+                  href="/projects"
+                  className={`
+                    flex items-center gap-2
+                    transition-colors duration-150
+                    group
+                    ${isExpandedMode 
+                      ? `w-full py-2 px-3 rounded-md ${isProjectsActive ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}` 
+                      : `p-2 ${isProjectsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`
+                    }
+                  `}
+                  title="Projects"
+                  aria-label="View projects"
+                  aria-current={isProjectsActive ? 'page' : undefined}
+                >
+                  <div className={`
+                    flex items-center justify-center rounded-md transition-all duration-150
+                    ${isExpandedMode 
+                      ? '' 
+                      : `w-8 h-8 ${isProjectsActive ? 'bg-[var(--bg-brand-primary)]' : 'group-hover:bg-[var(--bg-tertiary)]'}`
+                    }
+                  `}>
+                    <FolderKanban className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
+                  </div>
+                  {isExpandedMode && (
+                    <>
+                      <span className="text-sm flex-1">Projects</span>
+                      {projects.length > 0 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
+                          {projects.length}
                         </span>
                       )}
                     </>

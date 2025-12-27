@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { useChatContext } from '@/lib/chat-context';
-import { ThemeSegmentedControl } from './ThemeSegmentedControl';
 
 // Simple navigation items - no sub-items for mobile
 const navItems = [
@@ -127,8 +126,9 @@ export function MobileFullScreenMenu() {
             initial="hidden"
             animate="visible"
           >
-            {/* New Chat Button */}
-            <motion.div variants={itemVariants} className="p-4">
+            {/* Chat Actions - New Chat + Recent Chats */}
+            <motion.div variants={itemVariants} className="p-4 space-y-2">
+              {/* New Chat - Primary Button */}
               <button
                 onClick={handleNewChat}
                 className="
@@ -145,6 +145,28 @@ export function MobileFullScreenMenu() {
                 <Plus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
                 <span>New Chat</span>
               </button>
+
+              {/* Recent Chats - Secondary Outline Button */}
+              <Link
+                href="/chats"
+                onClick={handleNavClick}
+                className="
+                  w-full flex items-center justify-center gap-2
+                  py-3.5 px-4
+                  bg-transparent hover:bg-[var(--bg-tertiary)]
+                  active:bg-[var(--bg-tertiary)]
+                  text-[var(--fg-primary)] 
+                  rounded-xl font-medium 
+                  border border-[var(--border-secondary)]
+                  transition-all
+                "
+              >
+                <History className="w-5 h-5 text-[var(--fg-tertiary)]" />
+                <span>Recent Chats</span>
+                {chatHistory.length > 0 && (
+                  <span className="text-[var(--fg-quaternary)]">({chatHistory.length})</span>
+                )}
+              </Link>
             </motion.div>
 
             {/* Navigation Section */}
@@ -176,29 +198,6 @@ export function MobileFullScreenMenu() {
                     </Link>
                   );
                 })}
-
-                {/* Separator before chat items */}
-                <div className="my-2 border-t border-[var(--border-secondary)]" />
-
-                {/* Recent Chats Link */}
-                <Link
-                  href="/chats"
-                  onClick={handleNavClick}
-                  className={`
-                    flex items-center gap-3 px-4 py-3.5 rounded-xl
-                    transition-colors
-                    ${pathname === '/chats'
-                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]' 
-                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                    }
-                  `}
-                >
-                  <History className={`w-5 h-5 flex-shrink-0 ${pathname === '/chats' ? 'text-[var(--fg-brand-primary)]' : ''}`} />
-                  <span className="font-medium flex-1">Recent Chats</span>
-                  {chatHistory.length > 0 && (
-                    <span className="text-xs text-[var(--fg-quaternary)]">({chatHistory.length})</span>
-                  )}
-                </Link>
               </nav>
             </motion.div>
 
@@ -248,16 +247,6 @@ export function MobileFullScreenMenu() {
                   </div>
                   <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
                 </button>
-
-                {/* Appearance - at the bottom */}
-                <div className="pt-3 mt-2 border-t border-[var(--border-secondary)]">
-                  <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
-                    Appearance
-                  </p>
-                  <div className="px-1">
-                    <ThemeSegmentedControl />
-                  </div>
-                </div>
               </div>
             </motion.div>
           </motion.div>

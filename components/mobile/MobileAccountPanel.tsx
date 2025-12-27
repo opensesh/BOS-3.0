@@ -68,7 +68,7 @@ export function MobileAccountPanel() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-      className="fixed inset-0 top-14 z-50 bg-[var(--bg-primary)] lg:hidden overflow-hidden"
+      className="fixed inset-0 top-14 z-[70] bg-[var(--bg-primary)] lg:hidden overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border-secondary)] bg-[var(--bg-secondary)]">

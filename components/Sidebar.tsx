@@ -214,6 +214,101 @@ function SidebarControl({ isExpanded }: { isExpanded: boolean }) {
   );
 }
 
+// Recent Chats flyout for collapsed mode
+function RecentChatsFlyout({
+  isOpen,
+  anchorRect,
+  onClose,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  isOpen: boolean;
+  anchorRect: DOMRect | null;
+  onClose: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { chatHistory, loadSession } = useChatContext();
+
+  if (!anchorRect) return null;
+
+  const iconCenter = anchorRect.top + anchorRect.height / 2;
+  const flyoutTop = Math.max(iconCenter - 20, 60);
+
+  return (
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, x: -4, scale: 0.98 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{
+            duration: 0.2,
+            ease: [0.4, 0, 0.2, 1],
+            exit: { duration: 0.3, ease: [0.4, 0, 1, 1] },
+          }}
+          className="fixed z-[60] w-[240px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
+          style={{
+            left: SIDEBAR_WIDTH_COLLAPSED + 8,
+            top: flyoutTop,
+          }}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          role="menu"
+          aria-label="Recent chats menu"
+        >
+          <Link
+            href="/chats"
+            onClick={onClose}
+            className="px-3 py-2.5 border-b border-[var(--border-secondary)] flex items-center justify-between group hover:bg-[var(--bg-tertiary)] transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-[var(--fg-tertiary)]" />
+              <span className="text-sm font-medium text-[var(--fg-primary)]">Recent Chats</span>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+          </Link>
+          <div className="py-2 max-h-[300px] overflow-y-auto">
+            {chatHistory.length > 0 ? (
+              chatHistory.slice(0, 8).map((chat) => (
+                <button
+                  key={chat.id}
+                  onClick={() => {
+                    loadSession(chat.id);
+                    if (pathname !== '/') {
+                      router.push('/');
+                    }
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-left"
+                  role="menuitem"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 flex-shrink-0 text-[var(--fg-quaternary)]" />
+                  <span className="truncate">{chat.title}</span>
+                </button>
+              ))
+            ) : (
+              <p className="px-3 py-2 text-xs text-[var(--fg-quaternary)]">No recent chats</p>
+            )}
+            {chatHistory.length > 8 && (
+              <Link
+                href="/chats"
+                onClick={onClose}
+                className="w-full flex items-center justify-center gap-1 px-3 py-2 mt-1 text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors border-t border-[var(--border-secondary)]"
+              >
+                View all {chatHistory.length} chats
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // Flyout drawer for collapsed mode (small tooltip-style flyout on hover)
 function CollapsedFlyout({ 
   item, 
@@ -470,6 +565,11 @@ export function Sidebar() {
   const [hoveredItem, setHoveredItem] = useState<typeof navItems[0] | null>(null);
   const [hoveredAnchorRect, setHoveredAnchorRect] = useState<DOMRect | null>(null);
   const [isFlyoutHovered, setIsFlyoutHovered] = useState(false);
+  // Recent Chats flyout state for collapsed mode
+  const [isRecentChatsFlyoutOpen, setIsRecentChatsFlyoutOpen] = useState(false);
+  const [recentChatsAnchorRect, setRecentChatsAnchorRect] = useState<DOMRect | null>(null);
+  const [isRecentChatsFlyoutHovered, setIsRecentChatsFlyoutHovered] = useState(false);
+  const recentChatsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // For hover mode - NavigationDrawer
   const [drawerItem, setDrawerItem] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -585,6 +685,52 @@ export function Sidebar() {
     setIsFlyoutHovered(false);
   };
 
+  // Recent Chats flyout handlers for collapsed mode
+  const handleRecentChatsMouseEnter = (event: React.MouseEvent) => {
+    if (shouldShowFlyout) {
+      if (recentChatsTimeoutRef.current) {
+        clearTimeout(recentChatsTimeoutRef.current);
+        recentChatsTimeoutRef.current = null;
+      }
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      setRecentChatsAnchorRect(rect);
+      setIsRecentChatsFlyoutOpen(true);
+    }
+  };
+
+  const handleRecentChatsMouseLeave = () => {
+    if (shouldShowFlyout) {
+      recentChatsTimeoutRef.current = setTimeout(() => {
+        if (!isRecentChatsFlyoutHovered) {
+          setIsRecentChatsFlyoutOpen(false);
+          setRecentChatsAnchorRect(null);
+        }
+      }, 600);
+    }
+  };
+
+  const handleRecentChatsFlyoutMouseEnter = () => {
+    setIsRecentChatsFlyoutHovered(true);
+    if (recentChatsTimeoutRef.current) {
+      clearTimeout(recentChatsTimeoutRef.current);
+      recentChatsTimeoutRef.current = null;
+    }
+  };
+
+  const handleRecentChatsFlyoutMouseLeave = () => {
+    setIsRecentChatsFlyoutHovered(false);
+    recentChatsTimeoutRef.current = setTimeout(() => {
+      setIsRecentChatsFlyoutOpen(false);
+      setRecentChatsAnchorRect(null);
+    }, 800);
+  };
+
+  const handleRecentChatsFlyoutClose = () => {
+    setIsRecentChatsFlyoutOpen(false);
+    setRecentChatsAnchorRect(null);
+    setIsRecentChatsFlyoutHovered(false);
+  };
+
   const handleDrawerClose = () => {
     setIsDrawerOpen(false);
     setDrawerItem(null);
@@ -661,17 +807,20 @@ export function Sidebar() {
         </div>
 
         {/* Recent Chats Link */}
-        <div className={`flex ${isExpandedMode ? 'px-3 pb-2' : 'justify-center pb-2'}`}>
+        <div 
+          className={`flex ${isExpandedMode ? 'px-3 pb-3' : 'justify-center pb-2'}`}
+          onMouseEnter={handleRecentChatsMouseEnter}
+          onMouseLeave={handleRecentChatsMouseLeave}
+        >
           <Link
             href="/chats"
             className={`
               flex items-center gap-2
               transition-colors duration-150
               group
-              text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
               ${isExpandedMode 
-                ? 'w-full py-1.5 px-3 rounded-md hover:bg-[var(--bg-tertiary)]' 
-                : 'p-2'
+                ? 'w-full py-2 px-3 rounded-md border border-[var(--border-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]' 
+                : 'p-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'
               }
             `}
             title="Recent Chats"
@@ -687,7 +836,14 @@ export function Sidebar() {
               <History className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
             </div>
             {isExpandedMode && (
-              <span className="text-xs text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]">Recent Chats</span>
+              <>
+                <span className="text-sm flex-1">Recent Chats</span>
+                {chatHistory.length > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
+                    {chatHistory.length}
+                  </span>
+                )}
+              </>
             )}
           </Link>
         </div>
@@ -909,16 +1065,25 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Collapsed mode flyout */}
+      {/* Collapsed mode flyouts */}
       {shouldShowFlyout && (
-        <CollapsedFlyout 
-          item={hoveredItem} 
-          isOpen={hoveredItem !== null} 
-          anchorRect={hoveredAnchorRect}
-          onClose={handleFlyoutClose}
-          onMouseEnter={handleFlyoutMouseEnter}
-          onMouseLeave={handleFlyoutMouseLeave}
-        />
+        <>
+          <CollapsedFlyout 
+            item={hoveredItem} 
+            isOpen={hoveredItem !== null} 
+            anchorRect={hoveredAnchorRect}
+            onClose={handleFlyoutClose}
+            onMouseEnter={handleFlyoutMouseEnter}
+            onMouseLeave={handleFlyoutMouseLeave}
+          />
+          <RecentChatsFlyout
+            isOpen={isRecentChatsFlyoutOpen}
+            anchorRect={recentChatsAnchorRect}
+            onClose={handleRecentChatsFlyoutClose}
+            onMouseEnter={handleRecentChatsFlyoutMouseEnter}
+            onMouseLeave={handleRecentChatsFlyoutMouseLeave}
+          />
+        </>
       )}
 
       {/* Hover mode - full NavigationDrawer */}

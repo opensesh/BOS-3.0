@@ -33,6 +33,7 @@ import {
   DragOverlay,
   LinksView,
   extractResourceCards,
+  AddToProjectModal,
   type FollowUpAttachment,
 } from './chat';
 // Article reference context (kept for potential future use)
@@ -78,6 +79,7 @@ export function ChatInterface() {
   const [hasProcessedUrlParams, setHasProcessedUrlParams] = useState(false);
   const [generatedTitle, setGeneratedTitle] = useState<string | null>(null);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+  const [isAddToProjectModalOpen, setIsAddToProjectModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -842,6 +844,7 @@ export function ChatInterface() {
                   }
                 }
               }}
+              onAddToProject={() => setIsAddToProjectModalOpen(true)}
               onDeleteThread={() => {
                 // Delete and go back to home
                 resetChat();
@@ -1233,6 +1236,18 @@ export function ChatInterface() {
           </motion.div>
         )}
       </div>
+
+      {/* Add to Project Modal */}
+      <AddToProjectModal
+        isOpen={isAddToProjectModalOpen}
+        onClose={() => setIsAddToProjectModalOpen(false)}
+        projects={projects}
+        currentProject={currentProject}
+        onSelectProject={setCurrentProject}
+        onCreateProject={async (name) => {
+          await createProject(name, '', '#FE5102');
+        }}
+      />
     </>
   );
 }

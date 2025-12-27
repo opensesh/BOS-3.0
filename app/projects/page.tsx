@@ -188,23 +188,24 @@ export default function ProjectsPage() {
                   )}
                 </div>
 
-                {/* Sort */}
+                {/* Sort - same height as search (py-2.5), right-aligned */}
                 <button
                   onClick={handleSortChange}
                   className="
                     flex items-center gap-2
                     px-3 py-2.5
-                    text-sm text-[var(--fg-secondary)]
-                    hover:text-[var(--fg-primary)]
-                    hover:bg-[var(--bg-secondary)]
+                    text-sm
+                    bg-[var(--bg-secondary)]
+                    border border-[var(--border-secondary)]
                     rounded-lg
+                    hover:bg-[var(--bg-tertiary)]
                     transition-colors
                     flex-shrink-0
                   "
                 >
-                  <span>Sort by</span>
+                  <span className="text-[var(--fg-secondary)]">Sort by</span>
                   <span className="font-medium text-[var(--fg-primary)]">{getSortLabel()}</span>
-                  <ArrowUpDown className="w-3.5 h-3.5" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
                 </button>
               </div>
 

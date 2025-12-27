@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
-  Plus,
   FileText,
   FolderOpen,
   Upload,
@@ -174,24 +173,6 @@ export function ProjectSidebar({
         <CollapsibleSection
           title="Instructions"
           icon={<FileText className="w-4 h-4 text-[var(--fg-tertiary)]" />}
-          rightElement={
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsInstructionsModalOpen(true);
-              }}
-              className="
-                p-1 rounded
-                text-[var(--fg-tertiary)]
-                hover:text-[var(--fg-primary)]
-                hover:bg-[var(--bg-tertiary)]
-                transition-colors
-              "
-              title="Edit instructions"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          }
         >
           {instructions?.content ? (
             <button

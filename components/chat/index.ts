@@ -25,3 +25,4 @@ export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRende
 export { InlineStreamingDisplay, InlineStreamingIndicator, StreamingTrailIndicator } from './InlineStreamingDisplay';
 export { UserMessageBubble } from './UserMessageBubble';
 export { DateFilterDropdown, type DateFilterValue } from './DateFilterDropdown';
+export { AddToProjectModal } from './AddToProjectModal';

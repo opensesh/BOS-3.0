@@ -181,7 +181,7 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
             ref={buttonRef}
             onClick={() => setIsOpen(!isOpen)}
             className={`
-              flex items-center gap-2 px-3 py-1.5
+              flex items-center gap-2 px-3 py-2.5
               text-sm font-medium
               rounded-lg
               border border-[var(--border-secondary)]

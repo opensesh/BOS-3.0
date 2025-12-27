@@ -79,15 +79,17 @@ export function ProjectInstructionsModal({
             onClick={onClose}
           />
 
-          {/* Modal */}
+          {/* Modal - centered with responsive margins */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="
-              fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-              w-full max-w-2xl max-h-[80vh]
+              fixed inset-4 sm:inset-auto
+              sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2
+              w-auto sm:w-full sm:max-w-2xl
+              max-h-[calc(100vh-32px)] sm:max-h-[80vh]
               bg-[var(--bg-secondary)]
               border border-[var(--border-primary)]
               rounded-xl

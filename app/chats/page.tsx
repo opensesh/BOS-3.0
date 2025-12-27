@@ -190,15 +190,10 @@ export default function ChatsPage() {
                 </p>
               </div>
 
-              {/* Date Filter and Search Row */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
-                <DateFilterDropdown
-                  value={dateFilter}
-                  onChange={setDateFilter}
-                />
-                
-                {/* Search */}
-                <div className="relative flex-1 w-full">
+              {/* Search and Date Filter Row */}
+              <div className="flex items-center gap-4 mb-6">
+                {/* Search - takes most width */}
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-quaternary)]" />
                   <input
                     type="text"
@@ -225,6 +220,12 @@ export default function ChatsPage() {
                     </button>
                   )}
                 </div>
+                
+                {/* Date Filter - right aligned, same height */}
+                <DateFilterDropdown
+                  value={dateFilter}
+                  onChange={setDateFilter}
+                />
               </div>
 
               {/* Results */}

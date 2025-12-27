@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Sidebar } from '@/components/Sidebar';
@@ -16,7 +16,7 @@ import {
   ProjectChatList,
   ProjectSidebar,
 } from '@/components/projects';
-import { Loader2, MessageSquarePlus } from 'lucide-react';
+import { Loader2, Send, PanelRightClose, PanelRightOpen } from 'lucide-react';
 
 export default function ProjectDetailPage() {
   const router = useRouter();
@@ -30,6 +30,9 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalFileSize, setTotalFileSize] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [chatInput, setChatInput] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load project with all details
   const loadProject = useCallback(async () => {
@@ -64,6 +67,14 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     loadProject();
   }, [loadProject]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
+    }
+  }, [chatInput]);
 
   // Handlers
   const handleUpdateProject = async (updates: { name?: string; description?: string }) => {
@@ -148,9 +159,10 @@ export default function ProjectDetailPage() {
     }
   };
 
-  // Start a new chat associated with this project
-  const handleStartChat = () => {
-    if (!project) return;
+  // Start a new chat with the typed message
+  const handleSubmitChat = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!project || !chatInput.trim()) return;
     
     // Set the current project in context so the chat gets associated with it
     setCurrentProject({
@@ -165,8 +177,15 @@ export default function ProjectDetailPage() {
     // Reset any existing chat
     triggerChatReset();
     
-    // Navigate to home to start a fresh chat
-    router.push('/');
+    // Navigate to home with the query
+    router.push(`/?q=${encodeURIComponent(chatInput.trim())}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmitChat();
+    }
   };
 
   // Loading state
@@ -216,48 +235,88 @@ export default function ProjectDetailPage() {
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto">
               <div className="max-w-3xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
-                {/* Project Header */}
-                <ProjectHeader
-                  project={project}
-                  onUpdate={handleUpdateProject}
-                  onDelete={handleDeleteProject}
-                />
-
-                {/* Start New Chat Button */}
-                <div className="mb-6">
+                {/* Project Header with Sidebar Toggle */}
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div className="flex-1 min-w-0">
+                    <ProjectHeader
+                      project={project}
+                      onUpdate={handleUpdateProject}
+                      onDelete={handleDeleteProject}
+                    />
+                  </div>
+                  {/* Sidebar Toggle - only visible on lg+ */}
                   <button
-                    onClick={handleStartChat}
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     className="
-                      w-full flex items-center justify-center gap-3
-                      p-4
-                      bg-[var(--bg-secondary)]
-                      border border-[var(--border-secondary)]
-                      rounded-xl
-                      hover:border-[var(--fg-brand-primary)]
+                      hidden lg:flex
+                      items-center gap-2
+                      p-2 rounded-lg
+                      text-[var(--fg-tertiary)]
+                      hover:text-[var(--fg-primary)]
                       hover:bg-[var(--bg-tertiary)]
-                      transition-all
-                      group
-                    "
-                  >
-                    <div className="
-                      w-10 h-10 rounded-full
-                      bg-[var(--bg-brand-primary)]
-                      group-hover:bg-[var(--bg-brand-secondary)]
-                      flex items-center justify-center
                       transition-colors
-                    ">
-                      <MessageSquarePlus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-[var(--fg-primary)]">
-                        Start a conversation
-                      </p>
-                      <p className="text-xs text-[var(--fg-tertiary)]">
-                        New chats will be added to this project
-                      </p>
-                    </div>
+                    "
+                    title={isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+                  >
+                    {isSidebarOpen ? (
+                      <PanelRightClose className="w-5 h-5" />
+                    ) : (
+                      <PanelRightOpen className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
+
+                {/* Chat Input */}
+                <form onSubmit={handleSubmitChat} className="mb-6">
+                  <div className="
+                    relative
+                    bg-[var(--bg-secondary)]
+                    border border-[var(--border-secondary)]
+                    rounded-xl
+                    hover:border-[var(--border-primary)]
+                    focus-within:border-[var(--fg-brand-primary)]
+                    focus-within:ring-2 focus-within:ring-[var(--fg-brand-primary)]/20
+                    transition-all
+                    shadow-sm
+                  ">
+                    <textarea
+                      ref={textareaRef}
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Start a conversation..."
+                      rows={1}
+                      className="
+                        w-full px-4 py-3 pr-12
+                        bg-transparent
+                        text-sm text-[var(--fg-primary)]
+                        placeholder:text-[var(--fg-quaternary)]
+                        resize-none
+                        focus:outline-none
+                        min-h-[48px]
+                        max-h-[150px]
+                      "
+                    />
+                    <button
+                      type="submit"
+                      disabled={!chatInput.trim()}
+                      className="
+                        absolute right-2 bottom-2
+                        p-2 rounded-lg
+                        transition-all
+                        disabled:opacity-40 disabled:cursor-not-allowed
+                        bg-[var(--bg-brand-solid)]
+                        hover:bg-[var(--bg-brand-solid)]/90
+                        text-white
+                      "
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-[var(--fg-quaternary)] mt-2 text-center">
+                    Press Enter to send • Shift+Enter for new line
+                  </p>
+                </form>
 
                 {/* Conversations List */}
                 <div className="
@@ -284,17 +343,19 @@ export default function ProjectDetailPage() {
             </div>
           </div>
 
-          {/* Sidebar - Instructions & Files */}
-          <ProjectSidebar
-            projectId={projectId}
-            projectName={project.name}
-            instructions={project.instructions}
-            files={project.files}
-            totalFileSize={totalFileSize}
-            onSaveInstructions={handleSaveInstructions}
-            onUploadFile={handleUploadFile}
-            onDeleteFile={handleDeleteFile}
-          />
+          {/* Sidebar - Instructions & Files - collapsible */}
+          {isSidebarOpen && (
+            <ProjectSidebar
+              projectId={projectId}
+              projectName={project.name}
+              instructions={project.instructions}
+              files={project.files}
+              totalFileSize={totalFileSize}
+              onSaveInstructions={handleSaveInstructions}
+              onUploadFile={handleUploadFile}
+              onDeleteFile={handleDeleteFile}
+            />
+          )}
         </div>
       </MainContent>
     </div>

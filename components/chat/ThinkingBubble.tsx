@@ -34,6 +34,7 @@ interface ThinkingBubbleProps {
 export function ThinkingBubble({
   thinking,
   isThinking = false,
+  isStreaming = false,
   defaultCollapsed = true,
   summary,
 }: ThinkingBubbleProps) {
@@ -45,21 +46,22 @@ export function ThinkingBubble({
   const [displaySeconds, setDisplaySeconds] = useState(0);
   const timerStartRef = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const wasThinkingRef = useRef(false);
 
   // Track if we have thinking content
   const hasThinking = Boolean(thinking && thinking.length > 0);
+  
+  // Timer should run while streaming AND we have thinking content
+  // This ensures the timer keeps counting even after text content arrives
+  const shouldTimerRun = hasThinking && isStreaming;
 
-  // Timer effect - runs the counting interval while isThinking is true
+  // Timer effect - start when thinking appears, stop when streaming ends
   useEffect(() => {
-    // Start timer when isThinking becomes true
-    if (isThinking && !intervalRef.current) {
-      // Set start time if not already set
+    if (shouldTimerRun && !intervalRef.current) {
+      // Start the timer
       if (!timerStartRef.current) {
         timerStartRef.current = Date.now();
         setDisplaySeconds(0);
       }
-      wasThinkingRef.current = true;
       
       // Start interval to update display every 100ms
       intervalRef.current = setInterval(() => {
@@ -70,12 +72,12 @@ export function ThinkingBubble({
       }, 100);
     }
     
-    // Stop timer when isThinking becomes false
-    if (!isThinking && intervalRef.current) {
+    // Stop timer when streaming ends
+    if (!shouldTimerRun && intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
       
-      // Calculate final elapsed time
+      // Calculate and set final elapsed time
       if (timerStartRef.current) {
         const finalElapsed = Math.floor((Date.now() - timerStartRef.current) / 1000);
         setDisplaySeconds(finalElapsed);
@@ -90,20 +92,19 @@ export function ThinkingBubble({
         intervalRef.current = null;
       }
     };
-  }, [isThinking]);
+  }, [shouldTimerRun]);
   
   // Reset timer when thinking content is cleared (new conversation)
   useEffect(() => {
-    if (!hasThinking && !isThinking) {
+    if (!hasThinking) {
       setDisplaySeconds(0);
       timerStartRef.current = null;
-      wasThinkingRef.current = false;
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
     }
-  }, [hasThinking, isThinking]);
+  }, [hasThinking]);
 
   // Check if content overflows
   useEffect(() => {

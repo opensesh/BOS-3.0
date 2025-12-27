@@ -167,13 +167,13 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          flex items-center gap-2 px-3 py-2
+          flex items-center gap-2 px-3 py-1.5
           text-sm font-medium
           rounded-lg
           border border-[var(--border-secondary)]
           transition-all duration-150
           ${isOpen 
-            ? 'bg-[var(--bg-tertiary)] ring-2 ring-[var(--fg-brand-primary)]/20 border-[var(--fg-brand-primary)]' 
+            ? 'bg-[var(--bg-tertiary)] ring-2 ring-brand-aperol/20 border-brand-aperol' 
             : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--fg-primary)]'
           }
         `}
@@ -196,6 +196,18 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
         ) : null}
       </button>
 
+      {/* Backdrop - blurs content behind */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => {
+            setIsOpen(false);
+            setSelectionStart(null);
+          }}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Dropdown Panel */}
       {isOpen && (
         <div
@@ -205,7 +217,7 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
             bg-[var(--bg-primary)]
             border border-[var(--border-secondary)]
             rounded-xl
-            shadow-lg shadow-black/10
+            shadow-xl shadow-black/20
             overflow-hidden
             animate-in fade-in slide-in-from-top-2 duration-150
             w-[320px]
@@ -231,14 +243,14 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
               <header className="flex items-center justify-between mb-3">
                 <Button
                   slot="previous"
-                  className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/30"
+                  className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors outline-none focus:ring-2 focus:ring-brand-aperol/30"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <Heading className="text-sm font-semibold text-[var(--fg-primary)]" />
                 <Button
                   slot="next"
-                  className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/30"
+                  className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors outline-none focus:ring-2 focus:ring-brand-aperol/30"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>
@@ -264,12 +276,12 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
                         outline-none transition-colors
                         ${isOutsideMonth ? 'text-[var(--fg-quaternary)]/40' : ''}
                         ${isDisabled ? 'text-[var(--fg-quaternary)]/40 cursor-not-allowed' : ''}
-                        ${isFocusVisible ? 'ring-2 ring-[var(--fg-brand-primary)]/30' : ''}
-                        ${isCurrentlySelected(date) && !selectionStart ? 'bg-[var(--fg-brand-primary)]/15 text-[var(--fg-brand-primary)]' : ''}
-                        ${isSelectionEndpoint(date) ? 'bg-[var(--fg-brand-primary)] text-white' : ''}
-                        ${isInRange(date) && !isSelectionEndpoint(date) ? 'bg-[var(--fg-brand-primary)]/20 text-[var(--fg-primary)]' : ''}
+                        ${isFocusVisible ? 'ring-2 ring-brand-aperol/30' : ''}
+                        ${isCurrentlySelected(date) && !selectionStart ? 'bg-brand-aperol/15 text-brand-aperol' : ''}
+                        ${isSelectionEndpoint(date) ? 'bg-brand-aperol text-white' : ''}
+                        ${isInRange(date) && !isSelectionEndpoint(date) ? 'bg-brand-aperol/20 text-[var(--fg-primary)]' : ''}
                         ${!isCurrentlySelected(date) && !isInRange(date) && !isSelectionEndpoint(date) && !isOutsideMonth && !isDisabled ? 'hover:bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' : ''}
-                        ${date.compare(todayDate) === 0 && !isSelectionEndpoint(date) ? 'font-semibold ring-1 ring-[var(--fg-brand-primary)]/50' : ''}
+                        ${date.compare(todayDate) === 0 && !isSelectionEndpoint(date) ? 'font-semibold ring-1 ring-brand-aperol/50' : ''}
                       `}
                     >
                       {({ formattedDate }) => (
@@ -291,16 +303,16 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
           {/* Quick Presets */}
           <div className="px-3 py-3 border-t border-[var(--border-secondary)] bg-[var(--bg-secondary)]/50">
             <p className="text-xs font-medium text-[var(--fg-quaternary)] mb-2 px-1">Quick filters</p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex gap-1.5">
               {presets.map((preset) => (
                 <button
                   key={preset.id}
                   onClick={() => handlePresetClick(preset.id)}
                   className={`
-                    px-3 py-1.5 rounded-md text-xs font-medium
+                    flex-1 px-2 py-1.5 rounded-md text-xs font-medium whitespace-nowrap
                     transition-colors
                     ${value.type === 'preset' && value.preset === preset.id
-                      ? 'bg-[var(--fg-brand-primary)] text-white'
+                      ? 'bg-brand-aperol text-white'
                       : 'bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] hover:text-[var(--fg-primary)] border border-[var(--border-secondary)]'
                     }
                   `}

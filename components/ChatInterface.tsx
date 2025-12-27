@@ -140,6 +140,24 @@ export function ChatInterface() {
     setIsGeneratingTitle(false);
   }, [setMessages]);
 
+  // Helper to get message content (must be defined before generateTitle which uses it)
+  const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
+    if (typeof message.content === 'string') return message.content;
+    if (Array.isArray(message.parts)) {
+      return message.parts
+        .filter((part): part is { type: string; text: string } => 
+          part && typeof part === 'object' && part.type === 'text' && typeof part.text === 'string'
+        )
+        .map((part) => part.text)
+        .join('');
+    }
+    return '';
+  }, []);
+
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:afterGetMessageContent',message:'getMessageContent defined BEFORE generateTitle',data:{getMessageContentType:typeof getMessageContent,isFunction:typeof getMessageContent === 'function'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A',runId:'post-fix'})}).catch(()=>{});
+  // #endregion
+
   // Generate a semantic title for the conversation
   const generateTitle = useCallback(async (msgs: typeof messages) => {
     if (isGeneratingTitle || generatedTitle) return;
@@ -170,19 +188,9 @@ export function ChatInterface() {
     }
   }, [isGeneratingTitle, generatedTitle, getMessageContent]);
 
-  // Helper to get message content (defined early for use in effect)
-  const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
-    if (typeof message.content === 'string') return message.content;
-    if (Array.isArray(message.parts)) {
-      return message.parts
-        .filter((part): part is { type: string; text: string } => 
-          part && typeof part === 'object' && part.type === 'text' && typeof part.text === 'string'
-        )
-        .map((part) => part.text)
-        .join('');
-    }
-    return '';
-  }, []);
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:afterGenerateTitle',message:'generateTitle defined successfully',data:{generateTitleType:typeof generateTitle,reachedThisPoint:true},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A',runId:'post-fix'})}).catch(()=>{});
+  // #endregion
 
   // Listen for reset signals from context (e.g., sidebar navigation)
   useEffect(() => {

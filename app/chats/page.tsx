@@ -13,7 +13,6 @@ import {
   X,
   Plus,
   ArrowLeft,
-  History,
 } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
@@ -28,7 +27,7 @@ type SortDirection = 'asc' | 'desc';
 function ChatsPageHeader({ onBack }: { onBack: () => void }) {
   return (
     <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
-      <div className="px-4">
+      <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center h-12">
           {/* Left side - Back button and title */}
           <div className="flex items-center gap-2">
@@ -39,10 +38,7 @@ function ChatsPageHeader({ onBack }: { onBack: () => void }) {
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
-            <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-[var(--fg-tertiary)]" />
-              <span className="text-sm font-medium text-[var(--fg-primary)]">Recent Chats</span>
-            </div>
+            <span className="text-sm font-medium text-[var(--fg-primary)]">Recent Chats</span>
           </div>
         </div>
       </div>
@@ -191,49 +187,44 @@ export default function ChatsPage() {
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="max-w-4xl mx-auto px-4 py-6 lg:py-8">
-              {/* Page Description */}
-              <div className="mb-6">
+              {/* Page Description and Date Filter - Same Row */}
+              <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-[var(--fg-tertiary)]">
                   {chatHistory.length} conversation{chatHistory.length !== 1 ? 's' : ''}
                 </p>
-              </div>
-
-              {/* Search and Filters */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                {/* Search */}
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-quaternary)]" />
-                  <input
-                    type="text"
-                    placeholder="Search conversations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="
-                      w-full pl-10 pr-4 py-2.5
-                      bg-[var(--bg-secondary)]
-                      border border-[var(--border-secondary)]
-                      rounded-lg
-                      text-sm text-[var(--fg-primary)]
-                      placeholder:text-[var(--fg-quaternary)]
-                      focus:outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/20 focus:border-[var(--fg-brand-primary)]
-                      transition-all
-                    "
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Date Filter Dropdown */}
                 <DateFilterDropdown
                   value={dateFilter}
                   onChange={setDateFilter}
                 />
+              </div>
+
+              {/* Search */}
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-quaternary)]" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="
+                    w-full pl-10 pr-4 py-2.5
+                    bg-[var(--bg-secondary)]
+                    border border-[var(--border-secondary)]
+                    rounded-lg
+                    text-sm text-[var(--fg-primary)]
+                    placeholder:text-[var(--fg-quaternary)]
+                    focus:outline-none focus:ring-2 focus:ring-[var(--fg-brand-primary)]/20 focus:border-[var(--fg-brand-primary)]
+                    transition-all
+                  "
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </div>
 
               {/* Results */}
@@ -245,7 +236,6 @@ export default function ChatsPage() {
                       onClick={() => handleSort('title')}
                       className="flex-1 flex items-center gap-2 text-xs font-medium text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
                     >
-                      <MessageSquare className="w-3.5 h-3.5" />
                       <span>Conversation</span>
                       {sortField === 'title' && (
                         sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />

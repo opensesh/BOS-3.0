@@ -179,10 +179,14 @@ export async function getFeedback(messageId: string): Promise<FeedbackType | nul
       .eq('session_id', sessionId)
       .single();
 
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
+    // PGRST116 = no rows returned - this is normal, not an error
+    if (error && error.code !== 'PGRST116') throw error;
     return data ? (data.feedback_type as FeedbackType) : null;
   } catch (err) {
-    console.error('Failed to get feedback:', err);
+    // Only log actual errors, not missing feedback (which is expected)
+    if (err && typeof err === 'object' && 'code' in err && err.code !== 'PGRST116') {
+      console.error('Failed to get feedback:', err);
+    }
     return null;
   }
 }

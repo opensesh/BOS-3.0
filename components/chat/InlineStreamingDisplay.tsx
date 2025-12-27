@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { DotLoaderOnly } from '@/components/ui/dot-flow';
+import { DotLoaderOnly, ThinkingDotFlow } from '@/components/ui/dot-flow';
 import { ThinkingBubble } from './ThinkingBubble';
 
 interface InlineStreamingDisplayProps {
@@ -16,17 +16,17 @@ interface InlineStreamingDisplayProps {
 /**
  * InlineStreamingDisplay Component
  * 
- * Simplified streaming display:
+ * Streaming display with fun animations:
  * - Shows ThinkingBubble when extended thinking content is present
- * - Shows DotLoaderOnly (just dots, no text) at the BOTTOM during streaming
- * - The dot loader acts as a "trailblazer" that trails behind the text
+ * - Shows ThinkingDotFlow (random words + dots) BEFORE text arrives - the fun "processing" animation
+ * - Shows DotLoaderOnly (just dots) AFTER text starts arriving - clean trailblazer
  * - NO tool indicators (removed entirely)
  * 
  * Flow:
- * 1. Streaming starts → Dot animation at bottom (no text)
- * 2. Text arrives → Dot animation stays at bottom
+ * 1. Streaming starts, no content yet → ThinkingDotFlow with fun random words
+ * 2. Text arrives → Switch to DotLoaderOnly (just dots, no text)
  * 3. If extended thinking ON → ThinkingBubble shown with "Thought process" label
- * 4. Streaming ends → Dot animation disappears
+ * 4. Streaming ends → Animation disappears
  */
 export function InlineStreamingDisplay({
   thinking,
@@ -40,6 +40,9 @@ export function InlineStreamingDisplay({
   
   // Check if we're actively thinking (thinking content arriving but no text yet)
   const isActivelyThinking = Boolean(hasThinking && !hasContent && isStreaming);
+  
+  // Show the fun word animation before content arrives (not during extended thinking)
+  const showWordAnimation = isStreaming && !hasContent && !hasThinking;
 
   // Fetch summary when thinking completes (transition from thinking to text)
   useEffect(() => {
@@ -92,9 +95,17 @@ export function InlineStreamingDisplay({
         </div>
       )}
 
-      {/* Dot animation (no text) - shown at the BOTTOM during ALL streaming
-          This is the "trailblazer" that stays visible while text streams */}
-      {isStreaming && (
+      {/* Fun word animation - shown BEFORE content arrives
+          Random phrases like "synergizing thoughtbits", "weaving brandwaves", etc. */}
+      {showWordAnimation && (
+        <div className="py-2">
+          <ThinkingDotFlow />
+        </div>
+      )}
+
+      {/* Dot animation only - shown AFTER content starts arriving
+          Clean trailblazer that trails behind the text */}
+      {isStreaming && hasContent && (
         <div className="py-2">
           <DotLoaderOnly />
         </div>

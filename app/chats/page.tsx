@@ -25,11 +25,11 @@ type SortField = 'title' | 'date';
 type SortDirection = 'asc' | 'desc';
 
 // Header component similar to ChatHeader
-function ChatsPageHeader({ onBack, onNewChat }: { onBack: () => void; onNewChat: () => void }) {
+function ChatsPageHeader({ onBack }: { onBack: () => void }) {
   return (
     <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
       <div className="px-4">
-        <div className="flex items-center justify-between h-12">
+        <div className="flex items-center h-12">
           {/* Left side - Back button and title */}
           <div className="flex items-center gap-2">
             <button
@@ -44,15 +44,6 @@ function ChatsPageHeader({ onBack, onNewChat }: { onBack: () => void; onNewChat:
               <span className="text-sm font-medium text-[var(--fg-primary)]">Recent Chats</span>
             </div>
           </div>
-
-          {/* Right side - New Chat button */}
-          <button
-            onClick={onNewChat}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] text-[var(--fg-primary)] border border-[var(--border-secondary)] transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />
-            <span>New Chat</span>
-          </button>
         </div>
       </div>
     </div>

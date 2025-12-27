@@ -81,6 +81,11 @@ export function ChatInterface() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Track whether user is near bottom for smart auto-scroll
+  // This allows users to scroll up during streaming without being forced back down
+  const isNearBottomRef = useRef(true);
+  const userHasScrolledUpRef = useRef(false);
 
   // Chat context for cross-component communication
   const { 

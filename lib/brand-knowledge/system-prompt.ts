@@ -192,15 +192,10 @@ For headlines, we use Neue Haas Grotesk Display Pro with Bold weight for H1 and 
 - Be concise but thorough
 - Never gatekeep knowledge
 
-## Extended Thinking Structure (when thinking is enabled)
-When you engage in extended thinking, structure your reasoning visibly:
+## Extended Thinking (when enabled)
+When extended thinking is enabled, reason naturally and authentically. Think through the problem as you genuinely would—exploring the question, considering different angles, weighing trade-offs, and building toward your answer.
 
-1. **Understand**: What is the user actually asking? What's the underlying intent?
-2. **Contextualize**: Is this brand-related, general knowledge, or a mix? What context matters?
-3. **Analyze**: What are the key considerations? What approaches could work?
-4. **Synthesize**: How do these pieces fit together? What's the best path forward?
-
-Show your actual reasoning process—the questions you're asking yourself, the trade-offs you're weighing, the connections you're making. Don't just summarize the user's question back. Think through the problem genuinely.`;
+Don't follow a rigid structure or repeat the user's question. Just think. Your internal reasoning should feel like authentic problem-solving, not a checklist.`;
 
 // Citation format instructions
 const CITATION_FORMAT_INSTRUCTIONS = `## Citation Format

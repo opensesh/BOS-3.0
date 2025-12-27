@@ -284,14 +284,18 @@ async function streamWithAnthropicNative(
           controller.enqueue(sse.encode({ type: 'text', content: text }));
         });
 
-        // Handle content blocks (thinking, tool use) via raw events
-        stream.on('contentBlock', (block: { type: string; id?: string; name?: string; thinking?: string }) => {
-          if (block.type === 'thinking' && block.thinking) {
-            controller.enqueue(sse.encode({ 
-              type: 'thinking', 
-              content: block.thinking 
-            }));
-          } else if (block.type === 'tool_use' && block.id && block.name) {
+        // Stream thinking deltas in real-time using the official SDK event
+        // This provides word-by-word streaming for Extended Thinking content
+        stream.on('thinking', (thinkingDelta: string) => {
+          controller.enqueue(sse.encode({ 
+            type: 'thinking', 
+            content: thinkingDelta 
+          }));
+        });
+
+        // Handle content blocks (tool use start)
+        stream.on('contentBlock', (block) => {
+          if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
             currentToolUse = { id: block.id, name: block.name, input: '' };
             controller.enqueue(sse.encode({ 
               type: 'tool_use', 
@@ -441,10 +445,9 @@ async function streamWithAnthropicNative(
             controller.enqueue(sse.encode({ type: 'text', content: text }));
           });
 
-          continueStream.on('contentBlock', (block: { type: string; thinking?: string }) => {
-            if (block.type === 'thinking' && block.thinking) {
-              controller.enqueue(sse.encode({ type: 'thinking', content: block.thinking }));
-            }
+          // Stream thinking deltas in real-time for continuation response
+          continueStream.on('thinking', (thinkingDelta: string) => {
+            controller.enqueue(sse.encode({ type: 'thinking', content: thinkingDelta }));
           });
 
           // Wait for the continuation to complete

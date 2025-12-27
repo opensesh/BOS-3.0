@@ -86,6 +86,7 @@ export function InlineStreamingDisplay({
           <ThinkingBubble
             thinking={thinking}
             isThinking={isActivelyThinking}
+            isStreaming={isStreaming}
             summary={summary}
           />
         </div>

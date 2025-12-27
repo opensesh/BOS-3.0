@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronUp, ChevronDown, Clock, Lightbulb, Search, Sparkles, Target } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clock } from 'lucide-react';
 
 interface ThinkingBubbleProps {
   /** The thinking content to display */
   thinking?: string;
-  /** Whether thinking is still in progress (streaming) */
+  /** Whether thinking is actively in progress (no text content yet) */
   isThinking?: boolean;
+  /** Whether the response is still streaming */
+  isStreaming?: boolean;
   /** Whether to start collapsed (default: true) */
   defaultCollapsed?: boolean;
   /** Summary of the thinking content (provided after LLM summarization) */
@@ -16,88 +18,18 @@ interface ThinkingBubbleProps {
 }
 
 /**
- * Thinking phase types for structured display
- */
-type ThinkingPhase = 'understand' | 'contextualize' | 'analyze' | 'synthesize' | 'general';
-
-interface ThinkingSection {
-  phase: ThinkingPhase;
-  content: string;
-}
-
-/**
- * Phase metadata for visual styling
- */
-const PHASE_CONFIG: Record<ThinkingPhase, { label: string; icon: typeof Lightbulb; color: string }> = {
-  understand: { label: 'Understanding', icon: Target, color: 'text-blue-500' },
-  contextualize: { label: 'Contextualizing', icon: Search, color: 'text-purple-500' },
-  analyze: { label: 'Analyzing', icon: Lightbulb, color: 'text-amber-500' },
-  synthesize: { label: 'Synthesizing', icon: Sparkles, color: 'text-emerald-500' },
-  general: { label: 'Reasoning', icon: Lightbulb, color: 'text-[var(--fg-tertiary)]' },
-};
-
-/**
- * Parse thinking content into structured sections based on phase markers
- * Looks for patterns like "**Understand**:", "1. **Understand**:", or natural language cues
- */
-function parseThinkingSections(thinking: string): ThinkingSection[] {
-  if (!thinking) return [];
-  
-  const sections: ThinkingSection[] = [];
-  
-  // Pattern to match structured phase markers (e.g., "**Understand**:", "1. **Understand**:")
-  const phasePattern = /(?:^|\n)(?:\d+\.\s*)?\*?\*?(Understand|Contextualize|Analyze|Synthesize)\*?\*?:?\s*/gi;
-  
-  // Check if content has structured phases
-  const matches = thinking.match(phasePattern);
-  
-  if (matches && matches.length >= 2) {
-    // Content has structured phases - parse them
-    let lastIndex = 0;
-    let lastPhase: ThinkingPhase = 'general';
-    
-    const regex = /(?:^|\n)(?:\d+\.\s*)?\*?\*?(Understand|Contextualize|Analyze|Synthesize)\*?\*?:?\s*/gi;
-    let match;
-    
-    while ((match = regex.exec(thinking)) !== null) {
-      // Save content before this match
-      if (match.index > lastIndex) {
-        const content = thinking.slice(lastIndex, match.index).trim();
-        if (content) {
-          sections.push({ phase: lastPhase, content });
-        }
-      }
-      
-      // Update phase for next section
-      lastPhase = match[1].toLowerCase() as ThinkingPhase;
-      lastIndex = match.index + match[0].length;
-    }
-    
-    // Add remaining content
-    if (lastIndex < thinking.length) {
-      const content = thinking.slice(lastIndex).trim();
-      if (content) {
-        sections.push({ phase: lastPhase, content });
-      }
-    }
-  } else {
-    // No structured phases - return as single general section
-    sections.push({ phase: 'general', content: thinking });
-  }
-  
-  return sections;
-}
-
-/**
  * ThinkingBubble Component
  * 
- * A Claude-inspired collapsible component that displays the AI's reasoning process.
+ * A collapsible component that displays the AI's natural reasoning process.
  * 
  * **Features:**
  * - Live counting timer during thinking phase
- * - "Thought process" label (no animated text)
+ * - Real-time streaming of reasoning content (word-by-word)
  * - Fixed header with scrollable content
  * - Summary display when collapsed (after thinking completes)
+ * 
+ * Note: This component shows raw, natural reasoning without artificial structure.
+ * The AI's thinking flows organically without enforced phases.
  */
 export function ThinkingBubble({
   thinking,
@@ -109,67 +41,69 @@ export function ThinkingBubble({
   const contentRef = useRef<HTMLDivElement>(null);
   const [hasOverflow, setHasOverflow] = useState(false);
   
-  // Live timer state - actively counts while we have thinking content and streaming
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [finalDuration, setFinalDuration] = useState<number | null>(null);
+  // Timer state
+  const [displaySeconds, setDisplaySeconds] = useState(0);
   const timerStartRef = useRef<number | null>(null);
-  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const hasStartedTimerRef = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wasThinkingRef = useRef(false);
 
   // Track if we have thinking content
   const hasThinking = Boolean(thinking && thinking.length > 0);
 
-  // Start timer when thinking content first appears, stop when isThinking becomes false
+  // Timer effect - runs the counting interval while isThinking is true
   useEffect(() => {
-    // Start timer when thinking content first appears (regardless of isThinking prop)
-    if (hasThinking && !hasStartedTimerRef.current) {
-      hasStartedTimerRef.current = true;
-      timerStartRef.current = Date.now();
-      setElapsedSeconds(0);
-      setFinalDuration(null);
+    // Start timer when isThinking becomes true
+    if (isThinking && !intervalRef.current) {
+      // Set start time if not already set
+      if (!timerStartRef.current) {
+        timerStartRef.current = Date.now();
+        setDisplaySeconds(0);
+      }
+      wasThinkingRef.current = true;
       
-      // Update every 100ms for smoother counting
-      timerIntervalRef.current = setInterval(() => {
+      // Start interval to update display every 100ms
+      intervalRef.current = setInterval(() => {
         if (timerStartRef.current) {
           const elapsed = Math.floor((Date.now() - timerStartRef.current) / 1000);
-          setElapsedSeconds(elapsed);
+          setDisplaySeconds(elapsed);
         }
       }, 100);
     }
     
-    // Stop timer when thinking is no longer active (streaming ended or moved to text phase)
-    if (!isThinking && timerStartRef.current !== null && hasStartedTimerRef.current) {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
+    // Stop timer when isThinking becomes false
+    if (!isThinking && intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      
+      // Calculate final elapsed time
+      if (timerStartRef.current) {
+        const finalElapsed = Math.floor((Date.now() - timerStartRef.current) / 1000);
+        setDisplaySeconds(finalElapsed);
+        timerStartRef.current = null;
       }
-      const duration = Math.floor((Date.now() - timerStartRef.current) / 1000);
-      setFinalDuration(duration);
-      timerStartRef.current = null;
     }
 
     // Cleanup on unmount
     return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [hasThinking, isThinking]);
+  }, [isThinking]);
   
-  // Reset timer state when thinking content is cleared (new message)
+  // Reset timer when thinking content is cleared (new conversation)
   useEffect(() => {
-    if (!hasThinking) {
-      hasStartedTimerRef.current = false;
-      setElapsedSeconds(0);
-      setFinalDuration(null);
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
-      }
+    if (!hasThinking && !isThinking) {
+      setDisplaySeconds(0);
       timerStartRef.current = null;
+      wasThinkingRef.current = false;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
-  }, [hasThinking]);
+  }, [hasThinking, isThinking]);
 
   // Check if content overflows
   useEffect(() => {
@@ -190,14 +124,6 @@ export function ThinkingBubble({
     return null;
   }
 
-  // Parse thinking into structured sections
-  const thinkingSections = useMemo(() => {
-    return parseThinkingSections(thinking || '');
-  }, [thinking]);
-  
-  // Check if we have structured phases (more than just 'general')
-  const hasStructuredPhases = thinkingSections.some(s => s.phase !== 'general');
-
   // Format duration display
   const formatDuration = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -206,8 +132,8 @@ export function ThinkingBubble({
     return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
   };
 
-  // Display the current elapsed time OR the final duration
-  const displayDuration = isThinking ? elapsedSeconds : (finalDuration ?? elapsedSeconds);
+  // Display the current elapsed seconds
+  const displayDuration = displaySeconds;
 
   return (
     <motion.div
@@ -222,15 +148,14 @@ export function ThinkingBubble({
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)]/50 transition-colors group sticky top-0 bg-[var(--bg-secondary)]/30 backdrop-blur-sm z-10"
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Label text - always shows "Thought process" or summary 
-              Note: DotLoader is shown separately below via InlineStreamingDisplay */}
+          {/* Label text - shows "Reasoning" or summary */}
           {summary && !isThinking ? (
             <span className="text-sm text-[var(--fg-secondary)] truncate">
               {summary}
             </span>
           ) : (
             <span className="text-sm text-[var(--fg-secondary)]">
-              Thought process
+              Reasoning
             </span>
           )}
         </div>
@@ -272,43 +197,11 @@ export function ThinkingBubble({
                 className="px-4 py-3 text-[13px] text-[var(--fg-tertiary)] leading-relaxed max-h-[300px] overflow-y-auto"
               >
                 {hasThinking ? (
-                  <div className="space-y-3">
-                    {hasStructuredPhases ? (
-                      // Structured phase display with visual hierarchy
-                      thinkingSections.map((section, idx) => {
-                        const config = PHASE_CONFIG[section.phase];
-                        const Icon = config.icon;
-                        
-                        return (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, x: -4 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            className="relative"
-                          >
-                            {/* Phase header */}
-                            {section.phase !== 'general' && (
-                              <div className={`flex items-center gap-1.5 mb-1.5 ${config.color}`}>
-                                <Icon className="w-3.5 h-3.5" />
-                                <span className="text-xs font-medium uppercase tracking-wide">
-                                  {config.label}
-                                </span>
-                              </div>
-                            )}
-                            {/* Phase content */}
-                            <div className="font-mono whitespace-pre-wrap text-[var(--fg-tertiary)] pl-0.5">
-                              {section.content}
-                            </div>
-                          </motion.div>
-                        );
-                      })
-                    ) : (
-                      // Unstructured thinking - show as flowing text
-                      <div className="font-mono whitespace-pre-wrap">
-                        {thinking}
-                      </div>
-                    )}
+                  <div>
+                    {/* Natural flowing thinking content - no artificial structure */}
+                    <div className="font-mono whitespace-pre-wrap">
+                      {thinking}
+                    </div>
                     
                     {/* Streaming cursor */}
                     {isThinking && (
@@ -369,7 +262,23 @@ export function ThinkingIndicatorCompact({
   return (
     <div className="flex items-center gap-2">
       {isThinking ? (
-        <DotLoaderOnly className="scale-75 origin-left" />
+        <div className="flex items-center gap-1">
+          <motion.div
+            className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1, repeat: Infinity }}
+          />
+          <motion.div
+            className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1, repeat: Infinity, delay: 0.15 }}
+          />
+          <motion.div
+            className="w-1.5 h-1.5 bg-[var(--fg-brand-primary)] rounded-full"
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1, repeat: Infinity, delay: 0.3 }}
+          />
+        </div>
       ) : (
         <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)]">
           <Clock className="w-3 h-3" />

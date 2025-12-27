@@ -719,6 +719,7 @@ export function ChatInterface() {
               imagesCount={allImages.length}
               threadTitle={threadTitle}
               onBack={resetChat}
+              isStreaming={isLoading}
             />
 
             {/* Scrollable content */}

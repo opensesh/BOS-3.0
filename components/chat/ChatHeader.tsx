@@ -18,6 +18,8 @@ interface ChatHeaderProps {
   imagesCount?: number;
   threadTitle?: string;
   onBack?: () => void;
+  /** Whether the response is still streaming - hides counts during streaming */
+  isStreaming?: boolean;
 }
 
 export function ChatHeader({
@@ -29,6 +31,7 @@ export function ChatHeader({
   imagesCount = 0,
   threadTitle = 'New Thread',
   onBack,
+  isStreaming = false,
 }: ChatHeaderProps) {
   const tabs = [
     {
@@ -95,8 +98,8 @@ export function ChatHeader({
                   >
                     {Icon && <Icon className={`w-4 h-4 ${!isAvailable ? 'opacity-50' : ''}`} />}
                     <span>{tab.label}</span>
-                    {/* Count badge for available tabs with items */}
-                    {isAvailable && tab.count !== undefined && tab.count > 0 && (
+                    {/* Count badge - only shown when NOT streaming to avoid distraction */}
+                    {!isStreaming && isAvailable && tab.count !== undefined && tab.count > 0 && (
                       <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]">
                         {tab.count}
                       </span>

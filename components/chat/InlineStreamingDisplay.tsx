@@ -17,16 +17,16 @@ interface InlineStreamingDisplayProps {
  * InlineStreamingDisplay Component
  * 
  * Simplified streaming display:
- * - ALWAYS shows DotFlow animation first when streaming starts
  * - Shows ThinkingBubble when extended thinking content is present
+ * - Shows DotFlow animation at the BOTTOM during ALL streaming (trails the text)
  * - Fetches summary from LLM when thinking completes
  * - NO tool indicators (removed entirely)
  * 
  * Flow:
- * 1. Streaming starts → DotFlow animation
- * 2. If extended thinking ON → ThinkingBubble replaces DotFlow
- * 3. Thinking completes → Fetch summary for collapsed header
- * 4. Text arrives → Display fades out
+ * 1. Streaming starts → DotFlow animation at bottom
+ * 2. Text arrives → DotFlow stays at bottom, trailing the text
+ * 3. If extended thinking ON → ThinkingBubble shown BEFORE content
+ * 4. Streaming ends → DotFlow disappears
  */
 export function InlineStreamingDisplay({
   thinking,
@@ -43,10 +43,6 @@ export function InlineStreamingDisplay({
 
   // Fetch summary when thinking completes (transition from thinking to text)
   useEffect(() => {
-    // Only fetch if:
-    // 1. We have thinking content
-    // 2. We're no longer actively thinking (text has started or streaming ended)
-    // 3. We haven't already fetched a summary for this thinking content
     if (
       hasThinking && 
       !isActivelyThinking && 
@@ -56,7 +52,6 @@ export function InlineStreamingDisplay({
       lastThinkingRef.current = thinking;
       setHasFetchedSummary(true);
       
-      // Fetch summary asynchronously
       fetch('/api/summarize-thinking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,32 +78,28 @@ export function InlineStreamingDisplay({
     }
   }, [hasThinking]);
 
-  // If we have thinking content, show ThinkingBubble
-  // This handles both active thinking AND completed thinking (for review)
-  if (hasThinking) {
-    return (
-      <div className="py-2">
-        <ThinkingBubble
-          thinking={thinking}
-          isThinking={isActivelyThinking}
-          summary={summary}
-        />
-      </div>
-    );
-  }
+  return (
+    <>
+      {/* ThinkingBubble - shown when extended thinking content is present */}
+      {hasThinking && (
+        <div className="py-2">
+          <ThinkingBubble
+            thinking={thinking}
+            isThinking={isActivelyThinking}
+            summary={summary}
+          />
+        </div>
+      )}
 
-  // If streaming with no content yet, show DotFlow animation
-  // This is the "trailblazer" that leads all responses
-  if (isStreaming && !hasContent) {
-    return (
-      <div className="py-2">
-        <ThinkingDotFlow />
-      </div>
-    );
-  }
-
-  // Nothing to show - text is streaming or complete
-  return null;
+      {/* DotFlow animation - shown at the BOTTOM during ALL streaming
+          This is the "trailblazer" that stays visible while text streams */}
+      {isStreaming && (
+        <div className="py-2">
+          <ThinkingDotFlow />
+        </div>
+      )}
+    </>
+  );
 }
 
 /**

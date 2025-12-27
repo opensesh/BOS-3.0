@@ -49,8 +49,8 @@ export function ThinkingBubble({
   summary,
   isGeneratingSummary = false,
 }: ThinkingBubbleProps) {
-  // Start expanded during active thinking, collapse after completion
-  const [isExpanded, setIsExpanded] = useState(!defaultCollapsed || isThinking);
+  // Start collapsed - user can expand if they want to see the thinking content
+  const [isExpanded, setIsExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [hasOverflow, setHasOverflow] = useState(false);
   
@@ -73,15 +73,12 @@ export function ThinkingBubble({
   // Thinking is "complete" when we have content but streaming ended
   const isThinkingComplete = hasThinking && !isStreaming;
 
-  // Auto-expand when actively thinking, collapse when complete
+  // Auto-collapse when thinking completes and we have a summary
   useEffect(() => {
-    if (isThinking) {
-      setIsExpanded(true);
-    } else if (isThinkingComplete && summary) {
-      // Auto-collapse once we have a summary
+    if (isThinkingComplete && summary) {
       setIsExpanded(false);
     }
-  }, [isThinking, isThinkingComplete, summary]);
+  }, [isThinkingComplete, summary]);
 
   // Timer effect - start when thinking appears, stop when streaming ends
   useEffect(() => {
@@ -234,15 +231,14 @@ export function ThinkingBubble({
                 ref={contentRef}
                 className="px-4 py-3 text-[13px] text-[var(--fg-tertiary)] leading-relaxed max-h-[300px] overflow-y-auto"
               >
-                {/* Show content if we have actual thinking text */}
-                {thinking && thinking.length > 0 ? (
+                {/* Thinking content - inherits Neue Haas Grotesk from body */}
+                {thinking && thinking.length > 0 && (
                   <div>
-                    {/* Natural flowing thinking content - no artificial structure */}
-                    <div className="font-mono whitespace-pre-wrap">
+                    <div className="whitespace-pre-wrap">
                       {thinking}
                     </div>
                     
-                    {/* Streaming cursor */}
+                    {/* Streaming cursor while actively thinking */}
                     {isThinking && (
                       <motion.span
                         className="inline-block w-[2px] h-4 bg-[var(--fg-tertiary)] ml-0.5 align-middle"
@@ -250,26 +246,6 @@ export function ThinkingBubble({
                         transition={{ duration: 0.5, repeat: Infinity }}
                       />
                     )}
-                  </div>
-                ) : (
-                  /* Placeholder while waiting for first thinking chunk - shows when thinking 
-                     is started (empty string) but no content has arrived yet */
-                  <div className="flex items-center gap-2 text-[var(--fg-tertiary)]/60">
-                    <motion.div
-                      className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    />
-                    <motion.div
-                      className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                    />
-                    <motion.div
-                      className="w-1.5 h-1.5 bg-[var(--fg-tertiary)] rounded-full"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                    />
                   </div>
                 )}
               </div>

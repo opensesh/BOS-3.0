@@ -6,6 +6,8 @@ import { ChatProvider } from '@/lib/chat-context';
 import { MobileMenuProvider } from '@/lib/mobile-menu-context';
 import { BreadcrumbProvider } from '@/lib/breadcrumb-context';
 import { SidebarProvider } from '@/lib/sidebar-context';
+import { SplashProvider } from '@/lib/splash-context';
+import { DailySplash } from '@/components/DailySplash';
 import { VercelAnalytics } from '@/components/VercelAnalytics';
 
 const neueHaas = localFont({
@@ -51,7 +53,10 @@ export default function RootLayout({
             <MobileMenuProvider>
               <BreadcrumbProvider>
                 <SidebarProvider>
-                  {children}
+                  <SplashProvider>
+                    {children}
+                    <DailySplash />
+                  </SplashProvider>
                 </SidebarProvider>
               </BreadcrumbProvider>
             </MobileMenuProvider>

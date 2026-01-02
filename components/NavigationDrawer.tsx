@@ -20,6 +20,10 @@ import {
   Zap,
   Layers,
   Shapes,
+  Megaphone,
+  Sparkles,
+  Lightbulb,
+  ArrowRight,
 } from 'lucide-react';
 import { useChatContext } from '@/lib/chat-context';
 import { useSpaces } from '@/hooks/useSpaces';
@@ -41,6 +45,38 @@ const brandHubNavItems = [
   { label: 'Guidelines', href: '/brand-hub/guidelines', icon: FileText },
 ];
 
+// Quick actions that trigger chat prompts
+const quickActions = [
+  {
+    id: 'social-post',
+    icon: Megaphone,
+    title: 'Create a post',
+    description: 'Social media copy',
+    prompt: 'Help me create a social media post. I want to announce [topic/product] and need engaging copy that fits my brand voice.',
+  },
+  {
+    id: 'campaign',
+    icon: Sparkles,
+    title: 'Plan a campaign',
+    description: 'Content strategy',
+    prompt: 'Help me plan a content campaign for [goal/product]. I need ideas for posts, timing, and messaging that align with my brand.',
+  },
+  {
+    id: 'brainstorm',
+    icon: Lightbulb,
+    title: 'Brainstorm ideas',
+    description: 'Creative concepts',
+    prompt: 'Help me brainstorm creative ideas for [campaign/project]. I want fresh concepts that align with my brand values.',
+  },
+  {
+    id: 'get-feedback',
+    icon: MessageSquare,
+    title: 'Get feedback',
+    description: 'Brand fit review',
+    prompt: 'Review this and tell me if it matches my brand guidelines. Suggest improvements to make it more on-brand: [paste your content]',
+  },
+];
+
 export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationDrawerProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -48,7 +84,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
   const [position, setPosition] = useState({ top: 0, left: 0, height: 0 });
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const onCloseRef = useRef(onClose);
-  const { chatHistory, loadSession, projects } = useChatContext();
+  const { chatHistory, loadSession, projects, triggerChatReset } = useChatContext();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
 
   // Handle clicking on a recent chat - load the session and navigate to home
@@ -59,6 +95,13 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
     }
     onClose();
   }, [loadSession, pathname, router, onClose]);
+
+  // Handle quick action click - trigger chat with prompt
+  const handleQuickAction = useCallback((prompt: string) => {
+    triggerChatReset();
+    router.push(`/?q=${encodeURIComponent(prompt)}`);
+    onClose();
+  }, [triggerChatReset, router, onClose]);
 
   // Keep onClose ref up to date without triggering re-renders
   useEffect(() => {
@@ -134,6 +177,115 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
 
   const renderContent = () => {
     switch (item) {
+      case 'RecentChats':
+        return (
+          <motion.div 
+            className="py-3"
+            variants={staggerContainerFast}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="px-2">
+              <motion.div variants={fadeInUp} className="mb-2">
+                <div className="flex items-center justify-between px-2 pt-[14px] pb-2">
+                  <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Recent Chats</h3>
+                  <Link 
+                    href="/chats" 
+                    onClick={onClose}
+                    className="text-xs text-[var(--fg-brand-primary)] hover:underline flex items-center gap-1"
+                  >
+                    View all
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </motion.div>
+
+              <div className="space-y-1">
+                {chatHistory.length > 0 ? (
+                  chatHistory.slice(0, 8).map((chat, index) => (
+                    <motion.button
+                      key={chat.id}
+                      variants={fadeInUp}
+                      custom={index}
+                      onClick={() => handleChatClick(chat.id)}
+                      className="w-full text-left px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
+                    >
+                      <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{chat.title}</span>
+                    </motion.button>
+                  ))
+                ) : (
+                  <p className="text-xs text-[var(--fg-quaternary)] px-3 py-2">
+                    No recent chats yet
+                  </p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        );
+
+      case 'Projects':
+        return (
+          <motion.div 
+            className="py-3"
+            variants={staggerContainerFast}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="px-2">
+              <motion.div variants={fadeInUp} className="mb-2">
+                <div className="flex items-center justify-between px-2 pt-[14px] pb-2">
+                  <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Projects</h3>
+                  <Link 
+                    href="/projects" 
+                    onClick={onClose}
+                    className="text-xs text-[var(--fg-brand-primary)] hover:underline flex items-center gap-1"
+                  >
+                    View all
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </motion.div>
+
+              <div className="space-y-1">
+                {projects.length > 0 ? (
+                  projects.slice(0, 8).map((project, index) => (
+                    <motion.div key={project.id} variants={fadeInUp} custom={index}>
+                      <Link
+                        href={`/projects/${project.id}`}
+                        onClick={onClose}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+                      >
+                        <div
+                          className="w-3 h-3 rounded-sm flex-shrink-0"
+                          style={{ backgroundColor: project.color }}
+                        />
+                        <span className="truncate">{project.name}</span>
+                      </Link>
+                    </motion.div>
+                  ))
+                ) : (
+                  <p className="text-xs text-[var(--fg-quaternary)] px-3 py-2">
+                    No projects yet
+                  </p>
+                )}
+              </div>
+
+              {/* Create new project button */}
+              <motion.div variants={fadeInUp} className="mt-3 pt-3 border-t border-[var(--border-secondary)]">
+                <Link
+                  href="/projects"
+                  onClick={onClose}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+                >
+                  <FolderPlus className="w-4 h-4" />
+                  <span>Create new project</span>
+                </Link>
+              </motion.div>
+            </div>
+          </motion.div>
+        );
+
       case 'Spaces':
         return (
           <motion.div 
@@ -222,51 +374,65 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
                 <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Home</h3>
               </motion.div>
 
               {/* Projects section */}
-              {projects.length > 0 && (
-                <motion.div variants={fadeInUp} className="mb-4">
-                  <div className="flex items-center justify-between mb-2 px-2">
-                    <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Projects</h4>
-                    <button className="p-1 rounded hover:bg-[var(--bg-tertiary)] transition-colors">
-                      <FolderPlus className="w-3 h-3 text-[var(--fg-tertiary)]" />
-                    </button>
-                  </div>
-                  <div className="space-y-1">
-                    {projects.slice(0, 5).map((project, index) => (
-                      <motion.button
-                        key={project.id}
-                        variants={fadeInUp}
-                        custom={index}
-                        className="w-full text-left px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
-                      >
-                        <div
-                          className="w-3 h-3 rounded-sm flex-shrink-0"
-                          style={{ backgroundColor: project.color }}
-                        />
-                        <span className="truncate">{project.name}</span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+              <motion.div variants={fadeInUp} className="mb-4">
+                <div className="flex items-center justify-between mb-2 px-2">
+                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Projects</h4>
+                  <Link 
+                    href="/projects" 
+                    onClick={onClose}
+                    className="text-[10px] text-[var(--fg-brand-primary)] hover:underline flex items-center gap-0.5"
+                  >
+                    View all
+                    <ArrowRight className="w-2.5 h-2.5" />
+                  </Link>
+                </div>
+                <div className="space-y-1">
+                  {projects.length > 0 ? (
+                    projects.slice(0, 5).map((project, index) => (
+                      <motion.div key={project.id} variants={fadeInUp} custom={index}>
+                        <Link
+                          href={`/projects/${project.id}`}
+                          onClick={onClose}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+                        >
+                          <div
+                            className="w-3 h-3 rounded-sm flex-shrink-0"
+                            style={{ backgroundColor: project.color }}
+                          />
+                          <span className="truncate">{project.name}</span>
+                        </Link>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-[var(--fg-quaternary)] px-3 py-1">
+                      No projects yet
+                    </p>
+                  )}
+                </div>
+              </motion.div>
               
               {/* Recent chats section */}
               <motion.div variants={fadeInUp} className="mb-4">
                 <div className="flex items-center justify-between mb-2 px-2">
                   <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Recent Chats</h4>
-                  <button className="p-1 rounded hover:bg-[var(--bg-tertiary)] transition-colors">
-                    <History className="w-3 h-3 text-[var(--fg-tertiary)]" />
-                  </button>
+                  <Link 
+                    href="/chats" 
+                    onClick={onClose}
+                    className="text-[10px] text-[var(--fg-brand-primary)] hover:underline flex items-center gap-0.5"
+                  >
+                    View all
+                    <ArrowRight className="w-2.5 h-2.5" />
+                  </Link>
                 </div>
                 <div className="space-y-1">
                   {chatHistory.length > 0 ? (
-                    chatHistory.map((chat, index) => (
+                    chatHistory.slice(0, 5).map((chat, index) => (
                       <motion.button
                         key={chat.id}
                         variants={fadeInUp}
@@ -279,16 +445,40 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       </motion.button>
                     ))
                   ) : (
-                    <p className="text-xs text-[var(--fg-quaternary)] px-3 py-2">
+                    <p className="text-xs text-[var(--fg-quaternary)] px-3 py-1">
                       No recent chats yet
                     </p>
                   )}
                 </div>
-                {chatHistory.length > 0 && (
-                  <button className="mt-2 text-xs text-[var(--fg-brand-primary)] hover:underline px-3">
-                    View All
-                  </button>
-                )}
+              </motion.div>
+
+              {/* Quick Actions section */}
+              <motion.div variants={fadeInUp} className="pt-3 border-t border-[var(--border-secondary)]">
+                <div className="flex items-center justify-between mb-2 px-2">
+                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Quick Actions</h4>
+                </div>
+                <div className="space-y-1">
+                  {quickActions.map((action, index) => {
+                    const Icon = action.icon;
+                    return (
+                      <motion.button
+                        key={action.id}
+                        variants={fadeInUp}
+                        custom={index}
+                        onClick={() => handleQuickAction(action.prompt)}
+                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-3 group"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-[var(--bg-tertiary)] group-hover:bg-[var(--bg-quaternary)] flex items-center justify-center flex-shrink-0 transition-colors">
+                          <Icon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-[var(--fg-primary)] truncate">{action.title}</div>
+                          <div className="text-xs text-[var(--fg-tertiary)] truncate">{action.description}</div>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
               </motion.div>
             </div>
           </motion.div>

@@ -779,29 +779,40 @@ export function Sidebar() {
   };
 
   // Unified flyout handlers for collapsed mode - mutually exclusive
+  // Also handles drawer mode for Recent Chats and Projects
   const openFlyout = (type: FlyoutType, event: React.MouseEvent) => {
-    if (!shouldShowFlyout) return;
-    
-    // Clear any pending timeout
-    if (flyoutTimeoutRef.current) {
-      clearTimeout(flyoutTimeoutRef.current);
-      flyoutTimeoutRef.current = null;
+    // For collapsed mode - use flyout
+    if (shouldShowFlyout) {
+      // Clear any pending timeout
+      if (flyoutTimeoutRef.current) {
+        clearTimeout(flyoutTimeoutRef.current);
+        flyoutTimeoutRef.current = null;
+      }
+      
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      setFlyoutAnchorRect(rect);
+      setActiveFlyout(type);
     }
     
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    setFlyoutAnchorRect(rect);
-    setActiveFlyout(type);
+    // For hover mode - use NavigationDrawer
+    if (shouldShowDrawer && type) {
+      // Map flyout type to drawer item name
+      const drawerItemName = type === 'recentChats' ? 'RecentChats' : 'Projects';
+      setDrawerItem(drawerItemName);
+      setIsDrawerOpen(true);
+    }
   };
 
   const handleFlyoutItemMouseLeave = () => {
-    if (!shouldShowFlyout) return;
-    
-    flyoutTimeoutRef.current = setTimeout(() => {
-      if (!isFlyoutContentHovered) {
-        setActiveFlyout(null);
-        setFlyoutAnchorRect(null);
-      }
-    }, 300);
+    if (shouldShowFlyout) {
+      flyoutTimeoutRef.current = setTimeout(() => {
+        if (!isFlyoutContentHovered) {
+          setActiveFlyout(null);
+          setFlyoutAnchorRect(null);
+        }
+      }, 300);
+    }
+    // Note: NavigationDrawer handles its own mouse leave behavior
   };
 
   const handleFlyoutContentMouseEnter = () => {

@@ -605,7 +605,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   </div>
                 ) : (
                   <div className="py-8 text-center">
-                    <Sparkles className="w-8 h-8 text-[var(--fg-quaternary)] mx-auto mb-3" />
                     <p className="text-sm text-[var(--fg-tertiary)]">Start typing to search</p>
                     <p className="text-xs text-[var(--fg-quaternary)] mt-1">
                       Search pages, recent chats, logos, and more

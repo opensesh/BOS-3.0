@@ -237,16 +237,12 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
           <motion.button
             onClick={handlePrev}
             disabled={currentIndex <= 0}
-            className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center ${
+            className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-colors duration-150 ${
               currentIndex > 0 
-                ? 'cursor-pointer' 
+                ? 'cursor-pointer hover:bg-[var(--bg-tertiary)] hover:border-[var(--border-brand)]' 
                 : 'opacity-30 cursor-not-allowed'
             }`}
-            whileHover={currentIndex > 0 ? { 
-              scale: 1.05,
-              borderColor: 'var(--border-brand)',
-              backgroundColor: 'var(--bg-tertiary)',
-            } : {}}
+            whileHover={currentIndex > 0 ? { scale: 1.05 } : {}}
             whileTap={currentIndex > 0 ? { scale: 0.95 } : {}}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             aria-label="Previous slide"
@@ -308,16 +304,12 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
           <motion.button
             onClick={handleNext}
             disabled={currentIndex >= maxIndex}
-            className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center ${
+            className={`shrink-0 w-9 h-9 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center transition-colors duration-150 ${
               currentIndex < maxIndex 
-                ? 'cursor-pointer' 
+                ? 'cursor-pointer hover:bg-[var(--bg-tertiary)] hover:border-[var(--border-brand)]' 
                 : 'opacity-30 cursor-not-allowed'
             }`}
-            whileHover={currentIndex < maxIndex ? { 
-              scale: 1.05,
-              borderColor: 'var(--border-brand)',
-              backgroundColor: 'var(--bg-tertiary)',
-            } : {}}
+            whileHover={currentIndex < maxIndex ? { scale: 1.05 } : {}}
             whileTap={currentIndex < maxIndex ? { scale: 0.95 } : {}}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             aria-label="Next slide"
@@ -339,19 +331,15 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
               role="tab"
               aria-selected={idx === currentIndex}
               aria-label={`Go to slide ${idx + 1} of ${maxIndex + 1}`}
-              className="h-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2"
+              className={`h-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-500)] focus-visible:ring-offset-2 transition-colors duration-150 ${
+                idx === currentIndex 
+                  ? 'bg-[var(--fg-brand-primary)]' 
+                  : 'bg-[var(--border-primary)] hover:bg-[var(--fg-tertiary)]'
+              }`}
               animate={{
                 width: idx === currentIndex ? 20 : 6,
-                backgroundColor: idx === currentIndex 
-                  ? 'var(--color-brand-500)' 
-                  : 'var(--border-primary)',
               }}
-              whileHover={{
-                backgroundColor: idx === currentIndex 
-                  ? 'var(--color-brand-500)' 
-                  : 'var(--fg-tertiary)',
-                scale: 1.1,
-              }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               transition={{
                 type: 'spring',

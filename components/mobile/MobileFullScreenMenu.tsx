@@ -198,13 +198,13 @@ export function MobileFullScreenMenu() {
               </div>
             </motion.div>
 
-            {/* Chat Actions - New Chat + Recent Chats */}
+            {/* Chat Actions - New Chat + Recent Chats + Projects */}
             <motion.div variants={itemVariants} className="px-4 py-4 space-y-2 border-t border-[var(--border-secondary)]">
               {/* New Chat - Primary Button */}
               <button
                 onClick={handleNewChat}
                 className="
-                  w-full flex items-center justify-center gap-2
+                  w-full flex items-center gap-3
                   py-3.5 px-4
                   bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)]
                   active:bg-[var(--bg-quaternary)]
@@ -223,7 +223,7 @@ export function MobileFullScreenMenu() {
                 href="/chats"
                 onClick={handleNavClick}
                 className="
-                  w-full flex items-center justify-center gap-2
+                  w-full flex items-center gap-3
                   py-3.5 px-4
                   bg-transparent hover:bg-[var(--bg-tertiary)]
                   active:bg-[var(--bg-tertiary)]
@@ -245,7 +245,7 @@ export function MobileFullScreenMenu() {
                 href="/projects"
                 onClick={handleNavClick}
                 className="
-                  w-full flex items-center justify-center gap-2
+                  w-full flex items-center gap-3
                   py-3.5 px-4
                   bg-transparent hover:bg-[var(--bg-tertiary)]
                   active:bg-[var(--bg-tertiary)]

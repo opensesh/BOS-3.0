@@ -21,7 +21,7 @@ import {
   Layers,
   Shapes,
   Megaphone,
-  Sparkles,
+  Target,
   Lightbulb,
   ArrowRight,
 } from 'lucide-react';
@@ -56,7 +56,7 @@ const quickActions = [
   },
   {
     id: 'campaign',
-    icon: Sparkles,
+    icon: Target,
     title: 'Plan a campaign',
     description: 'Content strategy',
     prompt: 'Help me plan a content campaign for [goal/product]. I need ideas for posts, timing, and messaging that align with my brand.',
@@ -379,8 +379,37 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                 <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Home</h3>
               </motion.div>
 
-              {/* Projects section */}
+              {/* Quick Actions section - First */}
               <motion.div variants={fadeInUp} className="mb-4">
+                <div className="flex items-center justify-between mb-2 px-2">
+                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Quick Actions</h4>
+                </div>
+                <div className="space-y-1">
+                  {quickActions.map((action, index) => {
+                    const Icon = action.icon;
+                    return (
+                      <motion.button
+                        key={action.id}
+                        variants={fadeInUp}
+                        custom={index}
+                        onClick={() => handleQuickAction(action.prompt)}
+                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-3 group"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-[var(--bg-tertiary)] group-hover:bg-[var(--bg-quaternary)] flex items-center justify-center flex-shrink-0 transition-colors">
+                          <Icon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-[var(--fg-primary)] truncate">{action.title}</div>
+                          <div className="text-xs text-[var(--fg-tertiary)] truncate">{action.description}</div>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
+              {/* Projects section */}
+              <motion.div variants={fadeInUp} className="mb-4 pt-3 border-t border-[var(--border-secondary)]">
                 <div className="flex items-center justify-between mb-2 px-2">
                   <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Projects</h4>
                   <Link 
@@ -418,7 +447,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
               </motion.div>
               
               {/* Recent chats section */}
-              <motion.div variants={fadeInUp} className="mb-4">
+              <motion.div variants={fadeInUp} className="pt-3 border-t border-[var(--border-secondary)]">
                 <div className="flex items-center justify-between mb-2 px-2">
                   <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Recent Chats</h4>
                   <Link 
@@ -449,35 +478,6 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       No recent chats yet
                     </p>
                   )}
-                </div>
-              </motion.div>
-
-              {/* Quick Actions section */}
-              <motion.div variants={fadeInUp} className="pt-3 border-t border-[var(--border-secondary)]">
-                <div className="flex items-center justify-between mb-2 px-2">
-                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Quick Actions</h4>
-                </div>
-                <div className="space-y-1">
-                  {quickActions.map((action, index) => {
-                    const Icon = action.icon;
-                    return (
-                      <motion.button
-                        key={action.id}
-                        variants={fadeInUp}
-                        custom={index}
-                        onClick={() => handleQuickAction(action.prompt)}
-                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-3 group"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-[var(--bg-tertiary)] group-hover:bg-[var(--bg-quaternary)] flex items-center justify-center flex-shrink-0 transition-colors">
-                          <Icon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-[var(--fg-primary)] truncate">{action.title}</div>
-                          <div className="text-xs text-[var(--fg-tertiary)] truncate">{action.description}</div>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
                 </div>
               </motion.div>
             </div>

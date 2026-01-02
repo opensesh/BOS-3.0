@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, ChevronDown, ChevronUp, Sparkles, Clock } from 'lucide-react';
+import { Brain, ChevronDown, ChevronUp, Loader2, Clock } from 'lucide-react';
 
 interface ThinkingDisplayProps {
   /** The thinking content to display */
@@ -84,7 +84,7 @@ export function ThinkingDisplay({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <Sparkles className="w-3 h-3 inline mr-1" />
+              <Loader2 className="w-3 h-3 inline mr-1 animate-spin" />
               Processing
             </motion.span>
           )}

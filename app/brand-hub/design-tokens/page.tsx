@@ -10,7 +10,7 @@ import {
   Palette, 
   Type, 
   Square, 
-  Sparkles,
+  Layers,
   FileJson,
   FileCode,
   FileText,
@@ -319,7 +319,7 @@ export default function DesignTokensPage() {
             {/* Shadows */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+                <Layers className="w-5 h-5 text-[var(--fg-brand-primary)]" />
                 <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Shadows</h2>
               </div>
               <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] space-y-1">

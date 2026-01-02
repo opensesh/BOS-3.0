@@ -142,7 +142,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
               "
             >
               <Settings className="w-4 h-4 text-[var(--fg-tertiary)]" />
-              <span className="text-sm text-[var(--fg-secondary)]">Account preferences</span>
+              <span className="text-sm text-[var(--fg-secondary)]">Account</span>
             </button>
             <button
               onClick={() => {

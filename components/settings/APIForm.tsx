@@ -38,15 +38,7 @@ const MOCK_API_KEYS: APIKey[] = [
     key: 'sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
     lastUsed: '2025-12-25T14:22:00Z',
     createdAt: '2025-03-20T11:00:00Z',
-    expiresAt: '2026-03-20T11:00:00Z',
-  },
-  {
-    id: '3',
-    name: 'CI/CD Pipeline',
-    key: 'sk_test_yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy',
-    lastUsed: null,
-    createdAt: '2025-11-01T08:00:00Z',
-    expiresAt: '2025-12-31T23:59:59Z',
+    expiresAt: '2025-12-31T23:59:59Z', // Expired to show example state
   },
 ];
 
@@ -136,17 +128,16 @@ export function APIForm() {
           onClick={() => setShowCreateModal(true)}
           className="
             flex items-center gap-2
-            px-4 py-2.5
-            bg-[var(--bg-brand-solid)]
-            border-2 border-white/12
+            px-4 py-2
+            bg-[var(--bg-brand-primary)]
+            border border-[var(--border-brand)]
             rounded-lg
-            text-sm font-semibold text-white
-            shadow-xs
-            hover:bg-[var(--bg-brand-solid-hover)]
-            transition-colors
+            text-sm font-medium text-[var(--fg-brand-primary)]
+            hover:bg-[var(--bg-brand-primary-hover)]
+            transition-all duration-150
           "
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4" />
           Create new key
         </button>
       </div>
@@ -331,15 +322,16 @@ export function APIForm() {
             onClick={() => setShowCreateModal(true)}
             className="
               inline-flex items-center gap-2
-              px-4 py-2.5
-              bg-[var(--bg-brand-solid)]
+              px-4 py-2
+              bg-[var(--bg-brand-primary)]
+              border border-[var(--border-brand)]
               rounded-lg
-              text-sm font-semibold text-white
-              hover:bg-[var(--bg-brand-solid-hover)]
-              transition-colors
+              text-sm font-medium text-[var(--fg-brand-primary)]
+              hover:bg-[var(--bg-brand-primary-hover)]
+              transition-all duration-150
             "
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             Create API key
           </button>
         </div>

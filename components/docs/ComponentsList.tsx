@@ -20,13 +20,15 @@ import {
   Share2,
   Bookmark,
   Grid3X3,
-  Sparkles,
+  Fingerprint,
   BarChart3,
   Building2,
   FolderOpen,
   ListChecks,
   SlidersHorizontal,
   X,
+  Lightbulb,
+  Cloud,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -53,7 +55,7 @@ const getComponentIcon = (component: ComponentDoc) => {
   
   // Visual/Brand
   if (name.includes('color') || name.includes('swatch') || name.includes('palette')) return Palette;
-  if (name.includes('brand') || name.includes('logo') || name.includes('mark')) return Sparkles;
+  if (name.includes('brand') || name.includes('logo') || name.includes('mark')) return Fingerprint;
   if (name.includes('gradient') || name.includes('background')) return Image;
   if (name.includes('card') && name.includes('flip')) return Layers;
   
@@ -74,9 +76,9 @@ const getComponentIcon = (component: ComponentDoc) => {
   
   // Discover/News
   if (name.includes('news') || name.includes('article')) return Grid3X3;
-  if (name.includes('idea')) return Sparkles;
+  if (name.includes('idea')) return Lightbulb;
   if (name.includes('market') || name.includes('stock') || name.includes('widget')) return BarChart3;
-  if (name.includes('weather')) return Sparkles;
+  if (name.includes('weather')) return Cloud;
   
   // Finance
   if (name.includes('stats') || name.includes('chart')) return BarChart3;

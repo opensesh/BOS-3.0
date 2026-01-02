@@ -10,7 +10,7 @@ import {
   Palette,
   LayoutGrid,
   Megaphone,
-  Sparkles,
+  Target,
   Lightbulb,
   MessageSquare,
 } from 'lucide-react';
@@ -64,7 +64,7 @@ const prePrompts = [
   },
   {
     id: 'campaign',
-    icon: Sparkles,
+    icon: Target,
     title: 'Plan a campaign',
     description: 'Map out a content strategy',
     prompt: 'Help me plan a content campaign for [goal/product]. I need ideas for posts, timing, and messaging that align with my brand.',

@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles, Layers } from 'lucide-react';
+import { Zap, Layers } from 'lucide-react';
 
 export type ChatTab = 'answer' | 'resources';
 
@@ -21,7 +21,7 @@ export function ChatTabNav({
     {
       id: 'answer' as ChatTab,
       label: 'Answer',
-      icon: Sparkles,
+      icon: Zap,
       available: true,
     },
     {

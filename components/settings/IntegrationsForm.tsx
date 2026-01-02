@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface Integration {
   id: string;
@@ -151,27 +151,27 @@ function AnnouncementBanner({ onDismiss }: { onDismiss: () => void }) {
           <button
             onClick={onDismiss}
             className="
-              px-4 py-2.5
-              bg-[var(--bg-primary)]
-              border border-[var(--border-primary)]
+              px-4 py-2
+              bg-transparent
+              border border-[var(--border-secondary)]
               rounded-lg
-              text-sm font-semibold text-[var(--fg-secondary)]
-              shadow-xs
-              hover:bg-[var(--bg-primary-hover)]
-              transition-colors
+              text-sm font-medium text-[var(--fg-tertiary)]
+              hover:text-[var(--fg-secondary)]
+              hover:border-[var(--border-primary)]
+              hover:bg-[var(--bg-tertiary)]
+              transition-all duration-150
             "
           >
             Dismiss
           </button>
           <button className="
-            px-4 py-2.5
-            bg-[var(--bg-brand-solid)]
-            border-2 border-white/12
+            px-4 py-2
+            bg-[var(--bg-brand-primary)]
+            border border-[var(--border-brand)]
             rounded-lg
-            text-sm font-semibold text-white
-            shadow-xs
-            hover:bg-[var(--bg-brand-solid-hover)]
-            transition-colors
+            text-sm font-medium text-[var(--fg-brand-primary)]
+            hover:bg-[var(--bg-brand-primary-hover)]
+            transition-all duration-150
           ">
             Changelog
           </button>
@@ -198,7 +198,6 @@ function AnnouncementBanner({ onDismiss }: { onDismiss: () => void }) {
 
 export function IntegrationsForm() {
   const [integrations, setIntegrations] = useState<Integration[]>(INITIAL_INTEGRATIONS);
-  const [searchQuery, setSearchQuery] = useState('');
   const [showBanner, setShowBanner] = useState(true);
 
   const toggleIntegration = (id: string, enabled: boolean) => {
@@ -207,10 +206,6 @@ export function IntegrationsForm() {
     );
   };
 
-  const filteredIntegrations = integrations.filter(int =>
-    int.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    int.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="max-w-4xl">
@@ -222,58 +217,20 @@ export function IntegrationsForm() {
       )}
 
       {/* Connected Apps Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-[var(--border-secondary)]">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-5 border-b border-[var(--border-secondary)]">
+        <div className="flex-1">
           <h2 className="text-lg font-semibold text-[var(--fg-primary)]">
             Connected apps
           </h2>
-          <p className="mt-0.5 text-sm text-[var(--fg-tertiary)]">
-            Supercharge your workflow and connect the tool you use every day.
+          <p className="mt-1 text-sm text-[var(--fg-tertiary)] max-w-xl">
+            Connect external tools using MCP (Model Context Protocol). When enabled, your AI assistant can read and write data across these integrations.
           </p>
-        </div>
-
-        {/* Search */}
-        <div className="relative w-full sm:w-auto sm:min-w-[200px] sm:max-w-[320px]">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="w-5 h-5 text-[var(--fg-quaternary)]" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="
-              w-full
-              pl-10 pr-3 py-2
-              bg-[var(--bg-primary)]
-              border border-[var(--border-primary)]
-              rounded-lg
-              text-[var(--fg-primary)]
-              text-base
-              placeholder:text-[var(--fg-placeholder)]
-              focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]
-              shadow-xs
-              transition-shadow
-            "
-          />
-          <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-            <kbd className="
-              hidden sm:inline-flex items-center
-              px-1.5 py-0.5
-              text-xs font-medium
-              text-[var(--fg-quaternary)]
-              border border-[var(--border-secondary)]
-              rounded
-            ">
-              ⌘K
-            </kbd>
-          </div>
         </div>
       </div>
 
       {/* Integrations List */}
       <div className="divide-y divide-[var(--border-secondary)]">
-        {filteredIntegrations.map((integration) => (
+        {integrations.map((integration) => (
           <div
             key={integration.id}
             className="flex items-center justify-between gap-4 py-4"
@@ -302,11 +259,8 @@ export function IntegrationsForm() {
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-4 flex-shrink-0">
-              <button className="text-sm font-semibold text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] transition-colors">
-                Learn more
-              </button>
+            {/* Toggle */}
+            <div className="flex items-center flex-shrink-0">
               <Toggle
                 enabled={integration.enabled}
                 onChange={(enabled) => toggleIntegration(integration.id, enabled)}
@@ -316,14 +270,6 @@ export function IntegrationsForm() {
           </div>
         ))}
       </div>
-
-      {filteredIntegrations.length === 0 && (
-        <div className="py-12 text-center">
-          <p className="text-sm text-[var(--fg-tertiary)]">
-            No integrations found matching "{searchQuery}"
-          </p>
-        </div>
-      )}
     </div>
   );
 }

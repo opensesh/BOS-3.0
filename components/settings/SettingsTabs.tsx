@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Tab {
@@ -21,14 +21,14 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
   const [showRightArrow, setShowRightArrow] = useState(false);
 
   // Check scroll position to show/hide navigation arrows
-  const checkScrollPosition = () => {
+  const checkScrollPosition = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = container;
     setShowLeftArrow(scrollLeft > 0);
     setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
-  };
+  }, []);
 
   useEffect(() => {
     checkScrollPosition();
@@ -43,7 +43,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
       }
       window.removeEventListener('resize', checkScrollPosition);
     };
-  }, []);
+  }, [checkScrollPosition]);
 
   const scroll = (direction: 'left' | 'right') => {
     const container = scrollContainerRef.current;
@@ -58,41 +58,89 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
 
   return (
     <div className="relative">
-      {/* Left scroll arrow */}
-      {showLeftArrow && (
+      {/* Left gradient fade + arrow */}
+      <div 
+        className={`
+          absolute left-0 top-0 bottom-0 z-10
+          flex items-center
+          pointer-events-none
+          transition-opacity duration-200
+          ${showLeftArrow ? 'opacity-100' : 'opacity-0'}
+        `}
+      >
+        {/* Gradient fade */}
+        <div 
+          className="
+            absolute left-0 top-0 bottom-0 w-16
+            bg-gradient-to-r from-[var(--bg-secondary-alt)] via-[var(--bg-secondary-alt)]/80 to-transparent
+            rounded-l-lg
+          "
+        />
+        {/* Arrow button */}
         <button
           onClick={() => scroll('left')}
+          disabled={!showLeftArrow}
           className="
-            absolute left-0 top-1/2 -translate-y-1/2 z-10
+            relative z-10
+            ml-1
             w-8 h-8
             flex items-center justify-center
-            bg-gradient-to-r from-[var(--bg-secondary-alt)] via-[var(--bg-secondary-alt)] to-transparent
+            bg-[var(--bg-primary)]
+            border border-[var(--border-secondary)]
+            rounded-md
             text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-            transition-colors
+            hover:bg-[var(--bg-primary-hover)]
+            shadow-sm
+            transition-all duration-150
+            pointer-events-auto
           "
           aria-label="Scroll tabs left"
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-4 h-4" />
         </button>
-      )}
+      </div>
 
-      {/* Right scroll arrow */}
-      {showRightArrow && (
+      {/* Right gradient fade + arrow */}
+      <div 
+        className={`
+          absolute right-0 top-0 bottom-0 z-10
+          flex items-center justify-end
+          pointer-events-none
+          transition-opacity duration-200
+          ${showRightArrow ? 'opacity-100' : 'opacity-0'}
+        `}
+      >
+        {/* Gradient fade */}
+        <div 
+          className="
+            absolute right-0 top-0 bottom-0 w-16
+            bg-gradient-to-l from-[var(--bg-secondary-alt)] via-[var(--bg-secondary-alt)]/80 to-transparent
+            rounded-r-lg
+          "
+        />
+        {/* Arrow button */}
         <button
           onClick={() => scroll('right')}
+          disabled={!showRightArrow}
           className="
-            absolute right-0 top-1/2 -translate-y-1/2 z-10
+            relative z-10
+            mr-1
             w-8 h-8
             flex items-center justify-center
-            bg-gradient-to-l from-[var(--bg-secondary-alt)] via-[var(--bg-secondary-alt)] to-transparent
+            bg-[var(--bg-primary)]
+            border border-[var(--border-secondary)]
+            rounded-md
             text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-            transition-colors
+            hover:bg-[var(--bg-primary-hover)]
+            shadow-sm
+            transition-all duration-150
+            pointer-events-auto
           "
           aria-label="Scroll tabs right"
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-4 h-4" />
         </button>
-      )}
+      </div>
 
       {/* Tabs container */}
       <div
@@ -105,9 +153,16 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
           rounded-lg
           overflow-x-auto
           scrollbar-hide
+          scroll-smooth
+          touch-pan-x
         "
         role="tablist"
         aria-label="Settings tabs"
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+        }}
       >
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;

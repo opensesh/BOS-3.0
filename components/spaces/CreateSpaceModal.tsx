@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Modal, Button } from '@/components/ui';
-import { Sparkles, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle } from 'lucide-react';
 
 interface CreateSpaceModalProps {
   isOpen: boolean;
@@ -201,7 +201,7 @@ export function CreateSpaceModal({ isOpen, onClose, onCreate }: CreateSpaceModal
             color="primary"
             size="md"
             isLoading={isCreating}
-            iconLeading={!isCreating ? Sparkles : undefined}
+            iconLeading={!isCreating ? Plus : undefined}
           >
             {isCreating ? 'Creating...' : 'Create Space'}
           </Button>

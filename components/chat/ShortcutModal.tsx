@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Search, Sparkles, ChevronDown, Globe } from 'lucide-react';
+import { X, Search, Brain, ChevronDown, Globe } from 'lucide-react';
 
 interface ShortcutModalProps {
   isOpen: boolean;
@@ -161,7 +161,7 @@ export function ShortcutModal({
                       }
                     `}
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <Brain className="w-3.5 h-3.5" />
                     <span>Reason</span>
                   </button>
                 </div>

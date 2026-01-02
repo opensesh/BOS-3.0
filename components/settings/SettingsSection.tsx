@@ -144,15 +144,16 @@ export function SettingsSectionFooter({
         onClick={onCancel}
         disabled={isSaving}
         className="
-          px-4 py-2.5
-          bg-[var(--bg-primary)]
-          border border-[var(--border-primary)]
+          px-4 py-2
+          bg-transparent
+          border border-[var(--border-secondary)]
           rounded-lg
-          text-sm font-semibold text-[var(--fg-secondary)]
-          shadow-xs
-          hover:bg-[var(--bg-primary-hover)]
+          text-sm font-medium text-[var(--fg-tertiary)]
+          hover:text-[var(--fg-secondary)]
+          hover:border-[var(--border-primary)]
+          hover:bg-[var(--bg-secondary-alt)]
           disabled:opacity-50 disabled:cursor-not-allowed
-          transition-colors
+          transition-all duration-150
         "
       >
         Cancel
@@ -162,15 +163,14 @@ export function SettingsSectionFooter({
         onClick={onSave}
         disabled={isDisabled || isSaving}
         className="
-          px-4 py-2.5
-          bg-[var(--bg-brand-solid)]
-          border-2 border-white/12
+          px-4 py-2
+          bg-[var(--bg-brand-primary)]
+          border border-[var(--border-brand)]
           rounded-lg
-          text-sm font-semibold text-white
-          shadow-xs
-          hover:bg-[var(--bg-brand-solid-hover)]
+          text-sm font-medium text-[var(--fg-brand-primary)]
+          hover:bg-[var(--bg-brand-primary-hover)]
           disabled:opacity-50 disabled:cursor-not-allowed
-          transition-colors
+          transition-all duration-150
         "
       >
         {isSaving ? 'Saving...' : 'Save'}

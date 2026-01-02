@@ -33,7 +33,6 @@ type TabId = typeof SETTINGS_TABS[number]['id'];
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState<TabId>('profile');
-  const [searchQuery, setSearchQuery] = useState('');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -113,10 +112,7 @@ export default function AccountPage() {
     <div className="flex flex-col h-full overflow-hidden">
       {/* Fixed Header Area */}
       <div className="flex-shrink-0 pt-6 lg:pt-8 pb-0 px-4 sm:px-6 lg:px-8">
-        <SettingsHeader
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
+        <SettingsHeader />
         
         <div className="mt-5">
           <SettingsTabs

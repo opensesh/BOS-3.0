@@ -273,25 +273,28 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
                       onHoverEnd={() => setHoverDate(null)}
                       className={({ isOutsideMonth, isDisabled, isFocusVisible }) => `
                         w-9 h-9 text-center text-sm rounded-md cursor-pointer
-                        outline-none transition-colors
+                        outline-none transition-colors flex items-center justify-center
                         ${isOutsideMonth ? 'text-[var(--fg-quaternary)]/40' : ''}
-                        ${isDisabled ? 'text-[var(--fg-quaternary)]/40 cursor-not-allowed' : ''}
+                        ${isDisabled || date.compare(todayDate) > 0 ? 'text-[var(--fg-quaternary)]/40 cursor-not-allowed' : ''}
                         ${isFocusVisible ? 'ring-2 ring-brand-aperol/30' : ''}
                         ${isCurrentlySelected(date) && !selectionStart ? 'bg-brand-aperol/15 text-brand-aperol' : ''}
                         ${isSelectionEndpoint(date) ? 'bg-brand-aperol text-white' : ''}
                         ${isInRange(date) && !isSelectionEndpoint(date) ? 'bg-brand-aperol/20 text-[var(--fg-primary)]' : ''}
-                        ${!isCurrentlySelected(date) && !isInRange(date) && !isSelectionEndpoint(date) && !isOutsideMonth && !isDisabled ? 'hover:bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' : ''}
+                        ${!isCurrentlySelected(date) && !isInRange(date) && !isSelectionEndpoint(date) && !isOutsideMonth && !(isDisabled || date.compare(todayDate) > 0) ? 'hover:bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' : ''}
                         ${date.compare(todayDate) === 0 && !isSelectionEndpoint(date) ? 'font-semibold ring-1 ring-brand-aperol/50' : ''}
                       `}
                     >
-                      {({ formattedDate }) => (
-                        <button
-                          onClick={() => handleDateClick(date)}
+                      {({ formattedDate, isDisabled }) => (
+                        <span 
+                          onClick={(e) => {
+                            if (!isDisabled && date.compare(todayDate) <= 0) {
+                              handleDateClick(date);
+                            }
+                          }}
                           className="w-full h-full flex items-center justify-center"
-                          disabled={date.compare(todayDate) > 0}
                         >
                           {formattedDate}
-                        </button>
+                        </span>
                       )}
                     </CalendarCell>
                   )}

@@ -123,6 +123,66 @@ export function MobileFullScreenMenu() {
                 Navigate
               </p>
               <nav className="space-y-1">
+                {/* New Chat - Primary Action */}
+                <button
+                  onClick={handleNewChat}
+                  className="
+                    w-full flex items-center gap-3 px-4 py-3.5 rounded-xl
+                    bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)]
+                    active:bg-[var(--bg-quaternary)]
+                    text-[var(--fg-primary)] font-medium 
+                    border border-[var(--border-secondary)]
+                    transition-all
+                  "
+                >
+                  <Plus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+                  <span>New Chat</span>
+                </button>
+
+                {/* Recent Chats */}
+                <Link
+                  href="/chats"
+                  onClick={handleNavClick}
+                  className={`
+                    flex items-center gap-3 px-4 py-3.5 rounded-xl
+                    transition-colors
+                    ${isItemActive('/chats')
+                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]' 
+                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                    }
+                  `}
+                >
+                  <History className={`w-5 h-5 flex-shrink-0 ${isItemActive('/chats') ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                  <span className="font-medium">Recent Chats</span>
+                  {chatHistory.length > 0 && (
+                    <span className="text-[var(--fg-quaternary)] text-sm">({chatHistory.length})</span>
+                  )}
+                </Link>
+
+                {/* Projects */}
+                <Link
+                  href="/projects"
+                  onClick={handleNavClick}
+                  className={`
+                    flex items-center gap-3 px-4 py-3.5 rounded-xl
+                    transition-colors
+                    ${isItemActive('/projects')
+                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]' 
+                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                    }
+                  `}
+                >
+                  <Folder className={`w-5 h-5 flex-shrink-0 ${isItemActive('/projects') ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                  <span className="font-medium">Projects</span>
+                  {projects.length > 0 && (
+                    <span className="text-[var(--fg-quaternary)] text-sm">({projects.length})</span>
+                  )}
+                </Link>
+
+                {/* Divider */}
+                <div className="my-2 border-t border-[var(--border-secondary)]" />
+
+                {/* Main Nav Items */}
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = isItemActive(item.href);
@@ -147,71 +207,6 @@ export function MobileFullScreenMenu() {
                   );
                 })}
               </nav>
-            </motion.div>
-
-            {/* Chat Actions - New Chat + Recent Chats + Projects */}
-            <motion.div variants={itemVariants} className="px-4 py-4 space-y-2 border-t border-[var(--border-secondary)]">
-              {/* New Chat - Primary Button */}
-              <button
-                onClick={handleNewChat}
-                className="
-                  w-full flex items-center gap-3
-                  py-3.5 px-4
-                  bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)]
-                  active:bg-[var(--bg-quaternary)]
-                  text-[var(--fg-primary)] 
-                  rounded-xl font-medium 
-                  border border-[var(--border-secondary)]
-                  transition-all
-                "
-              >
-                <Plus className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-                <span>New Chat</span>
-              </button>
-
-              {/* Recent Chats - Secondary Outline Button */}
-              <Link
-                href="/chats"
-                onClick={handleNavClick}
-                className="
-                  w-full flex items-center gap-3
-                  py-3.5 px-4
-                  bg-transparent hover:bg-[var(--bg-tertiary)]
-                  active:bg-[var(--bg-tertiary)]
-                  text-[var(--fg-primary)] 
-                  rounded-xl font-medium 
-                  border border-[var(--border-secondary)]
-                  transition-all
-                "
-              >
-                <History className="w-5 h-5 text-[var(--fg-tertiary)]" />
-                <span>Recent Chats</span>
-                {chatHistory.length > 0 && (
-                  <span className="text-[var(--fg-quaternary)]">({chatHistory.length})</span>
-                )}
-              </Link>
-
-              {/* Projects - Secondary Outline Button */}
-              <Link
-                href="/projects"
-                onClick={handleNavClick}
-                className="
-                  w-full flex items-center gap-3
-                  py-3.5 px-4
-                  bg-transparent hover:bg-[var(--bg-tertiary)]
-                  active:bg-[var(--bg-tertiary)]
-                  text-[var(--fg-primary)] 
-                  rounded-xl font-medium 
-                  border border-[var(--border-secondary)]
-                  transition-all
-                "
-              >
-                <Folder className="w-5 h-5 text-[var(--fg-tertiary)]" />
-                <span>Projects</span>
-                {projects.length > 0 && (
-                  <span className="text-[var(--fg-quaternary)]">({projects.length})</span>
-                )}
-              </Link>
             </motion.div>
 
             {/* Settings Section */}

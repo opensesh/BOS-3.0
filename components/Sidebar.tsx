@@ -879,220 +879,8 @@ export function Sidebar() {
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Navigation Items */}
-        <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2 pt-3' : 'gap-1 items-center px-1 pt-3'}`}>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = isItemActive(item);
-            const hasSubItems = item.subItems && item.subItems.length > 0;
-            const isSectionExpanded = expandedSections.includes(item.label);
-            const isOnMainPage = pathname === item.href;
-            
-            return (
-              <div key={item.href} className="w-full">
-                {/* Main nav item */}
-                <div
-                  className="relative"
-                  onMouseEnter={(e) => handleMouseEnterItem(item, e)}
-                  onMouseLeave={handleMouseLeaveItem}
-                >
-                  {isExpandedMode ? (
-                    // Expanded/Pinned mode - unified row with consistent styling
-                    <div className="flex flex-col">
-                      <div 
-                        className={`
-                          flex items-center rounded-md transition-colors duration-150
-                          ${isActive || isOnMainPage
-                            ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
-                            : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                          }
-                        `}
-                      >
-                        {/* Main link to the page - takes most of the row */}
-                        <Link
-                          href={item.href}
-                          onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
-                          className="flex-1 flex items-center gap-2 px-2 py-2"
-                          aria-current={isOnMainPage ? 'page' : undefined}
-                        >
-                          <Icon className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-sm">{item.label}</span>
-                        </Link>
-                        
-                        {/* Toggle button for sections with sub-items */}
-                        {(hasSubItems || item.label === 'Spaces' || item.label === 'Home') && (
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              toggleSection(item.label);
-                            }}
-                            className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
-                            aria-expanded={isSectionExpanded}
-                            aria-label={`${isSectionExpanded ? 'Collapse' : 'Expand'} ${item.label} section`}
-                          >
-                            <motion.div
-                              animate={{ rotate: isSectionExpanded ? 180 : 0 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              <ChevronDown className="w-3 h-3" />
-                            </motion.div>
-                          </button>
-                        )}
-                      </div>
-                      
-                      {/* Sub-items for expanded mode */}
-                      <AnimatePresence>
-                        {isSectionExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="pl-4 py-1 space-y-0.5">
-                              {/* Home - show projects and recent chats */}
-                              {item.label === 'Home' && (
-                                <>
-                                  {/* Projects */}
-                                  {projects.length > 0 && (
-                                    <>
-                                      <div className="px-2 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Projects</div>
-                                      {projects.slice(0, 3).map((project) => (
-                                        <button
-                                          key={project.id}
-                                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
-                                        >
-                                          <div
-                                            className="w-3 h-3 rounded-sm flex-shrink-0"
-                                            style={{ backgroundColor: project.color }}
-                                          />
-                                          <span className="truncate">{project.name}</span>
-                                        </button>
-                                      ))}
-                                      <div className="my-1.5 mx-2 border-t border-[var(--border-secondary)]" />
-                                    </>
-                                  )}
-                                  {/* Recent chats */}
-                                  <div className="px-2 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Recent chats</div>
-                                  {chatHistory.slice(0, 3).map((chat) => (
-                                    <button
-                                      key={chat.id}
-                                      onClick={() => {
-                                        loadSession(chat.id);
-                                        if (pathname !== '/') {
-                                          router.push('/');
-                                        }
-                                      }}
-                                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
-                                    >
-                                      <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
-                                      <span className="truncate">{chat.title}</span>
-                                    </button>
-                                  ))}
-                                  {chatHistory.length === 0 && (
-                                    <p className="px-2 py-1.5 text-xs text-[var(--fg-quaternary)]">No recent chats</p>
-                                  )}
-                                </>
-                              )}
-                              
-                              {/* Spaces - show user spaces */}
-                              {item.label === 'Spaces' && (
-                                <>
-                                  <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
-                                    <FolderPlus className="w-3.5 h-3.5" />
-                                    <span>Create new Space</span>
-                                  </button>
-                                  {spacesLoaded && userSpaces.map((space) => (
-                                    <Link
-                                      key={space.id}
-                                      href={`/spaces/${space.slug}`}
-                                      className={`
-                                        w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors
-                                        ${pathname === `/spaces/${space.slug}` 
-                                          ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
-                                          : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
-                                        }
-                                      `}
-                                    >
-                                      <LayoutGrid className="w-3.5 h-3.5 flex-shrink-0" />
-                                      <span className="truncate">{space.title}</span>
-                                    </Link>
-                                  ))}
-                                  {spacesLoaded && userSpaces.length === 0 && (
-                                    <p className="px-2 py-1.5 text-xs text-[var(--fg-quaternary)]">No spaces yet</p>
-                                  )}
-                                </>
-                              )}
-                              
-                              {/* Regular sub-items */}
-                              {item.subItems?.map((subItem) => {
-                                const SubIcon = subItem.icon;
-                                const isSubActive = pathname === subItem.href;
-                                return (
-                                  <Link
-                                    key={subItem.href}
-                                    href={subItem.href}
-                                    className={`
-                                      w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors
-                                      ${isSubActive 
-                                        ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
-                                        : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
-                                      }
-                                    `}
-                                    aria-current={isSubActive ? 'page' : undefined}
-                                  >
-                                    <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />
-                                    <span>{subItem.label}</span>
-                                  </Link>
-                                );
-                              })}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  ) : (
-                    // Collapsed/Hover mode - clean icon buttons
-                    (() => {
-                      const isDrawerActive = shouldShowDrawer && isDrawerOpen && drawerItem === item.label;
-                      const showHighlight = isActive || isDrawerActive;
-                      
-                      return (
-                        <Link
-                          data-nav-item={item.label}
-                          href={item.href}
-                          onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
-                          className={`
-                            flex items-center justify-center
-                            w-10 h-10 mx-auto rounded-md
-                            transition-colors duration-150
-                            ${showHighlight 
-                              ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
-                              : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
-                            }
-                          `}
-                          title={item.label}
-                          aria-label={item.label}
-                          aria-current={isActive ? 'page' : undefined}
-                        >
-                          <Icon className="w-5 h-5" />
-                        </Link>
-                      );
-                    })()
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Separator between Navigation and Chat Actions */}
-        <div className={`${isExpandedMode ? 'mx-3 my-2' : 'mx-2 my-1.5'} border-t border-[var(--border-secondary)]`} />
-
         {/* Chat Actions Group - New Chat + Recent Chats + Projects */}
-        <div className={`flex flex-col ${isExpandedMode ? 'px-3 pb-2 gap-1' : 'items-center pb-1 gap-0.5'}`}>
+        <div className={`flex flex-col ${isExpandedMode ? 'px-3 pt-3 pb-2 gap-1' : 'items-center pt-3 pb-1 gap-0.5'}`}>
           {/* New Chat Button */}
           <Link
             href="/"
@@ -1330,6 +1118,218 @@ export function Sidebar() {
             })()}
           </div>
         </div>
+
+        {/* Separator between Chat Actions and Navigation */}
+        <div className={`${isExpandedMode ? 'mx-3 my-2' : 'mx-2 my-1.5'} border-t border-[var(--border-secondary)]`} />
+
+        {/* Navigation Items */}
+        <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-1 items-center px-1'}`}>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = isItemActive(item);
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const isSectionExpanded = expandedSections.includes(item.label);
+            const isOnMainPage = pathname === item.href;
+            
+            return (
+              <div key={item.href} className="w-full">
+                {/* Main nav item */}
+                <div
+                  className="relative"
+                  onMouseEnter={(e) => handleMouseEnterItem(item, e)}
+                  onMouseLeave={handleMouseLeaveItem}
+                >
+                  {isExpandedMode ? (
+                    // Expanded/Pinned mode - unified row with consistent styling
+                    <div className="flex flex-col">
+                      <div 
+                        className={`
+                          flex items-center rounded-md transition-colors duration-150
+                          ${isActive || isOnMainPage
+                            ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                            : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                          }
+                        `}
+                      >
+                        {/* Main link to the page - takes most of the row */}
+                        <Link
+                          href={item.href}
+                          onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
+                          className="flex-1 flex items-center gap-2 px-2 py-2"
+                          aria-current={isOnMainPage ? 'page' : undefined}
+                        >
+                          <Icon className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-sm">{item.label}</span>
+                        </Link>
+                        
+                        {/* Toggle button for sections with sub-items */}
+                        {(hasSubItems || item.label === 'Spaces' || item.label === 'Home') && (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleSection(item.label);
+                            }}
+                            className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
+                            aria-expanded={isSectionExpanded}
+                            aria-label={`${isSectionExpanded ? 'Collapse' : 'Expand'} ${item.label} section`}
+                          >
+                            <motion.div
+                              animate={{ rotate: isSectionExpanded ? 180 : 0 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <ChevronDown className="w-3 h-3" />
+                            </motion.div>
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Sub-items for expanded mode */}
+                      <AnimatePresence>
+                        {isSectionExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-4 py-1 space-y-0.5">
+                              {/* Home - show projects and recent chats */}
+                              {item.label === 'Home' && (
+                                <>
+                                  {/* Projects */}
+                                  {projects.length > 0 && (
+                                    <>
+                                      <div className="px-2 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Projects</div>
+                                      {projects.slice(0, 3).map((project) => (
+                                        <button
+                                          key={project.id}
+                                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                                        >
+                                          <div
+                                            className="w-3 h-3 rounded-sm flex-shrink-0"
+                                            style={{ backgroundColor: project.color }}
+                                          />
+                                          <span className="truncate">{project.name}</span>
+                                        </button>
+                                      ))}
+                                      <div className="my-1.5 mx-2 border-t border-[var(--border-secondary)]" />
+                                    </>
+                                  )}
+                                  {/* Recent chats */}
+                                  <div className="px-2 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Recent chats</div>
+                                  {chatHistory.slice(0, 3).map((chat) => (
+                                    <button
+                                      key={chat.id}
+                                      onClick={() => {
+                                        loadSession(chat.id);
+                                        if (pathname !== '/') {
+                                          router.push('/');
+                                        }
+                                      }}
+                                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                                    >
+                                      <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
+                                      <span className="truncate">{chat.title}</span>
+                                    </button>
+                                  ))}
+                                  {chatHistory.length === 0 && (
+                                    <p className="px-2 py-1.5 text-xs text-[var(--fg-quaternary)]">No recent chats</p>
+                                  )}
+                                </>
+                              )}
+                              
+                              {/* Spaces - show user spaces */}
+                              {item.label === 'Spaces' && (
+                                <>
+                                  <button className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                                    <FolderPlus className="w-3.5 h-3.5" />
+                                    <span>Create new Space</span>
+                                  </button>
+                                  {spacesLoaded && userSpaces.map((space) => (
+                                    <Link
+                                      key={space.id}
+                                      href={`/spaces/${space.slug}`}
+                                      className={`
+                                        w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors
+                                        ${pathname === `/spaces/${space.slug}` 
+                                          ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
+                                          : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                                        }
+                                      `}
+                                    >
+                                      <LayoutGrid className="w-3.5 h-3.5 flex-shrink-0" />
+                                      <span className="truncate">{space.title}</span>
+                                    </Link>
+                                  ))}
+                                  {spacesLoaded && userSpaces.length === 0 && (
+                                    <p className="px-2 py-1.5 text-xs text-[var(--fg-quaternary)]">No spaces yet</p>
+                                  )}
+                                </>
+                              )}
+                              
+                              {/* Regular sub-items */}
+                              {item.subItems?.map((subItem) => {
+                                const SubIcon = subItem.icon;
+                                const isSubActive = pathname === subItem.href;
+                                return (
+                                  <Link
+                                    key={subItem.href}
+                                    href={subItem.href}
+                                    className={`
+                                      w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs transition-colors
+                                      ${isSubActive 
+                                        ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
+                                        : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                                      }
+                                    `}
+                                    aria-current={isSubActive ? 'page' : undefined}
+                                  >
+                                    <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                                    <span>{subItem.label}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    // Collapsed/Hover mode - clean icon buttons
+                    (() => {
+                      const isDrawerActive = shouldShowDrawer && isDrawerOpen && drawerItem === item.label;
+                      const showHighlight = isActive || isDrawerActive;
+                      
+                      return (
+                        <Link
+                          data-nav-item={item.label}
+                          href={item.href}
+                          onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
+                          className={`
+                            flex items-center justify-center
+                            w-10 h-10 mx-auto rounded-md
+                            transition-colors duration-150
+                            ${showHighlight 
+                              ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
+                              : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                            }
+                          `}
+                          title={item.label}
+                          aria-label={item.label}
+                          aria-current={isActive ? 'page' : undefined}
+                        >
+                          <Icon className="w-5 h-5" />
+                        </Link>
+                      );
+                    })()
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </nav>
 
         <div className="flex-1" />
 

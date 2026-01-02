@@ -18,7 +18,7 @@ interface EmailAddress {
 const INITIAL_EMAILS: EmailAddress[] = [
   {
     id: '1',
-    email: 'olivia@untitledui.com',
+    email: 'olivia@opensession.co',
     isPrimary: true,
     isVerified: true,
   },

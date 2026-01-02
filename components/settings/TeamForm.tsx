@@ -27,7 +27,7 @@ const MOCK_TEAM_MEMBERS: TeamMember[] = [
   {
     id: '1',
     name: 'Olivia Rhye',
-    email: 'olivia@untitledui.com',
+    email: 'olivia@opensession.co',
     role: 'owner',
     status: 'active',
     joinedAt: '2024-01-15',
@@ -35,7 +35,7 @@ const MOCK_TEAM_MEMBERS: TeamMember[] = [
   {
     id: '2',
     name: 'Phoenix Baker',
-    email: 'phoenix@untitledui.com',
+    email: 'phoenix@opensession.co',
     role: 'admin',
     status: 'active',
     joinedAt: '2024-02-20',
@@ -43,7 +43,7 @@ const MOCK_TEAM_MEMBERS: TeamMember[] = [
   {
     id: '3',
     name: 'Lana Steiner',
-    email: 'lana@untitledui.com',
+    email: 'lana@opensession.co',
     role: 'member',
     status: 'active',
     joinedAt: '2024-03-10',
@@ -51,7 +51,7 @@ const MOCK_TEAM_MEMBERS: TeamMember[] = [
   {
     id: '4',
     name: 'Demi Wilkinson',
-    email: 'demi@untitledui.com',
+    email: 'demi@opensession.co',
     role: 'member',
     status: 'pending',
     joinedAt: '2024-12-01',

@@ -170,7 +170,7 @@ export function ProfileForm({
             rounded-l-lg
             text-[var(--fg-tertiary)] text-base
           ">
-            untitledui.com/
+            opensession.co/
           </span>
           <input
             type="text"
@@ -209,7 +209,7 @@ export function ProfileForm({
             type="text"
             value={formData.website}
             onChange={(e) => handleInputChange('website', e.target.value)}
-            placeholder="www.untitledui.com"
+            placeholder="www.opensession.co"
             className="
               flex-1 min-w-0
               px-3.5 py-2.5

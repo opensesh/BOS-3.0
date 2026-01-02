@@ -45,7 +45,7 @@ const MOCK_PAYMENT_METHODS = [
 const MOCK_INVOICES = [
   {
     id: 'INV-001122025',
-    admin: { name: 'Olivia Rhye', email: 'olivia@untitledui.com', avatar: '' },
+    admin: { name: 'Olivia Rhye', email: 'olivia@opensession.co', avatar: '' },
     usersOnPlan: 8,
     amount: '$10.00',
     date: 'Dec 1, 2025',
@@ -53,7 +53,7 @@ const MOCK_INVOICES = [
   },
   {
     id: 'INV-001112025',
-    admin: { name: 'Olivia Rhye', email: 'olivia@untitledui.com', avatar: '' },
+    admin: { name: 'Olivia Rhye', email: 'olivia@opensession.co', avatar: '' },
     usersOnPlan: 8,
     amount: '$10.00',
     date: 'Nov 1, 2025',
@@ -61,7 +61,7 @@ const MOCK_INVOICES = [
   },
   {
     id: 'INV-001102025',
-    admin: { name: 'Olivia Rhye', email: 'olivia@untitledui.com', avatar: '' },
+    admin: { name: 'Olivia Rhye', email: 'olivia@opensession.co', avatar: '' },
     usersOnPlan: 8,
     amount: '$10.00',
     date: 'Oct 1, 2025',
@@ -69,7 +69,7 @@ const MOCK_INVOICES = [
   },
   {
     id: 'INV-001092025',
-    admin: { name: 'Olivia Rhye', email: 'olivia@untitledui.com', avatar: '' },
+    admin: { name: 'Olivia Rhye', email: 'olivia@opensession.co', avatar: '' },
     usersOnPlan: 8,
     amount: '$10.00',
     date: 'Sep 1, 2025',
@@ -77,7 +77,7 @@ const MOCK_INVOICES = [
   },
   {
     id: 'INV-001082025',
-    admin: { name: 'Olivia Rhye', email: 'olivia@untitledui.com', avatar: '' },
+    admin: { name: 'Olivia Rhye', email: 'olivia@opensession.co', avatar: '' },
     usersOnPlan: 8,
     amount: '$10.00',
     date: 'Aug 1, 2025',
@@ -114,7 +114,7 @@ function CardIcon({ type }: { type: string }) {
 
 export function BillingForm() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('1');
-  const [billingEmail, setBillingEmail] = useState('billing@untitledui.com');
+  const [billingEmail, setBillingEmail] = useState('billing@opensession.co');
   const [streetAddress, setStreetAddress] = useState('100 Smith Street');
   const [city, setCity] = useState('Collingwood');
   const [state, setState] = useState('VIC');

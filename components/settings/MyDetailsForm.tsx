@@ -22,7 +22,7 @@ const TIMEZONES = [
 export function MyDetailsForm() {
   const [firstName, setFirstName] = useState('Olivia');
   const [lastName, setLastName] = useState('Rhye');
-  const [email, setEmail] = useState('olivia@untitledui.com');
+  const [email, setEmail] = useState('olivia@opensession.co');
   const [phone, setPhone] = useState('+1 (555) 000-0000');
   const [timezone, setTimezone] = useState('Australia/Melbourne');
   const [dateFormat, setDateFormat] = useState('DD/MM/YYYY');

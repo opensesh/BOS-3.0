@@ -657,16 +657,12 @@ export function Sidebar() {
   const [hoveredItem, setHoveredItem] = useState<typeof navItems[0] | null>(null);
   const [hoveredAnchorRect, setHoveredAnchorRect] = useState<DOMRect | null>(null);
   const [isFlyoutHovered, setIsFlyoutHovered] = useState(false);
-  // Recent Chats flyout state for collapsed mode
-  const [isRecentChatsFlyoutOpen, setIsRecentChatsFlyoutOpen] = useState(false);
-  const [recentChatsAnchorRect, setRecentChatsAnchorRect] = useState<DOMRect | null>(null);
-  const [isRecentChatsFlyoutHovered, setIsRecentChatsFlyoutHovered] = useState(false);
-  const recentChatsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // Projects flyout state for collapsed mode
-  const [isProjectsFlyoutOpen, setIsProjectsFlyoutOpen] = useState(false);
-  const [projectsAnchorRect, setProjectsAnchorRect] = useState<DOMRect | null>(null);
-  const [isProjectsFlyoutHovered, setIsProjectsFlyoutHovered] = useState(false);
-  const projectsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Unified flyout state for collapsed mode - only one flyout open at a time
+  type FlyoutType = 'recentChats' | 'projects' | null;
+  const [activeFlyout, setActiveFlyout] = useState<FlyoutType>(null);
+  const [flyoutAnchorRect, setFlyoutAnchorRect] = useState<DOMRect | null>(null);
+  const [isFlyoutContentHovered, setIsFlyoutContentHovered] = useState(false);
+  const flyoutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // For hover mode - NavigationDrawer
   const [drawerItem, setDrawerItem] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -782,96 +778,52 @@ export function Sidebar() {
     setIsFlyoutHovered(false);
   };
 
-  // Recent Chats flyout handlers for collapsed mode
-  const handleRecentChatsMouseEnter = (event: React.MouseEvent) => {
-    if (shouldShowFlyout) {
-      if (recentChatsTimeoutRef.current) {
-        clearTimeout(recentChatsTimeoutRef.current);
-        recentChatsTimeoutRef.current = null;
+  // Unified flyout handlers for collapsed mode - mutually exclusive
+  const openFlyout = (type: FlyoutType, event: React.MouseEvent) => {
+    if (!shouldShowFlyout) return;
+    
+    // Clear any pending timeout
+    if (flyoutTimeoutRef.current) {
+      clearTimeout(flyoutTimeoutRef.current);
+      flyoutTimeoutRef.current = null;
+    }
+    
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    setFlyoutAnchorRect(rect);
+    setActiveFlyout(type);
+  };
+
+  const handleFlyoutItemMouseLeave = () => {
+    if (!shouldShowFlyout) return;
+    
+    flyoutTimeoutRef.current = setTimeout(() => {
+      if (!isFlyoutContentHovered) {
+        setActiveFlyout(null);
+        setFlyoutAnchorRect(null);
       }
-      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-      setRecentChatsAnchorRect(rect);
-      setIsRecentChatsFlyoutOpen(true);
+    }, 300);
+  };
+
+  const handleFlyoutContentMouseEnter = () => {
+    setIsFlyoutContentHovered(true);
+    if (flyoutTimeoutRef.current) {
+      clearTimeout(flyoutTimeoutRef.current);
+      flyoutTimeoutRef.current = null;
     }
   };
 
-  const handleRecentChatsMouseLeave = () => {
-    if (shouldShowFlyout) {
-      recentChatsTimeoutRef.current = setTimeout(() => {
-        if (!isRecentChatsFlyoutHovered) {
-          setIsRecentChatsFlyoutOpen(false);
-          setRecentChatsAnchorRect(null);
-        }
-      }, 600);
-    }
+  const handleFlyoutContentMouseLeave = () => {
+    setIsFlyoutContentHovered(false);
+    flyoutTimeoutRef.current = setTimeout(() => {
+      setActiveFlyout(null);
+      setFlyoutAnchorRect(null);
+    }, 300);
   };
 
-  const handleRecentChatsFlyoutMouseEnter = () => {
-    setIsRecentChatsFlyoutHovered(true);
-    if (recentChatsTimeoutRef.current) {
-      clearTimeout(recentChatsTimeoutRef.current);
-      recentChatsTimeoutRef.current = null;
-    }
-  };
-
-  const handleRecentChatsFlyoutMouseLeave = () => {
-    setIsRecentChatsFlyoutHovered(false);
-    recentChatsTimeoutRef.current = setTimeout(() => {
-      setIsRecentChatsFlyoutOpen(false);
-      setRecentChatsAnchorRect(null);
-    }, 800);
-  };
-
-  const handleRecentChatsFlyoutClose = () => {
-    setIsRecentChatsFlyoutOpen(false);
-    setRecentChatsAnchorRect(null);
-    setIsRecentChatsFlyoutHovered(false);
-  };
-
-  // Projects flyout handlers for collapsed mode
-  const handleProjectsMouseEnter = (event: React.MouseEvent) => {
-    if (shouldShowFlyout) {
-      if (projectsTimeoutRef.current) {
-        clearTimeout(projectsTimeoutRef.current);
-        projectsTimeoutRef.current = null;
-      }
-      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-      setProjectsAnchorRect(rect);
-      setIsProjectsFlyoutOpen(true);
-    }
-  };
-
-  const handleProjectsMouseLeave = () => {
-    if (shouldShowFlyout) {
-      projectsTimeoutRef.current = setTimeout(() => {
-        if (!isProjectsFlyoutHovered) {
-          setIsProjectsFlyoutOpen(false);
-          setProjectsAnchorRect(null);
-        }
-      }, 600);
-    }
-  };
-
-  const handleProjectsFlyoutMouseEnter = () => {
-    setIsProjectsFlyoutHovered(true);
-    if (projectsTimeoutRef.current) {
-      clearTimeout(projectsTimeoutRef.current);
-      projectsTimeoutRef.current = null;
-    }
-  };
-
-  const handleProjectsFlyoutMouseLeave = () => {
-    setIsProjectsFlyoutHovered(false);
-    projectsTimeoutRef.current = setTimeout(() => {
-      setIsProjectsFlyoutOpen(false);
-      setProjectsAnchorRect(null);
-    }, 800);
-  };
-
-  const handleProjectsFlyoutClose = () => {
-    setIsProjectsFlyoutOpen(false);
-    setProjectsAnchorRect(null);
-    setIsProjectsFlyoutHovered(false);
+  const closeFlyout = () => {
+    setActiveFlyout(null);
+    setFlyoutAnchorRect(null);
+    setIsFlyoutContentHovered(false);
   };
 
   const handleDrawerClose = () => {
@@ -951,47 +903,102 @@ export function Sidebar() {
 
           {/* Recent Chats Link */}
           <div 
-            className={`flex ${isExpandedMode ? '' : 'justify-center'}`}
-            onMouseEnter={handleRecentChatsMouseEnter}
-            onMouseLeave={handleRecentChatsMouseLeave}
+            className={`flex flex-col ${isExpandedMode ? '' : 'justify-center'}`}
+            onMouseEnter={(e) => !isExpandedMode && openFlyout('recentChats', e)}
+            onMouseLeave={() => !isExpandedMode && handleFlyoutItemMouseLeave()}
           >
             {(() => {
               const isRecentChatsActive = pathname === '/chats';
+              const isRecentChatsExpanded = expandedSections.includes('RecentChats');
+              
+              if (isExpandedMode) {
+                return (
+                  <div className="flex flex-col">
+                    <div className={`
+                      flex items-center rounded-md transition-colors duration-150
+                      ${isRecentChatsActive
+                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                        : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                      }
+                    `}>
+                      <Link
+                        href="/chats"
+                        className="flex-1 flex items-center gap-2 px-2 py-2"
+                      >
+                        <History className="w-4 h-4" />
+                        <span className="text-sm flex-1">Recent Chats</span>
+                        {chatHistory.length > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
+                            {chatHistory.length}
+                          </span>
+                        )}
+                      </Link>
+                      {chatHistory.length > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleSection('RecentChats');
+                          }}
+                          className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
+                        >
+                          <motion.div animate={{ rotate: isRecentChatsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                            <ChevronDown className="w-3 h-3" />
+                          </motion.div>
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Expandable recent chats list */}
+                    <AnimatePresence>
+                      {isRecentChatsExpanded && chatHistory.length > 0 && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 py-1 space-y-0.5">
+                            {chatHistory.slice(0, 5).map((chat) => (
+                              <button
+                                key={chat.id}
+                                onClick={() => {
+                                  loadSession(chat.id);
+                                  if (pathname !== '/') router.push('/');
+                                }}
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span className="truncate">{chat.title}</span>
+                              </button>
+                            ))}
+                            {chatHistory.length > 5 && (
+                              <Link
+                                href="/chats"
+                                className="w-full flex items-center gap-1 px-2 py-1.5 rounded text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                              >
+                                View all {chatHistory.length}
+                                <ArrowRight className="w-3 h-3" />
+                              </Link>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
+              
+              // Collapsed mode
               return (
                 <Link
                   href="/chats"
-                  className={`
-                    flex items-center gap-2
-                    transition-colors duration-150
-                    group
-                    ${isExpandedMode 
-                      ? `w-full py-2 px-3 rounded-md ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}` 
-                      : `p-2 ${isRecentChatsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`
-                    }
-                  `}
+                  className={`p-2 ${isRecentChatsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
                   title="Recent Chats"
-                  aria-label="View recent chats"
-                  aria-current={isRecentChatsActive ? 'page' : undefined}
                 >
-                  <div className={`
-                    flex items-center justify-center rounded-md transition-all duration-150
-                    ${isExpandedMode 
-                      ? '' 
-                      : `w-8 h-8 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'group-hover:bg-[var(--bg-tertiary)]'}`
-                    }
-                  `}>
-                    <History className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
+                  <div className={`flex items-center justify-center rounded-md transition-all duration-150 w-8 h-8 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
+                    <History className="w-[18px] h-[18px]" />
                   </div>
-                  {isExpandedMode && (
-                    <>
-                      <span className="text-sm flex-1">Recent Chats</span>
-                      {chatHistory.length > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
-                          {chatHistory.length}
-                        </span>
-                      )}
-                    </>
-                  )}
                 </Link>
               );
             })()}
@@ -999,47 +1006,102 @@ export function Sidebar() {
 
           {/* Projects Link */}
           <div 
-            className={`flex ${isExpandedMode ? '' : 'justify-center'}`}
-            onMouseEnter={handleProjectsMouseEnter}
-            onMouseLeave={handleProjectsMouseLeave}
+            className={`flex flex-col ${isExpandedMode ? '' : 'justify-center'}`}
+            onMouseEnter={(e) => !isExpandedMode && openFlyout('projects', e)}
+            onMouseLeave={() => !isExpandedMode && handleFlyoutItemMouseLeave()}
           >
             {(() => {
               const isProjectsActive = pathname.startsWith('/projects');
+              const isProjectsExpanded = expandedSections.includes('Projects');
+              
+              if (isExpandedMode) {
+                return (
+                  <div className="flex flex-col">
+                    <div className={`
+                      flex items-center rounded-md transition-colors duration-150
+                      ${isProjectsActive
+                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                        : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                      }
+                    `}>
+                      <Link
+                        href="/projects"
+                        className="flex-1 flex items-center gap-2 px-2 py-2"
+                      >
+                        <Folder className="w-4 h-4" />
+                        <span className="text-sm flex-1">Projects</span>
+                        {projects.length > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
+                            {projects.length}
+                          </span>
+                        )}
+                      </Link>
+                      {projects.length > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleSection('Projects');
+                          }}
+                          className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
+                        >
+                          <motion.div animate={{ rotate: isProjectsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                            <ChevronDown className="w-3 h-3" />
+                          </motion.div>
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Expandable projects list */}
+                    <AnimatePresence>
+                      {isProjectsExpanded && projects.length > 0 && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 py-1 space-y-0.5">
+                            {projects.slice(0, 5).map((project) => (
+                              <Link
+                                key={project.id}
+                                href={`/projects/${project.id}`}
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                              >
+                                <div
+                                  className="w-3 h-3 rounded-sm flex-shrink-0"
+                                  style={{ backgroundColor: project.color }}
+                                />
+                                <span className="truncate">{project.name}</span>
+                              </Link>
+                            ))}
+                            {projects.length > 5 && (
+                              <Link
+                                href="/projects"
+                                className="w-full flex items-center gap-1 px-2 py-1.5 rounded text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                              >
+                                View all {projects.length}
+                                <ArrowRight className="w-3 h-3" />
+                              </Link>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
+              
+              // Collapsed mode
               return (
                 <Link
                   href="/projects"
-                  className={`
-                    flex items-center gap-2
-                    transition-colors duration-150
-                    group
-                    ${isExpandedMode 
-                      ? `w-full py-2 px-3 rounded-md ${isProjectsActive ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}` 
-                      : `p-2 ${isProjectsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`
-                    }
-                  `}
+                  className={`p-2 ${isProjectsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
                   title="Projects"
-                  aria-label="View projects"
-                  aria-current={isProjectsActive ? 'page' : undefined}
                 >
-                  <div className={`
-                    flex items-center justify-center rounded-md transition-all duration-150
-                    ${isExpandedMode 
-                      ? '' 
-                      : `w-8 h-8 ${isProjectsActive ? 'bg-[var(--bg-brand-primary)]' : 'group-hover:bg-[var(--bg-tertiary)]'}`
-                    }
-                  `}>
-                    <Folder className={`${isExpandedMode ? 'w-4 h-4' : 'w-[18px] h-[18px]'}`} />
+                  <div className={`flex items-center justify-center rounded-md transition-all duration-150 w-8 h-8 ${isProjectsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
+                    <Folder className="w-[18px] h-[18px]" />
                   </div>
-                  {isExpandedMode && (
-                    <>
-                      <span className="text-sm flex-1">Projects</span>
-                      {projects.length > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
-                          {projects.length}
-                        </span>
-                      )}
-                    </>
-                  )}
                 </Link>
               );
             })()}
@@ -1266,30 +1328,30 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Collapsed mode flyouts */}
+      {/* Collapsed mode flyouts - mutually exclusive */}
       {shouldShowFlyout && (
         <>
           <CollapsedFlyout 
             item={hoveredItem} 
-            isOpen={hoveredItem !== null} 
+            isOpen={hoveredItem !== null && activeFlyout === null} 
             anchorRect={hoveredAnchorRect}
             onClose={handleFlyoutClose}
             onMouseEnter={handleFlyoutMouseEnter}
             onMouseLeave={handleFlyoutMouseLeave}
           />
           <RecentChatsFlyout
-            isOpen={isRecentChatsFlyoutOpen}
-            anchorRect={recentChatsAnchorRect}
-            onClose={handleRecentChatsFlyoutClose}
-            onMouseEnter={handleRecentChatsFlyoutMouseEnter}
-            onMouseLeave={handleRecentChatsFlyoutMouseLeave}
+            isOpen={activeFlyout === 'recentChats'}
+            anchorRect={flyoutAnchorRect}
+            onClose={closeFlyout}
+            onMouseEnter={handleFlyoutContentMouseEnter}
+            onMouseLeave={handleFlyoutContentMouseLeave}
           />
           <ProjectsFlyout
-            isOpen={isProjectsFlyoutOpen}
-            anchorRect={projectsAnchorRect}
-            onClose={handleProjectsFlyoutClose}
-            onMouseEnter={handleProjectsFlyoutMouseEnter}
-            onMouseLeave={handleProjectsFlyoutMouseLeave}
+            isOpen={activeFlyout === 'projects'}
+            anchorRect={flyoutAnchorRect}
+            onClose={closeFlyout}
+            onMouseEnter={handleFlyoutContentMouseEnter}
+            onMouseLeave={handleFlyoutContentMouseLeave}
           />
         </>
       )}

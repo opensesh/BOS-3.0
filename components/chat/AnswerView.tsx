@@ -5,9 +5,6 @@ import { InlineCitation } from './InlineCitation';
 import { BrandResourceCardProps } from './BrandResourceCard';
 import { InlineStreamingDisplay, StreamingTrailIndicator } from './InlineStreamingDisplay';
 import { UserMessageBubble } from './UserMessageBubble';
-import { CanvasPreviewBubble } from '@/components/canvas';
-import { useCanvasContextOptional } from '@/lib/canvas-context';
-import type { Canvas } from '@/lib/supabase/canvas-service';
 import {
   BRAND_PAGE_ROUTES,
   BRAND_SOURCES,
@@ -86,10 +83,6 @@ interface AnswerViewProps {
   resourceCards?: BrandResourceCardProps[];
   /** Claude's thinking/reasoning content during extended thinking */
   thinking?: string;
-  /** Canvas data if response includes a canvas */
-  canvas?: Canvas | null;
-  /** Whether canvas content is being streamed */
-  isCanvasStreaming?: boolean;
 }
 
 export function AnswerView({
@@ -100,23 +93,11 @@ export function AnswerView({
   showCitations = true,
   resourceCards = [],
   thinking,
-  canvas,
-  isCanvasStreaming = false,
 }: AnswerViewProps) {
-  // Get canvas context for opening canvas panel
-  const canvasContext = useCanvasContextOptional();
-
   // Group sources by index for citation display
   const getSourcesForCitation = (citations?: SourceInfo[]): SourceInfo[] => {
     if (!citations || citations.length === 0) return [];
     return citations;
-  };
-
-  // Handle opening canvas in panel
-  const handleOpenCanvas = (canvasData: Canvas) => {
-    if (canvasContext) {
-      canvasContext.openCanvas(canvasData);
-    }
   };
 
   return (
@@ -134,28 +115,16 @@ export function AnswerView({
         Layout order:
         1. User message bubble (above)
         2. ThinkingBubble / reasoning display (if extended thinking is enabled)
-        3. Canvas preview bubble (if canvas response)
-        4. Response content sections
-        5. Streaming indicator (only while text is arriving)
+        3. Response content sections (canvas is handled by ChatContent)
+        4. Streaming indicator (only while text is arriving)
       */}
       
       {/* Reasoning Display - ALWAYS positioned above response content */}
       <InlineStreamingDisplay
         thinking={thinking}
         isStreaming={isStreaming}
-        hasContent={sections.length > 0 || !!canvas}
+        hasContent={sections.length > 0}
       />
-
-      {/* Canvas Preview - Shown when response includes a canvas */}
-      {canvas && (
-        <div className="py-3">
-          <CanvasPreviewBubble
-            canvas={canvas}
-            isStreaming={isCanvasStreaming}
-            onOpenCanvas={handleOpenCanvas}
-          />
-        </div>
-      )}
 
       {/* Answer Content - Appears below reasoning and canvas */}
       <div className="space-y-3">

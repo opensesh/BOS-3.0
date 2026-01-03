@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
+import { ArtDirectionSettingsModal } from '@/components/brand-hub/ArtDirectionSettingsModal';
 import { Download, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import JSZip from 'jszip';
@@ -351,6 +352,7 @@ export default function ArtDirectionPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [activeImage, setActiveImage] = useState<number>(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Filter images based on selected category
   const filteredImages = selectedCategory === 'All' 
@@ -416,6 +418,8 @@ export default function ArtDirectionPage() {
       <BrandHubLayout
         title="Art Direction"
         description="Our visual language spans automotive excellence, lifestyle moments, dynamic movement, escapist dreams, professional environments, and emotional resonance."
+        onSettingsClick={() => setIsSettingsOpen(true)}
+        settingsTooltip="Manage art direction images"
       >
         {/* Filter Buttons + Download Button - Same row, matching original layout */}
         <div className="flex flex-wrap gap-2 items-center mb-8">
@@ -625,6 +629,12 @@ export default function ArtDirectionPage() {
           )}
         </AnimatePresence>
       </BrandHubLayout>
+
+      {/* Art Direction Settings Modal */}
+      <ArtDirectionSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }

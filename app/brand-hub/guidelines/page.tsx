@@ -3,6 +3,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
+import { GuidelinesSettingsModal } from '@/components/brand-hub/GuidelinesSettingsModal';
+import { useBrandGuidelines } from '@/hooks/useBrandGuidelines';
 import { ArrowUpRight, ExternalLink, Figma, Upload, FileText, Presentation, X, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const FIGMA_EMBED_URL = 'https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2Ft6ibLjzJFXY6HzU0bIahxw%2FBRAND-OS%3Fpage-id%3D19939%253A21956%26node-id%3D20255-18337%26viewport%3D465%252C-92%252C0.05%26t%3DFjx1co9Q53DPCGLw-1%26scaling%3Dscale-down%26content-scaling%3Dfixed%26starting-point-node-id%3D20255%253A18337';
@@ -21,7 +23,11 @@ interface UploadedFile {
 export default function GuidelinesPage() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Fetch guidelines from Supabase
+  const { primaryGuideline, isLoading: guidelinesLoading } = useBrandGuidelines();
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -207,6 +213,8 @@ export default function GuidelinesPage() {
       <BrandHubLayout
         title="Guidelines"
         description="Welcome to Open Session. Here you can find all of our brand guidelines. Covering everything from messaging to art direction and even AI guidance."
+        onSettingsClick={() => setIsSettingsOpen(true)}
+        settingsTooltip="Manage brand guidelines"
       >
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Left Column - Info */}
@@ -299,6 +307,12 @@ export default function GuidelinesPage() {
           </div>
         </div>
       </BrandHubLayout>
+
+      {/* Guidelines Settings Modal */}
+      <GuidelinesSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }

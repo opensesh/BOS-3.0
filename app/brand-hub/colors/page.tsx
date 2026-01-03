@@ -252,12 +252,19 @@ function MonoColorCard({ color }: { color: ColorData }) {
 }
 
 export default function ColorsPage() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
+  // Fetch colors from Supabase (for future dynamic display)
+  const { colors, isLoading } = useBrandColors();
+
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
       <BrandHubLayout
         title="Color"
         description="Our color palette balances warmth with professionalism. Vanilla and Charcoal form our primary pair, while Aperol adds energy as an accent."
+        onSettingsClick={() => setIsSettingsOpen(true)}
+        settingsTooltip="Manage brand colors"
       >
         {/* Brand Colors Section */}
         <section className="mb-12">
@@ -293,6 +300,12 @@ export default function ColorsPage() {
           </div>
         </section>
       </BrandHubLayout>
+
+      {/* Color Settings Modal */}
+      <ColorSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }

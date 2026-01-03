@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
+import { FontSettingsModal } from '@/components/brand-hub/FontSettingsModal';
 import { RefreshCw, Download, ChevronDown, Monitor, Globe } from 'lucide-react';
 
 type FontFormat = 'desktop' | 'web';
@@ -265,6 +266,7 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
 
 export default function FontsPage() {
   const [cardRefs, setCardRefs] = useState<Record<string, (() => void) | null>>({});
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const resetAllSections = () => {
     Object.values(cardRefs).forEach((reset) => reset?.());
@@ -326,6 +328,8 @@ Note: In production, this would download a ZIP file containing all font files.
       <BrandHubLayout
         title="Typography"
         description="Our type system uses Neue Haas Grotesk for display and body text, paired with OffBit for accent and monospace needs."
+        onSettingsClick={() => setIsSettingsOpen(true)}
+        settingsTooltip="Manage brand fonts"
       >
         {/* Header with Reset All & Download All */}
         <div className="flex items-center justify-between mb-6">
@@ -364,6 +368,12 @@ Note: In production, this would download a ZIP file containing all font files.
           ))}
         </div>
       </BrandHubLayout>
+
+      {/* Font Settings Modal */}
+      <FontSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }

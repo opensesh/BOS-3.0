@@ -6,6 +6,7 @@ import JSZip from 'jszip';
 import { useTheme } from 'next-themes';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
+import { LogoSettingsModal } from '@/components/brand-hub/LogoSettingsModal';
 import { RefreshCw, Download, Palette, ChevronDown } from 'lucide-react';
 
 type ColorVariant = 'vanilla' | 'glass' | 'charcoal';
@@ -285,6 +286,7 @@ function LogoCard({
 export default function LogoPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // Get the default color based on the current theme
   // Light mode: use charcoal logos (dark on light background)
@@ -375,6 +377,8 @@ export default function LogoPage() {
       <BrandHubLayout
         title="Logo"
         description="Our logo system includes multiple lockups for different contexts. Click any logo to download."
+        onSettingsClick={() => setIsSettingsOpen(true)}
+        settingsTooltip="Manage brand logos"
       >
         {/* Header with Reset & Download All */}
         <div className="flex items-center justify-between mb-6">
@@ -474,6 +478,12 @@ export default function LogoPage() {
           </div>
         </div>
       </BrandHubLayout>
+
+      {/* Logo Settings Modal */}
+      <LogoSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }

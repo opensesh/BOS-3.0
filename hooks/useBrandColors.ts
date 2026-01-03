@@ -18,8 +18,9 @@ import {
   getNextSortOrder,
 } from '@/lib/supabase/brand-colors-service';
 
-// Default brand ID for Open Session
-const DEFAULT_BRAND_ID = process.env.NEXT_PUBLIC_DEFAULT_BRAND_ID || '';
+// Default brand ID for Open Session (fallback for local development)
+const OPEN_SESSION_BRAND_ID = '16aa5681-c792-45cf-bf65-9f9cbc3197af';
+const DEFAULT_BRAND_ID = process.env.NEXT_PUBLIC_DEFAULT_BRAND_ID || OPEN_SESSION_BRAND_ID;
 
 interface UseBrandColorsOptions {
   brandId?: string;

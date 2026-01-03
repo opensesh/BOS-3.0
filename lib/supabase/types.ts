@@ -504,6 +504,67 @@ export function dbUserProfileToApp(db: DbUserProfile): UserProfile {
 }
 
 // ============================================
+// BRANDS (Multi-tenant isolation)
+// ============================================
+
+export interface BrandSettings {
+  colors?: {
+    primary?: string;
+    charcoal?: string;
+    vanilla?: string;
+    glass?: string;
+  };
+  fonts?: {
+    display?: string;
+    text?: string;
+    mono?: string;
+  };
+  description?: string;
+  [key: string]: unknown;
+}
+
+export interface DbBrand {
+  id: string;
+  name: string;
+  slug: string;
+  settings: BrandSettings;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  settings: BrandSettings;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BrandInsert {
+  name: string;
+  slug: string;
+  settings?: BrandSettings;
+}
+
+export interface BrandUpdate {
+  name?: string;
+  slug?: string;
+  settings?: BrandSettings;
+}
+
+export function dbBrandToApp(db: DbBrand): Brand {
+  return {
+    id: db.id,
+    name: db.name,
+    slug: db.slug,
+    settings: db.settings,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// ============================================
 // BRAND DOCUMENTS (Brain Knowledge Management)
 // ============================================
 
@@ -511,6 +572,7 @@ export type BrandDocumentCategory = 'brand-identity' | 'writing-styles' | 'skill
 
 export interface DbBrandDocument {
   id: string;
+  brand_id: string;
   category: BrandDocumentCategory;
   slug: string;
   title: string;
@@ -519,12 +581,14 @@ export interface DbBrandDocument {
   sort_order: number;
   is_system: boolean;
   is_deleted: boolean;
+  embedding: number[] | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface BrandDocument {
   id: string;
+  brandId: string;
   category: BrandDocumentCategory;
   slug: string;
   title: string;
@@ -533,11 +597,13 @@ export interface BrandDocument {
   sortOrder: number;
   isSystem: boolean;
   isDeleted: boolean;
+  embedding?: number[];
   createdAt: string;
   updatedAt: string;
 }
 
 export interface BrandDocumentInsert {
+  brand_id: string;
   category: BrandDocumentCategory;
   slug: string;
   title: string;
@@ -545,6 +611,7 @@ export interface BrandDocumentInsert {
   icon?: string;
   sort_order?: number;
   is_system?: boolean;
+  embedding?: number[];
 }
 
 export interface BrandDocumentUpdate {
@@ -553,6 +620,163 @@ export interface BrandDocumentUpdate {
   icon?: string;
   sort_order?: number;
   is_deleted?: boolean;
+  embedding?: number[];
+}
+
+// ============================================
+// BRAND DOCUMENT CHUNKS (RAG retrieval)
+// ============================================
+
+export interface DbBrandDocumentChunk {
+  id: string;
+  document_id: string;
+  brand_id: string;
+  heading_hierarchy: string[];
+  chunk_index: number;
+  content: string;
+  embedding: number[] | null;
+  token_count: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrandDocumentChunk {
+  id: string;
+  documentId: string;
+  brandId: string;
+  headingHierarchy: string[];
+  chunkIndex: number;
+  content: string;
+  embedding?: number[];
+  tokenCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BrandDocumentChunkInsert {
+  document_id: string;
+  brand_id: string;
+  heading_hierarchy?: string[];
+  chunk_index?: number;
+  content: string;
+  embedding?: number[];
+  token_count?: number;
+}
+
+export interface BrandDocumentChunkUpdate {
+  heading_hierarchy?: string[];
+  content?: string;
+  embedding?: number[];
+  token_count?: number;
+}
+
+export function dbBrandDocumentChunkToApp(db: DbBrandDocumentChunk): BrandDocumentChunk {
+  return {
+    id: db.id,
+    documentId: db.document_id,
+    brandId: db.brand_id,
+    headingHierarchy: db.heading_hierarchy,
+    chunkIndex: db.chunk_index,
+    content: db.content,
+    embedding: db.embedding || undefined,
+    tokenCount: db.token_count || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// ============================================
+// BRAND ASSETS (Semantic asset search)
+// ============================================
+
+export type BrandAssetCategory = 'logos' | 'fonts' | 'illustrations' | 'images' | 'textures' | 'icons';
+
+export interface BrandAssetMetadata {
+  theme?: string;
+  weight?: string;
+  format?: string;
+  color?: string;
+  [key: string]: unknown;
+}
+
+export interface DbBrandAsset {
+  id: string;
+  brand_id: string;
+  name: string;
+  filename: string;
+  description: string;
+  category: BrandAssetCategory;
+  variant: string | null;
+  storage_path: string;
+  mime_type: string | null;
+  file_size: number | null;
+  embedding: number[] | null;
+  metadata: BrandAssetMetadata;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrandAsset {
+  id: string;
+  brandId: string;
+  name: string;
+  filename: string;
+  description: string;
+  category: BrandAssetCategory;
+  variant?: string;
+  storagePath: string;
+  mimeType?: string;
+  fileSize?: number;
+  embedding?: number[];
+  metadata: BrandAssetMetadata;
+  createdAt: string;
+  updatedAt: string;
+  // Computed at runtime
+  publicUrl?: string;
+}
+
+export interface BrandAssetInsert {
+  brand_id: string;
+  name: string;
+  filename: string;
+  description: string;
+  category: BrandAssetCategory;
+  variant?: string;
+  storage_path: string;
+  mime_type?: string;
+  file_size?: number;
+  embedding?: number[];
+  metadata?: BrandAssetMetadata;
+}
+
+export interface BrandAssetUpdate {
+  name?: string;
+  description?: string;
+  variant?: string;
+  mime_type?: string;
+  file_size?: number;
+  embedding?: number[];
+  metadata?: BrandAssetMetadata;
+}
+
+export function dbBrandAssetToApp(db: DbBrandAsset, publicUrl?: string): BrandAsset {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    name: db.name,
+    filename: db.filename,
+    description: db.description,
+    category: db.category,
+    variant: db.variant || undefined,
+    storagePath: db.storage_path,
+    mimeType: db.mime_type || undefined,
+    fileSize: db.file_size || undefined,
+    embedding: db.embedding || undefined,
+    metadata: db.metadata || {},
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+    publicUrl,
+  };
 }
 
 export interface DbBrandDocumentVersion {
@@ -586,6 +810,7 @@ export interface BrandDocumentVersionInsert {
 export function dbBrandDocumentToApp(db: DbBrandDocument): BrandDocument {
   return {
     id: db.id,
+    brandId: db.brand_id,
     category: db.category,
     slug: db.slug,
     title: db.title,
@@ -594,6 +819,7 @@ export function dbBrandDocumentToApp(db: DbBrandDocument): BrandDocument {
     sortOrder: db.sort_order,
     isSystem: db.is_system,
     isDeleted: db.is_deleted,
+    embedding: db.embedding || undefined,
     createdAt: db.created_at,
     updatedAt: db.updated_at,
   };
@@ -677,6 +903,11 @@ export interface Database {
         Insert: UserProfileInsert;
         Update: UserProfileUpdate;
       };
+      brands: {
+        Row: DbBrand;
+        Insert: BrandInsert;
+        Update: BrandUpdate;
+      };
       brand_documents: {
         Row: DbBrandDocument;
         Insert: BrandDocumentInsert;
@@ -686,6 +917,16 @@ export interface Database {
         Row: DbBrandDocumentVersion;
         Insert: BrandDocumentVersionInsert;
         Update: never; // Versions are immutable
+      };
+      brand_document_chunks: {
+        Row: DbBrandDocumentChunk;
+        Insert: BrandDocumentChunkInsert;
+        Update: BrandDocumentChunkUpdate;
+      };
+      brand_assets: {
+        Row: DbBrandAsset;
+        Insert: BrandAssetInsert;
+        Update: BrandAssetUpdate;
       };
     };
   };

@@ -34,10 +34,10 @@ export function IconHover3D({
       <div className="flex flex-col h-full">
         {/* Text Content - TOP */}
         <div className="mb-3">
-          {/* Title - vanilla by default, orange on hover */}
+          {/* Title - vanilla by default, aperol on hover */}
           <h3 
             className="text-sm font-semibold mb-0.5 transition-colors duration-300"
-            style={{ color: isHovered ? 'var(--color-brand-500)' : 'var(--fg-primary)' }}
+            style={{ color: isHovered ? 'var(--fg-brand-primary)' : 'var(--fg-primary)' }}
           >
             {title}
           </h3>
@@ -51,7 +51,7 @@ export function IconHover3D({
         {/* Spacer to push icon to bottom */}
         <div className="flex-1" />
 
-        {/* Icon Container - BOTTOM - square to match folder */}
+        {/* Icon Container - BOTTOM - icon stays neutral, no hover color change */}
         <motion.div
           className="w-10 h-10 rounded-lg bg-[var(--bg-tertiary)] flex items-center justify-center"
           animate={{
@@ -64,9 +64,9 @@ export function IconHover3D({
           }}
         >
           <Icon 
-            className="w-5 h-5 transition-colors duration-300"
+            className="w-5 h-5"
             style={{
-              stroke: isHovered ? 'var(--color-brand-500)' : 'var(--fg-tertiary)',
+              stroke: 'var(--fg-tertiary)',
               strokeWidth: 1.5,
               fill: 'none',
             }}

@@ -81,8 +81,8 @@ function ResourceCard({
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      {/* Icon */}
-      <div className="p-2 rounded-lg bg-[var(--bg-primary)]/50 border border-[var(--border-primary)] flex-shrink-0 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
+      {/* Icon - no hover color change, stays neutral */}
+      <div className="p-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex-shrink-0 text-[var(--fg-tertiary)]">
         <ResourceIconPreview iconName={resource.iconName} />
       </div>
       
@@ -185,8 +185,8 @@ function BentoCard({ item }: { item: typeof brainPages[0] }) {
       >
         {/* Top Section: Icon and Arrow */}
         <div className="flex items-start justify-between">
-          <div className="p-3 rounded-xl bg-[var(--bg-primary)]/50 border border-[var(--border-primary)]">
-            <Icon className="w-6 h-6 text-[var(--fg-primary)]" />
+          <div className="p-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)]">
+            <Icon className="w-6 h-6 text-[var(--fg-tertiary)]" />
           </div>
           <ArrowUpRight className="w-5 h-5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-2 translate-x-2 group-hover:translate-y-0 group-hover:translate-x-0" />
         </div>

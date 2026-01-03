@@ -264,12 +264,12 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
           className="group relative p-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary-hover)] transition-all text-left"
         >
           <div className="flex items-start justify-between mb-4">
-            <div className="p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-primary)] group-hover:border-[var(--border-brand)] transition-colors">
-              <ClipboardPaste className="w-6 h-6 text-[var(--fg-primary)]" />
+            <div className="p-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)]">
+              <ClipboardPaste className="w-6 h-6 text-[var(--fg-tertiary)]" />
             </div>
             <ArrowRight className="w-5 h-5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <h3 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-2">
+          <h3 className="text-lg font-display font-semibold text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors mb-2">
             Manual
           </h3>
           <p className="text-sm text-[var(--fg-tertiary)]">
@@ -286,12 +286,12 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
           className="group relative p-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary-hover)] transition-all text-left"
         >
           <div className="flex items-start justify-between mb-4">
-            <div className="p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-primary)] group-hover:border-[var(--border-brand)] transition-colors">
-              <Wand2 className="w-6 h-6 text-[var(--fg-brand-primary)]" />
+            <div className="p-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)]">
+              <Wand2 className="w-6 h-6 text-[var(--fg-tertiary)]" />
             </div>
             <ArrowRight className="w-5 h-5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-          <h3 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-2">
+          <h3 className="text-lg font-display font-semibold text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors mb-2">
             Guided
           </h3>
           <p className="text-sm text-[var(--fg-tertiary)]">

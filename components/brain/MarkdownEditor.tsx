@@ -37,9 +37,7 @@ interface MarkdownEditorProps {
 type ViewMode = 'preview' | 'source';
 
 // Consistent icon button styles
-const iconButtonBase = "p-2 rounded-lg transition-all duration-200 group";
-const iconButtonDefault = `${iconButtonBase} hover:bg-[var(--bg-tertiary)]`;
-const iconButtonDanger = `${iconButtonBase} hover:bg-[var(--bg-error-subtle)]`;
+const iconButtonBase = "p-2 rounded-lg transition-all duration-200 group hover:bg-[var(--bg-tertiary)]";
 const iconBase = "w-4 h-4 transition-colors duration-200";
 const iconDefault = `${iconBase} text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]`;
 const iconDanger = `${iconBase} text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)]`;
@@ -296,7 +294,7 @@ export function MarkdownEditor({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.15 }}
-                className="px-2 py-0.5 text-xs font-medium rounded-full bg-[var(--bg-brand-solid)] text-white"
+                className="px-2 py-0.5 text-xs font-medium rounded-md bg-[var(--bg-tertiary)] text-[var(--fg-secondary)] border border-[var(--border-primary)]/40"
               >
                 Editing
               </motion.span>
@@ -329,7 +327,7 @@ export function MarkdownEditor({
                 {onDelete && (
                   <motion.button
                     onClick={onDelete}
-                    className={iconButtonDanger}
+                    className={iconButtonBase}
                     title="Delete"
                     variants={buttonVariants}
                     initial="initial"
@@ -348,7 +346,7 @@ export function MarkdownEditor({
                       <motion.button
                         onClick={handleUndo}
                         disabled={!canUndo}
-                        className={`${iconButtonDefault} disabled:opacity-30 disabled:cursor-not-allowed`}
+                        className={`${iconButtonBase} disabled:opacity-30 disabled:cursor-not-allowed`}
                         title="Undo (⌘Z)"
                         variants={buttonVariants}
                         initial="initial"
@@ -363,7 +361,7 @@ export function MarkdownEditor({
                       <motion.button
                         onClick={handleRedo}
                         disabled={!canRedo}
-                        className={`${iconButtonDefault} disabled:opacity-30 disabled:cursor-not-allowed`}
+                        className={`${iconButtonBase} disabled:opacity-30 disabled:cursor-not-allowed`}
                         title="Redo (⌘⇧Z)"
                         variants={buttonVariants}
                         initial="initial"
@@ -388,7 +386,7 @@ export function MarkdownEditor({
                 {onViewHistory && (
                   <motion.button
                     onClick={onViewHistory}
-                    className={iconButtonDefault}
+                    className={iconButtonBase}
                     title="Version History"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -400,7 +398,7 @@ export function MarkdownEditor({
                 {/* Exit button */}
                 <motion.button
                   onClick={handleCancel}
-                  className={iconButtonDefault}
+                  className={iconButtonBase}
                   title="Exit (Esc)"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -442,7 +440,7 @@ export function MarkdownEditor({
                 {/* Download button */}
                 <motion.button
                   onClick={handleDownload}
-                  className={iconButtonDefault}
+                  className={iconButtonBase}
                   title="Download"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -453,7 +451,7 @@ export function MarkdownEditor({
                 {/* Copy button */}
                 <motion.button
                   onClick={handleCopy}
-                  className={iconButtonDefault}
+                  className={iconButtonBase}
                   title={copied ? 'Copied!' : 'Copy'}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -486,7 +484,7 @@ export function MarkdownEditor({
                   <motion.button
                     onClick={handleEdit}
                     disabled={isLoading}
-                    className={`${iconButtonDefault} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`${iconButtonBase} disabled:opacity-50 disabled:cursor-not-allowed`}
                     title="Edit"
                     whileHover={!isLoading ? { scale: 1.05 } : {}}
                     whileTap={!isLoading ? { scale: 0.95 } : {}}

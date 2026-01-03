@@ -24,13 +24,13 @@ export function TabSelector({ tabs, activeTab, onChange, className = '' }: TabSe
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={`
-              relative px-3 py-1.5 text-xs font-medium
+              group relative px-3 py-1.5 text-xs font-medium
               transition-all duration-150 ease-out
               rounded-t-md
               ${
                 isActive
-                  ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] z-10 shadow-[0_-1px_3px_rgba(0,0,0,0.08)] border-t border-l border-r border-[var(--border-primary)]'
-                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-secondary)] border-t border-l border-r border-transparent'
+                  ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] z-10 shadow-[0_-1px_3px_rgba(0,0,0,0.08)]'
+                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-secondary)] hover:shadow-[inset_0_0_0_1px_var(--border-brand-solid)]'
               }
             `}
             style={{
@@ -39,6 +39,18 @@ export function TabSelector({ tabs, activeTab, onChange, className = '' }: TabSe
               marginBottom: isActive ? '-1px' : '0',
             }}
           >
+            {/* Aperol accent line on top - visible on active, appears on hover for inactive */}
+            <span 
+              className={`
+                absolute top-0 left-1 right-1 h-0.5 rounded-full
+                transition-all duration-150
+                ${isActive 
+                  ? 'bg-[var(--border-brand-solid)] opacity-100' 
+                  : 'bg-[var(--border-brand-solid)] opacity-0 group-hover:opacity-100'
+                }
+              `}
+              aria-hidden="true"
+            />
             {tab.label}
           </button>
         );

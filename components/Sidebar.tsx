@@ -670,16 +670,6 @@ export function Sidebar() {
   const router = useRouter();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
   
-  // #region agent log
-  if (typeof window !== 'undefined') {
-    const emptyChats = chatHistory.filter(c => !c.id || c.id === '');
-    const emptyProjects = projects.filter(p => !p.id || p.id === '');
-    const emptySpaces = userSpaces.filter(s => !s.id || s.id === '');
-    if (emptyChats.length > 0 || emptyProjects.length > 0 || emptySpaces.length > 0) {
-      fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Sidebar.tsx:render',message:'Found items with empty IDs',data:{emptyChats:emptyChats.length,emptyProjects:emptyProjects.length,emptySpaces:emptySpaces.length,chatHistoryTotal:chatHistory.length,projectsTotal:projects.length,spacesTotal:userSpaces.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B-C-E'})}).catch(()=>{});
-    }
-  }
-  // #endregion
 
   // For expanded mode: only expand the section containing the current page
   const [expandedSections, setExpandedSections] = useState<string[]>(() => {

@@ -86,7 +86,6 @@ export default {
         'primary_hover': 'var(--bg-primary_hover)',
         'secondary': 'var(--fg-secondary)',
         'secondary_hover': 'var(--fg-secondary_hover)',
-        'bg-secondary-hover': 'var(--bg-secondary_hover)',
         'tertiary': 'var(--fg-tertiary)',
         'tertiary_hover': 'var(--fg-tertiary_hover)',
         'quaternary': 'var(--fg-quaternary)',

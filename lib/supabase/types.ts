@@ -940,6 +940,184 @@ export function dbBrandColorToApp(db: DbBrandColor): BrandColor {
 }
 
 // ============================================
+// BRAND GUIDELINES (Brand Hub)
+// ============================================
+
+export type BrandGuidelineType = 'figma' | 'pdf' | 'pptx' | 'ppt' | 'link' | 'notion' | 'google-doc';
+export type BrandGuidelineCategory = 'brand-identity' | 'messaging' | 'art-direction' | 'ai-guidance' | 'design-system' | 'other';
+
+export interface BrandGuidelineMetadata {
+  pageCount?: number;
+  lastEdited?: string;
+  author?: string;
+  version?: string;
+  [key: string]: unknown;
+}
+
+export interface DbBrandGuideline {
+  id: string;
+  brand_id: string;
+  title: string;
+  slug: string;
+  guideline_type: BrandGuidelineType;
+  url: string | null;
+  embed_url: string | null;
+  storage_path: string | null;
+  description: string | null;
+  category: string | null;
+  thumbnail_url: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
+  metadata: BrandGuidelineMetadata;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrandGuideline {
+  id: string;
+  brandId: string;
+  title: string;
+  slug: string;
+  guidelineType: BrandGuidelineType;
+  url?: string;
+  embedUrl?: string;
+  storagePath?: string;
+  description?: string;
+  category?: string;
+  thumbnailUrl?: string;
+  fileSize?: number;
+  mimeType?: string;
+  sortOrder: number;
+  isPrimary: boolean;
+  isActive: boolean;
+  metadata: BrandGuidelineMetadata;
+  createdAt: string;
+  updatedAt: string;
+  // Computed at runtime
+  publicUrl?: string;
+}
+
+export interface BrandGuidelineInsert {
+  brand_id: string;
+  title: string;
+  slug?: string;
+  guideline_type: BrandGuidelineType;
+  url?: string;
+  embed_url?: string;
+  storage_path?: string;
+  description?: string;
+  category?: string;
+  thumbnail_url?: string;
+  file_size?: number;
+  mime_type?: string;
+  sort_order?: number;
+  is_primary?: boolean;
+  metadata?: BrandGuidelineMetadata;
+}
+
+export interface BrandGuidelineUpdate {
+  title?: string;
+  slug?: string;
+  guideline_type?: BrandGuidelineType;
+  url?: string;
+  embed_url?: string;
+  storage_path?: string;
+  description?: string;
+  category?: string;
+  thumbnail_url?: string;
+  file_size?: number;
+  mime_type?: string;
+  sort_order?: number;
+  is_primary?: boolean;
+  is_active?: boolean;
+  metadata?: BrandGuidelineMetadata;
+}
+
+export function dbBrandGuidelineToApp(db: DbBrandGuideline, publicUrl?: string): BrandGuideline {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    title: db.title,
+    slug: db.slug,
+    guidelineType: db.guideline_type,
+    url: db.url || undefined,
+    embedUrl: db.embed_url || undefined,
+    storagePath: db.storage_path || undefined,
+    description: db.description || undefined,
+    category: db.category || undefined,
+    thumbnailUrl: db.thumbnail_url || undefined,
+    fileSize: db.file_size || undefined,
+    mimeType: db.mime_type || undefined,
+    sortOrder: db.sort_order,
+    isPrimary: db.is_primary,
+    isActive: db.is_active,
+    metadata: db.metadata || {},
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+    publicUrl,
+  };
+}
+
+// ============================================
+// BRAND HUB TYPE ALIASES (for clarity)
+// ============================================
+
+// Logo assets use brand_assets with category='logos'
+export type BrandLogoVariant = 'vanilla' | 'glass' | 'charcoal';
+export type BrandLogoType = 'brandmark' | 'combo' | 'stacked' | 'horizontal' | 'core' | 'outline' | 'filled';
+
+export interface BrandLogoMetadata extends BrandAssetMetadata {
+  variant?: BrandLogoVariant;
+  logoType?: BrandLogoType;
+  isAccessory?: boolean;
+}
+
+// Type alias for logos
+export type BrandLogo = BrandAsset & {
+  category: 'logos';
+  metadata: BrandLogoMetadata;
+};
+
+// Font assets use brand_assets with category='fonts'
+export type FontWeight = '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
+export type FontStyle = 'normal' | 'italic' | 'oblique';
+export type FontFormat = 'woff2' | 'woff' | 'ttf' | 'otf' | 'eot';
+
+export interface BrandFontMetadata extends BrandAssetMetadata {
+  fontFamily?: string;
+  fontWeight?: FontWeight;
+  fontStyle?: FontStyle;
+  fontFormat?: FontFormat;
+  usage?: string; // e.g., 'display', 'body', 'accent'
+  lineHeight?: string;
+}
+
+// Type alias for fonts
+export type BrandFont = BrandAsset & {
+  category: 'fonts';
+  metadata: BrandFontMetadata;
+};
+
+// Art direction images use brand_assets with category='images'
+export type ArtDirectionCategory = 'Auto' | 'Lifestyle' | 'Move' | 'Escape' | 'Work' | 'Feel';
+
+export interface BrandArtImageMetadata extends BrandAssetMetadata {
+  artCategory?: ArtDirectionCategory;
+  tags?: string[];
+  photographer?: string;
+  altText?: string;
+}
+
+// Type alias for art direction images
+export type BrandArtImage = BrandAsset & {
+  category: 'images';
+  metadata: BrandArtImageMetadata;
+};
+
+// ============================================
 // LEGACY TYPES (backwards compatibility)
 // ============================================
 
@@ -1034,6 +1212,11 @@ export interface Database {
         Row: DbBrandColor;
         Insert: BrandColorInsert;
         Update: BrandColorUpdate;
+      };
+      brand_guidelines: {
+        Row: DbBrandGuideline;
+        Insert: BrandGuidelineInsert;
+        Update: BrandGuidelineUpdate;
       };
     };
   };

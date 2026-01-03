@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
+import { ColorSettingsModal } from '@/components/brand-hub/ColorSettingsModal';
 import { Copy, Check } from 'lucide-react';
+import { useBrandColors } from '@/hooks/useBrandColors';
 
 interface ColorData {
   name: string;

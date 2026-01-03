@@ -158,9 +158,6 @@ export function ChatInterface() {
     return '';
   }, []);
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:afterGetMessageContent',message:'getMessageContent defined BEFORE generateTitle',data:{getMessageContentType:typeof getMessageContent,isFunction:typeof getMessageContent === 'function'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A',runId:'post-fix'})}).catch(()=>{});
-  // #endregion
 
   // Generate a semantic title for the conversation
   const generateTitle = useCallback(async (msgs: typeof messages) => {
@@ -192,9 +189,6 @@ export function ChatInterface() {
     }
   }, [isGeneratingTitle, generatedTitle, getMessageContent]);
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:afterGenerateTitle',message:'generateTitle defined successfully',data:{generateTitleType:typeof generateTitle,reachedThisPoint:true},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A',runId:'post-fix'})}).catch(()=>{});
-  // #endregion
 
   // Listen for reset signals from context (e.g., sidebar navigation)
   useEffect(() => {
@@ -761,9 +755,6 @@ export function ChatInterface() {
 
   // Parse messages into our format
   const parsedMessages: ParsedMessage[] = useMemo(() => {
-    // #region agent log
-    messages.forEach((m, i) => { if (!m.id || m.id === '') fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:parsedMessages',message:'Empty message ID detected',data:{index:i,id:m.id,role:m.role},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{}); });
-    // #endregion
     return messages.map((message) => {
       // Extract extended data from the message if available
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

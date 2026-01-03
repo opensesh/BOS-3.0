@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { X, Upload, FileText, CheckCircle2, BookOpen, PenTool, Check, ArrowRight, Zap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, BookOpen, PenTool, Check, ArrowRight, Zap } from 'lucide-react';
 import { Button } from '@/components/ui';
 
 export type BrainSection = 'architecture' | 'guidelines' | 'writing' | 'skills';
@@ -10,13 +10,6 @@ interface BrainSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultSection?: BrainSection;
-}
-
-interface UploadedFile {
-  id: string;
-  name: string;
-  type: 'guidelines' | 'writing';
-  status: 'uploading' | 'complete';
 }
 
 type SelectedOption = 'guidelines' | 'writing' | 'skills' | null;
@@ -34,57 +27,6 @@ export function BrainSettingsModal({ isOpen, onClose, defaultSection }: BrainSet
       }
     }
   }, [isOpen, defaultSection]);
-
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleDrop = useCallback((e: React.DragEvent, type: 'guidelines' | 'writing') => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = Array.from(e.dataTransfer.files);
-    files.forEach(file => {
-      const newFile: UploadedFile = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        type,
-        status: 'complete',
-      };
-      setUploadedFiles(prev => [...prev, newFile]);
-    });
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>, type: 'guidelines' | 'writing') => {
-    const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach(file => {
-      const newFile: UploadedFile = {
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        type,
-        status: 'complete',
-      };
-      setUploadedFiles(prev => [...prev, newFile]);
-    });
-  }, []);
-
-  const removeFile = (id: string) => {
-    setUploadedFiles(prev => prev.filter(f => f.id !== id));
-  };
-
-  const getFilesForType = (type: 'guidelines' | 'writing') => {
-    return uploadedFiles.filter(f => f.type === type);
-  };
 
   if (!isOpen) return null;
 
@@ -177,93 +119,6 @@ export function BrainSettingsModal({ isOpen, onClose, defaultSection }: BrainSet
             })}
           </div>
 
-          {/* Upload Section */}
-          {(selectedOption === 'guidelines' || selectedOption === 'writing') && (
-            <section className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Upload className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-                <h3 className="text-lg font-display font-medium text-[var(--fg-primary)]">
-                  Upload {selectedOption === 'guidelines' ? 'Brand Guidelines' : 'Writing Styles'}
-                </h3>
-              </div>
-              
-              <p className="text-sm text-[var(--fg-tertiary)]">
-                {selectedOption === 'guidelines' 
-                  ? 'We recommend uploading your brand guidelines as a PPTX or PDF file.'
-                  : 'Upload your writing style guides as PPTX, PDF, or DOCX files.'
-                }
-              </p>
-              
-              {/* Drop Zone */}
-              <div
-                onDrop={(e) => handleDrop(e, selectedOption)}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onClick={() => fileInputRef.current?.click()}
-                className={`
-                  relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer p-8
-                  ${isDragging 
-                    ? 'border-[var(--border-brand-solid)] bg-[var(--bg-brand-primary)]' 
-                    : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]'
-                  }
-                `}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept={selectedOption === 'guidelines' ? '.pptx,.pdf' : '.pptx,.pdf,.docx'}
-                  multiple
-                  onChange={(e) => handleFileSelect(e, selectedOption)}
-                  className="hidden"
-                />
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className={`p-3 rounded-full transition-colors ${
-                    isDragging ? 'bg-[var(--bg-brand-secondary)]' : 'bg-[var(--bg-tertiary)]'
-                  }`}>
-                    <Upload className={`w-6 h-6 ${
-                      isDragging ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)]'
-                    }`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-[var(--fg-primary)]">
-                      Drop files here or click to upload
-                    </p>
-                    <p className="text-xs text-[var(--fg-tertiary)] mt-1">
-                      {selectedOption === 'guidelines' 
-                        ? 'PPTX, PDF up to 50MB'
-                        : 'PPTX, PDF, DOCX up to 50MB'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Uploaded Files */}
-              {getFilesForType(selectedOption).length > 0 && (
-                <div className="space-y-2">
-                  {getFilesForType(selectedOption).map(file => (
-                    <div 
-                      key={file.id}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-secondary)]"
-                    >
-                      <FileText className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-                      <span className="flex-1 text-sm text-[var(--fg-primary)] truncate">
-                        {file.name}
-                      </span>
-                      <CheckCircle2 className="w-5 h-5 text-[var(--fg-success-primary)]" />
-                      <button
-                        onClick={() => removeFile(file.id)}
-                        className="p-1 rounded hover:bg-[var(--bg-tertiary)] transition-colors"
-                      >
-                        <X className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
           {/* Skills Description Section */}
           {selectedOption === 'skills' && (
             <section className="space-y-4">
@@ -302,7 +157,7 @@ export function BrainSettingsModal({ isOpen, onClose, defaultSection }: BrainSet
             onClick={onClose}
             iconTrailing={ArrowRight}
           >
-            Continue to Interview
+            Continue
           </Button>
         </div>
       </div>

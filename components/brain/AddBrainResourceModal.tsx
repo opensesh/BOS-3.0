@@ -104,9 +104,14 @@ export function AddBrainResourceModal({
     onClose();
   };
 
-  // Get all Lucide icon names
+  // Get all Lucide icon names (filter out Icon suffix duplicates and non-components)
   const allIconNames = Object.keys(LucideIcons).filter(
-    (key) => key !== 'createLucideIcon' && key !== 'default' && typeof (LucideIcons as any)[key] === 'function'
+    (key) => 
+      !key.endsWith('Icon') && 
+      key !== 'createLucideIcon' && 
+      key !== 'default' &&
+      key !== 'icons' &&
+      /^[A-Z]/.test(key) // Only PascalCase component names
   ).sort();
   
   // When searching, filter all icons; otherwise show popular icons

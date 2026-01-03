@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
-  Sparkles,
+  Wand2,
   Loader2,
   Check,
   Pencil,
@@ -29,7 +29,7 @@ interface InterviewQuestion {
 
 type FlowStep = 'questions' | 'generating' | 'review';
 
-// Questions for each category
+// Questions for each category (5 questions each for a streamlined experience)
 const INTERVIEW_QUESTIONS: Record<BrandDocumentCategory, InterviewQuestion[]> = {
   'brand-identity': [
     {
@@ -56,20 +56,10 @@ const INTERVIEW_QUESTIONS: Record<BrandDocumentCategory, InterviewQuestion[]> = 
       multiline: true,
     },
     {
-      id: 'unique',
-      question: "What makes your brand unique?",
-      placeholder: "What sets you apart from competitors?",
+      id: 'personality_emotions',
+      question: "What personality and emotions define your brand?",
+      placeholder: "e.g., Friendly & innovative, makes people feel inspired and confident...",
       multiline: true,
-    },
-    {
-      id: 'personality',
-      question: "What personality traits describe your brand?",
-      placeholder: "e.g., friendly, innovative, professional, playful...",
-    },
-    {
-      id: 'emotions',
-      question: "What emotions should people feel when interacting with your brand?",
-      placeholder: "e.g., inspired, confident, excited, trusted...",
     },
   ],
   'writing-styles': [
@@ -86,34 +76,21 @@ const INTERVIEW_QUESTIONS: Record<BrandDocumentCategory, InterviewQuestion[]> = 
     },
     {
       id: 'tone',
-      question: "What tone should this writing have?",
-      placeholder: "e.g., casual but informed, professional, playful, authoritative...",
-    },
-    {
-      id: 'reading_level',
-      question: "What reading level should the content target?",
-      placeholder: "e.g., high school, college-educated, technical professionals...",
-    },
-    {
-      id: 'pronouns',
-      question: "What pronouns should be used?",
-      placeholder: "e.g., 'we' (team), 'I' (personal), 'you' (addressing reader)...",
-    },
-    {
-      id: 'avoid',
-      question: "Are there words or phrases to always use or avoid?",
-      placeholder: "List any specific language preferences or restrictions...",
+      question: "What tone and voice should this writing have?",
+      placeholder: "e.g., casual but informed, use 'we' for team voice, professional...",
       multiline: true,
     },
     {
-      id: 'length',
-      question: "What's the typical length for this content?",
-      placeholder: "e.g., 2-5 minute reads, 280 characters, long-form articles...",
+      id: 'guidelines',
+      question: "Are there words, phrases, or CTAs to include or avoid?",
+      placeholder: "List any specific language preferences, restrictions, or calls-to-action...",
+      multiline: true,
     },
     {
-      id: 'cta',
-      question: "Should content include calls-to-action? What kind?",
-      placeholder: "e.g., subscribe to newsletter, visit website, share content...",
+      id: 'format',
+      question: "What format and length should the content follow?",
+      placeholder: "e.g., 2-5 minute reads, bullet points preferred, include headers...",
+      multiline: true,
     },
   ],
   'skills': [
@@ -129,15 +106,9 @@ const INTERVIEW_QUESTIONS: Record<BrandDocumentCategory, InterviewQuestion[]> = 
       multiline: true,
     },
     {
-      id: 'triggers',
-      question: "When should this skill be used?",
-      placeholder: "What triggers or contexts activate this skill?",
-      multiline: true,
-    },
-    {
-      id: 'inputs',
-      question: "What inputs does this skill need?",
-      placeholder: "List required information or data...",
+      id: 'context',
+      question: "When and how should this skill be used?",
+      placeholder: "What triggers this skill? What inputs or information does it need?",
       multiline: true,
     },
     {
@@ -147,15 +118,9 @@ const INTERVIEW_QUESTIONS: Record<BrandDocumentCategory, InterviewQuestion[]> = 
       multiline: true,
     },
     {
-      id: 'limitations',
-      question: "Are there any limitations or constraints?",
-      placeholder: "What can't this skill do? Any edge cases?",
-      multiline: true,
-    },
-    {
       id: 'example',
-      question: "Can you provide an example of this skill in action?",
-      placeholder: "Describe a practical use case or demonstration...",
+      question: "Can you provide an example use case?",
+      placeholder: "Describe a practical demonstration or scenario...",
       multiline: true,
     },
   ],
@@ -347,7 +312,7 @@ export function GuidedInputFlow({
             >
               {isLastQuestion ? (
                 <>
-                  <Sparkles className="w-4 h-4" />
+                  <Wand2 className="w-4 h-4" />
                   Generate
                 </>
               ) : (

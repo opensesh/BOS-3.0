@@ -7,6 +7,7 @@ export interface BrainResource {
   name: string;
   url: string;
   icon: 'skills' | 'projects' | 'claude-md' | 'commands' | 'writing-styles' | 'custom';
+  iconName?: string; // Lucide icon name for custom icons
   createdAt: string;
 }
 

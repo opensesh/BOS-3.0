@@ -1,9 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Zap, FolderOpen, FileCode, Terminal, PenTool, Link } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
+import { Zap, FolderOpen, FileCode, Terminal, PenTool, Link, Search } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
 import { BrainResource } from '@/hooks/useBrainResources';
+
+// Popular icons for quick selection
+const POPULAR_ICONS = [
+  'Globe', 'Link', 'FileText', 'Folder', 'Cloud', 'Database',
+  'Code', 'Terminal', 'Figma', 'Github', 'Slack', 'Chrome',
+  'BookOpen', 'Lightbulb', 'Zap', 'Settings', 'Star', 'Heart',
+];
 
 interface AddBrainResourceModalProps {
   isOpen: boolean;
@@ -23,12 +31,18 @@ export function AddBrainResourceModal({
   const isEditMode = !!editResource;
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('Link');
+  const [iconSearch, setIconSearch] = useState('');
+  const [showAllIcons, setShowAllIcons] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (editResource) {
       setName(editResource.name);
       setUrl(editResource.url);
+      setSelectedIcon(editResource.iconName || 'Link');
+    } else {
+      setSelectedIcon('Link');
     }
   }, [editResource]);
 
@@ -63,17 +77,22 @@ export function AddBrainResourceModal({
       onUpdateResource(editResource.id, {
         name: name.trim(),
         url: urlToAdd,
+        iconName: selectedIcon,
       });
     } else {
       onAddResource({
         name: name.trim(),
         url: urlToAdd,
         icon: 'custom',
+        iconName: selectedIcon,
       });
     }
 
     setName('');
     setUrl('');
+    setSelectedIcon('Link');
+    setIconSearch('');
+    setShowAllIcons(false);
     setError('');
     onClose();
   };
@@ -81,8 +100,27 @@ export function AddBrainResourceModal({
   const handleClose = () => {
     setName('');
     setUrl('');
+    setSelectedIcon('Link');
+    setIconSearch('');
+    setShowAllIcons(false);
     setError('');
     onClose();
+  };
+
+  // Get filtered icons for the picker
+  const allIconNames = Object.keys(LucideIcons).filter(
+    (key) => key !== 'createLucideIcon' && key !== 'default' && typeof (LucideIcons as any)[key] === 'function'
+  );
+  
+  const displayedIcons = showAllIcons 
+    ? (iconSearch 
+        ? allIconNames.filter(name => name.toLowerCase().includes(iconSearch.toLowerCase())).slice(0, 48)
+        : allIconNames.slice(0, 48))
+    : POPULAR_ICONS;
+
+  const renderIcon = (iconName: string, size: string = 'w-5 h-5') => {
+    const IconComponent = (LucideIcons as any)[iconName];
+    return IconComponent ? <IconComponent className={size} /> : <Link className={size} />;
   };
 
   // Common input styles using UUI theme tokens
@@ -129,6 +167,67 @@ export function AddBrainResourceModal({
           />
           {error && <p className="mt-1 text-sm text-[var(--fg-error-primary)]">{error}</p>}
         </div>
+
+        {/* Icon Picker */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-sm font-medium text-[var(--fg-primary)]">
+              Icon
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowAllIcons(!showAllIcons)}
+              className="text-xs text-[var(--fg-brand-primary)] hover:underline"
+            >
+              {showAllIcons ? 'Show popular' : 'Browse all'}
+            </button>
+          </div>
+          
+          {/* Search (only when showing all icons) */}
+          {showAllIcons && (
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)]" />
+              <input
+                type="text"
+                value={iconSearch}
+                onChange={(e) => setIconSearch(e.target.value)}
+                placeholder="Search icons..."
+                className="w-full pl-10 pr-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] text-sm text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-colors"
+              />
+            </div>
+          )}
+          
+          {/* Icon Grid */}
+          <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto custom-scrollbar p-1">
+            {displayedIcons.map((iconName) => (
+              <button
+                key={iconName}
+                type="button"
+                onClick={() => setSelectedIcon(iconName)}
+                title={iconName}
+                className={`
+                  p-2.5 rounded-lg border transition-all flex items-center justify-center
+                  ${selectedIcon === iconName
+                    ? 'bg-[var(--bg-brand-primary)] border-[var(--border-brand-solid)] text-[var(--fg-brand-primary)]'
+                    : 'bg-[var(--bg-tertiary)] border-transparent text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] hover:text-[var(--fg-primary)]'
+                  }
+                `}
+              >
+                {renderIcon(iconName, 'w-4 h-4')}
+              </button>
+            ))}
+          </div>
+          
+          {/* Selected icon preview */}
+          <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-[var(--bg-tertiary)]">
+            <div className="p-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]">
+              {renderIcon(selectedIcon)}
+            </div>
+            <span className="text-sm text-[var(--fg-secondary)]">
+              Selected: <span className="font-medium text-[var(--fg-primary)]">{selectedIcon}</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--border-secondary)]">
@@ -142,9 +241,10 @@ export function AddBrainResourceModal({
         </Button>
         <Button
           type="button"
-          color="primary"
+          color="secondary"
           size="md"
           onClick={handleSubmit}
+          className="!bg-[var(--bg-brand-solid)] !text-white hover:!bg-[var(--bg-brand-solid_hover)] !ring-[var(--border-brand-solid)]"
         >
           {isEditMode ? 'Save Changes' : 'Add Resource'}
         </Button>

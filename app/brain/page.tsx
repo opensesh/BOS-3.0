@@ -9,6 +9,7 @@ import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { AddBrainResourceModal } from '@/components/brain/AddBrainResourceModal';
 import { useBrainResources, BrainResource } from '@/hooks/useBrainResources';
 import { PageTransition, MotionItem, staggerContainer, fadeInUp } from '@/lib/motion';
+import * as LucideIcons from 'lucide-react';
 import { 
   Settings, 
   ExternalLink, 
@@ -19,7 +20,8 @@ import {
   BookOpen,
   PenTool,
   ArrowUpRight,
-  Zap
+  Zap,
+  Link as LinkIcon
 } from 'lucide-react';
 
 // Bento cards for subpages
@@ -54,6 +56,13 @@ const brainPages = [
   },
 ];
 
+// Helper to render Lucide icon by name
+function ResourceIconPreview({ iconName }: { iconName?: string }) {
+  if (!iconName) return <LinkIcon className="w-5 h-5" />;
+  const IconComponent = (LucideIcons as any)[iconName];
+  return IconComponent ? <IconComponent className="w-5 h-5" /> : <LinkIcon className="w-5 h-5" />;
+}
+
 // Resource Card Component
 function ResourceCard({ 
   resource, 
@@ -75,6 +84,11 @@ function ResourceCard({
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
+      {/* Icon */}
+      <div className="p-2 rounded-lg bg-[var(--bg-primary)]/50 border border-[var(--border-primary)] flex-shrink-0 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
+        <ResourceIconPreview iconName={resource.iconName} />
+      </div>
+      
       <div className="min-w-0 flex-1">
         <h4 className="text-sm font-display font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
           {resource.name}
@@ -115,15 +129,22 @@ function ResourceCard({
   );
 }
 
-// Add Resource Card - Compact version with just plus icon
+// Add Resource Card - Matches ResourceCard styling
 function AddResourceCard({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="group flex items-center justify-center p-3 rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all"
+      className="group relative flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all"
       title="Add Resource"
     >
-      <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+      <div className="min-w-0 flex-1 flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-[var(--bg-primary)]/50 border border-[var(--border-primary)] flex-shrink-0">
+          <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+        </div>
+        <span className="text-sm font-medium text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
+          Add Resource
+        </span>
+      </div>
     </button>
   );
 }
@@ -233,7 +254,7 @@ export default function BrainPage() {
                   Resources
                 </h2>
                 <motion.div 
-                  className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-3"
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
                   variants={staggerContainer}
                   initial="hidden"
                   animate="visible"

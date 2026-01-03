@@ -508,12 +508,13 @@ export function MarkdownEditor({
               animate={{
                 left: viewMode === 'source' ? '2px' : 'calc(50% + 1px)',
                 width: 'calc(50% - 3px)',
+                height: 'calc(100% - 4px)',
               }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
             />
             <button
               onClick={() => setViewMode('source')}
-              className={`relative z-10 p-1.5 rounded-md transition-colors duration-200 ${
+              className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
                 viewMode === 'source' 
                   ? 'text-[var(--fg-primary)]' 
                   : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
@@ -524,7 +525,7 @@ export function MarkdownEditor({
             </button>
             <button
               onClick={() => setViewMode('preview')}
-              className={`relative z-10 p-1.5 rounded-md transition-colors duration-200 ${
+              className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
                 viewMode === 'preview' 
                   ? 'text-[var(--fg-primary)]' 
                   : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'

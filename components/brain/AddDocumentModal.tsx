@@ -229,6 +229,7 @@ export function AddDocumentModal({
                 onTitleChange={setTitle}
                 onContentChange={setContent}
                 onSubmit={handlePasteSubmit}
+                onCancel={onClose}
                 isSubmitting={isSubmitting}
               />
             )}
@@ -314,6 +315,7 @@ interface PasteModeProps {
   onTitleChange: (title: string) => void;
   onContentChange: (content: string) => void;
   onSubmit: () => void;
+  onCancel: () => void;
   isSubmitting: boolean;
 }
 
@@ -324,6 +326,7 @@ function PasteMode({
   onTitleChange,
   onContentChange,
   onSubmit,
+  onCancel,
   isSubmitting,
 }: PasteModeProps) {
   return (
@@ -358,23 +361,27 @@ function PasteMode({
         />
       </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-end pt-2">
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-5 py-2.5 rounded-lg text-[var(--fg-secondary)] hover:bg-[var(--bg-primary_hover)] transition-colors font-medium"
+        >
+          Cancel
+        </button>
         <button
           onClick={onSubmit}
           disabled={isSubmitting || !title.trim() || !content.trim()}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
         >
           {isSubmitting ? (
             <>
               <span className="animate-spin">⟳</span>
-              Adding...
+              Creating...
             </>
           ) : (
-            <>
-              <Check className="w-4 h-4" />
-              Add Document
-            </>
+            'Create'
           )}
         </button>
       </div>

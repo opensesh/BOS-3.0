@@ -209,107 +209,73 @@ export function MarkdownEditor({
         </div>
         
         <div className="flex items-center gap-2">
-          {/* View mode toggle (only when not editing) */}
-          {!isEditing && (
-            <div className="flex items-center rounded-lg bg-[var(--bg-primary)]/50 p-0.5">
-              <button
-                onClick={() => setViewMode('source')}
-                className={`p-1.5 rounded-md transition-colors ${
-                  viewMode === 'source' 
-                    ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
-                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                }`}
-                title="Source view"
-              >
-                <Code className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('preview')}
-                className={`p-1.5 rounded-md transition-colors ${
-                  viewMode === 'preview' 
-                    ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
-                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                }`}
-                title="Preview"
-              >
-                <Eye className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          {/* Version history button - only when not editing */}
-          {onViewHistory && !isEditing && (
-            <button
-              onClick={onViewHistory}
-              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-              title="Version History"
-            >
-              <History className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-            </button>
-          )}
-
-          {/* Download button - only when not editing */}
-          {!isEditing && (
-            <button
-              onClick={handleDownload}
-              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-              title="Download"
-            >
-              <Download className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-            </button>
-          )}
-
-          {/* Copy button - only when not editing */}
-          {!isEditing && (
-            <button
-              onClick={handleCopy}
-              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-              title={copied ? 'Copied!' : 'Copy'}
-            >
-              {copied ? (
-                <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
-              ) : (
-                <Copy className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-              )}
-            </button>
-          )}
-
-          {/* Edit/Delete/Save/Exit buttons */}
-          {!readOnly && (
+          {/* Action buttons based on edit state */}
+          {isEditing ? (
             <>
-              {isEditing ? (
-                <>
-                  {/* Delete button - only shown in edit mode */}
-                  {onDelete && (
-                    <button
-                      onClick={onDelete}
-                      className="p-2 rounded-lg hover:bg-[var(--bg-error-subtle)] transition-colors group"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)] transition-colors" />
-                    </button>
-                  )}
-                  <button
-                    onClick={handleCancel}
-                    className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-                    title="Exit (Esc)"
-                  >
-                    <X className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={isSaving || !hasUnsavedChanges}
-                    className="p-2 rounded-lg bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title="Save (⌘S)"
-                  >
-                    {isSaving ? (
-                      <span className="animate-spin text-white">⟳</span>
-                    ) : (
-                      <Save className="w-4 h-4 text-white" />
-                    )}
-                  </button>
-                </>
-              ) : (
+              {/* Delete button - only shown in edit mode */}
+              {onDelete && (
+                <button
+                  onClick={onDelete}
+                  className="p-2 rounded-lg hover:bg-[var(--bg-error-subtle)] transition-colors group"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)] transition-colors" />
+                </button>
+              )}
+              {/* Version history button - only in edit mode */}
+              {onViewHistory && (
+                <button
+                  onClick={onViewHistory}
+                  className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
+                  title="Version History"
+                >
+                  <History className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+                </button>
+              )}
+              <button
+                onClick={handleCancel}
+                className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
+                title="Exit (Esc)"
+              >
+                <X className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving || !hasUnsavedChanges}
+                className="p-2 rounded-lg bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Save (⌘S)"
+              >
+                {isSaving ? (
+                  <span className="animate-spin text-white">⟳</span>
+                ) : (
+                  <Save className="w-4 h-4 text-white" />
+                )}
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Download button - only when not editing */}
+              <button
+                onClick={handleDownload}
+                className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
+                title="Download"
+              >
+                <Download className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+              </button>
+              {/* Copy button - only when not editing */}
+              <button
+                onClick={handleCopy}
+                className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
+                title={copied ? 'Copied!' : 'Copy'}
+              >
+                {copied ? (
+                  <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
+                ) : (
+                  <Copy className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+                )}
+              </button>
+              {/* Edit button - only when not editing and not read-only */}
+              {!readOnly && (
                 <button
                   onClick={handleEdit}
                   disabled={isLoading}
@@ -321,6 +287,32 @@ export function MarkdownEditor({
               )}
             </>
           )}
+
+          {/* View mode toggle - always visible, aligned right */}
+          <div className="flex items-center rounded-lg bg-[var(--bg-primary)]/50 p-0.5 ml-2">
+            <button
+              onClick={() => setViewMode('source')}
+              className={`p-1.5 rounded-md transition-colors ${
+                viewMode === 'source' 
+                  ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+              }`}
+              title="Source view"
+            >
+              <Code className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('preview')}
+              className={`p-1.5 rounded-md transition-colors ${
+                viewMode === 'preview' 
+                  ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+              }`}
+              title="Preview"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -344,8 +336,8 @@ export function MarkdownEditor({
         className="overflow-auto custom-scrollbar"
         style={{ maxHeight: `${maxHeight}px` }}
       >
-        {isEditing ? (
-          // Edit mode - textarea
+        {isEditing && viewMode === 'source' ? (
+          // Edit mode with source view - editable textarea
           <textarea
             ref={textareaRef}
             value={editContent}
@@ -355,13 +347,18 @@ export function MarkdownEditor({
             placeholder="Enter markdown content..."
             spellCheck={false}
           />
+        ) : isEditing && viewMode === 'preview' ? (
+          // Edit mode with preview - show preview of edit content
+          <div className="p-4 prose prose-invert max-w-none">
+            <MarkdownPreview content={editContent} />
+          </div>
         ) : viewMode === 'preview' ? (
-          // Preview mode - rendered markdown
+          // View mode with preview - rendered markdown
           <div className="p-4 prose prose-invert max-w-none">
             <MarkdownPreview content={content} />
           </div>
         ) : (
-          // Source mode - syntax highlighted view
+          // View mode with source - syntax highlighted view
           <div className="p-4 font-sans text-sm">
             {isLoading ? (
               <div className="flex items-center justify-center py-12 text-[var(--fg-tertiary)]">

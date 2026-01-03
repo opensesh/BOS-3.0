@@ -119,6 +119,9 @@ Use `--fg-brand-primary` and `--bg-brand-solid` sparingly:
 - ✅ Accent highlights
 - ❌ NOT for borders or outlines
 
+### Forbidden Icons
+**Never use the `Sparkles` icon from Lucide.** It's generic AI aesthetic that doesn't match the brand vision. For empty states or prompts, use text-only or more purposeful iconography.
+
 ### Interactive States
 ```css
 /* Hover-revealed actions */
@@ -128,6 +131,47 @@ opacity-0 group-hover:opacity-100 transition-opacity duration-150
 /* Inactive */ text-[var(--fg-tertiary)] hover:bg-[var(--bg-secondary)]/50
 /* Active */   bg-[var(--bg-tertiary)] text-[var(--fg-primary)]
 ```
+
+---
+
+## Icon Guidelines
+
+### Banned Icons (NEVER USE)
+- ❌ `Sparkles` - The 4-point star/galaxy icon looks like generic AI tooling. Use `Wand2`, `Target`, `Lightbulb`, or `Zap` instead.
+
+### Preferred Alternatives
+| Instead of | Use |
+|------------|-----|
+| Sparkles | Wand2, Target, Lightbulb, Zap |
+
+### Modal Header Pattern
+**Do NOT place icons in modal headers.** The header should contain only:
+- Title (h2) - left-aligned
+- Subtitle/description text (optional) - left-aligned  
+- Close button (X) - right-aligned
+
+❌ NEVER:
+```tsx
+<div className="flex items-center gap-3">
+  <div className="p-2 rounded-lg bg-[var(--bg-secondary)]">
+    <SomeIcon className="w-5 h-5" />
+  </div>
+  <div>
+    <h2>Modal Title</h2>
+    <p>Subtitle</p>
+  </div>
+</div>
+```
+
+✅ INSTEAD:
+```tsx
+<div>
+  <h2>Modal Title</h2>
+  <p>Subtitle</p>
+</div>
+```
+
+Icons belong in the modal body (e.g., selection cards), not duplicated in the header.
 
 ---
 

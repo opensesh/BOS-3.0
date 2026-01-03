@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import * as LucideIcons from 'lucide-react';
-import { Zap, FolderOpen, FileCode, Terminal, PenTool, Link, Search } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Search, Link } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
+import { Icon } from '@/components/ui/Icon';
 import { BrainResource } from '@/hooks/useBrainResources';
-
-// Popular icons for quick selection
-const POPULAR_ICONS = [
-  'Globe', 'Link', 'FileText', 'Folder', 'Cloud', 'Database',
-  'Code', 'Terminal', 'Figma', 'Github', 'Slack', 'Chrome',
-  'BookOpen', 'Lightbulb', 'Zap', 'Settings', 'Star', 'Heart',
-];
+import { 
+  getAllLucideIconNames, 
+  FA_BRAND_ICONS, 
+  POPULAR_ICONS,
+  isFontAwesomeIcon 
+} from '@/lib/icons';
 
 interface AddBrainResourceModalProps {
   isOpen: boolean;
@@ -20,6 +19,9 @@ interface AddBrainResourceModalProps {
   editResource?: BrainResource;
   onUpdateResource?: (id: string, updates: Partial<BrainResource>) => void;
 }
+
+// Tab types for the icon picker
+type IconTab = 'popular' | 'brands' | 'all';
 
 export function AddBrainResourceModal({
   isOpen,
@@ -33,7 +35,11 @@ export function AddBrainResourceModal({
   const [url, setUrl] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Link');
   const [iconSearch, setIconSearch] = useState('');
+  const [iconTab, setIconTab] = useState<IconTab>('popular');
   const [error, setError] = useState('');
+
+  // Get all Lucide icons once
+  const allLucideIcons = useMemo(() => getAllLucideIconNames(), []);
 
   useEffect(() => {
     if (editResource) {
@@ -104,26 +110,38 @@ export function AddBrainResourceModal({
     onClose();
   };
 
-  // Get all Lucide icon names (filter out Icon suffix duplicates and non-components)
-  const allIconNames = Object.keys(LucideIcons).filter(
-    (key) => 
-      !key.endsWith('Icon') && 
-      key !== 'createLucideIcon' && 
-      key !== 'default' &&
-      key !== 'icons' &&
-      /^[A-Z]/.test(key) // Only PascalCase component names
-  ).sort();
-  
-  // When searching, filter all icons; otherwise show popular icons
-  // Always limit to 18 icons (3 rows of 6)
-  const displayedIcons = iconSearch.trim()
-    ? allIconNames.filter(name => name.toLowerCase().includes(iconSearch.toLowerCase())).slice(0, 18)
-    : POPULAR_ICONS.slice(0, 18);
-
-  const renderIcon = (iconName: string, size: string = 'w-5 h-5') => {
-    const IconComponent = (LucideIcons as any)[iconName];
-    return IconComponent ? <IconComponent className={size} /> : <Link className={size} />;
-  };
+  // Get displayed icons based on tab and search
+  const displayedIcons = useMemo(() => {
+    const query = iconSearch.toLowerCase().trim();
+    
+    if (query) {
+      // When searching, search both Lucide and FA icons
+      const lucideMatches = allLucideIcons.filter(n => 
+        n.toLowerCase().includes(query)
+      );
+      const faMatches = FA_BRAND_ICONS.filter(icon =>
+        icon.name.toLowerCase().includes(query) ||
+        icon.keywords.some(k => k.includes(query))
+      ).map(i => i.name);
+      
+      // Interleave results: show FA matches first (they're usually what people want for brands)
+      return [...faMatches, ...lucideMatches].slice(0, 24);
+    }
+    
+    switch (iconTab) {
+      case 'popular':
+        // Mix of popular Lucide and FA icons
+        return [...POPULAR_ICONS.fontAwesome.slice(0, 6), ...POPULAR_ICONS.lucide.slice(0, 12)];
+      case 'brands':
+        // Font Awesome brand icons only
+        return FA_BRAND_ICONS.slice(0, 24).map(i => i.name);
+      case 'all':
+        // All Lucide icons
+        return allLucideIcons.slice(0, 24);
+      default:
+        return [];
+    }
+  }, [iconSearch, iconTab, allLucideIcons]);
 
   // Common input styles using UUI theme tokens
   const inputStyles = `
@@ -134,14 +152,24 @@ export function AddBrainResourceModal({
     transition-colors
   `;
 
+  // Tab button styles
+  const tabStyles = (isActive: boolean) => `
+    px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+    ${isActive 
+      ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+    }
+  `;
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={isEditMode ? "Edit Resource" : "Add Resource"} size="md">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
+          <label htmlFor="resource-name" className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
             Name <span className="text-[var(--fg-error-primary)]">*</span>
           </label>
           <input
+            id="resource-name"
             type="text"
             value={name}
             onChange={(e) => {
@@ -154,10 +182,11 @@ export function AddBrainResourceModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
+          <label htmlFor="resource-url" className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
             URL <span className="text-[var(--fg-error-primary)]">*</span>
           </label>
           <input
+            id="resource-url"
             type="url"
             value={url}
             onChange={(e) => {
@@ -167,7 +196,11 @@ export function AddBrainResourceModal({
             placeholder="https://docs.anthropic.com/..."
             className={inputStyles}
           />
-          {error && <p className="mt-1 text-sm text-[var(--fg-error-primary)]">{error}</p>}
+          {error && (
+            <p className="mt-1 text-sm text-[var(--fg-error-primary)]" role="alert">
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Icon Picker */}
@@ -176,46 +209,95 @@ export function AddBrainResourceModal({
             Icon
           </label>
           
-          {/* Search input - always visible */}
+          {/* Tabs */}
+          <div className="flex gap-1 mb-3">
+            <button
+              type="button"
+              onClick={() => { setIconTab('popular'); setIconSearch(''); }}
+              className={tabStyles(iconTab === 'popular' && !iconSearch)}
+            >
+              Popular
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIconTab('brands'); setIconSearch(''); }}
+              className={tabStyles(iconTab === 'brands' && !iconSearch)}
+            >
+              Brands
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIconTab('all'); setIconSearch(''); }}
+              className={tabStyles(iconTab === 'all' && !iconSearch)}
+            >
+              All Icons
+            </button>
+          </div>
+          
+          {/* Search input */}
           <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)]" aria-hidden="true" />
             <input
               type="text"
               value={iconSearch}
               onChange={(e) => setIconSearch(e.target.value)}
-              placeholder="Search icons..."
+              placeholder="Search icons... (try 'notion', 'slack', 'google')"
+              aria-label="Search icons"
               className="w-full pl-10 pr-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] text-sm text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-colors"
             />
           </div>
           
-          {/* Icon Grid - fixed 3 rows, no scroll */}
-          <div className="grid grid-cols-6 gap-2">
-            {displayedIcons.map((iconName) => (
-              <button
-                key={iconName}
-                type="button"
-                onClick={() => setSelectedIcon(iconName)}
-                title={iconName}
-                className={`
-                  p-2.5 rounded-lg border transition-all flex items-center justify-center
-                  ${selectedIcon === iconName
-                    ? 'bg-[var(--bg-brand-primary)] border-[var(--border-brand-solid)] text-[var(--fg-brand-primary)]'
-                    : 'bg-[var(--bg-tertiary)] border-transparent text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] hover:text-[var(--fg-primary)]'
-                  }
-                `}
-              >
-                {renderIcon(iconName, 'w-4 h-4')}
-              </button>
-            ))}
+          {/* Icon Grid */}
+          <div 
+            className="grid grid-cols-6 gap-2" 
+            role="listbox" 
+            aria-label="Available icons"
+          >
+            {displayedIcons.map((iconName) => {
+              const isFA = isFontAwesomeIcon(iconName);
+              const displayName = isFA ? iconName.replace('fa-', '').replace(/-/g, ' ') : iconName;
+              
+              return (
+                <button
+                  key={iconName}
+                  type="button"
+                  role="option"
+                  aria-selected={selectedIcon === iconName}
+                  onClick={() => setSelectedIcon(iconName)}
+                  title={displayName}
+                  className={`
+                    p-2.5 rounded-lg border transition-all flex items-center justify-center
+                    focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:ring-offset-1
+                    ${selectedIcon === iconName
+                      ? 'bg-[var(--bg-brand-primary)] border-[var(--border-brand-solid)] text-[var(--fg-brand-primary)]'
+                      : 'bg-[var(--bg-tertiary)] border-transparent text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] hover:text-[var(--fg-primary)]'
+                    }
+                  `}
+                >
+                  <Icon name={iconName} className="w-4 h-4" aria-hidden="true" />
+                </button>
+              );
+            })}
           </div>
+          
+          {displayedIcons.length === 0 && iconSearch && (
+            <p className="text-center text-sm text-[var(--fg-tertiary)] py-4">
+              No icons found for &ldquo;{iconSearch}&rdquo;
+            </p>
+          )}
           
           {/* Selected icon preview */}
           <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-[var(--bg-tertiary)]">
             <div className="p-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]">
-              {renderIcon(selectedIcon)}
+              <Icon name={selectedIcon} className="w-5 h-5" />
             </div>
             <span className="text-sm text-[var(--fg-secondary)]">
-              Selected: <span className="font-medium text-[var(--fg-primary)]">{selectedIcon}</span>
+              Selected: <span className="font-medium text-[var(--fg-primary)]">
+                {isFontAwesomeIcon(selectedIcon) 
+                  ? selectedIcon.replace('fa-', '').replace(/-/g, ' ')
+                  : selectedIcon
+                }
+              </span>
             </span>
           </div>
         </div>
@@ -243,28 +325,19 @@ export function AddBrainResourceModal({
   );
 }
 
-// Icon preview component
+// Icon preview component for external use
 export function BrainResourceIcon({
-  type,
+  iconName,
   size = 'md',
 }: {
-  type: BrainResource['icon'];
-  size?: 'sm' | 'md';
+  iconName?: string;
+  size?: 'sm' | 'md' | 'lg';
 }) {
-  const sizeClasses = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
+  const sizeClasses = {
+    sm: 'w-4 h-4',
+    md: 'w-5 h-5',
+    lg: 'w-6 h-6',
+  };
 
-  switch (type) {
-    case 'skills':
-      return <Zap className={sizeClasses} />;
-    case 'projects':
-      return <FolderOpen className={sizeClasses} />;
-    case 'claude-md':
-      return <FileCode className={sizeClasses} />;
-    case 'commands':
-      return <Terminal className={sizeClasses} />;
-    case 'writing-styles':
-      return <PenTool className={sizeClasses} />;
-    default:
-      return <Link className={sizeClasses} />;
-  }
+  return <Icon name={iconName || 'Link'} className={sizeClasses[size]} />;
 }

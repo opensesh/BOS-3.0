@@ -3,7 +3,6 @@ import {
   models,
   getAnthropicClient,
   getAnthropicModelId,
-  getPerplexityClient,
   getPerplexityModelId,
   supportsExtendedThinking,
   supportsToolUse,
@@ -875,7 +874,11 @@ async function streamWithPerplexityNative(
   systemPrompt: string,
   selectedModel: ModelId
 ): Promise<ReadableStream> {
-  const client = await getPerplexityClient();
+  const apiKey = process.env.PERPLEXITY_API_KEY;
+  if (!apiKey) {
+    throw new Error('PERPLEXITY_API_KEY is not configured');
+  }
+
   const modelId = getPerplexityModelId(selectedModel);
   const sse = createSSEEncoder();
 
@@ -891,36 +894,73 @@ async function streamWithPerplexityNative(
   return new ReadableStream({
     async start(controller) {
       try {
-        // Use TRUE STREAMING for real-time text display
-        // Citations arrive at the end of the stream (final chunk) - that's fine for UX
-        const stream = await client.chat.completions.create({
-          model: modelId,
-          messages: perplexityMessages,
-          stream: true,
+        // Call Perplexity REST API with streaming
+        const response = await fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: modelId,
+            messages: perplexityMessages,
+            stream: true,
+          }),
         });
+
+        if (!response.ok) {
+          const error = await response.text();
+          throw new Error(`Perplexity API error: ${response.status} - ${error}`);
+        }
+
+        if (!response.body) {
+          throw new Error('No response body from Perplexity API');
+        }
 
         // Accumulate content for snippet extraction when citations arrive
         let fullContent = '';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let rawCitations: string[] = [];
 
-        // Process the stream - text arrives in real-time!
-        for await (const chunk of stream) {
-          // Stream text chunks immediately as they arrive
-          const textDelta = chunk.choices?.[0]?.delta?.content;
-          if (textDelta) {
-            const cleanDelta = stripThinkingTags(textDelta);
-            if (cleanDelta) {
-              fullContent += cleanDelta;
-              controller.enqueue(sse.encode({ type: 'text', content: cleanDelta }));
-            }
-          }
+        // Process the SSE stream
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-          // Citations come in the final chunk (Perplexity API behavior as of Nov 2024)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const citations = (chunk as any).citations;
-          if (citations && Array.isArray(citations)) {
-            rawCitations = citations;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+
+              try {
+                const chunk = JSON.parse(data);
+                
+                // Stream text chunks immediately as they arrive
+                const textDelta = chunk.choices?.[0]?.delta?.content;
+                if (textDelta) {
+                  const cleanDelta = stripThinkingTags(textDelta);
+                  if (cleanDelta) {
+                    fullContent += cleanDelta;
+                    controller.enqueue(sse.encode({ type: 'text', content: cleanDelta }));
+                  }
+                }
+
+                // Citations come in the final chunk (Perplexity API behavior)
+                const citations = chunk.citations;
+                if (citations && Array.isArray(citations)) {
+                  rawCitations = citations;
+                }
+              } catch {
+                // Skip invalid JSON lines
+              }
+            }
           }
         }
 

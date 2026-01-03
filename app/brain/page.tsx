@@ -9,7 +9,7 @@ import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { AddBrainResourceModal } from '@/components/brain/AddBrainResourceModal';
 import { useBrainResources, BrainResource } from '@/hooks/useBrainResources';
 import { PageTransition, MotionItem, staggerContainer, fadeInUp } from '@/lib/motion';
-import * as LucideIcons from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
 import { 
   Settings, 
   ExternalLink, 
@@ -21,7 +21,6 @@ import {
   PenTool,
   ArrowUpRight,
   Zap,
-  Link as LinkIcon
 } from 'lucide-react';
 
 // Bento cards for subpages
@@ -56,11 +55,9 @@ const brainPages = [
   },
 ];
 
-// Helper to render Lucide icon by name
+// Helper to render icon by name (supports both Lucide and Font Awesome)
 function ResourceIconPreview({ iconName }: { iconName?: string }) {
-  if (!iconName) return <LinkIcon className="w-5 h-5" />;
-  const IconComponent = (LucideIcons as any)[iconName];
-  return IconComponent ? <IconComponent className="w-5 h-5" /> : <LinkIcon className="w-5 h-5" />;
+  return <Icon name={iconName || 'Link'} className="w-5 h-5" />;
 }
 
 // Resource Card Component
@@ -129,15 +126,45 @@ function ResourceCard({
   );
 }
 
-// Add Resource Card - Compact version with just plus icon
-function AddResourceCard({ onClick }: { onClick: () => void }) {
+// Add Resource Card - Accessible with all states
+function AddResourceCard({ 
+  onClick, 
+  isDisabled = false 
+}: { 
+  onClick: () => void;
+  isDisabled?: boolean;
+}) {
   return (
     <button
       onClick={onClick}
-      className="group flex items-center justify-center p-3 rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all"
-      title="Add Resource"
+      disabled={isDisabled}
+      aria-label="Add new resource"
+      aria-disabled={isDisabled}
+      className={`
+        group flex items-center justify-center p-3 rounded-xl 
+        border-2 border-dashed transition-all duration-200
+        min-h-[60px]
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)]
+        ${isDisabled 
+          ? 'border-[var(--border-disabled)] bg-[var(--bg-disabled)] cursor-not-allowed opacity-50' 
+          : `
+            border-[var(--border-primary)] bg-[var(--bg-secondary)]/30
+            hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-brand-primary)]/10
+            active:scale-[0.98] active:bg-[var(--bg-brand-primary)]/20
+          `
+        }
+      `}
     >
-      <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+      <Plus 
+        className={`
+          w-5 h-5 transition-all duration-200
+          ${isDisabled 
+            ? 'text-[var(--fg-disabled)]' 
+            : 'text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] group-hover:scale-110'
+          }
+        `}
+        aria-hidden="true"
+      />
     </button>
   );
 }

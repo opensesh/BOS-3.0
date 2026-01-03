@@ -16,7 +16,6 @@ type SelectedOption = 'guidelines' | 'writing' | 'skills' | null;
 
 export function BrainSettingsModal({ isOpen, onClose, defaultSection }: BrainSettingsModalProps) {
   const [selectedOption, setSelectedOption] = useState<SelectedOption>(null);
-  const [skillDescription, setSkillDescription] = useState('');
   
   useEffect(() => {
     if (isOpen) {
@@ -118,26 +117,6 @@ export function BrainSettingsModal({ isOpen, onClose, defaultSection }: BrainSet
               );
             })}
           </div>
-
-          {/* Skills Description Section */}
-          {selectedOption === 'skills' && (
-            <section className="space-y-4">
-              <h3 className="text-lg font-display font-medium text-[var(--fg-primary)]">
-                Create a Skill
-              </h3>
-              
-              <p className="text-sm text-[var(--fg-tertiary)]">
-                Describe the capability you want to add to your brand operating system.
-              </p>
-              
-              <textarea
-                value={skillDescription}
-                onChange={(e) => setSkillDescription(e.target.value)}
-                placeholder="Describe the skill you want to create in your brand operating system..."
-                className="w-full h-40 p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-secondary)] text-[var(--fg-primary)] placeholder:text-[var(--fg-placeholder)] focus:outline-none focus:border-[var(--border-brand-solid)] focus:ring-1 focus:ring-[var(--focus-ring)] resize-none transition-colors"
-              />
-            </section>
-          )}
         </div>
 
         {/* Footer */}

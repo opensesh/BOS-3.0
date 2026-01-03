@@ -147,16 +147,11 @@ export function VersionHistoryPanel({
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-primary)]">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[var(--bg-secondary)]">
-                <History className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-              </div>
-              <div>
-                <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)]">
-                  Version History
-                </h2>
-                <p className="text-sm text-[var(--fg-tertiary)]">{documentTitle}</p>
-              </div>
+            <div>
+              <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)]">
+                Version History
+              </h2>
+              <p className="text-sm text-[var(--fg-tertiary)]">{documentTitle}</p>
             </div>
             <button
               onClick={onClose}

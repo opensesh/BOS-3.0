@@ -24,7 +24,6 @@ import {
   MessageSquare,
   MessageSquarePlus,
   ImageIcon,
-  Sparkles,
   Lock,
   Globe,
   ExternalLink,
@@ -67,7 +66,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MessageSquare,
   MessageSquarePlus,
   ImageIcon,
-  Sparkles,
 };
 
 function getIcon(iconName: string) {

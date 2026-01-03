@@ -149,8 +149,8 @@ function AddResourceCard({
           ? 'border-[var(--border-disabled)] bg-[var(--bg-disabled)] cursor-not-allowed opacity-50' 
           : `
             border-[var(--border-primary)] bg-[var(--bg-secondary)]/30
-            hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-brand-primary)]/10
-            active:scale-[0.98] active:bg-[var(--bg-brand-primary)]/20
+            hover:border-[var(--fg-brand-primary)] hover:bg-[var(--fg-brand-primary)]/10
+            active:scale-[0.98] active:bg-[var(--fg-brand-primary)]/20
           `
         }
       `}

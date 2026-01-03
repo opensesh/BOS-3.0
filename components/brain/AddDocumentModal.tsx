@@ -4,8 +4,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  FileText,
-  Sparkles,
   ClipboardPaste,
   Wand2,
   AlertCircle,
@@ -180,9 +178,6 @@ export function AddDocumentModal({
                   <ArrowLeft className="w-4 h-4 text-[var(--fg-tertiary)]" />
                 </button>
               )}
-              <div className="p-2 rounded-lg bg-[var(--bg-secondary)]">
-                <FileText className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-              </div>
               <div>
                 <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)]">
                   Add {CATEGORY_LABELS[category]}
@@ -295,7 +290,7 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
             <div className="p-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-primary)] group-hover:border-[var(--border-brand)] transition-colors">
               <Wand2 className="w-6 h-6 text-[var(--fg-brand-primary)]" />
             </div>
-            <Sparkles className="w-5 h-5 text-[var(--fg-brand-primary)] opacity-0 group-hover:opacity-100 transition-opacity" />
+            <ArrowRight className="w-5 h-5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <h3 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-2">
             Guided Creation
@@ -304,7 +299,7 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
             Answer a few questions and we&apos;ll help you create structured, well-formatted content.
           </p>
           <div className="mt-4 flex items-center gap-2 text-xs text-[var(--fg-brand-primary)]">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Wand2 className="w-3.5 h-3.5" />
             AI-assisted
           </div>
         </button>

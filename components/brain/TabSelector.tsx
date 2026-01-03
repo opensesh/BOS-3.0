@@ -16,7 +16,7 @@ interface TabSelectorProps {
 
 export function TabSelector({ tabs, activeTab, onChange, className = '' }: TabSelectorProps) {
   return (
-    <div className={`flex flex-wrap gap-2 ${className}`}>
+    <div className={`relative flex items-end gap-0.5 ${className}`}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -24,19 +24,27 @@ export function TabSelector({ tabs, activeTab, onChange, className = '' }: TabSe
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={`
-              px-4 py-2 rounded-full text-sm font-medium
-              transition-all duration-200
+              relative px-3 py-1.5 text-xs font-medium
+              transition-all duration-150 ease-out
+              rounded-t-md
               ${
                 isActive
-                  ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)]'
-                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:bg-[var(--bg-brand-primary)] hover:text-[var(--fg-brand-primary)] hover:border-[var(--border-brand)] border border-[var(--border-secondary)]'
+                  ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] z-10 shadow-[0_-1px_3px_rgba(0,0,0,0.08)] border-t border-l border-r border-[var(--border-primary)]'
+                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-secondary)] border-t border-l border-r border-transparent'
               }
             `}
+            style={{
+              // Folder tab trapezoid effect via clip-path
+              clipPath: 'polygon(4px 0%, calc(100% - 4px) 0%, 100% 100%, 0% 100%)',
+              marginBottom: isActive ? '-1px' : '0',
+            }}
           >
             {tab.label}
           </button>
         );
       })}
+      {/* Subtle baseline that active tab "breaks through" */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-[var(--border-secondary)] -z-10" />
     </div>
   );
 }

@@ -2,14 +2,13 @@
  * Unified Icon System
  * 
  * Combines Lucide icons (general UI) with Font Awesome brand icons (brand logos).
- * This gives users access to icons like Notion, Google Drive, Slack, etc.
+ * This gives users access to icons like Google Drive, Slack, etc.
  */
 
 import * as LucideIcons from 'lucide-react';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import {
   // Productivity & Collaboration
-  faNotion,
   faGoogle,
   faGoogleDrive,
   faSlack,
@@ -37,9 +36,6 @@ import {
   faPinterest,
   faReddit,
   faMedium,
-  faBluesky,
-  faThreads,
-  faMastodon,
   
   // Development & Tech
   faGitlab,
@@ -75,13 +71,10 @@ import {
   // Music & Entertainment
   faSpotify,
   faSoundcloud,
-  faBandcamp,
-  faDeezer,
   faTwitch,
   faSteam,
   faPlaystation,
   faXbox,
-  faVimeo,
   
   // E-commerce & Business
   faShopify,
@@ -93,7 +86,6 @@ import {
   faSalesforce,
   faHubspot,
   faMailchimp,
-  faIntercom,
   
   // Browsers
   faChrome,
@@ -106,20 +98,13 @@ import {
   faSketch,
   faDribbble,
   faBehance,
-  faDeviantart,
-  faInvision,
   
   // Other Popular
   faAppStoreIos,
   faGooglePlay,
   faProductHunt,
-  faHackerNews,
   faKickstarter,
   faPatreon,
-  faUnsplash,
-  faAirbnb,
-  faUber,
-  faLyft,
 } from '@fortawesome/free-brands-svg-icons';
 
 // Type for Lucide icon
@@ -134,7 +119,6 @@ export interface FABrandIcon {
 
 export const FA_BRAND_ICONS: FABrandIcon[] = [
   // Productivity & Collaboration
-  { name: 'fa-notion', icon: faNotion, keywords: ['notion', 'notes', 'wiki', 'documents', 'workspace'] },
   { name: 'fa-google', icon: faGoogle, keywords: ['google', 'search', 'alphabet'] },
   { name: 'fa-google-drive', icon: faGoogleDrive, keywords: ['google', 'drive', 'storage', 'cloud', 'docs'] },
   { name: 'fa-slack', icon: faSlack, keywords: ['slack', 'chat', 'messaging', 'team', 'communication'] },
@@ -155,9 +139,6 @@ export const FA_BRAND_ICONS: FABrandIcon[] = [
   { name: 'fa-instagram', icon: faInstagram, keywords: ['instagram', 'photos', 'social', 'stories', 'reels'] },
   { name: 'fa-tiktok', icon: faTiktok, keywords: ['tiktok', 'video', 'social', 'short', 'viral'] },
   { name: 'fa-youtube', icon: faYoutube, keywords: ['youtube', 'video', 'streaming', 'content'] },
-  { name: 'fa-threads', icon: faThreads, keywords: ['threads', 'meta', 'social', 'text'] },
-  { name: 'fa-bluesky', icon: faBluesky, keywords: ['bluesky', 'social', 'decentralized'] },
-  { name: 'fa-mastodon', icon: faMastodon, keywords: ['mastodon', 'social', 'fediverse', 'decentralized'] },
   { name: 'fa-whatsapp', icon: faWhatsapp, keywords: ['whatsapp', 'messaging', 'chat', 'meta'] },
   { name: 'fa-telegram', icon: faTelegram, keywords: ['telegram', 'messaging', 'chat', 'secure'] },
   { name: 'fa-snapchat', icon: faSnapchat, keywords: ['snapchat', 'social', 'photos', 'stories'] },
@@ -194,22 +175,17 @@ export const FA_BRAND_ICONS: FABrandIcon[] = [
   
   // Design
   { name: 'fa-sketch', icon: faSketch, keywords: ['sketch', 'design', 'ui', 'mac'] },
-  { name: 'fa-invision', icon: faInvision, keywords: ['invision', 'prototype', 'design', 'collaboration'] },
   { name: 'fa-behance', icon: faBehance, keywords: ['behance', 'portfolio', 'design', 'adobe'] },
   { name: 'fa-dribbble', icon: faDribbble, keywords: ['dribbble', 'design', 'portfolio', 'showcase'] },
-  { name: 'fa-deviantart', icon: faDeviantart, keywords: ['deviantart', 'art', 'portfolio', 'creative'] },
   
   // Music & Entertainment
   { name: 'fa-spotify', icon: faSpotify, keywords: ['spotify', 'music', 'streaming', 'podcast'] },
   { name: 'fa-soundcloud', icon: faSoundcloud, keywords: ['soundcloud', 'music', 'audio', 'streaming'] },
-  { name: 'fa-bandcamp', icon: faBandcamp, keywords: ['bandcamp', 'music', 'indie', 'artists'] },
-  { name: 'fa-deezer', icon: faDeezer, keywords: ['deezer', 'music', 'streaming'] },
   { name: 'fa-twitch', icon: faTwitch, keywords: ['twitch', 'streaming', 'gaming', 'live'] },
   { name: 'fa-steam', icon: faSteam, keywords: ['steam', 'gaming', 'games', 'valve'] },
   { name: 'fa-playstation', icon: faPlaystation, keywords: ['playstation', 'gaming', 'sony', 'console'] },
   { name: 'fa-xbox', icon: faXbox, keywords: ['xbox', 'gaming', 'microsoft', 'console'] },
   { name: 'fa-apple', icon: faApple, keywords: ['apple', 'mac', 'iphone', 'ios'] },
-  { name: 'fa-vimeo', icon: faVimeo, keywords: ['vimeo', 'video', 'creative', 'streaming'] },
   
   // E-commerce & Business
   { name: 'fa-shopify', icon: faShopify, keywords: ['shopify', 'ecommerce', 'store', 'sell'] },
@@ -221,7 +197,6 @@ export const FA_BRAND_ICONS: FABrandIcon[] = [
   { name: 'fa-salesforce', icon: faSalesforce, keywords: ['salesforce', 'crm', 'sales', 'cloud'] },
   { name: 'fa-hubspot', icon: faHubspot, keywords: ['hubspot', 'marketing', 'crm', 'sales'] },
   { name: 'fa-mailchimp', icon: faMailchimp, keywords: ['mailchimp', 'email', 'marketing', 'newsletter'] },
-  { name: 'fa-intercom', icon: faIntercom, keywords: ['intercom', 'support', 'chat', 'customer'] },
   { name: 'fa-product-hunt', icon: faProductHunt, keywords: ['producthunt', 'launch', 'startup', 'product'] },
   { name: 'fa-kickstarter', icon: faKickstarter, keywords: ['kickstarter', 'crowdfunding', 'startup'] },
   { name: 'fa-patreon', icon: faPatreon, keywords: ['patreon', 'creators', 'subscription', 'support'] },
@@ -238,13 +213,6 @@ export const FA_BRAND_ICONS: FABrandIcon[] = [
   { name: 'fa-windows', icon: faWindows, keywords: ['windows', 'microsoft', 'os', 'pc'] },
   { name: 'fa-linux', icon: faLinux, keywords: ['linux', 'os', 'open source', 'server'] },
   { name: 'fa-ubuntu', icon: faUbuntu, keywords: ['ubuntu', 'linux', 'os', 'open source'] },
-  
-  // Other
-  { name: 'fa-hacker-news', icon: faHackerNews, keywords: ['hackernews', 'tech', 'news', 'ycombinator'] },
-  { name: 'fa-unsplash', icon: faUnsplash, keywords: ['unsplash', 'photos', 'stock', 'images'] },
-  { name: 'fa-airbnb', icon: faAirbnb, keywords: ['airbnb', 'travel', 'accommodation', 'rental'] },
-  { name: 'fa-uber', icon: faUber, keywords: ['uber', 'ride', 'transportation', 'taxi'] },
-  { name: 'fa-lyft', icon: faLyft, keywords: ['lyft', 'ride', 'transportation', 'taxi'] },
 ];
 
 // Get all Lucide icon names (filter properly)
@@ -291,7 +259,7 @@ export const POPULAR_ICONS = {
     'Building', 'Home', 'Package', 'CreditCard', 'TrendingUp', 'BarChart',
   ],
   fontAwesome: [
-    'fa-notion', 'fa-google-drive', 'fa-slack', 'fa-figma', 'fa-github',
+    'fa-google-drive', 'fa-slack', 'fa-figma', 'fa-github',
     'fa-discord', 'fa-linkedin', 'fa-twitter', 'fa-instagram', 'fa-youtube',
     'fa-spotify', 'fa-dropbox', 'fa-trello', 'fa-chrome', 'fa-react',
   ],

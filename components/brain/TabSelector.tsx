@@ -29,7 +29,7 @@ export function TabSelector({ tabs, activeTab, onChange, className = '' }: TabSe
               ${
                 isActive
                   ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)]'
-                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-primary)] border border-[var(--border-secondary)]'
+                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:bg-[var(--bg-brand-primary)] hover:text-[var(--fg-brand-primary)] hover:border-[var(--border-brand)] border border-[var(--border-secondary)]'
               }
             `}
           >

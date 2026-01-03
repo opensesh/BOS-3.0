@@ -38,10 +38,10 @@ export default function ArchitecturePage() {
               </div>
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)] transition-colors group"
+                className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
                 title="Brain Settings"
               >
-                <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+                <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
               </button>
             </div>
             <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">

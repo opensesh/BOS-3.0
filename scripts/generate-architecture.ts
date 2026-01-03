@@ -12,7 +12,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT_DIR = process.cwd();
-const OUTPUT_FILE = path.join(ROOT_DIR, 'ARCHITECTURE.md');
+const OUTPUT_FILE = path.join(ROOT_DIR, 'public', 'claude-data', 'system', 'architecture.md');
+const ROOT_OUTPUT_FILE = path.join(ROOT_DIR, 'ARCHITECTURE.md'); // Also write to root for Git visibility
 
 // Directories to scan for structure
 const SCAN_DIRS = ['app', 'components', 'hooks', 'lib', 'types', 'utils', 'scripts'];
@@ -589,18 +590,22 @@ ${Object.entries(pkg.scripts || {})
 // ============================================================================
 
 async function main() {
-  console.log('📝 Generating ARCHITECTURE.md...\n');
+  console.log('📝 Generating architecture.md...\n');
 
   try {
     const markdown = generateMarkdown();
-    fs.writeFileSync(OUTPUT_FILE, markdown);
     
-    console.log('✅ Successfully generated ARCHITECTURE.md');
-    console.log(`   📄 ${OUTPUT_FILE}`);
+    // Write to public folder (for web page)
+    fs.writeFileSync(OUTPUT_FILE, markdown);
+    console.log('✅ Written to public/claude-data/system/architecture.md');
+    
+    // Also write to root (for Git visibility)
+    fs.writeFileSync(ROOT_OUTPUT_FILE, markdown);
+    console.log('✅ Written to ARCHITECTURE.md');
     
     // Count some stats for the log
     const lines = markdown.split('\n').length;
-    console.log(`   📊 ${lines} lines of documentation`);
+    console.log(`📊 ${lines} lines of documentation`);
   } catch (error) {
     console.error('❌ Failed to generate architecture:', error);
     process.exit(1);

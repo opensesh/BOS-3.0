@@ -10,19 +10,19 @@
 | Metric | Value |
 |--------|-------|
 | **Version** | 3.0.0 |
-| **Source Files** | 246 |
-| **Lines of Code** | 55,706 |
-| **Pages/Routes** | 22 |
+| **Source Files** | 237 |
+| **Lines of Code** | 53,689 |
+| **Pages/Routes** | 21 |
 | **API Endpoints** | 6 |
-| **Components** | 150 |
+| **Components** | 145 |
 | **Custom Hooks** | 11 |
 
 ### File Distribution
 
 | Extension | Files | Lines |
 |-----------|-------|-------|
-| `.tsx` | 181 | 38,744 |
-| `.ts` | 62 | 16,044 |
+| `.tsx` | 174 | 36,893 |
+| `.ts` | 60 | 15,878 |
 | `.css` | 2 | 848 |
 | `.sql` | 1 | 70 |
 
@@ -125,11 +125,6 @@ bos-3.0/
 │   │   ├── ToolExecutionCard.tsx
 │   │   └── UserMessageBubble.tsx
 │   ├── docs/
-│   │   ├── ComponentPreview.tsx
-│   │   ├── ComponentsDrawer.tsx
-│   │   ├── ComponentsList.tsx
-│   │   ├── ControlInputs.tsx
-│   │   └── index.ts
 │   ├── home/
 │   │   ├── AnimatedFolder.tsx
 │   │   ├── IconHover3D.tsx
@@ -204,7 +199,6 @@ bos-3.0/
 │   ├── BrandSelector.tsx
 │   ├── Breadcrumbs.tsx
 │   ├── ChatInterface.tsx
-│   ├── DailySplash.tsx
 │   ├── HelpDropdown.tsx
 │   ├── MainContent.tsx
 │   ├── MobileBrandSelector.tsx
@@ -259,12 +253,10 @@ bos-3.0/
 │   ├── api-config.ts
 │   ├── breadcrumb-context.tsx
 │   ├── chat-context.tsx
-│   ├── component-registry.ts
 │   ├── mobile-menu-context.tsx
 │   ├── mock-data.ts
 │   ├── motion.tsx
 │   ├── sidebar-context.tsx
-│   ├── splash-context.tsx
 │   ├── supabase.ts
 │   ├── theme-provider.tsx
 │   └── utils.ts
@@ -332,7 +324,6 @@ bos-3.0/
 | `/brain` | `app/brain` | — | — | — |
 | `/brain/architecture` | `app/brain/architecture` | — | — | — |
 | `/brain/brand-identity` | `app/brain/brand-identity` | — | — | — |
-| `/brain/components` | `app/brain/components` | — | — | — |
 | `/brain/skills` | `app/brain/skills` | — | — | — |
 | `/brain/writing-styles` | `app/brain/writing-styles` | — | — | — |
 | `/brand-hub` | `app/brand-hub` | — | — | — |
@@ -376,16 +367,15 @@ bos-3.0/
 | [`BrandSelector`](components/BrandSelector.tsx) | 534 | — |
 | [`Breadcrumbs`](components/Breadcrumbs.tsx) | 270 | — |
 | [`ChatInterface`](components/ChatInterface.tsx) | 1260 | — |
-| [`DailySplash`](components/DailySplash.tsx) | 110 | — |
 | [`HelpDropdown`](components/HelpDropdown.tsx) | 186 | — |
 | [`MainContent`](components/MainContent.tsx) | 53 | — |
 | [`MobileBrandSelector`](components/MobileBrandSelector.tsx) | 502 | — |
 | [`MobileHeader`](components/MobileHeader.tsx) | 123 | — |
-| [`NavigationDrawer`](components/NavigationDrawer.tsx) | 665 | — |
+| [`NavigationDrawer`](components/NavigationDrawer.tsx) | 663 | — |
 | [`NotificationsDropdown`](components/NotificationsDropdown.tsx) | 266 | — |
 | [`ProfileDropdown`](components/ProfileDropdown.tsx) | 228 | — |
 | [`SearchModal`](components/SearchModal.tsx) | 645 | — |
-| [`Sidebar`](components/Sidebar.tsx) | 1390 | — |
+| [`Sidebar`](components/Sidebar.tsx) | 1388 | — |
 | [`SpaceCard`](components/SpaceCard.tsx) | 155 | SpaceCard component - Untitled UI card patterns Uses semantic theme tokens for consistent styling across light/dark modes |
 | [`SpaceHeader`](components/SpaceHeader.tsx) | 147 | — |
 | [`ThemeToggle`](components/ThemeToggle.tsx) | 98 | — |
@@ -443,15 +433,6 @@ bos-3.0/
 | [`ThinkingDisplay`](components/chat/ThinkingDisplay.tsx) | 204 | ThinkingDisplay Component Displays Claude's extended thinking/reasoning process in a collapsible panel. Shows a streaming animation when Claude is actively thinking. |
 | [`ToolExecutionCard`](components/chat/ToolExecutionCard.tsx) | 281 | ToolExecutionCard Component Displays the status and results of a tool execution. Shows tool name, input parameters, output, and timing information. |
 | [`UserMessageBubble`](components/chat/UserMessageBubble.tsx) | 91 | UserMessageBubble Component Displays user messages with: - Right alignment - Fill background - 80% max width - "Show more" functionality for long messages with gradient fade |
-
-### docs
-
-| Component | Lines | Description |
-|-----------|-------|-------------|
-| [`ComponentPreview`](components/docs/ComponentPreview.tsx) | 368 | — |
-| [`ComponentsDrawer`](components/docs/ComponentsDrawer.tsx) | 340 | — |
-| [`ComponentsList`](components/docs/ComponentsList.tsx) | 487 | — |
-| [`ControlInputs`](components/docs/ControlInputs.tsx) | 226 | Main Control Input Component |
 
 ### home
 
@@ -637,7 +618,7 @@ bos-3.0/
 | [`useAttachments`](hooks/useAttachments.ts) | 423 | Determine attachment type from MIME type or file extension |
 | [`useBrainResources`](hooks/useBrainResources.ts) | 114 | — |
 | [`useChat`](hooks/useChat.ts) | 380 | — |
-| [`useGlobalSearch`](hooks/useGlobalSearch.ts) | 469 | — |
+| [`useGlobalSearch`](hooks/useGlobalSearch.ts) | 468 | — |
 | [`useKeyboardShortcuts`](hooks/useKeyboardShortcuts.ts) | 46 | — |
 | [`useResources`](hooks/useResources.ts) | 100 | — |
 | [`useSearchSuggestions`](hooks/useSearchSuggestions.ts) | 148 | Hook for fetching fast search suggestions Uses DuckDuckGo autocomplete for real-time suggestions |
@@ -703,4 +684,4 @@ bos-3.0/
 
 ---
 
-<sub>Generated by `scripts/generate-architecture.ts` on 2026-01-03T00:04:43.635Z</sub>
+<sub>Generated by `scripts/generate-architecture.ts` on 2026-01-03T00:13:55.821Z</sub>

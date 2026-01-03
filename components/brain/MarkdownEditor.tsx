@@ -15,6 +15,8 @@ import {
   Eye,
   Code,
   Trash2,
+  Undo2,
+  Redo2,
 } from 'lucide-react';
 
 interface MarkdownEditorProps {
@@ -31,6 +33,27 @@ interface MarkdownEditorProps {
 }
 
 type ViewMode = 'preview' | 'source';
+
+// Consistent icon button styles
+const iconButtonBase = "p-2 rounded-lg transition-all duration-200 group";
+const iconButtonDefault = `${iconButtonBase} hover:bg-[var(--bg-tertiary)]`;
+const iconButtonDanger = `${iconButtonBase} hover:bg-[var(--bg-error-subtle)]`;
+const iconBase = "w-4 h-4 transition-colors duration-200";
+const iconDefault = `${iconBase} text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]`;
+const iconDanger = `${iconBase} text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)]`;
+
+// Animation variants
+const buttonVariants = {
+  initial: { opacity: 0, scale: 0.8 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.8 },
+};
+
+const contentVariants = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+};
 
 export function MarkdownEditor({ 
   documentId,
@@ -52,7 +75,10 @@ export function MarkdownEditor({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('source');
+  const [undoStack, setUndoStack] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastContentRef = useRef(initialContent);
   const draftKey = `brain-draft-${documentId}`;
 
   // Sync content when prop changes
@@ -82,6 +108,15 @@ export function MarkdownEditor({
     }
   }, [isEditing, editContent, content, draftKey]);
 
+  // Reset undo/redo when entering edit mode
+  useEffect(() => {
+    if (isEditing) {
+      setUndoStack([]);
+      setRedoStack([]);
+      lastContentRef.current = editContent;
+    }
+  }, [isEditing]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -90,6 +125,16 @@ export function MarkdownEditor({
         if ((e.metaKey || e.ctrlKey) && e.key === 's') {
           e.preventDefault();
           handleSave();
+        }
+        // Cmd/Ctrl + Z to undo
+        if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+          e.preventDefault();
+          handleUndo();
+        }
+        // Cmd/Ctrl + Shift + Z or Cmd/Ctrl + Y to redo
+        if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+          e.preventDefault();
+          handleRedo();
         }
         // Escape to cancel
         if (e.key === 'Escape') {
@@ -101,7 +146,7 @@ export function MarkdownEditor({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditing, editContent]);
+  }, [isEditing, editContent, undoStack, redoStack]);
 
   const lines = content.split('\n');
   const maxHeight = maxLines * 24;
@@ -147,6 +192,8 @@ export function MarkdownEditor({
     setEditContent(content);
     setHasUnsavedChanges(false);
     setError(null);
+    setUndoStack([]);
+    setRedoStack([]);
     localStorage.removeItem(draftKey);
   }, [content, editContent, draftKey]);
 
@@ -161,6 +208,8 @@ export function MarkdownEditor({
       setContent(editContent);
       setIsEditing(false);
       setHasUnsavedChanges(false);
+      setUndoStack([]);
+      setRedoStack([]);
       localStorage.removeItem(draftKey);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
@@ -171,9 +220,40 @@ export function MarkdownEditor({
 
   const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
+    
+    // Save to undo stack (debounced - only if content changed significantly)
+    if (Math.abs(newContent.length - lastContentRef.current.length) > 10 || 
+        newContent.split('\n').length !== lastContentRef.current.split('\n').length) {
+      setUndoStack(prev => [...prev.slice(-50), lastContentRef.current]);
+      setRedoStack([]);
+      lastContentRef.current = newContent;
+    }
+    
     setEditContent(newContent);
     setHasUnsavedChanges(newContent !== content);
   }, [content]);
+
+  const handleUndo = useCallback(() => {
+    if (undoStack.length === 0) return;
+    
+    const previousContent = undoStack[undoStack.length - 1];
+    setRedoStack(prev => [...prev, editContent]);
+    setUndoStack(prev => prev.slice(0, -1));
+    setEditContent(previousContent);
+    lastContentRef.current = previousContent;
+    setHasUnsavedChanges(previousContent !== content);
+  }, [undoStack, editContent, content]);
+
+  const handleRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+    
+    const nextContent = redoStack[redoStack.length - 1];
+    setUndoStack(prev => [...prev, editContent]);
+    setRedoStack(prev => prev.slice(0, -1));
+    setEditContent(nextContent);
+    lastContentRef.current = nextContent;
+    setHasUnsavedChanges(nextContent !== content);
+  }, [redoStack, editContent, content]);
 
   const handleRestoreDraft = useCallback(() => {
     const savedDraft = localStorage.getItem(draftKey);
@@ -184,19 +264,36 @@ export function MarkdownEditor({
     }
   }, [draftKey]);
 
+  const canUndo = undoStack.length > 0;
+  const canRedo = redoStack.length > 0;
+  const showUndoRedo = isEditing && hasUnsavedChanges;
+
   return (
-    <div className={`rounded-xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-primary)] ${className}`}>
+    <motion.div 
+      className={`rounded-xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-primary)] ${className}`}
+      layout
+      transition={{ duration: 0.2 }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-tertiary)]/50 border-b border-[var(--border-primary)]">
         <div className="flex items-center gap-3">
           <span className="text-sm font-sans text-[var(--fg-tertiary)]">
             {filename}
           </span>
-          {isEditing && (
-            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-[var(--bg-brand-solid)] text-white">
-              Editing
-            </span>
-          )}
+          <AnimatePresence mode="wait">
+            {isEditing && (
+              <motion.span 
+                key="editing-badge"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.15 }}
+                className="px-2 py-0.5 text-xs font-medium rounded-full bg-[var(--bg-brand-solid)] text-white"
+              >
+                Editing
+              </motion.span>
+            )}
+          </AnimatePresence>
           {hasUnsavedChanges && !isEditing && (
             <button
               onClick={handleRestoreDraft}
@@ -208,93 +305,211 @@ export function MarkdownEditor({
           )}
         </div>
         
-        <div className="flex items-center gap-2">
-          {/* Action buttons based on edit state */}
-          {isEditing ? (
-            <>
-              {/* Delete button - only shown in edit mode */}
-              {onDelete && (
-                <button
-                  onClick={onDelete}
-                  className="p-2 rounded-lg hover:bg-[var(--bg-error-subtle)] transition-colors group"
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)] transition-colors" />
-                </button>
-              )}
-              {/* Version history button - only in edit mode */}
-              {onViewHistory && (
-                <button
-                  onClick={onViewHistory}
-                  className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-                  title="Version History"
-                >
-                  <History className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-                </button>
-              )}
-              <button
-                onClick={handleCancel}
-                className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-                title="Exit (Esc)"
+        <div className="flex items-center gap-1">
+          {/* Action buttons with AnimatePresence for smooth transitions */}
+          <AnimatePresence mode="wait">
+            {isEditing ? (
+              <motion.div 
+                key="edit-actions"
+                className="flex items-center gap-1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
               >
-                <X className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving || !hasUnsavedChanges}
-                className="p-2 rounded-lg bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                title="Save (⌘S)"
-              >
-                {isSaving ? (
-                  <span className="animate-spin text-white">⟳</span>
-                ) : (
-                  <Save className="w-4 h-4 text-white" />
+                {/* Delete button */}
+                {onDelete && (
+                  <motion.button
+                    onClick={onDelete}
+                    className={iconButtonDanger}
+                    title="Delete"
+                    variants={buttonVariants}
+                    initial="initial"
+                    animate="animate"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Trash2 className={iconDanger} />
+                  </motion.button>
                 )}
-              </button>
-            </>
-          ) : (
-            <>
-              {/* Download button - only when not editing */}
-              <button
-                onClick={handleDownload}
-                className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-                title="Download"
-              >
-                <Download className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-              </button>
-              {/* Copy button - only when not editing */}
-              <button
-                onClick={handleCopy}
-                className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-                title={copied ? 'Copied!' : 'Copy'}
-              >
-                {copied ? (
-                  <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
-                ) : (
-                  <Copy className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-                )}
-              </button>
-              {/* Edit button - only when not editing and not read-only */}
-              {!readOnly && (
-                <button
-                  onClick={handleEdit}
-                  disabled={isLoading}
-                  className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Edit"
-                >
-                  <Pencil className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-                </button>
-              )}
-            </>
-          )}
 
-          {/* View mode toggle - always visible, aligned right */}
-          <div className="flex items-center rounded-lg bg-[var(--bg-primary)]/50 p-0.5 ml-2">
+                {/* Undo/Redo - appear delightfully after typing */}
+                <AnimatePresence>
+                  {showUndoRedo && (
+                    <>
+                      <motion.button
+                        onClick={handleUndo}
+                        disabled={!canUndo}
+                        className={`${iconButtonDefault} disabled:opacity-30 disabled:cursor-not-allowed`}
+                        title="Undo (⌘Z)"
+                        variants={buttonVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={{ duration: 0.15, delay: 0 }}
+                        whileHover={canUndo ? { scale: 1.05 } : {}}
+                        whileTap={canUndo ? { scale: 0.95 } : {}}
+                      >
+                        <Undo2 className={iconDefault} />
+                      </motion.button>
+                      <motion.button
+                        onClick={handleRedo}
+                        disabled={!canRedo}
+                        className={`${iconButtonDefault} disabled:opacity-30 disabled:cursor-not-allowed`}
+                        title="Redo (⌘⇧Z)"
+                        variants={buttonVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={{ duration: 0.15, delay: 0.05 }}
+                        whileHover={canRedo ? { scale: 1.05 } : {}}
+                        whileTap={canRedo ? { scale: 0.95 } : {}}
+                      >
+                        <Redo2 className={iconDefault} />
+                      </motion.button>
+                    </>
+                  )}
+                </AnimatePresence>
+
+                {/* Separator */}
+                {(onDelete || showUndoRedo) && (
+                  <div className="w-px h-5 bg-[var(--border-primary)] mx-1" />
+                )}
+
+                {/* Version history */}
+                {onViewHistory && (
+                  <motion.button
+                    onClick={onViewHistory}
+                    className={iconButtonDefault}
+                    title="Version History"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <History className={iconDefault} />
+                  </motion.button>
+                )}
+
+                {/* Exit button */}
+                <motion.button
+                  onClick={handleCancel}
+                  className={iconButtonDefault}
+                  title="Exit (Esc)"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <X className={iconDefault} />
+                </motion.button>
+
+                {/* Save button */}
+                <motion.button
+                  onClick={handleSave}
+                  disabled={isSaving || !hasUnsavedChanges}
+                  className={`${iconButtonBase} bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[var(--bg-brand-solid)]`}
+                  title="Save (⌘S)"
+                  whileHover={!isSaving && hasUnsavedChanges ? { scale: 1.05 } : {}}
+                  whileTap={!isSaving && hasUnsavedChanges ? { scale: 0.95 } : {}}
+                >
+                  {isSaving ? (
+                    <motion.span 
+                      className="block w-4 h-4 text-white"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      ⟳
+                    </motion.span>
+                  ) : (
+                    <Save className="w-4 h-4 text-white" />
+                  )}
+                </motion.button>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="view-actions"
+                className="flex items-center gap-1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {/* Download button */}
+                <motion.button
+                  onClick={handleDownload}
+                  className={iconButtonDefault}
+                  title="Download"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Download className={iconDefault} />
+                </motion.button>
+
+                {/* Copy button */}
+                <motion.button
+                  onClick={handleCopy}
+                  className={iconButtonDefault}
+                  title={copied ? 'Copied!' : 'Copy'}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <AnimatePresence mode="wait">
+                    {copied ? (
+                      <motion.div
+                        key="check"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="copy"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                      >
+                        <Copy className={iconDefault} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+
+                {/* Edit button */}
+                {!readOnly && (
+                  <motion.button
+                    onClick={handleEdit}
+                    disabled={isLoading}
+                    className={`${iconButtonDefault} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    title="Edit"
+                    whileHover={!isLoading ? { scale: 1.05 } : {}}
+                    whileTap={!isLoading ? { scale: 0.95 } : {}}
+                  >
+                    <Pencil className={iconDefault} />
+                  </motion.button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Separator before toggle */}
+          <div className="w-px h-5 bg-[var(--border-primary)] mx-2" />
+
+          {/* View mode toggle - always visible with animated indicator */}
+          <div className="relative flex items-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]/50 p-0.5">
+            {/* Animated background indicator */}
+            <motion.div
+              className="absolute top-0.5 bottom-0.5 rounded-md bg-[var(--bg-tertiary)]"
+              initial={false}
+              animate={{
+                left: viewMode === 'source' ? '2px' : 'calc(50% + 1px)',
+                width: 'calc(50% - 3px)',
+              }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            />
             <button
               onClick={() => setViewMode('source')}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`relative z-10 p-1.5 rounded-md transition-colors duration-200 ${
                 viewMode === 'source' 
-                  ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
+                  ? 'text-[var(--fg-primary)]' 
                   : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
               }`}
               title="Source view"
@@ -303,9 +518,9 @@ export function MarkdownEditor({
             </button>
             <button
               onClick={() => setViewMode('preview')}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`relative z-10 p-1.5 rounded-md transition-colors duration-200 ${
                 viewMode === 'preview' 
-                  ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
+                  ? 'text-[var(--fg-primary)]' 
                   : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
               }`}
               title="Preview"
@@ -331,69 +546,92 @@ export function MarkdownEditor({
         )}
       </AnimatePresence>
 
-      {/* Content */}
-      <div 
-        className="overflow-auto custom-scrollbar"
-        style={{ maxHeight: `${maxHeight}px` }}
-      >
-        {isEditing && viewMode === 'source' ? (
-          // Edit mode with source view - editable textarea
-          <textarea
-            ref={textareaRef}
-            value={editContent}
-            onChange={handleContentChange}
-            className="w-full h-full min-h-[400px] p-4 font-mono text-sm bg-transparent text-[var(--fg-primary)] resize-none focus:outline-none"
-            style={{ minHeight: `${maxHeight}px` }}
-            placeholder="Enter markdown content..."
-            spellCheck={false}
-          />
-        ) : isEditing && viewMode === 'preview' ? (
-          // Edit mode with preview - show preview of edit content
-          <div className="p-4 prose prose-invert max-w-none">
-            <MarkdownPreview content={editContent} />
-          </div>
-        ) : viewMode === 'preview' ? (
-          // View mode with preview - rendered markdown
-          <div className="p-4 prose prose-invert max-w-none">
-            <MarkdownPreview content={content} />
-          </div>
-        ) : (
-          // View mode with source - syntax highlighted view
-          <div className="p-4 font-sans text-sm">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12 text-[var(--fg-tertiary)]">
-                <span className="animate-spin mr-2">⟳</span>
-                Loading...
-              </div>
-            ) : (
-              lines.map((line, index) => (
-                <div key={index} className="flex leading-6">
-                  <span className="w-10 flex-shrink-0 text-right pr-4 text-[var(--fg-quaternary)]/50 select-none">
-                    {index + 1}
-                  </span>
-                  <span className="text-[var(--fg-primary)]/90 whitespace-pre-wrap break-words">
-                    {renderMarkdownLine(line)}
-                  </span>
+      {/* Content with transition */}
+      <AnimatePresence mode="wait">
+        <motion.div 
+          key={`${isEditing}-${viewMode}`}
+          className="overflow-auto custom-scrollbar"
+          style={{ maxHeight: `${maxHeight}px` }}
+          variants={contentVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.15 }}
+        >
+          {isEditing && viewMode === 'source' ? (
+            // Edit mode with source view - editable textarea
+            <textarea
+              ref={textareaRef}
+              value={editContent}
+              onChange={handleContentChange}
+              className="w-full h-full min-h-[400px] p-4 font-mono text-sm bg-transparent text-[var(--fg-primary)] resize-none focus:outline-none"
+              style={{ minHeight: `${maxHeight}px` }}
+              placeholder="Enter markdown content..."
+              spellCheck={false}
+            />
+          ) : isEditing && viewMode === 'preview' ? (
+            // Edit mode with preview - show preview of edit content
+            <div className="p-4 prose prose-invert max-w-none">
+              <MarkdownPreview content={editContent} />
+            </div>
+          ) : viewMode === 'preview' ? (
+            // View mode with preview - rendered markdown
+            <div className="p-4 prose prose-invert max-w-none">
+              <MarkdownPreview content={content} />
+            </div>
+          ) : (
+            // View mode with source - syntax highlighted view
+            <div className="p-4 font-sans text-sm">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12 text-[var(--fg-tertiary)]">
+                  <motion.span 
+                    className="mr-2"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  >
+                    ⟳
+                  </motion.span>
+                  Loading...
                 </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
+              ) : (
+                lines.map((line, index) => (
+                  <div key={index} className="flex leading-6">
+                    <span className="w-10 flex-shrink-0 text-right pr-4 text-[var(--fg-quaternary)]/50 select-none">
+                      {index + 1}
+                    </span>
+                    <span className="text-[var(--fg-primary)]/90 whitespace-pre-wrap break-words">
+                      {renderMarkdownLine(line)}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Footer with keyboard shortcuts */}
-      {isEditing && (
-        <div className="px-4 py-2 bg-[var(--bg-tertiary)]/30 border-t border-[var(--border-primary)] flex items-center justify-between text-xs text-[var(--fg-tertiary)]">
-          <span>
-            {hasUnsavedChanges ? 'Unsaved changes' : 'No changes'}
-          </span>
-          <div className="flex items-center gap-4">
-            <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">⌘S</kbd> Save</span>
-            <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">Esc</kbd> Cancel</span>
-          </div>
-        </div>
-      )}
-    </div>
+      <AnimatePresence>
+        {isEditing && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="px-4 py-2 bg-[var(--bg-tertiary)]/30 border-t border-[var(--border-primary)] flex items-center justify-between text-xs text-[var(--fg-tertiary)]"
+          >
+            <span>
+              {hasUnsavedChanges ? 'Unsaved changes' : 'No changes'}
+            </span>
+            <div className="flex items-center gap-4">
+              <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">⌘Z</kbd> Undo</span>
+              <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">⌘S</kbd> Save</span>
+              <span><kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">Esc</kbd> Cancel</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
 
@@ -527,4 +765,3 @@ function MarkdownPreview({ content }: { content: string }) {
 }
 
 export default MarkdownEditor;
-

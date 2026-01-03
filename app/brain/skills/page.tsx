@@ -35,6 +35,7 @@ function SkillsContent() {
   const [fallbackContent, setFallbackContent] = useState<Record<string, string>>({});
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   const [isLoadingFallback, setIsLoadingFallback] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const {
     documents,
@@ -198,6 +199,7 @@ function SkillsContent() {
                 tabs={tabs}
                 activeTab={activeTab}
                 onChange={setActiveTab}
+                locked={isEditing}
               />
             </MotionItem>
           )}
@@ -213,6 +215,7 @@ function SkillsContent() {
                 onSave={isUsingFallback ? undefined : handleSave}
                 onDelete={!isUsingFallback && activeDocument ? handleDelete : undefined}
                 onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
+                onEditingChange={setIsEditing}
                 isLoading={isLoadingFallback}
                 readOnly={isUsingFallback}
               />

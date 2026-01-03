@@ -28,6 +28,8 @@ interface MarkdownEditorProps {
   onSave?: (content: string, changeSummary?: string) => Promise<void>;
   onDelete?: () => void;
   onViewHistory?: () => void;
+  /** Called when editing state changes (enter/exit edit mode) */
+  onEditingChange?: (isEditing: boolean) => void;
   isLoading?: boolean;
   readOnly?: boolean;
 }
@@ -64,6 +66,7 @@ export function MarkdownEditor({
   onSave,
   onDelete,
   onViewHistory,
+  onEditingChange,
   isLoading = false,
   readOnly = false,
 }: MarkdownEditorProps) {
@@ -116,6 +119,11 @@ export function MarkdownEditor({
       lastContentRef.current = editContent;
     }
   }, [isEditing]);
+
+  // Notify parent when editing state changes
+  useEffect(() => {
+    onEditingChange?.(isEditing);
+  }, [isEditing, onEditingChange]);
 
   // Keyboard shortcuts
   useEffect(() => {

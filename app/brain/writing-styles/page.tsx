@@ -32,6 +32,7 @@ function WritingStylesContent() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [fallbackContent, setFallbackContent] = useState<Record<string, string>>({});
   const [isUsingFallback, setIsUsingFallback] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const {
     documents,
@@ -182,6 +183,7 @@ function WritingStylesContent() {
                 tabs={tabs}
                 activeTab={activeTab}
                 onChange={setActiveTab}
+                locked={isEditing}
               />
             </MotionItem>
           )}
@@ -196,6 +198,7 @@ function WritingStylesContent() {
               onSave={isUsingFallback ? undefined : handleSave}
               onDelete={!isUsingFallback && activeDocument ? handleDelete : undefined}
               onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
+              onEditingChange={setIsEditing}
               isLoading={isLoading}
               readOnly={isUsingFallback}
             />

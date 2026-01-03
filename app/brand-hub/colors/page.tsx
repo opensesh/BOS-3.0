@@ -279,10 +279,8 @@ export default function ColorsPage() {
         {/* Mono Scale Section */}
         <section className="mb-12">
           <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-5">Mono Scale</h2>
-          {/* Responsive grid - auto-fit stretches items to fill available space */}
-          <div className="grid gap-2" style={{ 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))'
-          }}>
+          {/* Responsive grid - 6 columns on large, scales down on mobile */}
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
             {monoColors.map((color) => (
               <MonoColorCard key={color.name} color={color} />
             ))}
@@ -295,10 +293,8 @@ export default function ColorsPage() {
           <p className="text-sm text-[var(--fg-secondary)] mb-5">
             Extended brand palette for UI states, backgrounds, and accents. Use Tailwind classes like <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">bg-brand-500</code> or <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">text-brand-600</code>.
           </p>
-          {/* Responsive grid - auto-fit stretches items to fill available space */}
-          <div className="grid gap-2" style={{ 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))'
-          }}>
+          {/* Responsive grid - 6 columns on large, scales down on mobile */}
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
             {aperolShades.map((shade) => (
               <AperolShadeCard key={shade.name} shade={shade} />
             ))}

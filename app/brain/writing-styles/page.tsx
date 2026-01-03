@@ -194,7 +194,7 @@ function WritingStylesContent() {
               content={currentContent}
               maxLines={50}
               onSave={isUsingFallback ? undefined : handleSave}
-              onDelete={!isUsingFallback && activeDocument && !activeDocument.isSystem ? handleDelete : undefined}
+              onDelete={!isUsingFallback && activeDocument ? handleDelete : undefined}
               onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
               isLoading={isLoading}
               readOnly={isUsingFallback}

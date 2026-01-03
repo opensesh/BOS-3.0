@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Pre-commit hook to auto-generate ARCHITECTURE.md
+# This ensures the architecture documentation stays in sync with code changes
+
+echo "📝 Regenerating ARCHITECTURE.md..."
+
+# Run the architecture generator
+npx tsx scripts/generate-architecture.ts
+
+# Check if ARCHITECTURE.md was modified
+if git diff --quiet ARCHITECTURE.md 2>/dev/null; then
+  echo "✓ ARCHITECTURE.md is up to date"
+else
+  echo "✓ ARCHITECTURE.md updated"
+  # Stage the updated file so it's included in the commit
+  git add ARCHITECTURE.md
+  echo "✓ Staged ARCHITECTURE.md"
+fi
+
+# Continue with the commit
+exit 0
+

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
@@ -10,6 +10,7 @@ import { SpaceResourceCards } from '@/components/spaces/SpaceResourceCards';
 import { DiscussionCard } from '@/components/spaces/SpaceReferenceCard';
 import { useSpaces } from '@/hooks/useSpaces';
 import { useSpaceDiscussions } from '@/hooks/useSpaceDiscussions';
+import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 import { AddFilesModal } from '@/components/spaces/AddFilesModal';
 import { AddLinksModal } from '@/components/spaces/AddLinksModal';
 import { AddInstructionsModal } from '@/components/spaces/AddInstructionsModal';
@@ -55,6 +56,19 @@ export default function SpacePage() {
   } = useSpaceDiscussions(slug);
 
   const space = getSpace(slug);
+
+  // Breadcrumbs
+  const { setBreadcrumbs } = useBreadcrumbs();
+
+  // Set breadcrumbs when space is loaded
+  useEffect(() => {
+    if (space) {
+      setBreadcrumbs([
+        { label: 'Spaces', href: '/spaces' },
+        { label: space.title }, // No href = current page
+      ]);
+    }
+  }, [space, setBreadcrumbs]);
 
   // Check if this is a user space (can be edited/deleted) or an example space
   const isUserSpace = spaces.some((s) => s.slug === slug);

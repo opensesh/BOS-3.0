@@ -11,6 +11,7 @@ import { SpaceReferenceCard } from '@/components/spaces/SpaceReferenceCard';
 import { SpaceResourceCards } from '@/components/spaces/SpaceResourceCards';
 import { useSpaces } from '@/hooks/useSpaces';
 import { useSpaceDiscussions, useDiscussionMessages } from '@/hooks/useSpaceDiscussions';
+import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 import { ModelId } from '@/lib/ai/providers';
 import type { PageContext } from '@/lib/brand-knowledge';
 import {
@@ -67,6 +68,9 @@ export default function SpaceChatPage() {
   // Current discussion
   const discussion = getDiscussion(threadId);
 
+  // Breadcrumb context
+  const { setBreadcrumbs } = useBreadcrumbs();
+
   // Custom useChat hook for native SDK streaming
   const { messages, sendMessage, status, error, setMessages } = useChat({
     api: '/api/chat',
@@ -93,6 +97,25 @@ export default function SpaceChatPage() {
     },
     []
   );
+
+  // Set breadcrumbs for this chat page
+  useEffect(() => {
+    // Determine the chat title
+    const chatTitle = discussion?.title 
+      || initialQuery?.slice(0, 40) 
+      || 'New Chat';
+    
+    // Truncate if too long
+    const displayTitle = chatTitle.length > 40 
+      ? chatTitle.slice(0, 40) + '...' 
+      : chatTitle;
+
+    setBreadcrumbs([
+      { label: 'Spaces', href: '/spaces' },
+      { label: space?.title || slug, href: `/spaces/${slug}` },
+      { label: displayTitle }, // No href = current page
+    ]);
+  }, [space, slug, discussion, initialQuery, setBreadcrumbs]);
 
   // Load stored messages on mount
   useEffect(() => {

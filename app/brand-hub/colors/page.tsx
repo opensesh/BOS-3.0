@@ -276,26 +276,26 @@ export default function ColorsPage() {
           </div>
         </section>
 
-        {/* Aperol Shades Section */}
+        {/* Mono Scale Section */}
         <section className="mb-12">
-          <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-2">Aperol Scale</h2>
-          <p className="text-sm text-[var(--fg-secondary)] mb-5">
-            Extended Aperol palette for UI states, backgrounds, and accents. Use Tailwind classes like <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">bg-brand-500</code> or <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">text-brand-600</code>.
-          </p>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2.5">
-            {aperolShades.map((shade) => (
-              <AperolShadeCard key={shade.name} shade={shade} />
-            ))}
-          </div>
-        </section>
-
-        {/* Mono Colors Section */}
-        <section>
-          <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-5">Mono</h2>
+          <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-5">Mono Scale</h2>
           {/* Fixed 6 columns on lg+ for consistent 2-row layout */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
             {monoColors.map((color) => (
               <MonoColorCard key={color.name} color={color} />
+            ))}
+          </div>
+        </section>
+
+        {/* Brand Scale Section (Aperol) */}
+        <section>
+          <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-2">Brand Scale</h2>
+          <p className="text-sm text-[var(--fg-secondary)] mb-5">
+            Extended brand palette for UI states, backgrounds, and accents. Use Tailwind classes like <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">bg-brand-500</code> or <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">text-brand-600</code>.
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2.5">
+            {aperolShades.map((shade) => (
+              <AperolShadeCard key={shade.name} shade={shade} />
             ))}
           </div>
         </section>

@@ -12,10 +12,32 @@ interface ColorData {
   label?: 'Primary' | 'Secondary';
 }
 
+interface AperolShade {
+  name: string;
+  tailwindClass: string;
+  cssVar: string;
+  hex: string;
+}
+
 const brandColors: ColorData[] = [
-  { name: 'Charcoal', hex: '#191919', rgb: 'rgb(25, 25, 25)', label: 'Primary' },
-  { name: 'Vanilla', hex: '#FFFAEE', rgb: 'rgb(255, 250, 238)', label: 'Primary' },
-  { name: 'Aperol', hex: '#FE5102', rgb: 'rgb(254, 81, 2)', label: 'Secondary' },
+  { name: 'Primary/Charcoal', hex: '#191919', rgb: 'rgb(25, 25, 25)', label: 'Primary' },
+  { name: 'Primary/Vanilla', hex: '#FFFAEE', rgb: 'rgb(255, 250, 238)', label: 'Secondary' },
+  { name: 'Secondary/Aperol', hex: '#FE5102', rgb: 'rgb(254, 81, 2)', label: 'Secondary' },
+];
+
+const aperolShades: AperolShade[] = [
+  { name: 'brand-25', tailwindClass: 'bg-brand-25', cssVar: '--color-brand-25', hex: '#fffaf5' },
+  { name: 'brand-50', tailwindClass: 'bg-brand-50', cssVar: '--color-brand-50', hex: '#fff3eb' },
+  { name: 'brand-100', tailwindClass: 'bg-brand-100', cssVar: '--color-brand-100', hex: '#ffe4d4' },
+  { name: 'brand-200', tailwindClass: 'bg-brand-200', cssVar: '--color-brand-200', hex: '#ffc8a8' },
+  { name: 'brand-300', tailwindClass: 'bg-brand-300', cssVar: '--color-brand-300', hex: '#ffa370' },
+  { name: 'brand-400', tailwindClass: 'bg-brand-400', cssVar: '--color-brand-400', hex: '#ff7a38' },
+  { name: 'brand-500', tailwindClass: 'bg-brand-500', cssVar: '--color-brand-500', hex: '#fe5102' },
+  { name: 'brand-600', tailwindClass: 'bg-brand-600', cssVar: '--color-brand-600', hex: '#e64400' },
+  { name: 'brand-700', tailwindClass: 'bg-brand-700', cssVar: '--color-brand-700', hex: '#bf3600' },
+  { name: 'brand-800', tailwindClass: 'bg-brand-800', cssVar: '--color-brand-800', hex: '#992d05' },
+  { name: 'brand-900', tailwindClass: 'bg-brand-900', cssVar: '--color-brand-900', hex: '#7a280a' },
+  { name: 'brand-950', tailwindClass: 'bg-brand-950', cssVar: '--color-brand-950', hex: '#431302' },
 ];
 
 const monoColors: ColorData[] = [
@@ -46,8 +68,8 @@ function CopyButton({ text, label, isLight }: { text: string; label: string; isL
   };
 
   const iconColor = isLight 
-    ? 'text-[var(--color-charcoal)]/60 group-hover:text-[var(--color-charcoal)]' 
-    : 'text-[var(--color-vanilla)]/60 group-hover:text-[var(--color-vanilla)]';
+    ? 'text-[var(--color-charcoal)]/50 group-hover:text-[var(--color-charcoal)]' 
+    : 'text-[var(--color-vanilla)]/50 group-hover:text-[var(--color-vanilla)]';
   const hoverBg = isLight 
     ? 'hover:bg-[var(--color-charcoal)]/10' 
     : 'hover:bg-[var(--color-vanilla)]/10';
@@ -60,49 +82,52 @@ function CopyButton({ text, label, isLight }: { text: string; label: string; isL
       aria-label={`Copy ${label}`}
     >
       {copied ? (
-        <Check className="w-3 h-3 text-[var(--fg-success-primary)]" />
+        <Check className="w-3.5 h-3.5 text-[var(--fg-success-primary)]" />
       ) : (
-        <Copy className={`w-3 h-3 ${iconColor}`} />
+        <Copy className={`w-3.5 h-3.5 ${iconColor}`} />
       )}
     </button>
   );
 }
 
 function BrandColorCard({ color }: { color: ColorData }) {
-  const isLight = color.name === 'Vanilla' || color.hex === '#FFFAEE';
+  const isLight = color.name.includes('Vanilla') || color.hex === '#FFFAEE';
   const textColor = isLight ? 'text-[var(--color-charcoal)]' : 'text-[var(--color-vanilla)]';
   const borderColor = isLight ? 'border-[var(--border-primary)]' : 'border-transparent';
 
   return (
     <div 
-      className={`rounded-2xl overflow-hidden border ${borderColor} w-full`}
+      className={`rounded-xl overflow-hidden border ${borderColor} w-full min-h-[200px] flex flex-col`}
       style={{ backgroundColor: color.hex }}
     >
       {/* Header */}
-      <div className={`flex items-center justify-between px-5 py-4 ${textColor}`}>
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-display font-medium">{color.name}</span>
+      <div className={`flex items-start justify-between px-4 pt-4 ${textColor}`}>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base font-display font-medium">{color.name}</span>
           <CopyButton text={color.name} label="color name" isLight={isLight} />
         </div>
         {color.label && (
-          <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+          <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${
             isLight 
               ? 'bg-[var(--color-charcoal)]/10 text-[var(--color-charcoal)]' 
-              : 'bg-[var(--color-vanilla)]/10 text-[var(--color-vanilla)]'
+              : 'bg-[var(--color-vanilla)]/15 text-[var(--color-vanilla)]'
           }`}>
             {color.label}
           </span>
         )}
       </div>
 
+      {/* Spacer */}
+      <div className="flex-1" />
+
       {/* Color Values */}
-      <div className={`px-5 pb-5 pt-16 space-y-2 ${textColor}`}>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-mono opacity-80">{color.hex}</span>
+      <div className={`px-4 pb-4 space-y-1.5 ${textColor}`}>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-mono opacity-90">{color.hex}</span>
           <CopyButton text={color.hex} label={color.hex} isLight={isLight} />
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-mono opacity-80">{color.rgb}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-mono opacity-90">{color.rgb}</span>
           <CopyButton text={color.rgb} label={color.rgb} isLight={isLight} />
         </div>
       </div>
@@ -132,6 +157,48 @@ function getContrastRatio(color1: string, color2: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+function AperolShadeCard({ shade }: { shade: AperolShade }) {
+  const charcoalContrast = getContrastRatio(shade.hex, '#191919');
+  const vanillaContrast = getContrastRatio(shade.hex, '#FFFAEE');
+  const isLight = charcoalContrast > vanillaContrast;
+  const textColor = isLight ? 'text-[var(--color-charcoal)]' : 'text-[var(--color-vanilla)]';
+  const borderColor = isLight ? 'border-[var(--border-primary)]/30' : 'border-transparent';
+
+  return (
+    <div 
+      className={`rounded-xl overflow-hidden border ${borderColor} min-h-[140px] flex flex-col w-full`}
+      style={{ backgroundColor: shade.hex }}
+    >
+      {/* Header */}
+      <div className={`flex items-center gap-1.5 px-3 py-2.5 ${textColor}`}>
+        <span className="text-xs font-display font-medium truncate flex-1">
+          {shade.name}
+        </span>
+        <CopyButton text={shade.tailwindClass} label="Tailwind class" isLight={isLight} />
+      </div>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Values */}
+      <div className={`px-3 pb-2.5 space-y-1 ${textColor}`}>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] font-mono truncate flex-1 opacity-80">
+            {shade.hex}
+          </span>
+          <CopyButton text={shade.hex} label={shade.hex} isLight={isLight} />
+        </div>
+        <div className="flex items-center gap-1">
+          <code className="text-[10px] font-mono truncate flex-1 opacity-80">
+            {shade.tailwindClass}
+          </code>
+          <CopyButton text={shade.tailwindClass} label={shade.tailwindClass} isLight={isLight} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MonoColorCard({ color }: { color: ColorData }) {
   // Calculate contrast ratios for both text color options
   const charcoalContrast = getContrastRatio(color.hex, '#191919');
@@ -140,7 +207,7 @@ function MonoColorCard({ color }: { color: ColorData }) {
   // Choose the text color with better contrast
   const isLight = charcoalContrast > vanillaContrast;
   const textColor = isLight ? 'text-[var(--color-charcoal)]' : 'text-[var(--color-vanilla)]';
-  const borderColor = isLight ? 'border-[var(--border-primary)]/50' : 'border-transparent';
+  const borderColor = isLight ? 'border-[var(--border-primary)]/30' : 'border-transparent';
   
   // Use the better contrast ratio for accessibility check
   const contrastRatio = Math.max(charcoalContrast, vanillaContrast);
@@ -192,18 +259,32 @@ export default function ColorsPage() {
       >
         {/* Brand Colors Section */}
         <section className="mb-12">
-          <h2 className="text-xl font-display font-bold text-[var(--fg-primary)] mb-6">Brand</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-5">Brand</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {brandColors.map((color) => (
               <BrandColorCard key={color.name} color={color} />
             ))}
           </div>
         </section>
 
+        {/* Aperol Shades Section */}
+        <section className="mb-12">
+          <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-2">Aperol Scale</h2>
+          <p className="text-sm text-[var(--fg-secondary)] mb-5">
+            Extended Aperol palette for UI states, backgrounds, and accents. Use Tailwind classes like <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">bg-brand-500</code> or <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">text-brand-600</code>.
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2.5">
+            {aperolShades.map((shade) => (
+              <AperolShadeCard key={shade.name} shade={shade} />
+            ))}
+          </div>
+        </section>
+
         {/* Mono Colors Section */}
         <section>
-          <h2 className="text-xl font-display font-bold text-[var(--fg-primary)] mb-6">Mono</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5">
+          <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-5">Mono</h2>
+          {/* Fixed 6 columns on lg+ for consistent 2-row layout */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
             {monoColors.map((color) => (
               <MonoColorCard key={color.name} color={color} />
             ))}

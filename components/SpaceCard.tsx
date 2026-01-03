@@ -40,7 +40,7 @@ export function SpaceCard({ space, isCreate = false, onDelete, onCreateClick }: 
     'p-6 rounded-xl',
     'border border-border-secondary',
     'bg-bg-secondary',
-    'hover:bg-bg-secondary-hover',
+    'hover:bg-secondary-hover',
     'hover:border-border-brand',
     'transition-all duration-200 ease-out',
     'min-h-[200px]',

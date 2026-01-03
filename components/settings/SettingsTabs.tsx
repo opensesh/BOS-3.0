@@ -89,7 +89,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
             border border-[var(--border-secondary)]
             rounded-md
             text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-            hover:bg-primary-hover
+            hover:bg-primary_hover
             shadow-sm
             transition-all duration-150
             pointer-events-auto
@@ -131,7 +131,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
             border border-[var(--border-secondary)]
             rounded-md
             text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-            hover:bg-primary-hover
+            hover:bg-primary_hover
             shadow-sm
             transition-all duration-150
             pointer-events-auto

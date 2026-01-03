@@ -366,7 +366,7 @@ function PasteMode({
         <button
           type="button"
           onClick={onCancel}
-          className="px-5 py-2.5 rounded-lg text-[var(--fg-secondary)] hover:bg-primary-hover transition-colors font-medium"
+          className="px-5 py-2.5 rounded-lg text-[var(--fg-secondary)] hover:bg-primary_hover transition-colors font-medium"
         >
           Cancel
         </button>

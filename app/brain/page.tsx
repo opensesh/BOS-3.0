@@ -129,13 +129,13 @@ function ResourceCard({
   );
 }
 
-// Add Resource Card - Square icon button matching resource card height
+// Add Resource Card - Compact version with just plus icon
 function AddResourceCard({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="group aspect-square h-full flex items-center justify-center rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all"
-      aria-label="Add Resource"
+      className="group flex items-center justify-center p-3 rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all"
+      title="Add Resource"
     >
       <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
     </button>

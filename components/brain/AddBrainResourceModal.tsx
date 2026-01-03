@@ -33,7 +33,6 @@ export function AddBrainResourceModal({
   const [url, setUrl] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Link');
   const [iconSearch, setIconSearch] = useState('');
-  const [showAllIcons, setShowAllIcons] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -92,7 +91,6 @@ export function AddBrainResourceModal({
     setUrl('');
     setSelectedIcon('Link');
     setIconSearch('');
-    setShowAllIcons(false);
     setError('');
     onClose();
   };
@@ -102,21 +100,20 @@ export function AddBrainResourceModal({
     setUrl('');
     setSelectedIcon('Link');
     setIconSearch('');
-    setShowAllIcons(false);
     setError('');
     onClose();
   };
 
-  // Get filtered icons for the picker
+  // Get all Lucide icon names
   const allIconNames = Object.keys(LucideIcons).filter(
     (key) => key !== 'createLucideIcon' && key !== 'default' && typeof (LucideIcons as any)[key] === 'function'
   ).sort();
   
-  const displayedIcons = showAllIcons 
-    ? (iconSearch 
-        ? allIconNames.filter(name => name.toLowerCase().includes(iconSearch.toLowerCase()))
-        : allIconNames)
-    : POPULAR_ICONS;
+  // When searching, filter all icons; otherwise show popular icons
+  // Always limit to 18 icons (3 rows of 6)
+  const displayedIcons = iconSearch.trim()
+    ? allIconNames.filter(name => name.toLowerCase().includes(iconSearch.toLowerCase())).slice(0, 18)
+    : POPULAR_ICONS.slice(0, 18);
 
   const renderIcon = (iconName: string, size: string = 'w-5 h-5') => {
     const IconComponent = (LucideIcons as any)[iconName];
@@ -170,35 +167,24 @@ export function AddBrainResourceModal({
 
         {/* Icon Picker */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-sm font-medium text-[var(--fg-primary)]">
-              Icon
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowAllIcons(!showAllIcons)}
-              className="text-xs text-[var(--fg-brand-primary)] hover:underline"
-            >
-              {showAllIcons ? 'Show popular' : 'Browse all'}
-            </button>
+          <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
+            Icon
+          </label>
+          
+          {/* Search input - always visible */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)]" />
+            <input
+              type="text"
+              value={iconSearch}
+              onChange={(e) => setIconSearch(e.target.value)}
+              placeholder="Search icons..."
+              className="w-full pl-10 pr-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] text-sm text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-colors"
+            />
           </div>
           
-          {/* Search (only when showing all icons) */}
-          {showAllIcons && (
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)]" />
-              <input
-                type="text"
-                value={iconSearch}
-                onChange={(e) => setIconSearch(e.target.value)}
-                placeholder="Search icons..."
-                className="w-full pl-10 pr-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] text-sm text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-colors"
-              />
-            </div>
-          )}
-          
-          {/* Icon Grid */}
-          <div className={`grid grid-cols-6 gap-2 overflow-y-auto custom-scrollbar p-1 ${showAllIcons ? 'max-h-60' : 'max-h-32'}`}>
+          {/* Icon Grid - fixed 3 rows, no scroll */}
+          <div className="grid grid-cols-6 gap-2">
             {displayedIcons.map((iconName) => (
               <button
                 key={iconName}

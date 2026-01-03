@@ -133,12 +133,13 @@ export default function BrandIdentityPage() {
                 {!isUsingFallback && (
                   <motion.button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] transition-colors font-medium"
+                    className="p-2.5 rounded-xl bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] transition-colors"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    title="Add"
+                    aria-label="Add brand identity document"
                   >
-                    <Plus className="w-4 h-4" />
-                    Add
+                    <Plus className="w-5 h-5" />
                   </motion.button>
                 )}
                 <button

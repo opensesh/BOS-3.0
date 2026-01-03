@@ -173,6 +173,38 @@ opacity-0 group-hover:opacity-100 transition-opacity duration-150
 
 Icons belong in the modal body (e.g., selection cards), not duplicated in the header.
 
+### Selection Card Icon Pattern
+**Icons in selection cards should appear ONLY in the upper-left corner.** Do not repeat icons in subtitles, labels, or other areas of the card - this is redundant.
+
+Card structure:
+```tsx
+<button className="card">
+  {/* Icon - upper left only */}
+  <div className="p-3 rounded-xl bg-[var(--bg-primary)] border">
+    <Icon className="w-6 h-6" />
+  </div>
+  
+  {/* Title */}
+  <h3>Card Title</h3>
+  
+  {/* Description */}
+  <p>Description text</p>
+  
+  {/* Subtitle - TEXT ONLY, no icon */}
+  <div className="text-xs text-[var(--fg-quaternary)]">
+    Subtitle text only
+  </div>
+</button>
+```
+
+❌ NEVER put icons in card subtitles:
+```tsx
+<div className="flex items-center gap-2 text-xs">
+  <SomeIcon className="w-3.5 h-3.5" />
+  Subtitle text
+</div>
+```
+
 ---
 
 ## Brand Colors Reference

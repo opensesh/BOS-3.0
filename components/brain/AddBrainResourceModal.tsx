@@ -110,12 +110,12 @@ export function AddBrainResourceModal({
   // Get filtered icons for the picker
   const allIconNames = Object.keys(LucideIcons).filter(
     (key) => key !== 'createLucideIcon' && key !== 'default' && typeof (LucideIcons as any)[key] === 'function'
-  );
+  ).sort();
   
   const displayedIcons = showAllIcons 
     ? (iconSearch 
-        ? allIconNames.filter(name => name.toLowerCase().includes(iconSearch.toLowerCase())).slice(0, 48)
-        : allIconNames.slice(0, 48))
+        ? allIconNames.filter(name => name.toLowerCase().includes(iconSearch.toLowerCase()))
+        : allIconNames)
     : POPULAR_ICONS;
 
   const renderIcon = (iconName: string, size: string = 'w-5 h-5') => {
@@ -198,7 +198,7 @@ export function AddBrainResourceModal({
           )}
           
           {/* Icon Grid */}
-          <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto custom-scrollbar p-1">
+          <div className={`grid grid-cols-6 gap-2 overflow-y-auto custom-scrollbar p-1 ${showAllIcons ? 'max-h-60' : 'max-h-32'}`}>
             {displayedIcons.map((iconName) => (
               <button
                 key={iconName}
@@ -241,10 +241,9 @@ export function AddBrainResourceModal({
         </Button>
         <Button
           type="button"
-          color="secondary"
+          color="primary"
           size="md"
           onClick={handleSubmit}
-          className="!bg-[var(--bg-brand-solid)] !text-white hover:!bg-[var(--bg-brand-solid\_hover)] !ring-[var(--border-brand-solid)]"
         >
           {isEditMode ? 'Save Changes' : 'Add Resource'}
         </Button>

@@ -129,22 +129,15 @@ function ResourceCard({
   );
 }
 
-// Add Resource Card - Matches ResourceCard styling
+// Add Resource Card - Square icon button matching resource card height
 function AddResourceCard({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="group relative flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all"
-      title="Add Resource"
+      className="group aspect-square h-full flex items-center justify-center rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all"
+      aria-label="Add Resource"
     >
-      <div className="min-w-0 flex-1 flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-[var(--bg-primary)]/50 border border-[var(--border-primary)] flex-shrink-0">
-          <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
-        </div>
-        <span className="text-sm font-medium text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
-          Add Resource
-        </span>
-      </div>
+      <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
     </button>
   );
 }

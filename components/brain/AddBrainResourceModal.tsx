@@ -244,7 +244,7 @@ export function AddBrainResourceModal({
           color="secondary"
           size="md"
           onClick={handleSubmit}
-          className="!bg-[var(--bg-brand-solid)] !text-white hover:!bg-[var(--bg-brand-solid_hover)] !ring-[var(--border-brand-solid)]"
+          className="!bg-[var(--bg-brand-solid)] !text-white hover:!bg-[var(--bg-brand-solid\_hover)] !ring-[var(--border-brand-solid)]"
         >
           {isEditMode ? 'Save Changes' : 'Add Resource'}
         </Button>

@@ -50,11 +50,14 @@ export const styles = sortCx({
     colors: {
         primary: {
             root: [
-                "bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] shadow-xs ring-1 ring-[var(--border-brand)] ring-inset hover:bg-[var(--bg-brand-primary\_alt)] hover:ring-[var(--border-brand-solid)] data-loading:bg-[var(--bg-brand-primary\_alt)]",
+                // Default: neutral/secondary state - Hover: brand accent state
+                "bg-[var(--bg-secondary)] text-[var(--fg-primary)] shadow-xs ring-1 ring-[var(--border-primary)] ring-inset",
+                "hover:bg-[var(--bg-brand-primary)] hover:text-[var(--fg-brand-primary)] hover:ring-[var(--border-brand-solid)]",
+                "data-loading:bg-[var(--bg-brand-primary)]",
                 // Disabled styles
                 "disabled:bg-disabled disabled:shadow-xs disabled:ring-disabled_subtle disabled:text-fg-disabled",
                 // Icon styles
-                "*:data-icon:text-[var(--fg-brand-primary)] hover:*:data-icon:text-[var(--fg-brand-primary)]",
+                "*:data-icon:text-[var(--fg-tertiary)] hover:*:data-icon:text-[var(--fg-brand-primary)]",
             ].join(" "),
         },
         secondary: {

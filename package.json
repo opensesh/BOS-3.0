@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "generate:brand-index": "npx tsx lib/brand-knowledge/generate.ts",
+    "generate:architecture": "npx tsx scripts/generate-architecture.ts",
     "fetch-thumbnails": "npx tsx scripts/populate-thumbnails.ts",
     "capture-screenshots": "npx tsx scripts/capture-screenshots.ts",
-    "prebuild": "npm run generate:brand-index"
+    "prebuild": "npm run generate:brand-index",
+    "prepare": "[ -d .git ] && git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

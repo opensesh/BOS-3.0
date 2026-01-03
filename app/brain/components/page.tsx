@@ -9,7 +9,7 @@ import { ComponentsDrawer } from '@/components/docs/ComponentsDrawer';
 import { ComponentPreview } from '@/components/docs/ComponentPreview';
 import { ComponentsList } from '@/components/docs/ComponentsList';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { ArrowLeft, Loader2, LayoutList, PanelRight } from 'lucide-react';
+import { Loader2, LayoutList, PanelRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getComponentById, getAllComponents, ComponentDoc } from '@/lib/component-registry';
 
@@ -104,70 +104,44 @@ function ComponentsContent() {
       {/* Main Content */}
       <MainContent className="overflow-y-auto custom-scrollbar">
         <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
-          {/* Back Button & Actions Row */}
-          <MotionItem className="flex items-center justify-between mb-8">
-            {/* Navigation Links */}
-            <div className="flex items-center gap-4">
-              {/* Back to Brain - always shown */}
-              <Link
-                href="/brain"
-                className="group inline-flex items-center gap-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)] transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                <span className="text-sm font-medium">Back to Brain</span>
-              </Link>
-              
-              {/* All Components breadcrumb - shown when viewing a specific component */}
-              {!showListView && (
-                <>
-                  <span className="text-[var(--fg-tertiary)]/40">/</span>
-                  <Link
-                    href="/brain/components"
-                    className="text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)] transition-colors"
-                  >
-                    <span className="text-sm font-medium">All Components</span>
-                  </Link>
-                </>
-              )}
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              {/* All Components Button */}
-              <Link
-                href="/brain/components"
-                className={cn(
-                  "group relative p-3 rounded-xl border transition-colors",
-                  showListView 
-                    ? "bg-[var(--bg-brand-primary)] border-[var(--border-brand)] text-[var(--fg-brand-primary)]" 
-                    : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border-[var(--border-primary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
-                )}
-                title="All Components"
-              >
-                <LayoutList className="w-5 h-5 transition-colors" />
-              </Link>
-              
-              {/* Show Components Drawer Button */}
-              <button
-                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-                className={cn(
-                  "group relative p-3 rounded-xl border transition-colors",
-                  isDrawerOpen 
-                    ? "bg-[var(--bg-brand-primary)] border-[var(--border-brand)] text-[var(--fg-brand-primary)]" 
-                    : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border-[var(--border-primary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
-                )}
-                title="Show Components"
-              >
-                <PanelRight className="w-5 h-5 transition-colors" />
-              </button>
-            </div>
-          </MotionItem>
-
           {/* Page Header */}
           <MotionItem className="flex flex-col gap-2 mb-10">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
-              {showListView ? 'All Components' : (selectedComponent?.name || 'Components')}
-            </h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
+                {showListView ? 'All Components' : (selectedComponent?.name || 'Components')}
+              </h1>
+              
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                {/* All Components Button */}
+                <Link
+                  href="/brain/components"
+                  className={cn(
+                    "group relative p-3 rounded-xl border transition-colors",
+                    showListView 
+                      ? "bg-[var(--bg-brand-primary)] border-[var(--border-brand)] text-[var(--fg-brand-primary)]" 
+                      : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border-[var(--border-primary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
+                  )}
+                  title="All Components"
+                >
+                  <LayoutList className="w-5 h-5 transition-colors" />
+                </Link>
+                
+                {/* Show Components Drawer Button */}
+                <button
+                  onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                  className={cn(
+                    "group relative p-3 rounded-xl border transition-colors",
+                    isDrawerOpen 
+                      ? "bg-[var(--bg-brand-primary)] border-[var(--border-brand)] text-[var(--fg-brand-primary)]" 
+                      : "bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border-[var(--border-primary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
+                  )}
+                  title="Show Components"
+                >
+                  <PanelRight className="w-5 h-5 transition-colors" />
+                </button>
+              </div>
+            </div>
             <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               {showListView 
                 ? 'Browse all registered components with metadata including creation date, category, and usage statistics.'

@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 import { PageTransition, MotionItem } from '@/lib/motion';
 import { useSidebar } from '@/lib/sidebar-context';
 
@@ -10,14 +8,12 @@ interface BrandHubLayoutProps {
   children: React.ReactNode;
   title: string;
   description?: string;
-  showBackButton?: boolean;
 }
 
 export function BrandHubLayout({
   children,
   title,
   description,
-  showBackButton = true
 }: BrandHubLayoutProps) {
   const { sidebarWidth } = useSidebar();
   const [isDesktop, setIsDesktop] = useState(false);
@@ -37,19 +33,6 @@ export function BrandHubLayout({
       style={{ paddingLeft: isDesktop ? `${sidebarWidth}px` : 0 }}
     >
       <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
-        {/* Back Button */}
-        {showBackButton && (
-          <MotionItem className="mb-8">
-            <Link
-              href="/brand-hub"
-              className="group inline-flex items-center gap-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              <span className="text-sm font-medium">Back to Brand Hub</span>
-            </Link>
-          </MotionItem>
-        )}
-
         {/* Page Header */}
         <MotionItem className="flex flex-col gap-2 mb-10">
           <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">

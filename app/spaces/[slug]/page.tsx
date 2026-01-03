@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { SpaceHeader } from '@/components/SpaceHeader';
@@ -146,15 +144,6 @@ export default function SpacePage() {
       <MainContent className="overflow-hidden relative">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="w-full max-w-4xl mx-auto px-6 py-8 md:px-12 md:py-12">
-            {/* Back Button */}
-            <Link
-              href="/spaces"
-              className="group inline-flex items-center gap-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)] transition-colors mb-8"
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              <span className="text-sm font-medium">Back to Spaces</span>
-            </Link>
-
             {/* Header */}
             <SpaceHeader
               title={space.title}

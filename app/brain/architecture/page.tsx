@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { MarkdownCodeViewer } from '@/components/brain/MarkdownCodeViewer';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 export default function ArchitecturePage() {
   const [content, setContent] = useState('');
@@ -26,33 +25,24 @@ export default function ArchitecturePage() {
       
       <MainContent className="overflow-y-auto custom-scrollbar">
         <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
-          {/* Back Button & Settings Row */}
-          <MotionItem className="flex items-center justify-between mb-8">
-            <Link
-              href="/brain"
-              className="group inline-flex items-center gap-2 text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              <span className="text-sm font-medium">Back to Brain</span>
-            </Link>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)] transition-colors group"
-              title="Brain Settings"
-            >
-              <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-            </button>
-          </MotionItem>
-
           {/* Page Header */}
           <MotionItem className="flex flex-col gap-2 mb-10">
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
-                Architecture
-              </h1>
-              <span className="px-2.5 py-1 text-xs font-medium bg-[var(--bg-success-primary)] text-[var(--fg-success-primary)] rounded-full">
-                Automatic
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
+                  Architecture
+                </h1>
+                <span className="px-2.5 py-1 text-xs font-medium bg-[var(--bg-success-primary)] text-[var(--fg-success-primary)] rounded-full">
+                  Automatic
+                </span>
+              </div>
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)] transition-colors group"
+                title="Brain Settings"
+              >
+                <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+              </button>
             </div>
             <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               This website is structured to serve both as a landing page for humans and as a

@@ -33,9 +33,9 @@ function SkillsContent() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [fallbackContent, setFallbackContent] = useState<Record<string, string>>({});
-  const [isUsingFallback, setIsUsingFallback] = useState(false);
   const [isLoadingFallback, setIsLoadingFallback] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const {
     documents,
@@ -49,6 +49,10 @@ function SkillsContent() {
     restoreVersion,
   } = useBrainDocuments({ category: 'skills' });
 
+  // Determine if we should use fallback (derived state, not effect-based)
+  const shouldUseFallback = !isLoading && (error || documents.length === 0 || documents.every(d => !d.content));
+  const isUsingFallback = hasInitialized && shouldUseFallback;
+
   // Set active tab from URL param on mount
   useEffect(() => {
     if (tabParam && FALLBACK_SKILLS.some(s => s.slug === tabParam)) {
@@ -56,18 +60,16 @@ function SkillsContent() {
     }
   }, [tabParam]);
 
-  // Check if we need to use fallback
+  // Mark as initialized once loading completes
   useEffect(() => {
-    if (!isLoading && (error || documents.length === 0 || documents.every(d => !d.content))) {
-      setIsUsingFallback(true);
-    } else {
-      setIsUsingFallback(false);
+    if (!isLoading && !hasInitialized) {
+      setHasInitialized(true);
     }
-  }, [isLoading, error, documents]);
+  }, [isLoading, hasInitialized]);
 
   // Load fallback content when active tab changes (using server action)
   useEffect(() => {
-    if (isUsingFallback && activeTab) {
+    if (shouldUseFallback && hasInitialized && activeTab) {
       setIsLoadingFallback(true);
       getSkillContent(activeTab)
         .then(content => {
@@ -84,7 +86,7 @@ function SkillsContent() {
           setIsLoadingFallback(false);
         });
     }
-  }, [isUsingFallback, activeTab]);
+  }, [shouldUseFallback, hasInitialized, activeTab]);
 
   // Set active document when tab changes
   useEffect(() => {
@@ -186,14 +188,14 @@ function SkillsContent() {
           </MotionItem>
 
           {/* Loading State */}
-          {(isLoading || isLoadingFallback) && (
+          {(isLoading || isLoadingFallback || !hasInitialized) && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--fg-brand-primary)]" />
             </div>
           )}
 
           {/* Tab Selector */}
-          {tabs.length > 0 && !isLoading && (
+          {tabs.length > 0 && !isLoading && hasInitialized && (
             <MotionItem className="mb-6">
               <TabSelector
                 tabs={tabs}
@@ -205,7 +207,7 @@ function SkillsContent() {
           )}
 
           {/* Content Editor */}
-          {!isLoading && (
+          {!isLoading && hasInitialized && (
             <MotionItem>
               <MarkdownEditor
                 documentId={activeDocument?.id || activeTab}

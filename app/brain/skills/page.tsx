@@ -155,13 +155,13 @@ function SkillsContent() {
                 {!isUsingFallback && (
                   <motion.button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="p-2.5 rounded-xl bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] transition-colors"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)] transition-colors group"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     title="Add"
                     aria-label="Add skill"
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
                   </motion.button>
                 )}
                 <button

@@ -30,7 +30,7 @@ export function TabSelector({ tabs, activeTab, onChange, className = '' }: TabSe
               ${
                 isActive
                   ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] z-10 shadow-[0_-1px_3px_rgba(0,0,0,0.08)]'
-                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-secondary)] hover:shadow-[inset_0_0_0_1px_var(--border-brand-solid)]'
+                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-secondary)]'
               }
             `}
             style={{
@@ -43,14 +43,26 @@ export function TabSelector({ tabs, activeTab, onChange, className = '' }: TabSe
             <span 
               className={`
                 absolute top-0 left-1 right-1 h-0.5 rounded-full
-                transition-all duration-150
-                ${isActive 
-                  ? 'bg-[var(--border-brand-solid)] opacity-100' 
-                  : 'bg-[var(--border-brand-solid)] opacity-0 group-hover:opacity-100'
-                }
+                transition-opacity duration-150
+                bg-[var(--border-brand-solid)]
+                ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
               `}
               aria-hidden="true"
             />
+            {/* Left edge - Aperol border (only on hover for inactive) - positioned inside clip area */}
+            {!isActive && (
+              <span 
+                className="absolute top-0 left-1 w-px h-[calc(100%-1px)] bg-[var(--border-brand-solid)] opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                aria-hidden="true"
+              />
+            )}
+            {/* Right edge - Aperol border (only on hover for inactive) - positioned inside clip area */}
+            {!isActive && (
+              <span 
+                className="absolute top-0 right-1 w-px h-[calc(100%-1px)] bg-[var(--border-brand-solid)] opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                aria-hidden="true"
+              />
+            )}
             {tab.label}
           </button>
         );

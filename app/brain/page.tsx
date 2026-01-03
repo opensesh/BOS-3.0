@@ -181,7 +181,7 @@ function BentoCard({ item }: { item: typeof brainPages[0] }) {
     >
       <Link
         href={item.href}
-        className="group relative h-full flex flex-col p-6 md:p-8 gap-6 md:gap-8 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary-hover)] transition-all duration-300 ease-out"
+        className="group relative h-full flex flex-col p-6 md:p-8 gap-6 md:gap-8 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-secondary-hover transition-all duration-300 ease-out"
       >
         {/* Top Section: Icon and Arrow */}
         <div className="flex items-start justify-between">

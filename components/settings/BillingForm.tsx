@@ -373,7 +373,7 @@ export function BillingForm() {
               rounded-lg
               text-sm font-semibold text-[var(--fg-secondary)]
               shadow-xs
-              hover:bg-[var(--bg-primary-hover)]
+              hover:bg-primary-hover
               transition-colors
             ">
               <Download className="w-5 h-5" />

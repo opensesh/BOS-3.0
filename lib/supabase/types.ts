@@ -838,6 +838,108 @@ export function dbBrandDocumentVersionToApp(db: DbBrandDocumentVersion): BrandDo
 }
 
 // ============================================
+// BRAND COLORS (Design System)
+// ============================================
+
+export type BrandColorGroup = 'brand' | 'mono-scale' | 'brand-scale' | 'custom';
+export type BrandColorRole = 'primary' | 'secondary' | 'accent' | 'neutral';
+export type BrandTextColor = 'light' | 'dark';
+
+export interface DbBrandColor {
+  id: string;
+  brand_id: string;
+  name: string;
+  slug: string;
+  hex_value: string;
+  rgb_value: string | null;
+  hsl_value: string | null;
+  color_group: BrandColorGroup;
+  color_role: BrandColorRole | null;
+  text_color: BrandTextColor;
+  description: string | null;
+  usage_guidelines: string | null;
+  css_variable_name: string | null;
+  sort_order: number;
+  is_system: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrandColor {
+  id: string;
+  brandId: string;
+  name: string;
+  slug: string;
+  hexValue: string;
+  rgbValue?: string;
+  hslValue?: string;
+  colorGroup: BrandColorGroup;
+  colorRole?: BrandColorRole;
+  textColor: BrandTextColor;
+  description?: string;
+  usageGuidelines?: string;
+  cssVariableName?: string;
+  sortOrder: number;
+  isSystem: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BrandColorInsert {
+  brand_id: string;
+  name: string;
+  slug?: string;
+  hex_value: string;
+  color_group?: BrandColorGroup;
+  color_role?: BrandColorRole | null;
+  text_color?: BrandTextColor;
+  description?: string;
+  usage_guidelines?: string;
+  css_variable_name?: string;
+  sort_order?: number;
+  is_system?: boolean;
+}
+
+export interface BrandColorUpdate {
+  name?: string;
+  slug?: string;
+  hex_value?: string;
+  color_group?: BrandColorGroup;
+  color_role?: BrandColorRole | null;
+  text_color?: BrandTextColor;
+  description?: string;
+  usage_guidelines?: string;
+  css_variable_name?: string;
+  sort_order?: number;
+  is_active?: boolean;
+}
+
+export function dbBrandColorToApp(db: DbBrandColor): BrandColor {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    name: db.name,
+    slug: db.slug,
+    hexValue: db.hex_value,
+    rgbValue: db.rgb_value || undefined,
+    hslValue: db.hsl_value || undefined,
+    colorGroup: db.color_group,
+    colorRole: db.color_role || undefined,
+    textColor: db.text_color,
+    description: db.description || undefined,
+    usageGuidelines: db.usage_guidelines || undefined,
+    cssVariableName: db.css_variable_name || undefined,
+    sortOrder: db.sort_order,
+    isSystem: db.is_system,
+    isActive: db.is_active,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// ============================================
 // LEGACY TYPES (backwards compatibility)
 // ============================================
 
@@ -927,6 +1029,11 @@ export interface Database {
         Row: DbBrandAsset;
         Insert: BrandAssetInsert;
         Update: BrandAssetUpdate;
+      };
+      brand_colors: {
+        Row: DbBrandColor;
+        Insert: BrandColorInsert;
+        Update: BrandColorUpdate;
       };
     };
   };

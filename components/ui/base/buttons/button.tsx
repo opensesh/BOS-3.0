@@ -62,7 +62,7 @@ export const styles = sortCx({
         },
         secondary: {
             root: [
-                "bg-primary text-secondary shadow-xs-skeumorphic ring-1 ring-primary ring-inset hover:bg-primary_hover hover:text-secondary_hover data-loading:bg-primary_hover",
+                "bg-primary text-secondary shadow-xs-skeumorphic ring-1 ring-primary ring-inset hover:bg-primary-hover hover:text-secondary_hover data-loading:bg-primary-hover",
                 // Disabled styles
                 "disabled:shadow-xs disabled:ring-disabled_subtle",
                 // Icon styles
@@ -71,7 +71,7 @@ export const styles = sortCx({
         },
         tertiary: {
             root: [
-                "text-secondary hover:bg-primary_hover hover:text-secondary_hover data-loading:bg-primary_hover",
+                "text-secondary hover:bg-primary-hover hover:text-secondary_hover data-loading:bg-primary-hover",
                 // Icon styles
                 "*:data-icon:text-fg-tertiary hover:*:data-icon:text-fg-secondary",
             ].join(" "),

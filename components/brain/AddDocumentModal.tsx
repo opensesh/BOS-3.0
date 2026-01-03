@@ -262,7 +262,7 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
         {/* Paste Mode Card */}
         <button
           onClick={onSelectPaste}
-          className="group relative p-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary-hover)] transition-all text-left"
+          className="group relative p-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-secondary-hover transition-all text-left"
         >
           <div className="flex items-start justify-between mb-4">
             <div className="p-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)]">
@@ -284,7 +284,7 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
         {/* Guided Mode Card */}
         <button
           onClick={onSelectGuided}
-          className="group relative p-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary-hover)] transition-all text-left"
+          className="group relative p-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-secondary-hover transition-all text-left"
         >
           <div className="flex items-start justify-between mb-4">
             <div className="p-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)]">
@@ -366,7 +366,7 @@ function PasteMode({
         <button
           type="button"
           onClick={onCancel}
-          className="px-5 py-2.5 rounded-lg text-[var(--fg-secondary)] hover:bg-[var(--bg-primary_hover)] transition-colors font-medium"
+          className="px-5 py-2.5 rounded-lg text-[var(--fg-secondary)] hover:bg-primary-hover transition-colors font-medium"
         >
           Cancel
         </button>

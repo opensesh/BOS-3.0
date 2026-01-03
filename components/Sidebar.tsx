@@ -23,7 +23,6 @@ import {
   Code,
   PenTool,
   Zap,
-  Layers,
   FolderPlus,
   Folder,
   ArrowRight,
@@ -74,7 +73,6 @@ const navItems = [
       { label: 'Brand Identity', href: '/brain/brand-identity', icon: FileText },
       { label: 'Writing Styles', href: '/brain/writing-styles', icon: PenTool },
       { label: 'Skills', href: '/brain/skills', icon: Zap },
-      { label: 'Components', href: '/brain/components', icon: Layers },
     ]
   },
   { 

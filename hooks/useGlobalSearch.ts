@@ -79,7 +79,6 @@ export const navigationPages: PageResult[] = [
   // Brain subpages
   { id: 'architecture', type: 'page', title: 'Architecture', subtitle: 'Brain › System architecture', href: '/brain/architecture', icon: 'Building', keywords: ['architecture', 'structure', 'system'] },
   { id: 'brand-identity', type: 'page', title: 'Brand Identity', subtitle: 'Brain › Brand knowledge', href: '/brain/brand-identity', icon: 'ScanFace', keywords: ['identity', 'brand', 'personality'] },
-  { id: 'components', type: 'page', title: 'Components', subtitle: 'Brain › UI components', href: '/brain/components', icon: 'Boxes', keywords: ['components', 'ui', 'elements'] },
   { id: 'skills', type: 'page', title: 'Skills', subtitle: 'Brain › AI capabilities', href: '/brain/skills', icon: 'Lightbulb', keywords: ['skills', 'capabilities', 'abilities'] },
   { id: 'writing-styles', type: 'page', title: 'Writing Styles', subtitle: 'Brain › Content tone', href: '/brain/writing-styles', icon: 'Pencil', keywords: ['writing', 'style', 'tone', 'voice', 'content'] },
 ];

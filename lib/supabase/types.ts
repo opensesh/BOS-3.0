@@ -504,6 +504,114 @@ export function dbUserProfileToApp(db: DbUserProfile): UserProfile {
 }
 
 // ============================================
+// BRAND DOCUMENTS (Brain Knowledge Management)
+// ============================================
+
+export type BrandDocumentCategory = 'brand-identity' | 'writing-styles' | 'skills';
+
+export interface DbBrandDocument {
+  id: string;
+  category: BrandDocumentCategory;
+  slug: string;
+  title: string;
+  content: string;
+  icon: string;
+  sort_order: number;
+  is_system: boolean;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrandDocument {
+  id: string;
+  category: BrandDocumentCategory;
+  slug: string;
+  title: string;
+  content: string;
+  icon: string;
+  sortOrder: number;
+  isSystem: boolean;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BrandDocumentInsert {
+  category: BrandDocumentCategory;
+  slug: string;
+  title: string;
+  content?: string;
+  icon?: string;
+  sort_order?: number;
+  is_system?: boolean;
+}
+
+export interface BrandDocumentUpdate {
+  title?: string;
+  content?: string;
+  icon?: string;
+  sort_order?: number;
+  is_deleted?: boolean;
+}
+
+export interface DbBrandDocumentVersion {
+  id: string;
+  document_id: string;
+  version_number: number;
+  content: string;
+  change_summary: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface BrandDocumentVersion {
+  id: string;
+  documentId: string;
+  versionNumber: number;
+  content: string;
+  changeSummary?: string;
+  createdBy?: string;
+  createdAt: string;
+}
+
+export interface BrandDocumentVersionInsert {
+  document_id: string;
+  version_number: number;
+  content: string;
+  change_summary?: string;
+  created_by?: string;
+}
+
+export function dbBrandDocumentToApp(db: DbBrandDocument): BrandDocument {
+  return {
+    id: db.id,
+    category: db.category,
+    slug: db.slug,
+    title: db.title,
+    content: db.content,
+    icon: db.icon,
+    sortOrder: db.sort_order,
+    isSystem: db.is_system,
+    isDeleted: db.is_deleted,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+export function dbBrandDocumentVersionToApp(db: DbBrandDocumentVersion): BrandDocumentVersion {
+  return {
+    id: db.id,
+    documentId: db.document_id,
+    versionNumber: db.version_number,
+    content: db.content,
+    changeSummary: db.change_summary || undefined,
+    createdBy: db.created_by || undefined,
+    createdAt: db.created_at,
+  };
+}
+
+// ============================================
 // LEGACY TYPES (backwards compatibility)
 // ============================================
 
@@ -568,6 +676,16 @@ export interface Database {
         Row: DbUserProfile;
         Insert: UserProfileInsert;
         Update: UserProfileUpdate;
+      };
+      brand_documents: {
+        Row: DbBrandDocument;
+        Insert: BrandDocumentInsert;
+        Update: BrandDocumentUpdate;
+      };
+      brand_document_versions: {
+        Row: DbBrandDocumentVersion;
+        Insert: BrandDocumentVersionInsert;
+        Update: never; // Versions are immutable
       };
     };
   };

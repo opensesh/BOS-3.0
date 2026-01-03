@@ -1,48 +1,127 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
-import { MarkdownCodeViewer } from '@/components/brain/MarkdownCodeViewer';
+import { MarkdownEditor } from '@/components/brain/MarkdownEditor';
 import { TabSelector } from '@/components/brain/TabSelector';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
+import { VersionHistoryPanel } from '@/components/brain/VersionHistoryPanel';
+import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
+import { useBrainDocuments } from '@/hooks/useBrainDocuments';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { Settings, Loader2 } from 'lucide-react';
+import { Settings, Plus, Trash2, Loader2 } from 'lucide-react';
 
-const writingStyles = [
-  { id: 'blog', label: 'Blog', file: 'blog.md', path: '/claude-data/knowledge/writing-styles/blog.md' },
-  { id: 'creative', label: 'Creative', file: 'creative.md', path: '/claude-data/knowledge/writing-styles/creative.md' },
-  { id: 'long-form', label: 'Long Form', file: 'long-form.md', path: '/claude-data/knowledge/writing-styles/long-form.md' },
-  { id: 'short-form', label: 'Short Form', file: 'short-form.md', path: '/claude-data/knowledge/writing-styles/short-form.md' },
-  { id: 'strategic', label: 'Strategic', file: 'strategic.md', path: '/claude-data/knowledge/writing-styles/strategic.md' },
+// Fallback data for when database is not seeded
+const FALLBACK_DOCUMENTS = [
+  { id: 'blog', slug: 'blog', label: 'Blog', file: 'blog.md', path: '/claude-data/knowledge/writing-styles/blog.md' },
+  { id: 'creative', slug: 'creative', label: 'Creative', file: 'creative.md', path: '/claude-data/knowledge/writing-styles/creative.md' },
+  { id: 'long-form', slug: 'long-form', label: 'Long Form', file: 'long-form.md', path: '/claude-data/knowledge/writing-styles/long-form.md' },
+  { id: 'short-form', slug: 'short-form', label: 'Short Form', file: 'short-form.md', path: '/claude-data/knowledge/writing-styles/short-form.md' },
+  { id: 'strategic', slug: 'strategic', label: 'Strategic', file: 'strategic.md', path: '/claude-data/knowledge/writing-styles/strategic.md' },
 ];
 
 function WritingStylesContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState('blog');
-  const [content, setContent] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [fallbackContent, setFallbackContent] = useState<Record<string, string>>({});
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
+
+  const {
+    documents,
+    isLoading,
+    error,
+    activeDocument,
+    setActiveDocument,
+    createDocument,
+    updateDocument,
+    deleteDocument,
+    restoreVersion,
+  } = useBrainDocuments({ category: 'writing-styles' });
 
   // Set active tab from URL param on mount
   useEffect(() => {
-    if (tabParam && writingStyles.some(w => w.id === tabParam)) {
+    if (tabParam) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
 
+  // Check if we need to use fallback
   useEffect(() => {
-    const activeFile = writingStyles.find(w => w.id === activeTab);
-    if (activeFile) {
-      fetch(activeFile.path)
-        .then(res => res.text())
-        .then(text => setContent(text))
-        .catch(err => console.error('Failed to load content:', err));
+    if (!isLoading && (error || documents.length === 0 || documents.every(d => !d.content))) {
+      setIsUsingFallback(true);
+      FALLBACK_DOCUMENTS.forEach(doc => {
+        fetch(doc.path)
+          .then(res => res.text())
+          .then(text => {
+            setFallbackContent(prev => ({ ...prev, [doc.slug]: text }));
+          })
+          .catch(err => console.error('Failed to load fallback:', err));
+      });
+    } else {
+      setIsUsingFallback(false);
     }
-  }, [activeTab]);
+  }, [isLoading, error, documents]);
 
-  const activeFile = writingStyles.find(w => w.id === activeTab);
+  // Set active document when tab changes
+  useEffect(() => {
+    if (isUsingFallback) return;
+    const doc = documents.find(d => d.slug === activeTab);
+    if (doc) {
+      setActiveDocument(doc);
+    }
+  }, [activeTab, documents, isUsingFallback, setActiveDocument]);
+
+  // Generate tabs from documents or fallback
+  const tabs = isUsingFallback
+    ? FALLBACK_DOCUMENTS.map(d => ({ id: d.slug, label: d.label }))
+    : documents.map(d => ({ id: d.slug, label: d.title }));
+
+  // Get current content
+  const currentContent = isUsingFallback
+    ? fallbackContent[activeTab] || 'Loading...'
+    : activeDocument?.content || '';
+
+  const currentFilename = isUsingFallback
+    ? FALLBACK_DOCUMENTS.find(d => d.slug === activeTab)?.file || 'document.md'
+    : `${activeDocument?.slug || 'document'}.md`;
+
+  // Handle save
+  const handleSave = useCallback(async (content: string, changeSummary?: string) => {
+    if (!activeDocument) return;
+    await updateDocument(activeDocument.id, content, changeSummary);
+  }, [activeDocument, updateDocument]);
+
+  // Handle add document
+  const handleAddDocument = useCallback(async (title: string, content: string) => {
+    const newDoc = await createDocument(title, content);
+    setActiveTab(newDoc.slug);
+    setActiveDocument(newDoc);
+  }, [createDocument, setActiveDocument]);
+
+  // Handle delete
+  const handleDelete = useCallback(async () => {
+    if (!activeDocument) return;
+    if (!confirm(`Are you sure you want to delete "${activeDocument.title}"?`)) return;
+    
+    await deleteDocument(activeDocument.id);
+    const remaining = documents.filter(d => d.id !== activeDocument.id);
+    if (remaining.length > 0) {
+      setActiveTab(remaining[0].slug);
+    }
+  }, [activeDocument, deleteDocument, documents]);
+
+  // Handle restore version
+  const handleRestoreVersion = useCallback(async (versionNumber: number) => {
+    if (!activeDocument) return;
+    await restoreVersion(activeDocument.id, versionNumber);
+  }, [activeDocument, restoreVersion]);
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
@@ -56,45 +135,110 @@ function WritingStylesContent() {
               <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
                 Writing Styles
               </h1>
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)] transition-colors group"
-                title="Brain Settings"
-              >
-                <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-              </button>
+              <div className="flex items-center gap-2">
+                {!isUsingFallback && (
+                  <motion.button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] transition-colors font-medium"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add
+                  </motion.button>
+                )}
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-primary)] transition-colors group"
+                  title="Brain Settings"
+                >
+                  <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+                </button>
+              </div>
             </div>
             <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               Context-specific voice guidelines for different content types. From blog posts to
               strategic communications, each style guide ensures consistent, on-brand messaging.
+              {isUsingFallback && (
+                <span className="block mt-2 text-sm text-[var(--fg-warning-primary)]">
+                  Viewing static files. Connect to database to enable editing.
+                </span>
+              )}
             </p>
           </MotionItem>
 
-          {/* Tab Selector */}
-          <MotionItem className="mb-6">
-            <TabSelector
-              tabs={writingStyles.map(w => ({ id: w.id, label: w.label }))}
-              activeTab={activeTab}
-              onChange={setActiveTab}
-            />
-          </MotionItem>
+          {/* Loading State */}
+          {isLoading && !isUsingFallback && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-[var(--fg-brand-primary)]" />
+            </div>
+          )}
 
-          {/* Content */}
+          {/* Tab Selector */}
+          {tabs.length > 0 && (
+            <MotionItem className="mb-6">
+              <TabSelector
+                tabs={tabs}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+              />
+            </MotionItem>
+          )}
+
+          {/* Content Editor */}
           <MotionItem>
-            <MarkdownCodeViewer
-              filename={activeFile?.file || 'loading...'}
-              content={content || 'Loading...'}
-              maxLines={50}
-            />
+            <div className="relative">
+              <MarkdownEditor
+                documentId={activeDocument?.id || activeTab}
+                filename={currentFilename}
+                content={currentContent}
+                maxLines={50}
+                onSave={isUsingFallback ? undefined : handleSave}
+                onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
+                isLoading={isLoading}
+                readOnly={isUsingFallback}
+              />
+
+              {/* Delete button for non-system documents */}
+              {!isUsingFallback && activeDocument && !activeDocument.isSystem && (
+                <button
+                  onClick={handleDelete}
+                  className="absolute top-3 right-36 p-2 rounded-lg hover:bg-[var(--bg-error-subtle)] transition-colors group"
+                  title="Delete document"
+                >
+                  <Trash2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)] transition-colors" />
+                </button>
+              )}
+            </div>
           </MotionItem>
         </PageTransition>
       </MainContent>
 
-      {/* Settings Modal - Opens with writing section pre-selected */}
+      {/* Settings Modal */}
       <BrainSettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         defaultSection="writing"
+      />
+
+      {/* Version History Panel */}
+      {activeDocument && (
+        <VersionHistoryPanel
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          documentId={activeDocument.id}
+          documentTitle={activeDocument.title}
+          currentContent={activeDocument.content}
+          onRestore={handleRestoreVersion}
+        />
+      )}
+
+      {/* Add Document Modal */}
+      <AddDocumentModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        category="writing-styles"
+        onAddDocument={handleAddDocument}
       />
     </div>
   );

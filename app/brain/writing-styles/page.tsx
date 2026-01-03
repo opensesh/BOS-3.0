@@ -12,7 +12,7 @@ import { VersionHistoryPanel } from '@/components/brain/VersionHistoryPanel';
 import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
 import { useBrainDocuments } from '@/hooks/useBrainDocuments';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { Settings, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Settings, Plus, Loader2 } from 'lucide-react';
 
 // Fallback data for when database is not seeded
 const FALLBACK_DOCUMENTS = [
@@ -188,29 +188,17 @@ function WritingStylesContent() {
 
           {/* Content Editor */}
           <MotionItem>
-            <div className="relative">
-              <MarkdownEditor
-                documentId={activeDocument?.id || activeTab}
-                filename={currentFilename}
-                content={currentContent}
-                maxLines={50}
-                onSave={isUsingFallback ? undefined : handleSave}
-                onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
-                isLoading={isLoading}
-                readOnly={isUsingFallback}
-              />
-
-              {/* Delete button for non-system documents */}
-              {!isUsingFallback && activeDocument && !activeDocument.isSystem && (
-                <button
-                  onClick={handleDelete}
-                  className="absolute top-3 right-36 p-2 rounded-lg hover:bg-[var(--bg-error-subtle)] transition-colors group"
-                  title="Delete document"
-                >
-                  <Trash2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)] transition-colors" />
-                </button>
-              )}
-            </div>
+            <MarkdownEditor
+              documentId={activeDocument?.id || activeTab}
+              filename={currentFilename}
+              content={currentContent}
+              maxLines={50}
+              onSave={isUsingFallback ? undefined : handleSave}
+              onDelete={!isUsingFallback && activeDocument && !activeDocument.isSystem ? handleDelete : undefined}
+              onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
+              isLoading={isLoading}
+              readOnly={isUsingFallback}
+            />
           </MotionItem>
         </PageTransition>
       </MainContent>

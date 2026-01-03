@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 interface Tab {
   id: string;
@@ -15,58 +15,60 @@ interface TabSelectorProps {
 }
 
 export function TabSelector({ tabs, activeTab, onChange, className = '' }: TabSelectorProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+
+  // Update indicator position when active tab changes
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const activeButton = container.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLButtonElement;
+    if (activeButton) {
+      setIndicatorStyle({
+        left: activeButton.offsetLeft,
+        width: activeButton.offsetWidth,
+      });
+    }
+  }, [activeTab, tabs]);
+
   return (
-    <div className={`relative flex items-end gap-1 ${className}`}>
+    <div 
+      ref={containerRef}
+      className={`relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-tertiary)] ${className}`}
+    >
+      {/* Sliding indicator (the "button" that moves) */}
+      <div
+        className="absolute top-1 bottom-1 rounded-md bg-[var(--bg-primary)] shadow-sm transition-all duration-200 ease-out"
+        style={{
+          left: indicatorStyle.left,
+          width: indicatorStyle.width,
+        }}
+        aria-hidden="true"
+      />
+      
+      {/* Tab buttons */}
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
           <button
             key={tab.id}
+            data-tab-id={tab.id}
             onClick={() => onChange(tab.id)}
             className={`
-              group relative px-3 py-1.5 text-xs font-medium
-              transition-all duration-150 ease-out
-              rounded-t-lg
+              relative z-10 px-3 py-1.5 text-xs font-medium rounded-md
+              transition-colors duration-150 ease-out
               ${
                 isActive
-                  ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] z-10 shadow-[0_-1px_3px_rgba(0,0,0,0.08)]'
-                  : 'bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--fg-secondary)]'
+                  ? 'text-[var(--fg-primary)]'
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
               }
             `}
-            style={{
-              marginBottom: isActive ? '-1px' : '0',
-            }}
           >
-            {/* Aperol accent line on top - visible on active, appears on hover for inactive */}
-            <span 
-              className={`
-                absolute top-0 left-0 right-0 h-0.5 rounded-t-lg
-                transition-opacity duration-150
-                bg-[var(--border-brand-solid)]
-                ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
-              `}
-              aria-hidden="true"
-            />
-            {/* Left edge - Aperol border (only on hover for inactive) */}
-            {!isActive && (
-              <span 
-                className="absolute top-0 left-0 w-0.5 h-full bg-[var(--border-brand-solid)] opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-tl-lg"
-                aria-hidden="true"
-              />
-            )}
-            {/* Right edge - Aperol border (only on hover for inactive) */}
-            {!isActive && (
-              <span 
-                className="absolute top-0 right-0 w-0.5 h-full bg-[var(--border-brand-solid)] opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-tr-lg"
-                aria-hidden="true"
-              />
-            )}
             {tab.label}
           </button>
         );
       })}
-      {/* Subtle baseline that active tab "breaks through" */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-[var(--border-secondary)] -z-10" />
     </div>
   );
 }

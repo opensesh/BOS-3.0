@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Eye,
   Code,
+  Trash2,
 } from 'lucide-react';
 
 interface MarkdownEditorProps {
@@ -23,6 +24,7 @@ interface MarkdownEditorProps {
   className?: string;
   maxLines?: number;
   onSave?: (content: string, changeSummary?: string) => Promise<void>;
+  onDelete?: () => void;
   onViewHistory?: () => void;
   isLoading?: boolean;
   readOnly?: boolean;
@@ -37,6 +39,7 @@ export function MarkdownEditor({
   className = '', 
   maxLines = 22,
   onSave,
+  onDelete,
   onViewHistory,
   isLoading = false,
   readOnly = false,
@@ -234,7 +237,7 @@ export function MarkdownEditor({
             </div>
           )}
 
-          {/* Version history button */}
+          {/* Version history button - only when not editing */}
           {onViewHistory && !isEditing && (
             <button
               onClick={onViewHistory}
@@ -245,63 +248,75 @@ export function MarkdownEditor({
             </button>
           )}
 
-          {/* Download button */}
-          <button
-            onClick={handleDownload}
-            className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-            title="Download"
-          >
-            <Download className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-          </button>
+          {/* Download button - only when not editing */}
+          {!isEditing && (
+            <button
+              onClick={handleDownload}
+              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
+              title="Download"
+            >
+              <Download className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+            </button>
+          )}
 
-          {/* Copy button */}
-          <button
-            onClick={handleCopy}
-            className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-            title={copied ? 'Copied!' : 'Copy'}
-          >
-            {copied ? (
-              <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
-            ) : (
-              <Copy className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
-            )}
-          </button>
+          {/* Copy button - only when not editing */}
+          {!isEditing && (
+            <button
+              onClick={handleCopy}
+              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
+              title={copied ? 'Copied!' : 'Copy'}
+            >
+              {copied ? (
+                <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
+              ) : (
+                <Copy className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
+              )}
+            </button>
+          )}
 
-          {/* Edit/Save/Cancel buttons */}
+          {/* Edit/Delete/Save/Exit buttons */}
           {!readOnly && (
             <>
               {isEditing ? (
                 <>
+                  {/* Delete button - only shown in edit mode */}
+                  {onDelete && (
+                    <button
+                      onClick={onDelete}
+                      className="p-2 rounded-lg hover:bg-[var(--bg-error-subtle)] transition-colors group"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)] transition-colors" />
+                    </button>
+                  )}
                   <button
                     onClick={handleCancel}
                     className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-                    title="Cancel (Esc)"
+                    title="Exit (Esc)"
                   >
                     <X className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
                   </button>
                   <button
                     onClick={handleSave}
                     disabled={isSaving || !hasUnsavedChanges}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-                    title="Save (Cmd+S)"
+                    className="p-2 rounded-lg bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Save (⌘S)"
                   >
                     {isSaving ? (
-                      <span className="animate-spin">⟳</span>
+                      <span className="animate-spin text-white">⟳</span>
                     ) : (
-                      <Save className="w-3.5 h-3.5" />
+                      <Save className="w-4 h-4 text-white" />
                     )}
-                    Save
                   </button>
                 </>
               ) : (
                 <button
                   onClick={handleEdit}
                   disabled={isLoading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] hover:bg-[var(--bg-primary)] border border-[var(--border-primary)] transition-colors text-sm font-medium text-[var(--fg-secondary)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Edit"
                 >
-                  <Pencil className="w-3.5 h-3.5" />
-                  Edit
+                  <Pencil className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)] transition-colors" />
                 </button>
               )}
             </>

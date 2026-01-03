@@ -12,7 +12,7 @@ import { VersionHistoryPanel } from '@/components/brain/VersionHistoryPanel';
 import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
 import { useBrainDocuments } from '@/hooks/useBrainDocuments';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { Settings, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Settings, Plus, Loader2 } from 'lucide-react';
 import { getSkillContent } from './actions';
 
 // Fallback skill files matching the .claude/skills directory
@@ -205,29 +205,17 @@ function SkillsContent() {
           {/* Content Editor */}
           {!isLoading && (
             <MotionItem>
-              <div className="relative">
-                <MarkdownEditor
-                  documentId={activeDocument?.id || activeTab}
-                  filename={currentFilename}
-                  content={currentContent}
-                  maxLines={100}
-                  onSave={isUsingFallback ? undefined : handleSave}
-                  onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
-                  isLoading={isLoadingFallback}
-                  readOnly={isUsingFallback}
-                />
-
-                {/* Delete button for non-system documents */}
-                {!isUsingFallback && activeDocument && !activeDocument.isSystem && (
-                  <button
-                    onClick={handleDelete}
-                    className="absolute top-3 right-36 p-2 rounded-lg hover:bg-[var(--bg-error-subtle)] transition-colors group"
-                    title="Delete document"
-                  >
-                    <Trash2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-error-primary)] transition-colors" />
-                  </button>
-                )}
-              </div>
+              <MarkdownEditor
+                documentId={activeDocument?.id || activeTab}
+                filename={currentFilename}
+                content={currentContent}
+                maxLines={100}
+                onSave={isUsingFallback ? undefined : handleSave}
+                onDelete={!isUsingFallback && activeDocument && !activeDocument.isSystem ? handleDelete : undefined}
+                onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
+                isLoading={isLoadingFallback}
+                readOnly={isUsingFallback}
+              />
             </MotionItem>
           )}
         </PageTransition>

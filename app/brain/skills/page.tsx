@@ -28,7 +28,7 @@ const FALLBACK_SKILLS = [
 function SkillsContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(FALLBACK_SKILLS[0].slug);
+  const [activeTab, setActiveTab] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -53,19 +53,37 @@ function SkillsContent() {
   const shouldUseFallback = !isLoading && (error || documents.length === 0 || documents.every(d => !d.content));
   const isUsingFallback = hasInitialized && shouldUseFallback;
 
-  // Set active tab from URL param on mount
-  useEffect(() => {
-    if (tabParam && FALLBACK_SKILLS.some(s => s.slug === tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
-
-  // Mark as initialized once loading completes
+  // Initialize active tab once loading completes
+  // Priority: URL param > first document from database > first fallback skill
   useEffect(() => {
     if (!isLoading && !hasInitialized) {
+      let initialTab = '';
+      
+      if (tabParam) {
+        // Check if URL param matches a database document or fallback skill
+        const matchesDoc = documents.some(d => d.slug === tabParam);
+        const matchesFallback = FALLBACK_SKILLS.some(s => s.slug === tabParam);
+        if (matchesDoc || matchesFallback) {
+          initialTab = tabParam;
+        }
+      }
+      
+      // If no valid URL param, use first available option
+      if (!initialTab) {
+        if (documents.length > 0 && documents.some(d => d.content)) {
+          // Use first database document with content
+          const firstDocWithContent = documents.find(d => d.content);
+          initialTab = firstDocWithContent?.slug || documents[0].slug;
+        } else {
+          // Use first fallback skill
+          initialTab = FALLBACK_SKILLS[0].slug;
+        }
+      }
+      
+      setActiveTab(initialTab);
       setHasInitialized(true);
     }
-  }, [isLoading, hasInitialized]);
+  }, [isLoading, hasInitialized, tabParam, documents]);
 
   // Load fallback content when active tab changes (using server action)
   useEffect(() => {
@@ -90,12 +108,12 @@ function SkillsContent() {
 
   // Set active document when tab changes
   useEffect(() => {
-    if (isUsingFallback) return;
+    if (isUsingFallback || !hasInitialized || !activeTab) return;
     const doc = documents.find(d => d.slug === activeTab);
     if (doc) {
       setActiveDocument(doc);
     }
-  }, [activeTab, documents, isUsingFallback, setActiveDocument]);
+  }, [activeTab, documents, isUsingFallback, hasInitialized, setActiveDocument]);
 
   // Generate tabs from documents or fallback
   const tabs = isUsingFallback
@@ -188,14 +206,14 @@ function SkillsContent() {
           </MotionItem>
 
           {/* Loading State */}
-          {(isLoading || isLoadingFallback || !hasInitialized) && (
+          {(isLoading || isLoadingFallback || !hasInitialized || !activeTab) && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--fg-brand-primary)]" />
             </div>
           )}
 
           {/* Tab Selector */}
-          {tabs.length > 0 && !isLoading && hasInitialized && (
+          {tabs.length > 0 && !isLoading && hasInitialized && activeTab && (
             <MotionItem className="mb-6">
               <TabSelector
                 tabs={tabs}
@@ -207,7 +225,7 @@ function SkillsContent() {
           )}
 
           {/* Content Editor */}
-          {!isLoading && hasInitialized && (
+          {!isLoading && hasInitialized && activeTab && (
             <MotionItem>
               <MarkdownEditor
                 documentId={activeDocument?.id || activeTab}

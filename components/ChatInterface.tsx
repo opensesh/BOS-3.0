@@ -868,6 +868,7 @@ export function ChatInterface() {
                               isLastResponse={idx === parsedMessages.length - 2}
                               thinking={nextMessage.thinking}
                               messageId={nextMessage.id}
+                              chatId={currentSessionId}
                             />
                           );
                         }
@@ -886,6 +887,7 @@ export function ChatInterface() {
                               onFollowUpClick={handleFollowUpSubmit}
                               isLastResponse={true}
                               thinking={streamingThinking}
+                              chatId={currentSessionId}
                             />
                           );
                         }

@@ -1,24 +1,19 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import {
-  Mic,
-  Globe,
-  Paperclip,
-  Send,
-  Brain,
-  Compass,
-  Palette,
-} from 'lucide-react';
+import { Mic, Send } from 'lucide-react';
 import { ModelId } from '@/lib/ai/providers';
 import { useAttachments } from '@/hooks/useAttachments';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
+import { useChatContext } from '@/lib/chat-context';
 import { AttachmentPreview, DragOverlay } from '@/components/chat/AttachmentPreview';
-import { SearchResearchToggle } from '@/components/ui/search-research-toggle';
-import { ConnectorDropdown } from '@/components/ui/connector-dropdown';
+import { PlusMenu } from '@/components/ui/plus-menu';
+import { ExtendedThinkingToggle } from '@/components/ui/extended-thinking-toggle';
+import { DataSourcesDropdown } from '@/components/ui/data-sources-dropdown';
 import { ModelSelector } from '@/components/ui/model-selector';
+import { ActiveSettingsIndicators } from '@/components/ui/active-settings-indicators';
 
 interface SpaceChatInputProps {
   spaceSlug: string;
@@ -29,17 +24,9 @@ interface SpaceChatInputProps {
   onStartChat?: (query: string, discussionId: string) => void;
 }
 
-interface Connector {
-  id: string;
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  enabled: boolean;
-}
-
 /**
  * Chat input for space pages - matches the home page style
- * Fixed at bottom of the page like AskFollowUp
+ * Fixed at bottom of the page
  */
 export function SpaceChatInput({
   spaceSlug,
@@ -52,39 +39,24 @@ export function SpaceChatInput({
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [selectedModel, setSelectedModel] = useState<ModelId>('auto');
-  const [showConnectorDropdown, setShowConnectorDropdown] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestionsMode, setSuggestionsMode] = useState<'search' | 'research'>('search');
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const globeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Connectors (matching homepage)
-  const connectors: Connector[] = [
-    { id: 'web', icon: Globe, title: 'Web', description: 'Search across the entire internet', enabled: true },
-    { id: 'brand', icon: Palette, title: 'Brand', description: 'Access brand assets and guidelines', enabled: true },
-    { id: 'brain', icon: Brain, title: 'Brain', description: 'Search brand knowledge base', enabled: true },
-    { id: 'discover', icon: Compass, title: 'Discover', description: 'Explore curated content and ideas', enabled: false },
-  ];
-
-  const [activeConnectors, setActiveConnectors] = useState<Set<string>>(new Set(['web', 'brand', 'brain']));
-
-  const handleToggleConnector = (id: string) => {
-    setActiveConnectors((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  const updatedConnectors = connectors.map((connector) => ({
-    ...connector,
-    enabled: activeConnectors.has(connector.id),
-  }));
+  // Get shared settings from chat context
+  const {
+    projects,
+    currentProject,
+    setCurrentProject,
+    createProject,
+    currentWritingStyle,
+    setCurrentWritingStyle,
+    extendedThinkingEnabled,
+    setExtendedThinkingEnabled,
+    webSearchEnabled,
+    setWebSearchEnabled,
+    brandSearchEnabled,
+    setBrandSearchEnabled,
+  } = useChatContext();
 
   // Voice recognition
   const {
@@ -134,18 +106,6 @@ export function SpaceChatInput({
     }
   }, [query]);
 
-  // Close connector dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowConnectorDropdown(false);
-    };
-
-    if (showConnectorDropdown) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [showConnectorDropdown]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim() && attachments.length === 0) return;
@@ -189,21 +149,6 @@ export function SpaceChatInput({
     }
   };
 
-  const handleModeChange = useCallback((show: boolean, mode: 'search' | 'research') => {
-    setShowSuggestions(show);
-    setSuggestionsMode(mode);
-  }, []);
-
-  const handleConnectorDropdownClose = useCallback(() => {
-    setShowConnectorDropdown(false);
-  }, []);
-
-  const handleQueryClick = useCallback((queryText: string) => {
-    setQuery(queryText);
-    setShowSuggestions(false);
-    textareaRef.current?.focus();
-  }, []);
-
   const defaultPlaceholder = `Ask anything about ${spaceTitle}...`;
 
   return (
@@ -232,13 +177,13 @@ export function SpaceChatInput({
           <div
             className={`
               relative bg-[var(--bg-secondary)] backdrop-blur-xl rounded-xl
-              border transition-all duration-200 shadow-[var(--shadow-lg)]
+              border transition-all duration-200 shadow-sm
               ${
                 isDragging
-                  ? 'border-[var(--border-brand-solid)] shadow-[var(--shadow-lg)]'
+                  ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20 ring-2 ring-[var(--border-brand-solid)]/30'
                   : isFocused
-                    ? 'border-[var(--border-brand-solid)]'
-                    : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)]'
+                    ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20 ring-2 ring-[var(--border-brand-solid)]/30'
+                    : 'border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]'
               }
             `}
             onDragOver={handleDragOver}
@@ -272,20 +217,40 @@ export function SpaceChatInput({
                 onBlur={() => setIsFocused(false)}
                 onPaste={handlePaste}
                 placeholder={attachments.length > 0 ? "Add a message or send with images..." : (placeholder || defaultPlaceholder)}
-                className="w-full px-4 py-4 bg-transparent text-[var(--fg-primary)] placeholder:text-[var(--fg-placeholder)] resize-none focus:outline-none min-h-[60px] max-h-[150px]"
+                className="w-full px-4 py-4 bg-transparent text-[var(--fg-primary)] placeholder:text-[var(--fg-tertiary)] resize-none focus:outline-none min-h-[60px] max-h-[150px]"
                 rows={1}
                 aria-label="Space chat input"
               />
             </div>
 
             {/* Footer toolbar - matching homepage layout */}
-            <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-[var(--border-secondary)] gap-2 sm:gap-4">
-              {/* Left side - Search/Research Toggle */}
-              <div className="flex items-center gap-2 sm:gap-3">
-                <SearchResearchToggle
-                  onQueryClick={handleQueryClick}
-                  onModeChange={handleModeChange}
-                  showSuggestions={showSuggestions}
+            <div className="flex flex-wrap items-center justify-between px-4 py-3 border-t border-[var(--border-primary)] gap-2 sm:gap-4">
+              {/* Left side - Plus menu, Extended thinking, Active settings */}
+              <div className="flex items-center gap-1 sm:gap-2">
+                <PlusMenu
+                  onAddFiles={openFilePicker}
+                  onProjectSelect={setCurrentProject}
+                  onStyleSelect={setCurrentWritingStyle}
+                  currentProject={currentProject}
+                  currentStyle={currentWritingStyle}
+                  projects={projects}
+                  onCreateProject={createProject}
+                  disabled={false}
+                />
+
+                <ExtendedThinkingToggle
+                  enabled={extendedThinkingEnabled}
+                  onToggle={setExtendedThinkingEnabled}
+                  disabled={false}
+                />
+                
+                {/* Active settings indicators - shown as removable chips */}
+                <ActiveSettingsIndicators
+                  currentProject={currentProject}
+                  currentWritingStyle={currentWritingStyle}
+                  onRemoveProject={() => setCurrentProject(null)}
+                  onRemoveWritingStyle={() => setCurrentWritingStyle(null)}
+                  disabled={false}
                 />
               </div>
 
@@ -298,60 +263,16 @@ export function SpaceChatInput({
                   disabled={false}
                 />
 
-                <div className="hidden sm:block w-px h-5 bg-[var(--border-secondary)]" />
+                <div className="hidden sm:block w-px h-5 bg-[var(--border-primary)]" />
 
-                {/* Globe - Connectors */}
-                <div className="relative">
-                  <button
-                    ref={globeButtonRef}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowConnectorDropdown(!showConnectorDropdown);
-                    }}
-                    className={`p-2 rounded-lg transition-all ${
-                      showConnectorDropdown 
-                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
-                        : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
-                    }`}
-                    aria-label="Connectors"
-                    title="Connectors"
-                  >
-                    <Globe className="w-5 h-5" />
-                  </button>
-                  <ConnectorDropdown
-                    isOpen={showConnectorDropdown}
-                    onClose={handleConnectorDropdownClose}
-                    connectors={updatedConnectors}
-                    onToggleConnector={handleToggleConnector}
-                    triggerRef={globeButtonRef as React.RefObject<HTMLElement>}
-                  />
-                </div>
-
-                {/* Attach */}
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openFilePicker();
-                    }}
-                    className={`p-2 rounded-lg transition-all ${
-                      attachments.length > 0
-                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
-                        : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
-                    }`}
-                    aria-label="Attach images"
-                    title="Attach images (or paste/drag & drop)"
-                  >
-                    <Paperclip className="w-5 h-5" />
-                    {attachments.length > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--bg-brand-solid)] text-[var(--fg-white)] text-[10px] font-medium rounded-full flex items-center justify-center">
-                        {attachments.length}
-                      </span>
-                    )}
-                  </button>
-                </div>
+                {/* Data Sources */}
+                <DataSourcesDropdown
+                  webEnabled={webSearchEnabled}
+                  brandEnabled={brandSearchEnabled}
+                  onWebToggle={setWebSearchEnabled}
+                  onBrandToggle={setBrandSearchEnabled}
+                  disabled={false}
+                />
 
                 {/* Voice input with animation */}
                 <div className="relative">
@@ -392,8 +313,8 @@ export function SpaceChatInput({
                     onClick={handleMicClick}
                     className={`relative p-2 rounded-lg transition-colors ${
                       isListening
-                        ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)]'
-                        : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                        ? 'bg-[var(--bg-brand-solid)] text-white'
+                        : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
                     }`}
                     aria-label="Voice input"
                     title={isListening ? 'Stop recording' : 'Start voice input'}
@@ -436,8 +357,8 @@ export function SpaceChatInput({
                   disabled={!query.trim() && attachments.length === 0}
                   className={`p-2 rounded-lg transition-all ${
                     (query.trim() || attachments.length > 0)
-                      ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)] hover:opacity-90'
-                      : 'text-[var(--fg-disabled)] cursor-not-allowed'
+                      ? 'bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid)]/90'
+                      : 'text-[var(--fg-tertiary)]/50 cursor-not-allowed'
                   }`}
                   aria-label="Send message"
                   title="Send"

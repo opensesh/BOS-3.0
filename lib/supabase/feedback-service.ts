@@ -171,10 +171,6 @@ export async function getFeedback(messageId: string): Promise<FeedbackType | nul
   const supabase = createClient();
   const sessionId = getSessionId();
   
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'feedback-service.ts:getFeedback:entry',message:'getFeedback called',data:{messageId,sessionId,hasSessionId:!!sessionId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
-  
   try {
     const { data, error } = await supabase
       .from('message_feedback')
@@ -183,19 +179,10 @@ export async function getFeedback(messageId: string): Promise<FeedbackType | nul
       .eq('session_id', sessionId)
       .single();
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'feedback-service.ts:getFeedback:afterQuery',message:'Supabase query result',data:{hasData:!!data,hasError:!!error,errorCode:error?.code,errorMessage:error?.message,errorDetails:error?.details,errorHint:error?.hint,errorStatus:(error as any)?.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B'})}).catch(()=>{});
-    // #endregion
-
     // PGRST116 = no rows returned - this is normal, not an error
     if (error && error.code !== 'PGRST116') throw error;
     return data ? (data.feedback_type as FeedbackType) : null;
   } catch (err) {
-    // #region agent log
-    const errObj = err as any;
-    fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'feedback-service.ts:getFeedback:catch',message:'Error caught in getFeedback',data:{errType:typeof err,errCode:errObj?.code,errMessage:errObj?.message,errStatus:errObj?.status,errDetails:errObj?.details,errHint:errObj?.hint,hasCodeProp:'code' in (err as object),errKeys:Object.keys(err as object)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,E'})}).catch(()=>{});
-    // #endregion
-    
     // Only log actual errors, not missing feedback (which is expected)
     // Check for Supabase error structure: must have 'code' property that isn't empty
     const isSupabaseError = err && typeof err === 'object' && 'code' in err;

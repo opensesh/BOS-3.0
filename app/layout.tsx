@@ -3,10 +3,12 @@ import localFont from 'next/font/local';
 import './globals.css';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { ChatProvider } from '@/lib/chat-context';
+import { CanvasProvider } from '@/lib/canvas-context';
 import { MobileMenuProvider } from '@/lib/mobile-menu-context';
 import { BreadcrumbProvider } from '@/lib/breadcrumb-context';
 import { SidebarProvider } from '@/lib/sidebar-context';
 import { VercelAnalytics } from '@/components/VercelAnalytics';
+import { CanvasPanel } from '@/components/canvas';
 
 const neueHaas = localFont({
   src: [
@@ -48,13 +50,17 @@ export default function RootLayout({
           enableSystem
         >
           <ChatProvider>
-            <MobileMenuProvider>
-              <BreadcrumbProvider>
-                <SidebarProvider>
-                  {children}
-                </SidebarProvider>
-              </BreadcrumbProvider>
-            </MobileMenuProvider>
+            <CanvasProvider>
+              <MobileMenuProvider>
+                <BreadcrumbProvider>
+                  <SidebarProvider>
+                    {children}
+                    {/* Canvas Panel - Global overlay for collaborative editing */}
+                    <CanvasPanel />
+                  </SidebarProvider>
+                </BreadcrumbProvider>
+              </MobileMenuProvider>
+            </CanvasProvider>
           </ChatProvider>
         </ThemeProvider>
         <VercelAnalytics />

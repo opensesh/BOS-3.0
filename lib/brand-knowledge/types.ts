@@ -79,11 +79,22 @@ export interface BrandPageRoute {
   thumbnail?: string;
 }
 
+// Canvas context for collaborative editing
+export interface CanvasContext {
+  id: string;
+  title: string;
+  content: string;
+  version: number;
+  previousContent?: string;
+  lastEditedBy?: 'user' | 'assistant';
+}
+
 // System prompt options
 export interface SystemPromptOptions {
   includeFullDocs?: boolean;
   focusAreas?: ('identity' | 'messaging' | 'art-direction' | 'writing-styles')[];
   context?: PageContext;
+  canvas?: CanvasContext;
 }
 
 // Page context for contextual chat responses

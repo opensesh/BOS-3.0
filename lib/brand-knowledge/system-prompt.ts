@@ -4,7 +4,7 @@
  * Constructs the system prompt with brand knowledge context.
  */
 
-import { SystemPromptOptions, PageContext } from './types';
+import { SystemPromptOptions, PageContext, CanvasContext } from './types';
 import { BRAND_PAGE_ROUTES } from './page-routes';
 
 /**
@@ -234,6 +234,65 @@ Example: If discussing brand voice, end with [resource:voice]
 
 You can include multiple resource links if the response covers multiple topics.`;
 
+// Canvas collaborative editing instructions
+const CANVAS_INSTRUCTIONS = `## Canvas for Long-Form Content
+
+You have access to Canvas - a collaborative editing feature for creating and iterating on long-form documents.
+
+### When to Use Canvas
+Use canvas when the user needs to create or edit substantial content that benefits from:
+- Visual preview of formatted markdown
+- Iterative editing with version history
+- Export/download capabilities
+- Brand-themed styling
+
+Ideal use cases for canvas:
+- SOPs (Standard Operating Procedures)
+- Documentation and guides
+- Blog posts and articles
+- Marketing copy and messaging
+- Project briefs and proposals
+- Content templates
+- Long email drafts
+- Multi-section reports
+
+### How to Create Canvas Content
+When creating content that should open in canvas, wrap your content in canvas tags:
+
+<canvas title="Your Document Title" action="create">
+# Document Title
+
+Your markdown content here...
+
+## Section 1
+Content...
+
+## Section 2
+Content...
+</canvas>
+
+### Updating Existing Canvas
+When the user asks to modify existing canvas content, use action="update":
+
+<canvas title="Updated Document Title" action="update">
+Updated content...
+</canvas>
+
+### Offering Canvas
+If the user's request could benefit from canvas but they didn't explicitly ask for it, you may suggest:
+"Would you like me to create this as a canvas document for easier editing and export?"
+
+### Canvas Detection
+Create canvas content automatically when the user asks to:
+- "Create an SOP for..."
+- "Draft a guide on..."
+- "Write a blog post about..."
+- "Help me create a document for..."
+- "Can you make a template for..."
+- Any request for substantial, structured content that needs iteration`;
+
+
+
 // Condensed brand essentials (~5KB)
 const BRAND_ESSENTIALS = `## OPEN SESSION Brand Essentials
 
@@ -318,6 +377,44 @@ const ASSET_REFERENCE = `## Quick Asset Reference
 - Paper: /assets/textures/texture_recycled-card_01_compressed.jpg`;
 
 /**
+ * Build canvas context instructions for the AI
+ */
+function buildCanvasContextInstructions(canvas: CanvasContext): string {
+  const parts: string[] = [];
+
+  parts.push('## Active Canvas Document');
+  parts.push('The user has an active canvas document that you can reference and update.');
+  parts.push('');
+  parts.push('<current_canvas>');
+  parts.push(`id: ${canvas.id}`);
+  parts.push(`title: "${canvas.title}"`);
+  parts.push(`version: ${canvas.version}`);
+  parts.push('');
+  parts.push('--- content ---');
+  parts.push(canvas.content);
+  parts.push('--- end content ---');
+  parts.push('</current_canvas>');
+
+  // Include previous content if user has edited
+  if (canvas.previousContent && canvas.lastEditedBy === 'user') {
+    parts.push('');
+    parts.push('Note: The user has edited the canvas since your last response.');
+    parts.push('<previous_canvas_version>');
+    parts.push(canvas.previousContent);
+    parts.push('</previous_canvas_version>');
+  }
+
+  parts.push('');
+  parts.push('When the user asks to modify this document, provide the updated content using:');
+  parts.push('<canvas title="Document Title" action="update">');
+  parts.push('Updated markdown content...');
+  parts.push('</canvas>');
+  parts.push('');
+
+  return parts.join('\n');
+}
+
+/**
  * Build the brand system prompt
  */
 export function buildBrandSystemPrompt(options: SystemPromptOptions = {}): string {
@@ -331,11 +428,19 @@ export function buildBrandSystemPrompt(options: SystemPromptOptions = {}): strin
     parts.push(buildContextInstructions(options.context));
   }
 
+  // Add active canvas context if provided
+  if (options.canvas) {
+    parts.push('');
+    parts.push(buildCanvasContextInstructions(options.canvas));
+  }
+
   // Add standard brand documentation
   parts.push('');
   parts.push(CITATION_FORMAT_INSTRUCTIONS);
   parts.push('');
   parts.push(RESOURCE_CARD_INSTRUCTIONS);
+  parts.push('');
+  parts.push(CANVAS_INSTRUCTIONS);
   parts.push('');
   parts.push(BRAND_ESSENTIALS);
   parts.push('');

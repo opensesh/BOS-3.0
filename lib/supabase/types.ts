@@ -1118,6 +1118,137 @@ export type BrandArtImage = BrandAsset & {
 };
 
 // ============================================
+// CANVAS (Collaborative Editing)
+// ============================================
+
+export type CanvasContentType = 'markdown' | 'text' | 'html';
+export type CanvasEditedBy = 'user' | 'assistant';
+
+export interface CanvasThemeConfig {
+  primaryColor?: string;
+  headingFont?: string;
+  bodyFont?: string;
+  accentColor?: string;
+  [key: string]: unknown;
+}
+
+export interface DbCanvas {
+  id: string;
+  chat_id: string | null;
+  title: string;
+  content: string;
+  content_type: CanvasContentType;
+  version: number;
+  last_edited_by: CanvasEditedBy | null;
+  previous_content: string | null;
+  edit_summary: string | null;
+  brand_id: string | null;
+  theme_config: CanvasThemeConfig;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Canvas {
+  id: string;
+  chatId?: string;
+  title: string;
+  content: string;
+  contentType: CanvasContentType;
+  version: number;
+  lastEditedBy?: CanvasEditedBy;
+  previousContent?: string;
+  editSummary?: string;
+  brandId?: string;
+  themeConfig: CanvasThemeConfig;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CanvasInsert {
+  chat_id?: string | null;
+  title: string;
+  content?: string;
+  content_type?: CanvasContentType;
+  last_edited_by?: CanvasEditedBy;
+  edit_summary?: string;
+  brand_id?: string | null;
+  theme_config?: CanvasThemeConfig;
+}
+
+export interface CanvasUpdate {
+  title?: string;
+  content?: string;
+  content_type?: CanvasContentType;
+  last_edited_by?: CanvasEditedBy;
+  edit_summary?: string;
+  brand_id?: string | null;
+  theme_config?: CanvasThemeConfig;
+  is_archived?: boolean;
+}
+
+export function dbCanvasToApp(db: DbCanvas): Canvas {
+  return {
+    id: db.id,
+    chatId: db.chat_id || undefined,
+    title: db.title,
+    content: db.content,
+    contentType: db.content_type,
+    version: db.version,
+    lastEditedBy: db.last_edited_by || undefined,
+    previousContent: db.previous_content || undefined,
+    editSummary: db.edit_summary || undefined,
+    brandId: db.brand_id || undefined,
+    themeConfig: db.theme_config || {},
+    isArchived: db.is_archived,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// Canvas version history
+export interface DbCanvasVersion {
+  id: string;
+  canvas_id: string;
+  version: number;
+  content: string;
+  edited_by: CanvasEditedBy | null;
+  edit_summary: string | null;
+  created_at: string;
+}
+
+export interface CanvasVersion {
+  id: string;
+  canvasId: string;
+  version: number;
+  content: string;
+  editedBy?: CanvasEditedBy;
+  editSummary?: string;
+  createdAt: string;
+}
+
+export interface CanvasVersionInsert {
+  canvas_id: string;
+  version: number;
+  content: string;
+  edited_by?: CanvasEditedBy;
+  edit_summary?: string;
+}
+
+export function dbCanvasVersionToApp(db: DbCanvasVersion): CanvasVersion {
+  return {
+    id: db.id,
+    canvasId: db.canvas_id,
+    version: db.version,
+    content: db.content,
+    editedBy: db.edited_by || undefined,
+    editSummary: db.edit_summary || undefined,
+    createdAt: db.created_at,
+  };
+}
+
+// ============================================
 // LEGACY TYPES (backwards compatibility)
 // ============================================
 
@@ -1217,6 +1348,16 @@ export interface Database {
         Row: DbBrandGuideline;
         Insert: BrandGuidelineInsert;
         Update: BrandGuidelineUpdate;
+      };
+      canvases: {
+        Row: DbCanvas;
+        Insert: CanvasInsert;
+        Update: CanvasUpdate;
+      };
+      canvas_versions: {
+        Row: DbCanvasVersion;
+        Insert: CanvasVersionInsert;
+        Update: never; // Versions are immutable
       };
     };
   };

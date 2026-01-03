@@ -50,7 +50,7 @@ export const styles = sortCx({
     colors: {
         primary: {
             root: [
-                "bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] shadow-xs ring-1 ring-[var(--border-brand)] ring-inset hover:bg-[var(--bg-brand-primary_alt)] hover:ring-[var(--border-brand-solid)] data-loading:bg-[var(--bg-brand-primary_alt)]",
+                "bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] shadow-xs ring-1 ring-[var(--border-brand)] ring-inset hover:bg-[var(--bg-brand-primary\_alt)] hover:ring-[var(--border-brand-solid)] data-loading:bg-[var(--bg-brand-primary\_alt)]",
                 // Disabled styles
                 "disabled:bg-disabled disabled:shadow-xs disabled:ring-disabled_subtle disabled:text-fg-disabled",
                 // Icon styles

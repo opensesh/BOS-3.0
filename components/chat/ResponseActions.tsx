@@ -56,12 +56,6 @@ export function ResponseActions({
   showSources = false,
   modelUsed,
 }: ResponseActionsProps) {
-  // #region agent log
-  const emptyIdSources = sources.filter(s => (!s.id || s.id === '') && (!s.url || s.url === ''));
-  if (emptyIdSources.length > 0) {
-    fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ResponseActions.tsx:render',message:'Sources with empty id AND url',data:{emptyCount:emptyIdSources.length,totalSources:sources.length,emptyIdSources},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-  }
-  // #endregion
   const [feedback, setFeedback] = useState<FeedbackType | null>(null);
   const [copied, setCopied] = useState(false);
   const [showSourcesDrawer, setShowSourcesDrawer] = useState(false);

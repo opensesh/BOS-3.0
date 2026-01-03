@@ -168,11 +168,11 @@ function AperolShadeCard({ shade }: { shade: AperolShade }) {
 
   return (
     <div 
-      className={`rounded-xl overflow-hidden border ${borderColor} min-h-[140px] flex flex-col w-full`}
+      className={`rounded-xl overflow-hidden border ${borderColor} min-h-[120px] flex flex-col`}
       style={{ backgroundColor: shade.hex }}
     >
       {/* Header */}
-      <div className={`flex items-center gap-1.5 px-3 py-2.5 ${textColor}`}>
+      <div className={`flex items-center gap-1.5 px-3 py-2 ${textColor}`}>
         <span className="text-xs font-display font-medium truncate flex-1">
           {shade.name}
         </span>
@@ -183,7 +183,7 @@ function AperolShadeCard({ shade }: { shade: AperolShade }) {
       <div className="flex-1" />
 
       {/* Values */}
-      <div className={`px-3 pb-2.5 space-y-1 ${textColor}`}>
+      <div className={`px-3 pb-2 space-y-0.5 ${textColor}`}>
         <div className="flex items-center gap-1">
           <span className="text-[10px] font-mono truncate flex-1 opacity-80">
             {shade.hex}
@@ -218,11 +218,11 @@ function MonoColorCard({ color }: { color: ColorData }) {
 
   return (
     <div 
-      className={`rounded-xl overflow-hidden border ${borderColor} min-h-[140px] flex flex-col w-full`}
+      className={`rounded-xl overflow-hidden border ${borderColor} min-h-[120px] flex flex-col`}
       style={{ backgroundColor: color.hex }}
     >
       {/* Header */}
-      <div className={`flex items-center gap-1.5 px-3 py-2.5 ${textColor}`}>
+      <div className={`flex items-center gap-1.5 px-3 py-2 ${textColor}`}>
         <span className={`text-xs font-display font-medium truncate flex-1 ${!meetsAA && !meetsAALarge ? 'opacity-60' : ''}`}>
           {color.name}
         </span>
@@ -233,7 +233,7 @@ function MonoColorCard({ color }: { color: ColorData }) {
       <div className="flex-1" />
 
       {/* Color Values */}
-      <div className={`px-3 pb-2.5 space-y-1 ${textColor}`}>
+      <div className={`px-3 pb-2 space-y-0.5 ${textColor}`}>
         <div className="flex items-center gap-1">
           <span className={`text-[10px] font-mono truncate flex-1 ${!meetsAA && !meetsAALarge ? 'opacity-50' : 'opacity-80'}`}>
             {color.hex}
@@ -279,8 +279,10 @@ export default function ColorsPage() {
         {/* Mono Scale Section */}
         <section className="mb-12">
           <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-5">Mono Scale</h2>
-          {/* Fixed 6 columns on lg+ for consistent 2-row layout */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+          {/* Responsive grid - auto-fit stretches items to fill available space */}
+          <div className="grid gap-2" style={{ 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))'
+          }}>
             {monoColors.map((color) => (
               <MonoColorCard key={color.name} color={color} />
             ))}
@@ -293,7 +295,10 @@ export default function ColorsPage() {
           <p className="text-sm text-[var(--fg-secondary)] mb-5">
             Extended brand palette for UI states, backgrounds, and accents. Use Tailwind classes like <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">bg-brand-500</code> or <code className="text-xs bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded font-mono">text-brand-600</code>.
           </p>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 gap-2.5">
+          {/* Responsive grid - auto-fit stretches items to fill available space */}
+          <div className="grid gap-2" style={{ 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))'
+          }}>
             {aperolShades.map((shade) => (
               <AperolShadeCard key={shade.name} shade={shade} />
             ))}

@@ -1,14 +1,17 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ChatTabNav, ChatTab } from './ChatTabNav';
-import { AnswerView, parseContentToSections, extractResourceCards, SourceInfo } from './AnswerView';
+import { AnswerView, parseContentToSections, extractResourceCards, parseCanvasResponse, SourceInfo } from './AnswerView';
 import { LinksView } from './LinksView';
 import { ImagesView, ImageResult } from './ImagesView';
 import { ResponseActions } from './ResponseActions';
 import { RelatedQuestions } from './RelatedQuestions';
 import { ChatTitleDropdown } from './ChatTitleDropdown';
 import { ShareButton } from './ShareModal';
+import { useCanvasContextOptional } from '@/lib/canvas-context';
+import { canvasService } from '@/lib/supabase/canvas-service';
+import type { Canvas } from '@/lib/supabase/canvas-service';
 
 interface ChatResponseProps {
   query: string;
@@ -38,21 +41,91 @@ export function ChatResponse({
   chatId,
 }: ChatResponseProps) {
   const [activeTab, setActiveTab] = useState<ChatTab>('answer');
+  
+  // Canvas context for opening canvas panel
+  const canvasContext = useCanvasContextOptional();
+  
+  // Track canvas state
+  const [canvas, setCanvas] = useState<Canvas | null>(null);
+  const canvasCreatedRef = useRef(false);
+  const lastCanvasContentRef = useRef<string>('');
 
   // Check if we should show citations (only for Perplexity models)
   const showCitations = useMemo(() => {
     return modelUsed?.includes('sonar') || modelUsed?.includes('perplexity');
   }, [modelUsed]);
 
-  // Parse content into sections
+  // Parse canvas from content
+  const { canvas: canvasResponse, cleanContent } = useMemo(() => {
+    return parseCanvasResponse(content);
+  }, [content]);
+
+  // Create or update canvas when response contains canvas tags
+  useEffect(() => {
+    if (!canvasResponse || isStreaming) return;
+    
+    // Prevent duplicate canvas creation
+    if (canvasCreatedRef.current && lastCanvasContentRef.current === canvasResponse.content) {
+      return;
+    }
+    
+    const handleCanvas = async () => {
+      try {
+        if (canvasResponse.action === 'create' || !canvas) {
+          // Create new canvas
+          const newCanvas = await canvasService.createCanvas({
+            title: canvasResponse.title,
+            content: canvasResponse.content,
+            chat_id: chatId || null,
+            last_edited_by: 'assistant',
+          });
+          
+          if (newCanvas) {
+            setCanvas(newCanvas);
+            canvasCreatedRef.current = true;
+            lastCanvasContentRef.current = canvasResponse.content;
+            
+            // Auto-open the canvas panel
+            if (canvasContext) {
+              canvasContext.openCanvas(newCanvas);
+            }
+          }
+        } else if (canvasResponse.action === 'update' && canvas) {
+          // Update existing canvas
+          const updated = await canvasService.updateCanvasContent(
+            canvas.id,
+            canvasResponse.content,
+            'assistant',
+            'AI update'
+          );
+          
+          if (updated) {
+            setCanvas(updated);
+            lastCanvasContentRef.current = canvasResponse.content;
+            
+            // Refresh canvas in panel
+            if (canvasContext) {
+              canvasContext.openCanvas(updated);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error handling canvas:', error);
+      }
+    };
+    
+    handleCanvas();
+  }, [canvasResponse, isStreaming, canvas, chatId, canvasContext]);
+
+  // Parse content into sections (using cleaned content without canvas tags)
   const sections = useMemo(() => {
-    return parseContentToSections(content, sources);
-  }, [content, sources]);
+    return parseContentToSections(cleanContent, sources);
+  }, [cleanContent, sources]);
 
   // Extract resource cards from content
   const resourceCards = useMemo(() => {
-    return extractResourceCards(content);
-  }, [content]);
+    return extractResourceCards(cleanContent);
+  }, [cleanContent]);
 
   const hasResources = sources.length > 0 || images.length > 0;
   const resourcesCount = sources.length + images.length;
@@ -90,14 +163,16 @@ export function ChatResponse({
                 isStreaming={isStreaming}
                 showCitations={showCitations}
                 resourceCards={resourceCards}
+                canvas={canvas}
+                isCanvasStreaming={isStreaming && !!canvasResponse}
               />
 
               {/* Response actions */}
-              {!isStreaming && content && (
+              {!isStreaming && cleanContent && (
                 <ResponseActions
                   sources={sources}
                   resourceCards={resourceCards}
-                  content={content}
+                  content={cleanContent}
                   query={query}
                   messageId={messageId}
                   chatId={chatId}
@@ -108,9 +183,9 @@ export function ChatResponse({
               )}
 
               {/* Related questions */}
-              {!isStreaming && content && (
+              {!isStreaming && cleanContent && (
                 <RelatedQuestions
-                  responseContent={content}
+                  responseContent={cleanContent}
                   originalQuery={query}
                   onQuestionClick={onFollowUpClick}
                   modelUsed={modelUsed}

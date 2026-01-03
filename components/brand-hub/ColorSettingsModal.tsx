@@ -14,7 +14,7 @@ import {
   Palette,
 } from 'lucide-react';
 import { useBrandColors } from '@/hooks/useBrandColors';
-import type { BrandColor, BrandColorGroup, BrandTextColor } from '@/lib/supabase/types';
+import type { BrandColor, BrandColorGroup, BrandColorRole, BrandTextColor } from '@/lib/supabase/types';
 import { ConfirmDialog } from './BrandHubSettingsModal';
 
 interface ColorSettingsModalProps {
@@ -98,9 +98,10 @@ function TextColorSelect({ value, onChange }: TextColorSelectProps) {
 interface ColorGroupSelectProps {
   value: BrandColorGroup;
   onChange: (value: BrandColorGroup) => void;
+  disabled?: boolean;
 }
 
-function ColorGroupSelect({ value, onChange }: ColorGroupSelectProps) {
+function ColorGroupSelect({ value, onChange, disabled }: ColorGroupSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -126,15 +127,18 @@ function ColorGroupSelect({ value, onChange }: ColorGroupSelectProps) {
   return (
     <div ref={dropdownRef} className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-md border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded-md border border-[var(--border-primary)] bg-[var(--bg-secondary)] transition-colors ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--bg-tertiary)]'
+        }`}
       >
         <span className="text-[var(--fg-primary)]">{currentGroup?.label}</span>
         <ChevronDown className="w-3 h-3 text-[var(--fg-tertiary)]" />
       </button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && !disabled && (
           <motion.div
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -144,6 +148,83 @@ function ColorGroupSelect({ value, onChange }: ColorGroupSelectProps) {
             {groups.map((option) => (
               <button
                 key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-[var(--bg-secondary)] transition-colors ${
+                  value === option.value ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-primary)]'
+                }`}
+              >
+                <span>{option.label}</span>
+                {value === option.value && <Check className="w-3 h-3 ml-auto" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ============================================
+// COLOR ROLE SELECT (Primary/Secondary/Accent)
+// ============================================
+
+interface ColorRoleSelectProps {
+  value: BrandColorRole | undefined;
+  onChange: (value: BrandColorRole | undefined) => void;
+  disabled?: boolean;
+}
+
+function ColorRoleSelect({ value, onChange, disabled }: ColorRoleSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const roles: { value: BrandColorRole | undefined; label: string }[] = [
+    { value: 'primary', label: 'Primary' },
+    { value: 'secondary', label: 'Secondary' },
+    { value: 'accent', label: 'Accent' },
+    { value: 'neutral', label: 'Neutral' },
+    { value: undefined, label: 'None' },
+  ];
+
+  const currentRole = roles.find(r => r.value === value) || roles[roles.length - 1];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <button
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded-md border border-[var(--border-primary)] bg-[var(--bg-secondary)] transition-colors ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--bg-tertiary)]'
+        }`}
+      >
+        <span className="text-[var(--fg-primary)]">{currentRole.label}</span>
+        <ChevronDown className="w-3 h-3 text-[var(--fg-tertiary)]" />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && !disabled && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className="absolute top-full mt-1 left-0 z-20 py-1 min-w-[100px] rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-lg"
+          >
+            {roles.map((option, idx) => (
+              <button
+                key={option.value ?? 'none'}
                 onClick={() => {
                   onChange(option.value);
                   setIsOpen(false);
@@ -186,6 +267,7 @@ interface EditingColor {
   cssVariableName: string;
   textColor: BrandTextColor;
   colorGroup: BrandColorGroup;
+  colorRole: BrandColorRole | undefined;
 }
 
 function ColorRow({
@@ -202,6 +284,10 @@ function ColorRow({
 }: ColorRowProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isHoveringConfirm, setIsHoveringConfirm] = useState(false);
+
+  // Editing is disabled until authentication is set up
+  const EDITING_DISABLED = true;
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -217,23 +303,34 @@ function ColorRow({
     'custom': 'Custom',
   };
 
+  const roleLabels: Record<string, string> = {
+    'primary': 'Primary',
+    'secondary': 'Secondary',
+    'accent': 'Accent',
+    'neutral': 'Neutral',
+  };
+
   return (
     <>
-      <tr className={`group border-b border-[var(--border-primary)]/50 hover:bg-[var(--bg-secondary)]/30 transition-colors ${
+      {/* Subtle row divider using border-secondary */}
+      <tr className={`group border-b border-[var(--border-secondary)] hover:bg-[var(--bg-secondary)]/30 transition-colors ${
         isEditing ? 'bg-[var(--bg-secondary)]/40' : ''
       }`}>
-        {/* Color Swatch */}
+        {/* Color Swatch - with proper radius when editing */}
         <td className="py-2 px-3 w-[52px]">
           {isEditing && editValues ? (
-            <input
-              type="color"
-              value={editValues.hexValue}
-              onChange={(e) => onUpdateField('hexValue', e.target.value)}
-              className="w-8 h-8 rounded-md cursor-pointer border border-[var(--border-primary)]"
-            />
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-[var(--border-primary)]">
+              <input
+                type="color"
+                value={editValues.hexValue}
+                onChange={(e) => onUpdateField('hexValue', e.target.value)}
+                disabled={EDITING_DISABLED}
+                className="w-10 h-10 -m-1 cursor-pointer disabled:cursor-not-allowed"
+              />
+            </div>
           ) : (
             <div
-              className="w-8 h-8 rounded-md border border-[var(--border-primary)]/50 shadow-sm"
+              className="w-8 h-8 rounded-lg border border-[var(--border-primary)]/50 shadow-sm"
               style={{ backgroundColor: color.hexValue }}
             />
           )}
@@ -246,7 +343,8 @@ function ColorRow({
               type="text"
               value={editValues.name}
               onChange={(e) => onUpdateField('name', e.target.value)}
-              className="w-full px-2 py-1 text-sm rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:border-[var(--border-brand)] focus:outline-none"
+              disabled={EDITING_DISABLED}
+              className="w-full px-2 py-1 text-sm rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:border-[var(--border-brand)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             />
           ) : (
             <span className="text-sm font-medium text-[var(--fg-primary)]">
@@ -263,7 +361,8 @@ function ColorRow({
                 type="text"
                 value={editValues.hexValue.toUpperCase()}
                 onChange={(e) => onUpdateField('hexValue', e.target.value)}
-                className="w-20 px-2 py-1 text-xs font-mono rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:border-[var(--border-brand)] focus:outline-none"
+                disabled={EDITING_DISABLED}
+                className="w-20 px-2 py-1 text-xs font-mono rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:border-[var(--border-brand)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
             ) : (
               <>
@@ -286,6 +385,25 @@ function ColorRow({
           </div>
         </td>
 
+        {/* Role (for brand colors) */}
+        <td className="py-2 px-3 w-[90px]">
+          {isEditing && editValues ? (
+            <ColorRoleSelect
+              value={editValues.colorRole}
+              onChange={(value) => onUpdateField('colorRole', value)}
+              disabled={EDITING_DISABLED}
+            />
+          ) : (
+            color.colorRole ? (
+              <span className="inline-flex px-2 py-0.5 text-[10px] font-medium rounded bg-[var(--bg-brand-primary)]/10 text-[var(--fg-brand-primary)]">
+                {roleLabels[color.colorRole]}
+              </span>
+            ) : (
+              <span className="text-xs text-[var(--fg-quaternary)]">—</span>
+            )
+          )}
+        </td>
+
         {/* CSS Variable */}
         <td className="py-2 px-3">
           {isEditing && editValues ? (
@@ -293,8 +411,9 @@ function ColorRow({
               type="text"
               value={editValues.cssVariableName}
               onChange={(e) => onUpdateField('cssVariableName', e.target.value)}
+              disabled={EDITING_DISABLED}
               placeholder="--color-name"
-              className="w-full px-2 py-1 text-xs font-mono rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-tertiary)] focus:border-[var(--border-brand)] focus:outline-none"
+              className="w-full px-2 py-1 text-xs font-mono rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-tertiary)] focus:border-[var(--border-brand)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             />
           ) : (
             <span className="text-xs font-mono text-[var(--fg-tertiary)]">
@@ -304,7 +423,7 @@ function ColorRow({
         </td>
 
         {/* Text Color */}
-        <td className="py-2 px-3 w-[90px]">
+        <td className="py-2 px-3 w-[80px]">
           {isEditing && editValues ? (
             <TextColorSelect
               value={editValues.textColor}
@@ -323,11 +442,12 @@ function ColorRow({
         </td>
 
         {/* Group */}
-        <td className="py-2 px-3 w-[90px]">
+        <td className="py-2 px-3 w-[80px]">
           {isEditing && editValues ? (
             <ColorGroupSelect
               value={editValues.colorGroup}
               onChange={(value) => onUpdateField('colorGroup', value)}
+              disabled={EDITING_DISABLED}
             />
           ) : (
             <span className="inline-flex px-2 py-0.5 text-[10px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">
@@ -337,14 +457,21 @@ function ColorRow({
         </td>
 
         {/* Actions */}
-        <td className="py-2 px-3 w-[80px]">
+        <td className="py-2 px-3 w-[70px]">
           <div className="flex items-center justify-end gap-1">
             {isEditing ? (
               <>
+                {/* Save button - outline style with fill on hover (Aperol themed) */}
                 <button
                   onClick={onSave}
-                  disabled={isSaving}
-                  className="p-1.5 rounded-lg bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid-hover)] text-white transition-colors disabled:opacity-50"
+                  disabled={isSaving || EDITING_DISABLED}
+                  onMouseEnter={() => setIsHoveringConfirm(true)}
+                  onMouseLeave={() => setIsHoveringConfirm(false)}
+                  className={`p-1.5 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isHoveringConfirm 
+                      ? 'bg-[var(--bg-brand-solid)] border-[var(--bg-brand-solid)] text-white' 
+                      : 'border-[var(--fg-brand-primary)] text-[var(--fg-brand-primary)] bg-transparent'
+                  }`}
                   title="Save"
                 >
                   {isSaving ? (
@@ -363,17 +490,21 @@ function ColorRow({
               </>
             ) : (
               <>
+                {/* Edit button - disabled but visible */}
                 <button
                   onClick={onStartEdit}
-                  className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] opacity-0 group-hover:opacity-100 transition-all"
-                  title="Edit"
+                  disabled={EDITING_DISABLED}
+                  className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] opacity-0 group-hover:opacity-100 transition-all disabled:opacity-30 disabled:cursor-not-allowed group-hover:disabled:opacity-30"
+                  title={EDITING_DISABLED ? "Editing disabled" : "Edit"}
                 >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
+                {/* Delete button - disabled but visible */}
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--fg-tertiary)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                  title="Delete"
+                  disabled={EDITING_DISABLED}
+                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--fg-tertiary)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-30 disabled:cursor-not-allowed group-hover:disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[var(--fg-tertiary)]"
+                  title={EDITING_DISABLED ? "Deleting disabled" : "Delete"}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -411,35 +542,44 @@ interface AddColorRowProps {
     cssVariableName: string; 
     textColor: BrandTextColor;
     colorGroup: BrandColorGroup;
+    colorRole: BrandColorRole | undefined;
   }) => void;
   onCancel: () => void;
   isAdding: boolean;
 }
 
 function AddColorRow({ onAdd, onCancel, isAdding }: AddColorRowProps) {
+  // Adding is disabled until authentication is set up
+  const ADDING_DISABLED = true;
+  const [isHoveringConfirm, setIsHoveringConfirm] = useState(false);
+
   const [values, setValues] = useState({
     name: '',
     hexValue: '#000000',
     cssVariableName: '',
     textColor: 'light' as BrandTextColor,
     colorGroup: 'brand' as BrandColorGroup,
+    colorRole: 'primary' as BrandColorRole | undefined,
   });
 
   const handleSubmit = () => {
-    if (!values.name.trim()) return;
+    if (!values.name.trim() || ADDING_DISABLED) return;
     onAdd(values);
   };
 
   return (
-    <tr className="border-b border-[var(--border-brand)]/50 bg-[var(--bg-brand-primary)]/5">
+    <tr className="border-b border-[var(--border-secondary)] bg-[var(--bg-brand-primary)]/5">
       {/* Color Swatch */}
       <td className="py-2 px-3 w-[52px]">
-        <input
-          type="color"
-          value={values.hexValue}
-          onChange={(e) => setValues(v => ({ ...v, hexValue: e.target.value }))}
-          className="w-8 h-8 rounded-md cursor-pointer border border-[var(--border-brand)]"
-        />
+        <div className="w-8 h-8 rounded-lg overflow-hidden border border-[var(--border-brand)]">
+          <input
+            type="color"
+            value={values.hexValue}
+            onChange={(e) => setValues(v => ({ ...v, hexValue: e.target.value }))}
+            disabled={ADDING_DISABLED}
+            className="w-10 h-10 -m-1 cursor-pointer disabled:cursor-not-allowed"
+          />
+        </div>
       </td>
 
       {/* Name */}
@@ -450,7 +590,8 @@ function AddColorRow({ onAdd, onCancel, isAdding }: AddColorRowProps) {
           onChange={(e) => setValues(v => ({ ...v, name: e.target.value }))}
           placeholder="Color name"
           autoFocus
-          className="w-full px-2 py-1 text-sm rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:outline-none"
+          disabled={ADDING_DISABLED}
+          className="w-full px-2 py-1 text-sm rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </td>
 
@@ -460,7 +601,17 @@ function AddColorRow({ onAdd, onCancel, isAdding }: AddColorRowProps) {
           type="text"
           value={values.hexValue.toUpperCase()}
           onChange={(e) => setValues(v => ({ ...v, hexValue: e.target.value }))}
-          className="w-20 px-2 py-1 text-xs font-mono rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:outline-none"
+          disabled={ADDING_DISABLED}
+          className="w-20 px-2 py-1 text-xs font-mono rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </td>
+
+      {/* Role */}
+      <td className="py-2 px-3 w-[90px]">
+        <ColorRoleSelect
+          value={values.colorRole}
+          onChange={(value) => setValues(v => ({ ...v, colorRole: value }))}
+          disabled={ADDING_DISABLED}
         />
       </td>
 
@@ -471,12 +622,13 @@ function AddColorRow({ onAdd, onCancel, isAdding }: AddColorRowProps) {
           value={values.cssVariableName}
           onChange={(e) => setValues(v => ({ ...v, cssVariableName: e.target.value }))}
           placeholder="--color-name"
-          className="w-full px-2 py-1 text-xs font-mono rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-tertiary)] focus:outline-none"
+          disabled={ADDING_DISABLED}
+          className="w-full px-2 py-1 text-xs font-mono rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-tertiary)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </td>
 
       {/* Text Color */}
-      <td className="py-2 px-3 w-[90px]">
+      <td className="py-2 px-3 w-[80px]">
         <TextColorSelect
           value={values.textColor}
           onChange={(value) => setValues(v => ({ ...v, textColor: value }))}
@@ -484,21 +636,29 @@ function AddColorRow({ onAdd, onCancel, isAdding }: AddColorRowProps) {
       </td>
 
       {/* Group */}
-      <td className="py-2 px-3 w-[90px]">
+      <td className="py-2 px-3 w-[80px]">
         <ColorGroupSelect
           value={values.colorGroup}
           onChange={(value) => setValues(v => ({ ...v, colorGroup: value }))}
+          disabled={ADDING_DISABLED}
         />
       </td>
 
       {/* Actions */}
-      <td className="py-2 px-3 w-[80px]">
+      <td className="py-2 px-3 w-[70px]">
         <div className="flex items-center justify-end gap-1">
+          {/* Save button - outline style with fill on hover */}
           <button
             onClick={handleSubmit}
-            disabled={isAdding || !values.name.trim()}
-            className="p-1.5 rounded-lg bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid-hover)] text-white transition-colors disabled:opacity-50"
-            title="Add"
+            disabled={isAdding || !values.name.trim() || ADDING_DISABLED}
+            onMouseEnter={() => setIsHoveringConfirm(true)}
+            onMouseLeave={() => setIsHoveringConfirm(false)}
+            className={`p-1.5 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              isHoveringConfirm && !ADDING_DISABLED
+                ? 'bg-[var(--bg-brand-solid)] border-[var(--bg-brand-solid)] text-white' 
+                : 'border-[var(--fg-brand-primary)] text-[var(--fg-brand-primary)] bg-transparent'
+            }`}
+            title={ADDING_DISABLED ? "Adding disabled" : "Add"}
           >
             {isAdding ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -545,6 +705,7 @@ export function ColorSettingsModal({ isOpen, onClose }: ColorSettingsModalProps)
       cssVariableName: color.cssVariableName || '',
       textColor: color.textColor,
       colorGroup: color.colorGroup,
+      colorRole: color.colorRole,
     });
   }, []);
 
@@ -571,6 +732,7 @@ export function ColorSettingsModal({ isOpen, onClose }: ColorSettingsModalProps)
         css_variable_name: editValues.cssVariableName || undefined,
         text_color: editValues.textColor,
         color_group: editValues.colorGroup,
+        color_role: editValues.colorRole || null,
       });
       setEditingId(null);
       setEditValues(null);
@@ -595,6 +757,7 @@ export function ColorSettingsModal({ isOpen, onClose }: ColorSettingsModalProps)
     cssVariableName: string;
     textColor: BrandTextColor;
     colorGroup: BrandColorGroup;
+    colorRole: BrandColorRole | undefined;
   }) => {
     setIsSaving(true);
     try {
@@ -604,6 +767,7 @@ export function ColorSettingsModal({ isOpen, onClose }: ColorSettingsModalProps)
         css_variable_name: values.cssVariableName || undefined,
         text_color: values.textColor,
         color_group: values.colorGroup,
+        color_role: values.colorRole || null,
       });
       setIsAddingNew(false);
     } catch (error) {
@@ -659,12 +823,12 @@ export function ColorSettingsModal({ isOpen, onClose }: ColorSettingsModalProps)
               </div>
 
               <div className="flex items-center gap-2">
-                {/* Add Color - Icon only, styled like page header buttons */}
+                {/* Add Color - Icon only, styled like page header buttons (disabled until auth) */}
                 <motion.button
                   onClick={() => setIsAddingNew(true)}
-                  disabled={isAddingNew}
-                  className="p-2.5 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Add color"
+                  disabled={true}
+                  className="p-2.5 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-[var(--bg-secondary)] disabled:hover:border-[var(--border-primary)]"
+                  title="Adding colors is disabled"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -710,7 +874,7 @@ export function ColorSettingsModal({ isOpen, onClose }: ColorSettingsModalProps)
                 </div>
               ) : (
                 <table className="w-full table-fixed">
-                  <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
+                  <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
                     <tr>
                       <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[52px]">
                         
@@ -721,16 +885,19 @@ export function ColorSettingsModal({ isOpen, onClose }: ColorSettingsModalProps)
                       <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[100px]">
                         Hex
                       </th>
+                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[90px]">
+                        Role
+                      </th>
                       <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider">
                         Variable
                       </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[90px]">
+                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px]">
                         Text
                       </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[90px]">
+                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px]">
                         Group
                       </th>
-                      <th className="py-2.5 px-3 text-right text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px]">
+                      <th className="py-2.5 px-3 text-right text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[70px]">
                         
                       </th>
                     </tr>

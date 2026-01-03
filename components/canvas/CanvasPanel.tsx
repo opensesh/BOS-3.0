@@ -139,34 +139,15 @@ export function CanvasPanel({
     },
   };
 
-  // Backdrop variants
-  const backdropVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-    exit: { opacity: 0 },
-  };
-
   if (!activeCanvas) return null;
 
   return (
     <AnimatePresence>
       {isCanvasOpen && (
         <>
-          {/* Backdrop for half-screen mode - click to close */}
-          {panelMode === 'half' && (
-            <motion.div
-              className="fixed inset-0 z-40"
-              variants={backdropVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              onClick={closeCanvas}
-            />
-          )}
-
-          {/* Canvas Panel */}
+          {/* Canvas Panel - Fixed to right side */}
           <motion.div
-            className={`fixed top-0 right-0 bottom-0 z-50 flex flex-col bg-[var(--bg-primary)] border-l border-[var(--border-primary)] shadow-2xl ${className}`}
+            className={`fixed top-0 right-0 bottom-0 z-40 flex flex-col bg-[var(--bg-primary)] border-l border-[var(--border-primary)] shadow-2xl ${className}`}
             style={{ 
               width: panelWidth,
               ...themeStyles,

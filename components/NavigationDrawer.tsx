@@ -383,7 +383,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                 <div className="flex items-center justify-between mb-2 px-2">
                   <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Quick Actions</h4>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {quickActions.map((action, index) => {
                     const Icon = action.icon;
                     return (
@@ -392,15 +392,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         variants={fadeInUp}
                         custom={index}
                         onClick={() => handleQuickAction(action.prompt)}
-                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-3 group"
+                        className="w-full text-left px-3 py-1.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2 group"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-[var(--bg-tertiary)] group-hover:bg-[var(--bg-quaternary)] flex items-center justify-center flex-shrink-0 transition-colors">
-                          <Icon className="w-4 h-4 text-[var(--fg-brand-primary)]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-[var(--fg-primary)] truncate">{action.title}</div>
-                          <div className="text-xs text-[var(--fg-tertiary)] truncate">{action.description}</div>
-                        </div>
+                        <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-shrink-0" />
+                        <span className="truncate">{action.title}</span>
                       </motion.button>
                     );
                   })}

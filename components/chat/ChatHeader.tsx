@@ -114,15 +114,17 @@ export function ChatHeader({
 
           {/* Right side - Title dropdown and Share */}
           <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-            <ChatTitleDropdown
-              title={threadTitle}
-              createdAt={threadCreatedAt}
-              onRename={onRenameThread}
-              onAddToProject={onAddToProject}
-              onAddToSpace={onAddToSpace}
-              onDelete={onDeleteThread}
-              content={content}
-            />
+            <div className="min-w-0 max-w-[240px] w-full">
+              <ChatTitleDropdown
+                title={threadTitle}
+                createdAt={threadCreatedAt}
+                onRename={onRenameThread}
+                onAddToProject={onAddToProject}
+                onAddToSpace={onAddToSpace}
+                onDelete={onDeleteThread}
+                content={content}
+              />
+            </div>
             {!hideShare && <ShareButton />}
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { canvasService, type Canvas } from '@/lib/supabase/canvas-service';
 import type { CanvasEditedBy, CanvasThemeConfig } from '@/lib/supabase/types';
 
@@ -76,6 +77,24 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [canvasWidthPercent, setCanvasWidthPercent] = useState(50); // Default 50% width
 
+  // Get current pathname for route change detection
+  const pathname = usePathname();
+
+  // Close canvas when navigating away from chat pages
+  // Canvas should ONLY appear on the home page (/) which contains the ChatInterface
+  useEffect(() => {
+    // The canvas is only valid on the home page (/)
+    // Close it when navigating to any other page
+    if (pathname !== '/') {
+      setIsCanvasOpen(false);
+      // Clear active canvas state when leaving chat context
+      setActiveCanvas(null);
+      setLocalContent('');
+      setHasUnsavedChanges(false);
+      setIsStreaming(false);
+    }
+  }, [pathname]);
+
   // Sync local content with active canvas
   useEffect(() => {
     if (activeCanvas) {
@@ -125,13 +144,13 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   // Close the canvas panel
   const closeCanvas = useCallback(() => {
     setIsCanvasOpen(false);
-    // Don't clear activeCanvas immediately - allow for animations
+    // Clear state after animation completes
     setTimeout(() => {
-      if (!isCanvasOpen) {
-        // Only clear if still closed after timeout
-      }
+      setActiveCanvas(null);
+      setLocalContent('');
+      setHasUnsavedChanges(false);
     }, 300);
-  }, [isCanvasOpen]);
+  }, []);
 
   // Update canvas content
   const updateCanvasContent = useCallback(async (

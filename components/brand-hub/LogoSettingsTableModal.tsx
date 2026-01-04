@@ -327,15 +327,9 @@ function StaticLogoRow({ logo, onDownload }: StaticLogoRowProps) {
 
       {/* Name */}
       <td className="py-2 px-2 sm:px-3 w-[100px] sm:w-[140px] md:w-[180px]">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-          <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate">
-            {logo.name}
-          </span>
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] w-fit shrink-0" title="System logo - protected">
-            <Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
-            Protected
-          </span>
-        </div>
+        <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate block">
+          {logo.name}
+        </span>
       </td>
 
       {/* Category */}
@@ -430,17 +424,9 @@ function LogoRow({ logo, onDownload }: LogoRowProps) {
 
         {/* Name */}
         <td className="py-2 px-2 sm:px-3 w-[100px] sm:w-[140px] md:w-[180px]">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate">
-              {logo.name}
-            </span>
-            {logo.isSystem && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] w-fit shrink-0" title="System logo - cannot be deleted">
-                <Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
-                Protected
-              </span>
-            )}
-          </div>
+          <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate block">
+            {logo.name}
+          </span>
         </td>
 
         {/* Category */}

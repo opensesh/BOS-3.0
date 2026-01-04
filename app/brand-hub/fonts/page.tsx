@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
-import { FontSettingsModal } from '@/components/brand-hub/FontSettingsModal';
+import { TypographySettingsTableModal } from '@/components/brand-hub/TypographySettingsTableModal';
 import { RefreshCw, Download, ChevronDown, Monitor, Globe } from 'lucide-react';
 
 type FontFormat = 'desktop' | 'web';
@@ -369,8 +369,8 @@ Note: In production, this would download a ZIP file containing all font files.
         </div>
       </BrandHubLayout>
 
-      {/* Font Settings Modal */}
-      <FontSettingsModal
+      {/* Typography Settings Table Modal */}
+      <TypographySettingsTableModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />

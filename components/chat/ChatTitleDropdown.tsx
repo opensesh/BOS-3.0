@@ -222,7 +222,7 @@ export function ChatTitleDropdown({
         ref={triggerRef}
         className={`
           flex items-center gap-1.5 px-2.5 h-7 rounded-lg border transition-all cursor-pointer
-          max-w-[160px] sm:max-w-[220px] md:max-w-[300px]
+          max-w-[120px] sm:max-w-[180px] md:max-w-[240px] overflow-hidden
           ${isOpen || isEditing
             ? 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'
             : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50'

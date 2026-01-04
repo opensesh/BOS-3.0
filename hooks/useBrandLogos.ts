@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import type { BrandLogo, BrandLogoMetadata, BrandLogoVariant, BrandLogoType } from '@/lib/supabase/types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { BrandLogo, BrandLogoMetadata, BrandLogoVariant, BrandLogoType, BrandLogoCategory } from '@/lib/supabase/types';
 import {
   getLogosByBrand,
   getLogoById,
@@ -11,10 +11,37 @@ import {
   uploadLogo,
   getLogosGroupedByType,
   getLogoVariants,
+  getUniqueLogoTypes,
+  getUniqueVariants,
+  isLogoProtected,
 } from '@/lib/supabase/brand-logos-service';
 
 // Default brand ID for Open Session
 const DEFAULT_BRAND_ID = process.env.NEXT_PUBLIC_DEFAULT_BRAND_ID || '';
+
+// Default logo types available for selection
+export const DEFAULT_LOGO_TYPES: BrandLogoType[] = [
+  'brandmark',
+  'combo',
+  'stacked',
+  'horizontal',
+  'core',
+  'outline',
+  'filled',
+];
+
+// Default variants available for selection
+export const DEFAULT_VARIANTS: BrandLogoVariant[] = [
+  'vanilla',
+  'glass',
+  'charcoal',
+];
+
+// Default categories
+export const DEFAULT_CATEGORIES: BrandLogoCategory[] = [
+  'main',
+  'accessory',
+];
 
 interface UseBrandLogosOptions {
   brandId?: string;
@@ -22,11 +49,22 @@ interface UseBrandLogosOptions {
 }
 
 interface UseBrandLogosReturn {
+  // Logo data
   logos: BrandLogo[];
   mainLogos: BrandLogo[];
   accessoryLogos: BrandLogo[];
+  systemLogos: BrandLogo[];
+  userLogos: BrandLogo[];
+  
+  // Available options (for dropdowns)
+  availableTypes: string[];
+  availableVariants: string[];
+  
+  // Loading states
   isLoading: boolean;
   error: Error | null;
+  
+  // Actions
   refresh: () => Promise<void>;
   getLogo: (id: string) => Promise<BrandLogo | null>;
   addLogo: (
@@ -40,10 +78,15 @@ interface UseBrandLogosReturn {
   removeLogo: (id: string) => Promise<void>;
   uploadLogoFile: (file: File | Blob, name: string, metadata: BrandLogoMetadata) => Promise<BrandLogo>;
   getVariants: (logoType: BrandLogoType) => Promise<Record<BrandLogoVariant, BrandLogo | null>>;
+  
+  // Protection helpers
+  canDeleteLogo: (logo: BrandLogo) => boolean;
+  isLogoSystem: (logo: BrandLogo) => boolean;
 }
 
 /**
  * React hook for managing brand logos
+ * Handles CRUD operations with protection for system logos
  */
 export function useBrandLogos(options: UseBrandLogosOptions = {}): UseBrandLogosReturn {
   const { brandId = DEFAULT_BRAND_ID, autoFetch = true } = options;
@@ -53,6 +96,23 @@ export function useBrandLogos(options: UseBrandLogosOptions = {}): UseBrandLogos
   const [accessoryLogos, setAccessoryLogos] = useState<BrandLogo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [uniqueTypes, setUniqueTypes] = useState<string[]>([]);
+  const [uniqueVariants, setUniqueVariants] = useState<string[]>([]);
+
+  // Computed: separate system vs user logos
+  const systemLogos = useMemo(() => logos.filter(l => l.isSystem), [logos]);
+  const userLogos = useMemo(() => logos.filter(l => !l.isSystem), [logos]);
+
+  // Computed: combine default types/variants with custom ones from database
+  const availableTypes = useMemo(() => {
+    const combined = new Set([...DEFAULT_LOGO_TYPES, ...uniqueTypes]);
+    return Array.from(combined);
+  }, [uniqueTypes]);
+
+  const availableVariants = useMemo(() => {
+    const combined = new Set([...DEFAULT_VARIANTS, ...uniqueVariants]);
+    return Array.from(combined);
+  }, [uniqueVariants]);
 
   // Fetch logos from Supabase
   const fetchLogos = useCallback(async () => {
@@ -65,11 +125,17 @@ export function useBrandLogos(options: UseBrandLogosOptions = {}): UseBrandLogos
       setIsLoading(true);
       setError(null);
 
-      const { main, accessory } = await getLogosGroupedByType(brandId);
+      const [{ main, accessory }, types, variants] = await Promise.all([
+        getLogosGroupedByType(brandId),
+        getUniqueLogoTypes(brandId),
+        getUniqueVariants(brandId),
+      ]);
       
       setMainLogos(main);
       setAccessoryLogos(accessory);
       setLogos([...main, ...accessory]);
+      setUniqueTypes(types);
+      setUniqueVariants(variants);
     } catch (err) {
       console.error('Error fetching logos:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch logos'));
@@ -142,14 +208,19 @@ export function useBrandLogos(options: UseBrandLogosOptions = {}): UseBrandLogos
     [fetchLogos]
   );
 
-  // Remove a logo
+  // Remove a logo (with protection check)
   const removeLogo = useCallback(
     async (id: string): Promise<void> => {
       try {
+        // The service layer will throw if logo is protected
         await deleteLogo(id);
         await fetchLogos(); // Refresh the list
       } catch (err) {
         console.error('Error removing logo:', err);
+        // Re-throw with a user-friendly message
+        if (err instanceof Error && err.message.includes('system logo')) {
+          throw new Error('This logo is protected and cannot be deleted.');
+        }
         throw err;
       }
     },
@@ -178,7 +249,7 @@ export function useBrandLogos(options: UseBrandLogosOptions = {}): UseBrandLogos
   );
 
   // Get all variants for a logo type
-  const getVariants = useCallback(
+  const getVariantsForType = useCallback(
     async (logoType: BrandLogoType): Promise<Record<BrandLogoVariant, BrandLogo | null>> => {
       if (!brandId) {
         return { vanilla: null, glass: null, charcoal: null };
@@ -194,19 +265,43 @@ export function useBrandLogos(options: UseBrandLogosOptions = {}): UseBrandLogos
     [brandId]
   );
 
+  // Helper: Check if a logo can be deleted
+  const canDeleteLogo = useCallback((logo: BrandLogo): boolean => {
+    return !logo.isSystem;
+  }, []);
+
+  // Helper: Check if a logo is a system logo
+  const isLogoSystem = useCallback((logo: BrandLogo): boolean => {
+    return logo.isSystem;
+  }, []);
+
   return {
+    // Logo data
     logos,
     mainLogos,
     accessoryLogos,
+    systemLogos,
+    userLogos,
+    
+    // Available options
+    availableTypes,
+    availableVariants,
+    
+    // Loading states
     isLoading,
     error,
+    
+    // Actions
     refresh: fetchLogos,
     getLogo,
     addLogo,
     editLogo,
     removeLogo,
     uploadLogoFile,
-    getVariants,
+    getVariants: getVariantsForType,
+    
+    // Protection helpers
+    canDeleteLogo,
+    isLogoSystem,
   };
 }
-

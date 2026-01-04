@@ -8,7 +8,6 @@
 import { createClient } from './client';
 import type {
   DbBrandAsset,
-  BrandAsset,
   BrandAssetInsert,
   BrandAssetUpdate,
   BrandLogo,
@@ -125,7 +124,7 @@ export async function getLogoById(id: string): Promise<BrandLogo | null> {
 }
 
 /**
- * Create a new logo
+ * Create a new logo (user-added logos are not system protected)
  */
 export async function createLogo(
   brandId: string,
@@ -138,6 +137,7 @@ export async function createLogo(
     variant?: BrandLogoVariant;
     mimeType?: string;
     fileSize?: number;
+    isSystem?: boolean;
   }
 ): Promise<BrandLogo> {
   const insertData: BrandAssetInsert = {
@@ -151,6 +151,8 @@ export async function createLogo(
     mime_type: options?.mimeType,
     file_size: options?.fileSize,
     metadata: metadata as Record<string, unknown>,
+    // New user-uploaded logos are not protected by default
+    is_system: options?.isSystem ?? false,
   };
 
   const { data, error } = await supabase
@@ -193,13 +195,18 @@ export async function updateLogo(
 }
 
 /**
- * Delete a logo
+ * Delete a logo (only non-system logos can be deleted)
  */
 export async function deleteLogo(id: string): Promise<void> {
-  // First get the logo to find storage path
+  // First get the logo to find storage path and check if protected
   const logo = await getLogoById(id);
   if (!logo) {
     throw new Error('Logo not found');
+  }
+
+  // Prevent deletion of system/protected logos
+  if (logo.isSystem) {
+    throw new Error('Cannot delete system logo. This logo is protected.');
   }
 
   // Delete from storage
@@ -223,6 +230,15 @@ export async function deleteLogo(id: string): Promise<void> {
     console.error('Error deleting logo:', error);
     throw error;
   }
+
+}
+
+/**
+ * Check if a logo is protected (system logo)
+ */
+export async function isLogoProtected(id: string): Promise<boolean> {
+  const logo = await getLogoById(id);
+  return logo?.isSystem ?? false;
 }
 
 // ============================================
@@ -294,7 +310,8 @@ function getFileExtension(file: File | Blob): string {
 // ============================================
 
 /**
- * Get logos grouped by type for the Logo page UI
+ * Get logos grouped by category for the Logo page UI
+ * Supports both new logoCategory field and legacy isAccessory field
  */
 export async function getLogosGroupedByType(brandId: string): Promise<{
   main: BrandLogo[];
@@ -307,7 +324,9 @@ export async function getLogosGroupedByType(brandId: string): Promise<{
 
   logos.forEach(logo => {
     const meta = logo.metadata as BrandLogoMetadata;
-    if (meta.isAccessory) {
+    // Use new logoCategory if available, fall back to legacy isAccessory
+    const isAccessory = meta.logoCategory === 'accessory' || meta.isAccessory;
+    if (isAccessory) {
       accessory.push(logo);
     } else {
       main.push(logo);
@@ -315,6 +334,60 @@ export async function getLogosGroupedByType(brandId: string): Promise<{
   });
 
   return { main, accessory };
+}
+
+/**
+ * Get logos grouped by their logo type (brandmark, combo, core, etc.)
+ */
+export async function getLogosGroupedByLogoType(brandId: string): Promise<Record<string, BrandLogo[]>> {
+  const logos = await getLogosByBrand(brandId);
+  
+  const grouped: Record<string, BrandLogo[]> = {};
+  
+  logos.forEach(logo => {
+    const meta = logo.metadata as BrandLogoMetadata;
+    const logoType = meta.logoType || 'other';
+    
+    if (!grouped[logoType]) {
+      grouped[logoType] = [];
+    }
+    grouped[logoType].push(logo);
+  });
+  
+  return grouped;
+}
+
+/**
+ * Get unique logo types used in the brand
+ */
+export async function getUniqueLogoTypes(brandId: string): Promise<string[]> {
+  const logos = await getLogosByBrand(brandId);
+  const types = new Set<string>();
+  
+  logos.forEach(logo => {
+    const meta = logo.metadata as BrandLogoMetadata;
+    if (meta.logoType) {
+      types.add(meta.logoType);
+    }
+  });
+  
+  return Array.from(types);
+}
+
+/**
+ * Get unique variants used in the brand
+ */
+export async function getUniqueVariants(brandId: string): Promise<string[]> {
+  const logos = await getLogosByBrand(brandId);
+  const variants = new Set<string>();
+  
+  logos.forEach(logo => {
+    if (logo.variant) {
+      variants.add(logo.variant);
+    }
+  });
+  
+  return Array.from(variants);
 }
 
 /**

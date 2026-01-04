@@ -6,7 +6,7 @@ import JSZip from 'jszip';
 import { useTheme } from 'next-themes';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
-import { LogoSettingsModal } from '@/components/brand-hub/LogoSettingsModal';
+import { LogoSettingsTableModal } from '@/components/brand-hub/LogoSettingsTableModal';
 import { RefreshCw, Download, Palette, ChevronDown } from 'lucide-react';
 
 type ColorVariant = 'vanilla' | 'glass' | 'charcoal';
@@ -480,7 +480,7 @@ export default function LogoPage() {
       </BrandHubLayout>
 
       {/* Logo Settings Modal */}
-      <LogoSettingsModal
+      <LogoSettingsTableModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />

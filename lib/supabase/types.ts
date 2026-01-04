@@ -726,6 +726,7 @@ export interface DbBrandAsset {
   file_size: number | null;
   embedding: number[] | null;
   metadata: BrandAssetMetadata;
+  is_system: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -743,6 +744,7 @@ export interface BrandAsset {
   fileSize?: number;
   embedding?: number[];
   metadata: BrandAssetMetadata;
+  isSystem: boolean;
   createdAt: string;
   updatedAt: string;
   // Computed at runtime
@@ -761,6 +763,7 @@ export interface BrandAssetInsert {
   file_size?: number;
   embedding?: number[];
   metadata?: BrandAssetMetadata;
+  is_system?: boolean;
 }
 
 export interface BrandAssetUpdate {
@@ -787,6 +790,7 @@ export function dbBrandAssetToApp(db: DbBrandAsset, publicUrl?: string): BrandAs
     fileSize: db.file_size || undefined,
     embedding: db.embedding || undefined,
     metadata: db.metadata || {},
+    isSystem: db.is_system ?? false,
     createdAt: db.created_at,
     updatedAt: db.updated_at,
     publicUrl,
@@ -1080,12 +1084,21 @@ export function dbBrandGuidelineToApp(db: DbBrandGuideline, publicUrl?: string):
 // ============================================
 
 // Logo assets use brand_assets with category='logos'
-export type BrandLogoVariant = 'vanilla' | 'glass' | 'charcoal';
-export type BrandLogoType = 'brandmark' | 'combo' | 'stacked' | 'horizontal' | 'core' | 'outline' | 'filled';
+// Default variants - users can add custom ones
+export type BrandLogoVariant = 'vanilla' | 'glass' | 'charcoal' | string;
+// Default logo types - users can add custom ones  
+export type BrandLogoType = 'brandmark' | 'combo' | 'stacked' | 'horizontal' | 'core' | 'outline' | 'filled' | string;
+// Logo categories for the three-level hierarchy
+export type BrandLogoCategory = 'main' | 'accessory';
 
 export interface BrandLogoMetadata extends BrandAssetMetadata {
-  variant?: BrandLogoVariant;
-  logoType?: BrandLogoType;
+  // Three-level hierarchy: Category > Type > Variant
+  logoCategory?: BrandLogoCategory;  // Level 1: Main or Accessory
+  logoType?: BrandLogoType;          // Level 2: Brandmark, Combo, Core, etc.
+  variant?: BrandLogoVariant;        // Level 3: Vanilla, Glass, Charcoal, or custom
+  // Optional color name for custom variants (e.g., "Primary", "Secondary")
+  colorName?: string;
+  // Legacy field - kept for backwards compatibility
   isAccessory?: boolean;
 }
 
@@ -1093,6 +1106,7 @@ export interface BrandLogoMetadata extends BrandAssetMetadata {
 export type BrandLogo = BrandAsset & {
   category: 'logos';
   metadata: BrandLogoMetadata;
+  isSystem: boolean;
 };
 
 // Font assets use brand_assets with category='fonts'

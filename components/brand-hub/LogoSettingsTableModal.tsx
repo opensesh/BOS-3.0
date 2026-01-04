@@ -254,8 +254,19 @@ function CustomSelect({
                       onClick={handleAddNew}
                       disabled={!newValue.trim()}
                       className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] disabled:opacity-50"
+                      title="Save"
                     >
                       <Check className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsAddingNew(false);
+                        setNewValue('');
+                      }}
+                      className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
+                      title="Cancel"
+                    >
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 ) : (
@@ -315,12 +326,12 @@ function StaticLogoRow({ logo, onDownload }: StaticLogoRowProps) {
       </td>
 
       {/* Name */}
-      <td className="py-2 px-2 sm:px-3">
+      <td className="py-2 px-2 sm:px-3 w-[100px] sm:w-[140px] md:w-[180px]">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-          <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)]">
+          <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate">
             {logo.name}
           </span>
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] w-fit" title="System logo - protected">
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] w-fit shrink-0" title="System logo - protected">
             <Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
             Protected
           </span>
@@ -418,13 +429,13 @@ function LogoRow({ logo, onDownload }: LogoRowProps) {
         </td>
 
         {/* Name */}
-        <td className="py-2 px-2 sm:px-3">
+        <td className="py-2 px-2 sm:px-3 w-[100px] sm:w-[140px] md:w-[180px]">
           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)]">
+            <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate">
               {logo.name}
             </span>
             {logo.isSystem && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] w-fit" title="System logo - cannot be deleted">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] w-fit shrink-0" title="System logo - cannot be deleted">
                 <Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                 Protected
               </span>
@@ -584,7 +595,7 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
       </td>
 
       {/* Name */}
-      <td className="py-2 sm:py-3 px-2 sm:px-3">
+      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[100px] sm:w-[140px] md:w-[180px]">
         <input
           type="text"
           value={name}
@@ -817,13 +828,13 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[600px]">
+                  <table className="w-full min-w-[480px]">
                     <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)] z-10">
                       <tr>
                         <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[50px] sm:w-[60px]">
                           
                         </th>
-                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider min-w-[120px]">
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[100px] sm:w-[140px] md:w-[180px]">
                           Name
                         </th>
                         <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px] sm:w-[100px]">

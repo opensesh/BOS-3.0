@@ -120,6 +120,12 @@ export function ChatInterface() {
     setCurrentProject,
     createProject,
     assignChatToProject,
+    // Spaces
+    spaces,
+    currentSpace,
+    setCurrentSpace,
+    createSpace,
+    assignChatToSpace,
     // Writing style
     currentWritingStyle,
     setCurrentWritingStyle,
@@ -1126,11 +1132,18 @@ export function ChatInterface() {
                           onAddFiles={openFilePicker}
                           onProjectSelect={setCurrentProject}
                           onStyleSelect={setCurrentWritingStyle}
+                          onSpaceSelect={setCurrentSpace}
                           currentProject={currentProject}
                           currentStyle={currentWritingStyle}
+                          currentSpace={currentSpace}
                           projects={projects}
+                          spaces={spaces}
                           onCreateProject={handleCreateProject}
+                          onCreateSpace={async (title) => {
+                            createSpace(title);
+                          }}
                           disabled={isLoading}
+                          showSpaceOption={true}
                         />
 
                         <ExtendedThinkingToggle
@@ -1143,8 +1156,10 @@ export function ChatInterface() {
                         <ActiveSettingsIndicators
                           currentProject={currentProject}
                           currentWritingStyle={currentWritingStyle}
+                          currentSpace={currentSpace}
                           onRemoveProject={() => setCurrentProject(null)}
                           onRemoveWritingStyle={() => setCurrentWritingStyle(null)}
+                          onRemoveSpace={() => setCurrentSpace(null)}
                           disabled={isLoading}
                         />
                       </div>

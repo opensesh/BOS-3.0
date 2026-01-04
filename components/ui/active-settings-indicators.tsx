@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Folder, PenTool } from 'lucide-react';
+import { X, Folder, PenTool, Layers } from 'lucide-react';
 import { Project } from './project-selector';
 import { WritingStyle } from './writing-style-selector';
+import { SpaceOption } from './space-selector';
 
 interface IndicatorChipProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -96,19 +97,23 @@ function IndicatorChip({ icon: Icon, tooltip, onRemove, disabled }: IndicatorChi
 interface ActiveSettingsIndicatorsProps {
   currentProject: Project | null;
   currentWritingStyle: WritingStyle | null;
+  currentSpace?: SpaceOption | null;
   onRemoveProject: () => void;
   onRemoveWritingStyle: () => void;
+  onRemoveSpace?: () => void;
   disabled?: boolean;
 }
 
 export function ActiveSettingsIndicators({
   currentProject,
   currentWritingStyle,
+  currentSpace,
   onRemoveProject,
   onRemoveWritingStyle,
+  onRemoveSpace,
   disabled,
 }: ActiveSettingsIndicatorsProps) {
-  const hasActiveSettings = currentProject || currentWritingStyle;
+  const hasActiveSettings = currentProject || currentWritingStyle || currentSpace;
 
   if (!hasActiveSettings) {
     return null;
@@ -130,6 +135,24 @@ export function ActiveSettingsIndicators({
               icon={Folder}
               tooltip={currentProject.name}
               onRemove={onRemoveProject}
+              disabled={disabled}
+            />
+          </motion.div>
+        )}
+
+        {/* Space indicator */}
+        {currentSpace && onRemoveSpace && (
+          <motion.div
+            key="space"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.15 }}
+          >
+            <IndicatorChip
+              icon={Layers}
+              tooltip={currentSpace.title}
+              onRemove={onRemoveSpace}
               disabled={disabled}
             />
           </motion.div>

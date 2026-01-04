@@ -86,6 +86,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [hasLoadedProjects, setHasLoadedProjects] = useState(false);
+  // Spaces state
+  const [spaces, setSpaces] = useState<SpaceOption[]>([]);
+  const [currentSpace, setCurrentSpace] = useState<SpaceOption | null>(null);
+  const [hasLoadedSpaces, setHasLoadedSpaces] = useState(false);
   // Writing style state
   const [currentWritingStyle, setCurrentWritingStyle] = useState<WritingStyle | null>(null);
   // Extended thinking state (per conversation)
@@ -178,6 +182,90 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error assigning chat to project:', error);
+    }
+  }, []);
+
+  // Load spaces from localStorage (since spaces use localStorage currently)
+  const loadSpaces = useCallback(() => {
+    try {
+      const stored = localStorage.getItem('bos-spaces');
+      if (stored) {
+        const parsedSpaces = JSON.parse(stored);
+        const spaceOptions: SpaceOption[] = parsedSpaces.map((s: { id: string; slug: string; title: string; icon?: string }) => ({
+          id: s.id,
+          slug: s.slug,
+          title: s.title,
+          icon: s.icon,
+        }));
+        setSpaces(spaceOptions);
+      }
+    } catch (error) {
+      console.error('Error loading spaces:', error);
+    }
+  }, []);
+
+  // Load spaces on initial mount
+  useEffect(() => {
+    if (!hasLoadedSpaces) {
+      loadSpaces();
+      setHasLoadedSpaces(true);
+    }
+  }, [hasLoadedSpaces, loadSpaces]);
+
+  // Create a new space
+  const createSpace = useCallback((title: string): SpaceOption | null => {
+    try {
+      const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      
+      const newSpace: SpaceOption = {
+        id,
+        slug,
+        title,
+      };
+      
+      // Update local state
+      setSpaces(prev => [...prev, newSpace]);
+      
+      // Save to localStorage
+      const stored = localStorage.getItem('bos-spaces');
+      const existingSpaces = stored ? JSON.parse(stored) : [];
+      const fullSpace = {
+        id,
+        slug,
+        title,
+        isPrivate: true,
+        lastModified: 'Just now',
+        createdAt: new Date().toISOString(),
+        threadCount: 0,
+        files: [],
+        links: [],
+        instructions: '',
+        tasks: [],
+      };
+      localStorage.setItem('bos-spaces', JSON.stringify([...existingSpaces, fullSpace]));
+      
+      return newSpace;
+    } catch (error) {
+      console.error('Error creating space:', error);
+      return null;
+    }
+  }, []);
+
+  // Assign a chat to a space (for now, just updates local state - can be extended to Supabase later)
+  const assignChatToSpace = useCallback(async (chatId: string, spaceSlug: string | null) => {
+    try {
+      // Update local chat history state
+      setChatHistory(prev =>
+        prev.map(item =>
+          item.id === chatId ? { ...item, spaceSlug } : item
+        )
+      );
+      
+      // TODO: When spaces are in Supabase, also update there
+      // For now, this just tracks the assignment locally
+    } catch (error) {
+      console.error('Error assigning chat to space:', error);
     }
   }, []);
 
@@ -342,6 +430,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       createProject,
       assignChatToProject,
       isLoadingProjects,
+      // Spaces
+      spaces,
+      currentSpace,
+      setCurrentSpace,
+      loadSpaces,
+      createSpace,
+      assignChatToSpace,
       // Writing style
       currentWritingStyle,
       setCurrentWritingStyle,

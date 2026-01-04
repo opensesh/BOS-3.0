@@ -7,6 +7,7 @@ import { useBrandColors } from '@/hooks/useBrandColors';
 import { useBrandFonts } from '@/hooks/useBrandFonts';
 import { CanvasHeader } from './CanvasHeader';
 import { CanvasContent } from './CanvasContent';
+import { ResizableDivider } from './ResizableDivider';
 
 interface CanvasPanelProps {
   /** Override default panel mode */
@@ -21,7 +22,7 @@ interface CanvasPanelProps {
  * CanvasPanel Component
  * 
  * Main canvas editor/viewer panel that slides in from the right.
- * - Desktop: 50% width (half mode) or 100% (full mode)
+ * - Desktop: Resizable width with draggable divider
  * - Tablet/Mobile: Always 100% width with back button
  */
 export function CanvasPanel({
@@ -38,11 +39,13 @@ export function CanvasPanel({
     isSaving,
     localContent,
     hasUnsavedChanges,
+    canvasWidthPercent,
     closeCanvas,
     setPanelMode,
     setViewMode,
     setLocalContent,
     saveCanvas,
+    setCanvasWidthPercent,
   } = useCanvasContext();
 
   // Track if we're on mobile/tablet
@@ -120,11 +123,21 @@ export function CanvasPanel({
     setPanelMode(mode);
   }, [setPanelMode]);
 
-  // Panel width: 100% on mobile, or based on mode on desktop
+  // Handle divider resize - sets chat width (left side)
+  const handleWidthChange = useCallback((chatWidth: number) => {
+    // Canvas width is 100 - chat width
+    setCanvasWidthPercent(100 - chatWidth);
+  }, [setCanvasWidthPercent]);
+
+  // Panel width: 100% on mobile, or based on canvasWidthPercent on desktop
   const getPanelWidth = () => {
     if (isMobile) return '100%';
-    return panelMode === 'full' ? '100%' : '50%';
+    if (panelMode === 'full') return '100%';
+    return `${canvasWidthPercent}%`;
   };
+
+  // Chat width (left side) for the divider
+  const chatWidth = 100 - canvasWidthPercent;
 
   // Animation variants - delightful spring animation
   const panelVariants = {
@@ -180,6 +193,17 @@ export function CanvasPanel({
             />
           )}
 
+          {/* Resizable Divider - only on desktop in half mode */}
+          {!isMobile && panelMode === 'half' && (
+            <ResizableDivider
+              leftWidth={chatWidth}
+              onWidthChange={handleWidthChange}
+              minLeftWidth={25}
+              maxLeftWidth={75}
+              isActive={true}
+            />
+          )}
+
           {/* Canvas Panel */}
           <motion.div
             key="canvas-panel"
@@ -192,7 +216,6 @@ export function CanvasPanel({
             initial="hidden"
             animate="visible"
             exit="exit"
-            layout
           >
             {/* Header - matching chat header height */}
             <CanvasHeader

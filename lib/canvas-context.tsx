@@ -24,6 +24,8 @@ export interface CanvasState {
   localContent: string;
   /** Whether there are unsaved changes */
   hasUnsavedChanges: boolean;
+  /** Canvas panel width as percentage (0-100) - only used on desktop in half mode */
+  canvasWidthPercent: number;
 }
 
 interface CanvasContextValue extends CanvasState {
@@ -40,6 +42,7 @@ interface CanvasContextValue extends CanvasState {
   togglePanelMode: () => void;
   setViewMode: (mode: CanvasViewMode) => void;
   toggleViewMode: () => void;
+  setCanvasWidthPercent: (width: number) => void;
   
   // Content editing
   setLocalContent: (content: string) => void;
@@ -71,6 +74,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   const [isSaving, setIsSaving] = useState(false);
   const [localContent, setLocalContent] = useState('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [canvasWidthPercent, setCanvasWidthPercent] = useState(50); // Default 50% width
 
   // Sync local content with active canvas
   useEffect(() => {
@@ -264,6 +268,7 @@ Note: The user has edited the canvas since the last AI response.`;
       isSaving,
       localContent,
       hasUnsavedChanges,
+      canvasWidthPercent,
       // CRUD
       createCanvas,
       openCanvas,
@@ -276,6 +281,7 @@ Note: The user has edited the canvas since the last AI response.`;
       togglePanelMode,
       setViewMode,
       toggleViewMode,
+      setCanvasWidthPercent,
       // Content editing
       setLocalContent: handleSetLocalContent,
       // Streaming

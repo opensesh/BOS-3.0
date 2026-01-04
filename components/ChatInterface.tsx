@@ -137,6 +137,7 @@ export function ChatInterface() {
   const canvasContext = useCanvasContextOptional();
   const isCanvasOpen = canvasContext?.isCanvasOpen ?? false;
   const canvasPanelMode = canvasContext?.panelMode ?? 'half';
+  const canvasWidthPercent = canvasContext?.canvasWidthPercent ?? 50;
 
   // Custom useChat hook for native SDK streaming
   const { messages, sendMessage, status, error, setMessages } = useChat({
@@ -522,11 +523,15 @@ export function ChatInterface() {
         // Remove the PREVIOUS transcript (not the new one) from input
         const prevTranscript = prevTranscriptRef.current;
         let base = prev;
-        if (prevTranscript && prev.endsWith(prevTranscript)) {
+        const endsWithPrev = prevTranscript && prev.endsWith(prevTranscript);
+        if (endsWithPrev) {
           base = prev.slice(0, -prevTranscript.length).trim();
         }
         // Append the NEW transcript
         const result = base + (base ? ' ' : '') + transcript;
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:transcriptEffect',message:'Processing transcript',data:{prev,prevTranscript,transcript,endsWithPrev,base,result,prevLength:prev.length,transcriptLength:transcript.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'voice-loop'})}).catch(()=>{});
+        // #endregion
         return result;
       });
       // Update ref to current transcript for next iteration
@@ -837,7 +842,8 @@ export function ChatInterface() {
   }, [parsedMessages, generatedTitle]);
 
   // Calculate right position for canvas (only on desktop)
-  const chatRightOffset = isCanvasOpen && canvasPanelMode === 'half' ? '50%' : '0';
+  // Uses canvasWidthPercent from context for resizable divider support
+  const chatRightOffset = isCanvasOpen && canvasPanelMode === 'half' ? `${canvasWidthPercent}%` : '0';
 
   return (
     <>
@@ -1043,11 +1049,9 @@ export function ChatInterface() {
                       relative rounded-xl
                       border transition-all duration-200
                       bg-[var(--bg-secondary)] shadow-sm
-                      ${isDragging
+                      ${isDragging || isFocused || isListening
                         ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20 ring-2 ring-[var(--border-brand-solid)]/30'
-                        : isFocused
-                          ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20 ring-2 ring-[var(--border-brand-solid)]/30'
-                          : 'border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]'
+                        : 'border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]'
                       }
                     `}
                     onDragOver={handleDragOver}

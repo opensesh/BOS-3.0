@@ -183,11 +183,9 @@ export function FollowUpInput({
             border transition-all duration-200
             bg-[var(--bg-secondary)] shadow-sm
             ${
-              isDragging
+              isDragging || isFocused || isListening
                 ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20 ring-2 ring-[var(--border-brand-solid)]/30'
-                : isFocused
-                  ? 'border-[var(--border-brand-solid)] shadow-lg shadow-[var(--bg-brand-solid)]/20 ring-2 ring-[var(--border-brand-solid)]/30'
-                  : 'border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]'
+                : 'border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]'
             }
           `}
           onDragOver={handleDragOver}

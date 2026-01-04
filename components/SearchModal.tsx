@@ -39,6 +39,7 @@ import {
   type ChatResult,
   type AssetResult,
   type SpaceResult,
+  type DocumentResult,
 } from '@/hooks/useGlobalSearch';
 import { useChatContext } from '@/lib/chat-context';
 
@@ -93,10 +94,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const flatResults = useMemo(() => {
     const flat: SearchResult[] = [];
     
-    // Order: Pages, Actions, Recent Chats, Logos, Images, Spaces
+    // Order: Pages, Actions, Chats, Documents, Logos, Images, Illustrations, Spaces
     flat.push(...groupedResults.pages);
     flat.push(...groupedResults.actions);
     flat.push(...groupedResults.chats);
+    flat.push(...groupedResults.documents);
     flat.push(...groupedResults.logos);
     flat.push(...groupedResults.images);
     flat.push(...groupedResults.illustrations);
@@ -220,6 +222,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         return renderAssetResult(result as AssetResult, isSelected, globalIndex);
       case 'space':
         return renderSpaceResult(result as SpaceResult, isSelected, globalIndex);
+      case 'document':
+        return renderDocumentResult(result as DocumentResult, isSelected, globalIndex);
       default:
         return null;
     }
@@ -424,6 +428,49 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     );
   };
 
+  // Document result renderer
+  const renderDocumentResult = (result: DocumentResult, isSelected: boolean, globalIndex: number) => {
+    return (
+      <button
+        key={result.id}
+        data-index={globalIndex}
+        onClick={() => handleSelect(result)}
+        onMouseEnter={() => setSelectedIndex(globalIndex)}
+        className={`
+          w-full flex items-center gap-3
+          px-4 py-2.5
+          text-left
+          transition-colors
+          ${isSelected ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-[var(--bg-tertiary)]'}
+        `}
+      >
+        <div className={`
+          w-8 h-8 rounded-lg
+          flex items-center justify-center
+          flex-shrink-0
+          ${isSelected 
+            ? 'bg-[var(--accent-green)]/20 text-[var(--accent-green)]' 
+            : 'bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]'
+          }
+        `}>
+          <BookOpen className="w-4 h-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-[var(--fg-primary)] truncate">
+            {result.title}
+          </div>
+          <div className="text-xs text-[var(--fg-tertiary)] truncate">
+            Brain › {result.category?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            {result.subtitle && ` › ${result.subtitle}`}
+          </div>
+        </div>
+        {isSelected && (
+          <ArrowRight className="w-4 h-4 text-[var(--fg-tertiary)] flex-shrink-0" />
+        )}
+      </button>
+    );
+  };
+
   // Section header component
   const SectionHeader = ({ title, count }: { title: string; count?: number }) => (
     <div className="px-4 py-1.5 flex items-center justify-between">
@@ -545,6 +592,17 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           count={groupedResults.chats.length} 
                         />
                         {groupedResults.chats.map((result) => {
+                          const globalIndex = getGlobalIndex(result);
+                          return renderResultItem(result, selectedIndex === globalIndex);
+                        })}
+                      </div>
+                    )}
+
+                    {/* Documents Section */}
+                    {groupedResults.documents.length > 0 && (
+                      <div className="mt-2">
+                        <SectionHeader title="Brand Knowledge" count={groupedResults.documents.length} />
+                        {groupedResults.documents.map((result) => {
                           const globalIndex = getGlobalIndex(result);
                           return renderResultItem(result, selectedIndex === globalIndex);
                         })}

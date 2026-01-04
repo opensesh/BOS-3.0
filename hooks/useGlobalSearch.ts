@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ASSET_MANIFEST, getLogos } from '@/lib/brand-knowledge/asset-manifest';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { SPACES, EXAMPLE_SPACES } from '@/lib/mock-data';
 import { chatService, ChatSession } from '@/lib/supabase/chat-service';
-import type { AssetEntry } from '@/lib/brand-knowledge/types';
 import type { Space } from '@/types';
 
 // ===========================================
@@ -18,7 +16,8 @@ export type SearchResultType =
   | 'logo' 
   | 'image' 
   | 'illustration' 
-  | 'space';
+  | 'space'
+  | 'document';
 
 export interface BaseSearchResult {
   id: string;
@@ -27,6 +26,7 @@ export interface BaseSearchResult {
   subtitle?: string;
   href: string;
   keywords?: string[];
+  similarity?: number;
 }
 
 export interface PageResult extends BaseSearchResult {
@@ -55,7 +55,14 @@ export interface SpaceResult extends BaseSearchResult {
   threadCount?: number;
 }
 
-export type SearchResult = PageResult | ChatResult | AssetResult | SpaceResult;
+export interface DocumentResult extends BaseSearchResult {
+  type: 'document';
+  category: string;
+  slug: string;
+  headingHierarchy?: string[];
+}
+
+export type SearchResult = PageResult | ChatResult | AssetResult | SpaceResult | DocumentResult;
 
 // ===========================================
 // Static Navigation Data
@@ -88,63 +95,6 @@ export const quickActions: PageResult[] = [
 ];
 
 // ===========================================
-// Asset Search Helpers
-// ===========================================
-
-function createAssetResults(assets: AssetEntry[], type: 'logo' | 'image' | 'illustration'): AssetResult[] {
-  return assets.map((asset, index) => ({
-    id: `${type}-${index}`,
-    type,
-    title: formatAssetTitle(asset),
-    subtitle: `${asset.category} › ${asset.variant || 'default'}`,
-    href: asset.path, // Direct link to view/download
-    thumbnailPath: asset.path,
-    assetCategory: asset.category,
-    variant: asset.variant,
-    keywords: generateAssetKeywords(asset),
-  }));
-}
-
-function formatAssetTitle(asset: AssetEntry): string {
-  // Clean up the filename for display
-  let name = asset.filename
-    .replace(/\.[^/.]+$/, '') // Remove extension
-    .replace(/[-_]/g, ' ') // Replace dashes/underscores with spaces
-    .replace(/\b\w/g, l => l.toUpperCase()); // Title case
-  
-  // For logos, make it more descriptive
-  if (asset.category === 'logos' && asset.variant) {
-    const parts = asset.variant.split('-');
-    const format = parts[0];
-    const color = parts.slice(1).join(' ');
-    name = `${format.charAt(0).toUpperCase() + format.slice(1)} Logo${color ? ` (${color})` : ''}`;
-  }
-  
-  return name;
-}
-
-function generateAssetKeywords(asset: AssetEntry): string[] {
-  const keywords: string[] = [asset.category];
-  
-  if (asset.variant) {
-    keywords.push(...asset.variant.split('-'));
-  }
-  
-  if (asset.description) {
-    keywords.push(...asset.description.toLowerCase().split(' '));
-  }
-  
-  // Add filename parts as keywords
-  const filenameParts = asset.filename
-    .replace(/\.[^/.]+$/, '')
-    .toLowerCase()
-    .split(/[-_\s]+/);
-  keywords.push(...filenameParts);
-  
-  return [...new Set(keywords)]; // Remove duplicates
-}
-
-// ===========================================
 // Space Search Helpers
 // ===========================================
 
@@ -169,63 +119,192 @@ function createSpaceResults(spaces: Space[]): SpaceResult[] {
 }
 
 // ===========================================
-// Chat Search Helpers
+// Chat Subtitle Helper
 // ===========================================
 
-function createChatResults(sessions: ChatSession[]): ChatResult[] {
-  return sessions.map(session => ({
-    id: `chat-${session.id}`,
-    type: 'chat',
-    title: session.title,
-    subtitle: formatChatSubtitle(session),
-    // Store the actual chat ID in href for loading via context
-    href: session.id, // Will be used to load session via context
-    preview: session.preview || undefined,
-    messageCount: session.messages.length,
-    updatedAt: session.updated_at,
-    keywords: generateChatKeywords(session),
-  }));
-}
-
-function formatChatSubtitle(session: ChatSession): string {
-  const messageCount = session.messages.length;
-  const date = new Date(session.updated_at);
+function formatChatSubtitle(updatedAt: string): string {
+  const date = new Date(updatedAt);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   
-  let timeAgo: string;
   if (diffHours < 1) {
-    timeAgo = 'Just now';
+    return 'Just now';
   } else if (diffHours < 24) {
-    timeAgo = `${diffHours}h ago`;
+    return `${diffHours}h ago`;
   } else if (diffDays < 7) {
-    timeAgo = `${diffDays}d ago`;
+    return `${diffDays}d ago`;
   } else {
-    timeAgo = date.toLocaleDateString();
+    return date.toLocaleDateString();
   }
-  
-  return `${messageCount} messages • ${timeAgo}`;
 }
 
-function generateChatKeywords(session: ChatSession): string[] {
-  const keywords: string[] = ['chat', 'conversation', 'history'];
+// ===========================================
+// Local Search (for pages/actions/spaces)
+// ===========================================
+
+function searchLocalResults(
+  query: string,
+  pages: PageResult[],
+  spaces: SpaceResult[]
+): SearchResult[] {
+  const trimmedQuery = query.trim().toLowerCase();
+  if (!trimmedQuery) return [];
   
-  // Add words from title
-  keywords.push(...session.title.toLowerCase().split(/\s+/));
+  const queryWords = trimmedQuery.split(/\s+/);
+  const scoredResults: Array<{ result: SearchResult; score: number }> = [];
   
-  // Add words from preview
-  if (session.preview) {
-    keywords.push(...session.preview.toLowerCase().split(/\s+/).slice(0, 10));
+  const scoreResult = (result: SearchResult): number => {
+    let score = 0;
+    
+    // Title match (highest weight)
+    const titleLower = result.title.toLowerCase();
+    if (titleLower === trimmedQuery) {
+      score += 100;
+    } else if (titleLower.startsWith(trimmedQuery)) {
+      score += 80;
+    } else if (titleLower.includes(trimmedQuery)) {
+      score += 60;
+    }
+    
+    // Subtitle match
+    const subtitleLower = result.subtitle?.toLowerCase() || '';
+    if (subtitleLower.includes(trimmedQuery)) {
+      score += 30;
+    }
+    
+    // Keyword matches
+    if (result.keywords) {
+      for (const keyword of result.keywords) {
+        if (keyword === trimmedQuery) {
+          score += 50;
+        } else if (keyword.startsWith(trimmedQuery)) {
+          score += 30;
+        } else if (keyword.includes(trimmedQuery)) {
+          score += 15;
+        }
+      }
+      
+      // Multi-word query matching
+      for (const word of queryWords) {
+        if (result.keywords.some(k => k.includes(word))) {
+          score += 10;
+        }
+      }
+    }
+    
+    return score;
+  };
+  
+  const allLocal = [...pages, ...spaces];
+  
+  for (const result of allLocal) {
+    const score = scoreResult(result);
+    if (score > 0) {
+      scoredResults.push({ result, score });
+    }
   }
   
-  // Add words from first few messages
-  session.messages.slice(0, 3).forEach(msg => {
-    keywords.push(...msg.content.toLowerCase().split(/\s+/).slice(0, 5));
+  scoredResults.sort((a, b) => b.score - a.score);
+  return scoredResults.map(r => r.result);
+}
+
+// ===========================================
+// Semantic Search API Types
+// ===========================================
+
+interface SemanticSearchResult {
+  id: string;
+  type: 'chat' | 'asset' | 'document';
+  // Chat fields
+  chatId?: string;
+  title?: string;
+  content?: string;
+  role?: string;
+  updatedAt?: string;
+  // Asset fields
+  name?: string;
+  filename?: string;
+  description?: string;
+  category?: string;
+  variant?: string | null;
+  storagePath?: string;
+  // Document fields
+  documentId?: string;
+  slug?: string;
+  headingHierarchy?: string[];
+  // Common
+  similarity: number;
+}
+
+interface SemanticSearchResponse {
+  results: SemanticSearchResult[];
+  query: string;
+  timing: {
+    embedding: number;
+    search: number;
+    total: number;
+  };
+}
+
+// ===========================================
+// Convert Semantic Results to App Results
+// ===========================================
+
+function convertSemanticResults(results: SemanticSearchResult[]): SearchResult[] {
+  return results.map(result => {
+    if (result.type === 'chat') {
+      return {
+        id: `chat-${result.chatId}`,
+        type: 'chat' as const,
+        title: result.title || 'Chat',
+        subtitle: formatChatSubtitle(result.updatedAt || new Date().toISOString()),
+        href: result.chatId || '',
+        preview: result.content?.slice(0, 100),
+        updatedAt: result.updatedAt || new Date().toISOString(),
+        similarity: result.similarity,
+      };
+    }
+    
+    if (result.type === 'asset') {
+      // Determine asset type from category
+      let assetType: 'logo' | 'image' | 'illustration' = 'image';
+      if (result.category === 'logos') assetType = 'logo';
+      else if (result.category === 'illustrations') assetType = 'illustration';
+      
+      // Build public URL from storage path
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      const thumbnailPath = result.storagePath 
+        ? `${supabaseUrl}/storage/v1/object/public/brand-assets/${result.storagePath}`
+        : '';
+      
+      return {
+        id: `asset-${result.id}`,
+        type: assetType,
+        title: result.name || result.filename || 'Asset',
+        subtitle: `${result.category} › ${result.variant || 'default'}`,
+        href: thumbnailPath,
+        thumbnailPath,
+        assetCategory: result.category || 'images',
+        variant: result.variant || undefined,
+        similarity: result.similarity,
+      };
+    }
+    
+    // Document result
+    return {
+      id: `doc-${result.id}`,
+      type: 'document' as const,
+      title: result.title || 'Document',
+      subtitle: result.headingHierarchy?.join(' › ') || result.category || '',
+      href: `/brain/${result.category}`,
+      category: result.category || '',
+      slug: result.slug || '',
+      headingHierarchy: result.headingHierarchy,
+      similarity: result.similarity,
+    };
   });
-  
-  return [...new Set(keywords)];
 }
 
 // ===========================================
@@ -235,6 +314,7 @@ function generateChatKeywords(session: ChatSession): string[] {
 interface UseGlobalSearchOptions {
   debounceMs?: number;
   maxResults?: number;
+  semanticThreshold?: number;
 }
 
 interface UseGlobalSearchResult {
@@ -247,162 +327,170 @@ interface UseGlobalSearchResult {
 }
 
 export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobalSearchResult {
-  const { debounceMs = 150, maxResults = 50 } = options;
+  const { debounceMs = 200, maxResults = 50, semanticThreshold = 0.5 } = options;
   
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
-  const [chatsLoaded, setChatsLoaded] = useState(false);
+  const [recentChatSessions, setRecentChatSessions] = useState<ChatSession[]>([]);
+  
+  // Abort controller for cancelling in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Load chat sessions on mount
+  // Load recent chat sessions on mount (for empty state)
   useEffect(() => {
     let mounted = true;
     
-    async function loadChats() {
+    async function loadRecentChats() {
       try {
-        const sessions = await chatService.getSessions(30);
+        const sessions = await chatService.getSessions(5);
         if (mounted) {
-          setChatSessions(sessions);
-          setChatsLoaded(true);
+          setRecentChatSessions(sessions);
         }
       } catch (err) {
-        console.error('Failed to load chat sessions:', err);
-        if (mounted) {
-          setChatsLoaded(true);
-        }
+        console.error('Failed to load recent chats:', err);
       }
     }
     
-    loadChats();
+    loadRecentChats();
     
     return () => {
       mounted = false;
     };
   }, []);
 
-  // Pre-compute all searchable data
-  const allSearchableData = useMemo(() => {
-    // Pages and actions
+  // Pre-compute static data (pages, actions, spaces)
+  const staticData = useMemo(() => {
     const pages = [...navigationPages, ...quickActions];
-    
-    // Brand assets
-    const logos = createAssetResults(getLogos(), 'logo');
-    const images = createAssetResults(ASSET_MANIFEST.images.slice(0, 20), 'image'); // Limit images
-    const illustrations = createAssetResults(ASSET_MANIFEST.illustrations, 'illustration');
-    
-    // Spaces
     const spaces = createSpaceResults([...SPACES, ...EXAMPLE_SPACES]);
-    
-    // Chats
-    const chats = createChatResults(chatSessions);
-    
-    return {
-      pages,
-      logos,
-      images,
-      illustrations,
-      spaces,
-      chats,
-    };
-  }, [chatSessions]);
+    return { pages, spaces };
+  }, []);
 
   // Recent chats for empty state
-  const recentChats = useMemo(() => {
-    return allSearchableData.chats.slice(0, 5);
-  }, [allSearchableData.chats]);
+  const recentChats = useMemo((): ChatResult[] => {
+    return recentChatSessions.map(session => ({
+      id: `chat-${session.id}`,
+      type: 'chat' as const,
+      title: session.title,
+      subtitle: formatChatSubtitle(session.updated_at),
+      href: session.id,
+      preview: session.preview || undefined,
+      messageCount: session.messages.length,
+      updatedAt: session.updated_at,
+    }));
+  }, [recentChatSessions]);
 
-  // Search function
-  const performSearch = useCallback((searchQuery: string) => {
-    const trimmedQuery = searchQuery.trim().toLowerCase();
+  // Default results (pages + recent chats)
+  const defaultResults = useMemo(() => {
+    return [
+      ...staticData.pages.slice(0, 6),
+      ...recentChats.slice(0, 3),
+    ];
+  }, [staticData.pages, recentChats]);
+
+  // Perform search (combines local + semantic)
+  const performSearch = useCallback(async (searchQuery: string) => {
+    const trimmedQuery = searchQuery.trim();
     
     if (!trimmedQuery) {
-      // Return default results when no query
-      setResults([
-        ...allSearchableData.pages.slice(0, 6),
-        ...allSearchableData.chats.slice(0, 3),
-      ]);
+      setResults(defaultResults);
+      setIsLoading(false);
       return;
     }
     
-    setIsLoading(true);
-    
-    // Score and filter results
-    const scoredResults: Array<{ result: SearchResult; score: number }> = [];
-    
-    const scoreResult = (result: SearchResult): number => {
-      let score = 0;
-      const queryWords = trimmedQuery.split(/\s+/);
-      
-      // Title match (highest weight)
-      const titleLower = result.title.toLowerCase();
-      if (titleLower === trimmedQuery) {
-        score += 100; // Exact match
-      } else if (titleLower.startsWith(trimmedQuery)) {
-        score += 80; // Starts with
-      } else if (titleLower.includes(trimmedQuery)) {
-        score += 60; // Contains
-      }
-      
-      // Subtitle match
-      const subtitleLower = result.subtitle?.toLowerCase() || '';
-      if (subtitleLower.includes(trimmedQuery)) {
-        score += 30;
-      }
-      
-      // Keyword matches
-      if (result.keywords) {
-        for (const keyword of result.keywords) {
-          if (keyword === trimmedQuery) {
-            score += 50;
-          } else if (keyword.startsWith(trimmedQuery)) {
-            score += 30;
-          } else if (keyword.includes(trimmedQuery)) {
-            score += 15;
-          }
-        }
-        
-        // Multi-word query matching
-        for (const word of queryWords) {
-          if (result.keywords.some(k => k.includes(word))) {
-            score += 10;
-          }
-        }
-      }
-      
-      // Type-specific boosts
-      if (result.type === 'page') score += 5;
-      if (result.type === 'chat') score += 3;
-      if (result.type === 'logo') score += 2;
-      
-      return score;
-    };
-    
-    // Search through all data
-    const allResults = [
-      ...allSearchableData.pages,
-      ...allSearchableData.chats,
-      ...allSearchableData.logos,
-      ...allSearchableData.images,
-      ...allSearchableData.illustrations,
-      ...allSearchableData.spaces,
-    ];
-    
-    for (const result of allResults) {
-      const score = scoreResult(result);
-      if (score > 0) {
-        scoredResults.push({ result, score });
-      }
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
+    abortControllerRef.current = new AbortController();
     
-    // Sort by score and limit
-    scoredResults.sort((a, b) => b.score - a.score);
-    const finalResults = scoredResults.slice(0, maxResults).map(r => r.result);
+    setIsLoading(true);
+    setError(null);
     
-    setResults(finalResults);
-    setIsLoading(false);
-  }, [allSearchableData, maxResults]);
+    try {
+      // Run local search for pages/spaces (instant)
+      const localResults = searchLocalResults(
+        trimmedQuery, 
+        staticData.pages, 
+        staticData.spaces
+      );
+      
+      // For short queries (< 3 chars), only do local search
+      if (trimmedQuery.length < 3) {
+        setResults(localResults.slice(0, maxResults));
+        setIsLoading(false);
+        return;
+      }
+      
+      // Run semantic search API
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: trimmedQuery,
+          types: ['chats', 'assets', 'documents'],
+          limit: maxResults,
+          threshold: semanticThreshold,
+        }),
+        signal: abortControllerRef.current.signal,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Search failed');
+      }
+      
+      const data: SemanticSearchResponse = await response.json();
+      
+      // Convert semantic results to app format
+      const semanticResults = convertSemanticResults(data.results);
+      
+      // Merge local and semantic results
+      // Local results (pages/spaces) come first, then semantic results
+      // Dedupe by id
+      const seenIds = new Set<string>();
+      const mergedResults: SearchResult[] = [];
+      
+      // Add local results first (they're fast and reliable)
+      for (const result of localResults) {
+        if (!seenIds.has(result.id)) {
+          seenIds.add(result.id);
+          mergedResults.push(result);
+        }
+      }
+      
+      // Add semantic results, sorted by similarity
+      const sortedSemantic = semanticResults.sort(
+        (a, b) => (b.similarity || 0) - (a.similarity || 0)
+      );
+      
+      for (const result of sortedSemantic) {
+        if (!seenIds.has(result.id)) {
+          seenIds.add(result.id);
+          mergedResults.push(result);
+        }
+      }
+      
+      setResults(mergedResults.slice(0, maxResults));
+      
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        // Request was cancelled, ignore
+        return;
+      }
+      console.error('Search error:', err);
+      setError('Search failed');
+      // Fall back to local results on error
+      const localResults = searchLocalResults(
+        trimmedQuery, 
+        staticData.pages, 
+        staticData.spaces
+      );
+      setResults(localResults.slice(0, maxResults));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [defaultResults, staticData, maxResults, semanticThreshold]);
 
   // Debounced search
   useEffect(() => {
@@ -416,17 +504,18 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
   const search = useCallback((newQuery: string) => {
     setQuery(newQuery);
     if (!newQuery.trim()) {
-      setResults([
-        ...allSearchableData.pages.slice(0, 6),
-        ...allSearchableData.chats.slice(0, 3),
-      ]);
+      setResults(defaultResults);
     }
-  }, [allSearchableData]);
+  }, [defaultResults]);
 
   const clearResults = useCallback(() => {
     setQuery('');
     setResults([]);
     setError(null);
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
   }, []);
 
   return {
@@ -451,6 +540,7 @@ export interface GroupedResults {
   images: AssetResult[];
   illustrations: AssetResult[];
   spaces: SpaceResult[];
+  documents: DocumentResult[];
 }
 
 export function groupResultsByType(results: SearchResult[]): GroupedResults {
@@ -462,6 +552,6 @@ export function groupResultsByType(results: SearchResult[]): GroupedResults {
     images: results.filter((r): r is AssetResult => r.type === 'image'),
     illustrations: results.filter((r): r is AssetResult => r.type === 'illustration'),
     spaces: results.filter((r): r is SpaceResult => r.type === 'space'),
+    documents: results.filter((r): r is DocumentResult => r.type === 'document'),
   };
 }
-

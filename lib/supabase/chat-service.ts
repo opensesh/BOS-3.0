@@ -8,6 +8,30 @@ let tablesChecked = false;
 let tablesAvailable = true;
 
 /**
+ * Queue message embeddings asynchronously (fire and forget)
+ * This doesn't block the UI - embeddings are generated in the background
+ */
+async function queueMessageEmbeddings(
+  messages: Array<{ id: string; content: string; role: 'user' | 'assistant' }>
+): Promise<void> {
+  // Fire and forget - don't await
+  fetch('/api/embed-message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: messages.map(m => ({
+        messageId: m.id,
+        content: m.content,
+        role: m.role,
+      })),
+    }),
+  }).catch(err => {
+    // Log but don't throw - embedding is non-critical
+    console.warn('Background embedding failed:', err);
+  });
+}
+
+/**
  * Check if Supabase tables are available
  * Returns false if tables don't exist (gracefully degrades)
  */
@@ -185,12 +209,22 @@ export const chatService = {
             metadata: buildMessageMetadata(m),
           }));
 
-          const { error: msgError } = await supabase
+          const { data: insertedMessages, error: msgError } = await supabase
             .from('messages')
-            .insert(messagesToInsert);
+            .insert(messagesToInsert)
+            .select('id, content, role');
 
           if (msgError) {
             console.error('Error inserting messages:', msgError);
+          } else if (insertedMessages && insertedMessages.length > 0) {
+            // Queue embeddings for the new messages (async, non-blocking)
+            queueMessageEmbeddings(
+              insertedMessages.map(m => ({
+                id: m.id,
+                content: m.content,
+                role: m.role as 'user' | 'assistant',
+              }))
+            );
           }
         }
 
@@ -228,12 +262,22 @@ export const chatService = {
           metadata: buildMessageMetadata(m),
         }));
 
-        const { error: msgError } = await supabase
+        const { data: insertedMessages, error: msgError } = await supabase
           .from('messages')
-          .insert(messagesToInsert);
+          .insert(messagesToInsert)
+          .select('id, content, role');
 
         if (msgError) {
           console.error('Error inserting messages:', msgError);
+        } else if (insertedMessages && insertedMessages.length > 0) {
+          // Queue embeddings for the new messages (async, non-blocking)
+          queueMessageEmbeddings(
+            insertedMessages.map(m => ({
+              id: m.id,
+              content: m.content,
+              role: m.role as 'user' | 'assistant',
+            }))
+          );
         }
       }
 

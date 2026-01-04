@@ -377,30 +377,11 @@ interface StaticArtImageRowProps {
 }
 
 function StaticArtImageRow({ image, onDownload }: StaticArtImageRowProps) {
-  const getCategoryColor = (category: ArtDirectionCategory) => {
-    switch (category) {
-      case 'Auto':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'Lifestyle':
-        return 'bg-pink-500/10 text-pink-500';
-      case 'Move':
-        return 'bg-orange-500/10 text-orange-500';
-      case 'Escape':
-        return 'bg-emerald-500/10 text-emerald-500';
-      case 'Work':
-        return 'bg-purple-500/10 text-purple-500';
-      case 'Feel':
-        return 'bg-rose-500/10 text-rose-500';
-      default:
-        return 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]';
-    }
-  };
-
   return (
     <tr className="group border-b border-[var(--border-secondary)] hover:bg-[var(--bg-secondary)]/30 transition-colors">
       {/* Preview */}
-      <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px]">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden">
+      <td className="py-2 px-2 sm:px-3">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden flex-shrink-0">
           <img 
             src={image.path} 
             alt={image.name} 
@@ -410,42 +391,35 @@ function StaticArtImageRow({ image, onDownload }: StaticArtImageRowProps) {
       </td>
 
       {/* Name */}
-      <td className="py-2 px-2 sm:px-3 w-[100px] sm:w-[140px] md:w-[180px]">
-        <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate block">
+      <td className="py-2 px-2 sm:px-3">
+        <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate block max-w-[120px] sm:max-w-none">
           {image.name}
         </span>
       </td>
 
       {/* Category */}
-      <td className="py-2 px-2 sm:px-3 w-[80px] sm:w-[100px]">
-        <span className={`inline-flex px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded ${getCategoryColor(image.category)}`}>
+      <td className="py-2 px-2 sm:px-3">
+        <span className="inline-flex px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">
           {image.category}
         </span>
       </td>
 
-      {/* Photographer - hidden on mobile */}
-      <td className="py-2 px-2 sm:px-3 w-[80px] sm:w-[100px] hidden sm:table-cell">
-        <span className="text-[10px] sm:text-xs text-[var(--fg-tertiary)]">
-          {image.photographer || '—'}
-        </span>
-      </td>
-
-      {/* Tags - hidden on mobile and tablet */}
-      <td className="py-2 px-2 sm:px-3 w-[100px] sm:w-[140px] hidden md:table-cell">
-        <span className="text-[10px] text-[var(--fg-muted)] truncate block" title={image.tags.join(', ')}>
+      {/* Tags - hidden on mobile */}
+      <td className="py-2 px-2 sm:px-3 hidden sm:table-cell">
+        <span className="text-[10px] text-[var(--fg-muted)] truncate block max-w-[100px]" title={image.tags.join(', ')}>
           {image.tags.slice(0, 3).join(', ')}
         </span>
       </td>
 
-      {/* Format - hidden on mobile and tablet */}
-      <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px] hidden md:table-cell">
+      {/* Format - hidden on mobile */}
+      <td className="py-2 px-2 sm:px-3 hidden sm:table-cell">
         <span className="text-[10px] font-mono text-[var(--fg-muted)] uppercase">
           {image.format}
         </span>
       </td>
 
       {/* Actions */}
-      <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px]">
+      <td className="py-2 px-2 sm:px-3">
         <div className="flex items-center justify-end">
           <button
             onClick={() => onDownload(image.path, `${image.id}.${image.format}`)}
@@ -466,8 +440,7 @@ function StaticArtImageRow({ image, onDownload }: StaticArtImageRowProps) {
 
 interface EditingArtImage {
   name: string;
-  category: ArtDirectionCategory;
-  photographer: string;
+  category: string;
   tags: string;
   altText: string;
 }
@@ -483,6 +456,8 @@ interface ArtImageRowProps {
   onDelete: () => void;
   onDownload: (image: BrandArtImage) => void;
   isSaving: boolean;
+  customCategories: string[];
+  onAddCategory: (category: string) => void;
 }
 
 function ArtImageRow({
@@ -496,6 +471,8 @@ function ArtImageRow({
   onDelete,
   onDownload,
   isSaving,
+  customCategories,
+  onAddCategory,
 }: ArtImageRowProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isHoveringConfirm, setIsHoveringConfirm] = useState(false);
@@ -505,28 +482,8 @@ function ArtImageRow({
 
   const meta = image.metadata as BrandArtImageMetadata;
   const category = meta.artCategory || 'Auto';
-  const photographer = meta.photographer || '';
   const tags = meta.tags || [];
   const format = image.mimeType?.split('/')[1] || 'png';
-
-  const getCategoryColor = (cat: ArtDirectionCategory) => {
-    switch (cat) {
-      case 'Auto':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'Lifestyle':
-        return 'bg-pink-500/10 text-pink-500';
-      case 'Move':
-        return 'bg-orange-500/10 text-orange-500';
-      case 'Escape':
-        return 'bg-emerald-500/10 text-emerald-500';
-      case 'Work':
-        return 'bg-purple-500/10 text-purple-500';
-      case 'Feel':
-        return 'bg-rose-500/10 text-rose-500';
-      default:
-        return 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]';
-    }
-  };
 
   return (
     <>
@@ -534,8 +491,8 @@ function ArtImageRow({
         isEditing ? 'bg-[var(--bg-secondary)]/40' : ''
       }`}>
         {/* Preview */}
-        <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px]">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden">
+        <td className="py-2 px-2 sm:px-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden flex-shrink-0">
             {image.publicUrl ? (
               <img 
                 src={image.publicUrl} 
@@ -549,7 +506,7 @@ function ArtImageRow({
         </td>
 
         {/* Name */}
-        <td className="py-2 px-2 sm:px-3 w-[100px] sm:w-[140px] md:w-[180px]">
+        <td className="py-2 px-2 sm:px-3">
           {isEditing && editValues ? (
             <input
               type="text"
@@ -559,47 +516,31 @@ function ArtImageRow({
               className="w-full px-2 py-1 text-xs sm:text-sm rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:border-[var(--border-brand)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             />
           ) : (
-            <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate block">
+            <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)] truncate block max-w-[120px] sm:max-w-none">
               {image.name}
             </span>
           )}
         </td>
 
         {/* Category */}
-        <td className="py-2 px-2 sm:px-3 w-[80px] sm:w-[100px]">
+        <td className="py-2 px-2 sm:px-3">
           {isEditing && editValues ? (
             <CategorySelect
               value={editValues.category}
               onChange={(value) => onUpdateField('category', value)}
               disabled={EDITING_DISABLED}
+              customCategories={customCategories}
+              onAddCategory={onAddCategory}
             />
           ) : (
-            <span className={`inline-flex px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded ${getCategoryColor(category)}`}>
+            <span className="inline-flex px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">
               {category}
             </span>
           )}
         </td>
 
-        {/* Photographer - hidden on mobile */}
-        <td className="py-2 px-2 sm:px-3 w-[80px] sm:w-[100px] hidden sm:table-cell">
-          {isEditing && editValues ? (
-            <input
-              type="text"
-              value={editValues.photographer}
-              onChange={(e) => onUpdateField('photographer', e.target.value)}
-              disabled={EDITING_DISABLED}
-              placeholder="Photographer"
-              className="w-full px-2 py-1 text-xs rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:border-[var(--border-brand)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-          ) : (
-            <span className="text-[10px] sm:text-xs text-[var(--fg-tertiary)]">
-              {photographer || '—'}
-            </span>
-          )}
-        </td>
-
-        {/* Tags - hidden on mobile and tablet */}
-        <td className="py-2 px-2 sm:px-3 w-[100px] sm:w-[140px] hidden md:table-cell">
+        {/* Tags - hidden on mobile */}
+        <td className="py-2 px-2 sm:px-3 hidden sm:table-cell">
           {isEditing && editValues ? (
             <input
               type="text"
@@ -610,21 +551,21 @@ function ArtImageRow({
               className="w-full px-2 py-1 text-xs rounded border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--fg-muted)] focus:border-[var(--border-brand)] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             />
           ) : (
-            <span className="text-[10px] text-[var(--fg-muted)] truncate block" title={tags.join(', ')}>
+            <span className="text-[10px] text-[var(--fg-muted)] truncate block max-w-[100px]" title={tags.join(', ')}>
               {tags.length > 0 ? tags.slice(0, 3).join(', ') : '—'}
             </span>
           )}
         </td>
 
-        {/* Format - hidden on mobile and tablet */}
-        <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px] hidden md:table-cell">
+        {/* Format - hidden on mobile */}
+        <td className="py-2 px-2 sm:px-3 hidden sm:table-cell">
           <span className="text-[10px] font-mono text-[var(--fg-muted)] uppercase">
             {format}
           </span>
         </td>
 
         {/* Actions */}
-        <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px]">
+        <td className="py-2 px-2 sm:px-3">
           <div className="flex items-center justify-end gap-0.5 sm:gap-1">
             {isEditing ? (
               <>

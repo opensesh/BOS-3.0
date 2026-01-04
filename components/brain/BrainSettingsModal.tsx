@@ -147,6 +147,7 @@ export function BrainSettingsModal({ isOpen, onClose, defaultSection }: BrainSet
           >
             Continue
           </Button>
+        </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

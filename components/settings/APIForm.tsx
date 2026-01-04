@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SettingsSectionHeader } from './SettingsSection';
 import {
   Plus,
@@ -8,70 +8,320 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  MoreVertical,
   Key,
   Calendar,
   AlertTriangle,
+  RefreshCw,
+  Check,
+  AlertCircle,
+  CheckCircle,
 } from 'lucide-react';
+import { useMcpServerConfig } from '@/hooks/useMcpConnections';
+import type { McpApiKey } from '@/lib/supabase/types';
+import { toast } from 'sonner';
 
-interface APIKey {
-  id: string;
-  name: string;
-  key: string;
-  lastUsed: string | null;
-  createdAt: string;
-  expiresAt: string | null;
+// ============================================
+// New Key Modal
+// ============================================
+
+function NewKeyModal({
+  keyValue,
+  keyName,
+  onClose,
+}: {
+  keyValue: string;
+  keyName: string;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const copyKey = async () => {
+    await navigator.clipboard.writeText(keyValue);
+    setCopied(true);
+    toast.success('API key copied to clipboard!');
+    setTimeout(() => setCopied(false), 3000);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-[var(--bg-primary)] rounded-xl border border-[var(--border-secondary)] shadow-2xl max-w-lg w-full mx-4 p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-green-500/10 rounded-lg">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-[var(--fg-primary)]">
+              API Key Created
+            </h3>
+            <p className="text-sm text-[var(--fg-tertiary)]">{keyName}</p>
+          </div>
+        </div>
+
+        <div className="bg-[var(--bg-secondary-alt)] border border-[var(--border-secondary)] rounded-lg p-4 mb-4">
+          <div className="flex items-center justify-between gap-3">
+            <code className="flex-1 text-sm font-mono text-[var(--fg-primary)] break-all">
+              {keyValue}
+            </code>
+            <button
+              onClick={copyKey}
+              className="
+                flex-shrink-0 p-2 
+                text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]
+                hover:bg-[var(--bg-tertiary)] rounded-lg
+                transition-colors
+              "
+              title="Copy to clipboard"
+            >
+              {copied ? (
+                <Check className="w-5 h-5 text-green-500" />
+              ) : (
+                <Copy className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
+          <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-[var(--fg-secondary)]">
+            <strong>Important:</strong> Copy this key now. You won't be able to see the full key again after closing this dialog.
+          </p>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="
+            w-full py-2 px-4
+            bg-[var(--bg-tertiary)]
+            text-[var(--fg-primary)] text-sm font-medium
+            rounded-lg
+            hover:bg-[var(--bg-quaternary)]
+            transition-colors
+          "
+        >
+          Done
+        </button>
+      </div>
+    </div>
+  );
 }
 
-const MOCK_API_KEYS: APIKey[] = [
-  {
-    id: '1',
-    name: 'Production API Key',
-    key: 'sk_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-    lastUsed: '2025-12-26T10:30:00Z',
-    createdAt: '2025-01-15T09:00:00Z',
-    expiresAt: null,
-  },
-  {
-    id: '2',
-    name: 'Development Key',
-    key: 'sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-    lastUsed: '2025-12-25T14:22:00Z',
-    createdAt: '2025-03-20T11:00:00Z',
-    expiresAt: '2025-12-31T23:59:59Z', // Expired to show example state
-  },
-];
+// ============================================
+// Create Key Modal
+// ============================================
 
-export function APIForm() {
-  const [apiKeys, setApiKeys] = useState<APIKey[]>(MOCK_API_KEYS);
-  const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+function CreateKeyModal({
+  onClose,
+  onCreate,
+  isCreating,
+}: {
+  onClose: () => void;
+  onCreate: (name: string) => Promise<void>;
+  isCreating: boolean;
+}) {
+  const [name, setName] = useState('');
 
-  const toggleKeyVisibility = (id: string) => {
-    setVisibleKeys(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error('Please enter a name for your API key');
+      return;
+    }
+    await onCreate(name.trim());
   };
 
-  const copyToClipboard = async (key: string, id: string) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-[var(--bg-primary)] rounded-xl border border-[var(--border-secondary)] shadow-2xl max-w-md w-full mx-4 p-6">
+        <h3 className="text-lg font-semibold text-[var(--fg-primary)] mb-1">
+          Create API Key
+        </h3>
+        <p className="text-sm text-[var(--fg-tertiary)] mb-4">
+          Give your key a memorable name to identify its purpose.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g., Claude Desktop, Cursor IDE, Production"
+            autoFocus
+            className="
+              w-full px-3 py-2 mb-4
+              bg-[var(--bg-secondary-alt)]
+              border border-[var(--border-secondary)]
+              rounded-lg
+              text-sm text-[var(--fg-primary)]
+              placeholder:text-[var(--fg-quaternary)]
+              focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]
+            "
+          />
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="
+                flex-1 py-2 px-4
+                bg-[var(--bg-tertiary)]
+                text-[var(--fg-secondary)] text-sm font-medium
+                rounded-lg
+                hover:bg-[var(--bg-quaternary)]
+                transition-colors
+              "
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isCreating || !name.trim()}
+              className="
+                flex-1 py-2 px-4
+                bg-[var(--bg-brand-solid)]
+                text-white text-sm font-medium
+                rounded-lg
+                hover:opacity-90
+                disabled:opacity-50 disabled:cursor-not-allowed
+                transition-opacity
+                flex items-center justify-center gap-2
+              "
+            >
+              {isCreating ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Key'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// Confirm Delete Modal
+// ============================================
+
+function ConfirmDeleteModal({
+  keyName,
+  onClose,
+  onConfirm,
+  isDeleting,
+}: {
+  keyName: string;
+  onClose: () => void;
+  onConfirm: () => void;
+  isDeleting: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-[var(--bg-primary)] rounded-xl border border-[var(--border-secondary)] shadow-2xl max-w-md w-full mx-4 p-6">
+        <h3 className="text-lg font-semibold text-[var(--fg-primary)] mb-1">
+          Revoke API Key
+        </h3>
+        <p className="text-sm text-[var(--fg-tertiary)] mb-4">
+          Are you sure you want to revoke <strong>{keyName}</strong>? Any applications using this key will immediately lose access.
+        </p>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="
+              flex-1 py-2 px-4
+              bg-[var(--bg-tertiary)]
+              text-[var(--fg-secondary)] text-sm font-medium
+              rounded-lg
+              hover:bg-[var(--bg-quaternary)]
+              transition-colors
+            "
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="
+              flex-1 py-2 px-4
+              bg-red-500
+              text-white text-sm font-medium
+              rounded-lg
+              hover:bg-red-600
+              disabled:opacity-50 disabled:cursor-not-allowed
+              transition-colors
+              flex items-center justify-center gap-2
+            "
+          >
+            {isDeleting ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Revoking...
+              </>
+            ) : (
+              'Revoke Key'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// API Key Row
+// ============================================
+
+function ApiKeyRow({
+  apiKey,
+  onRevoke,
+  onCopy,
+}: {
+  apiKey: McpApiKey;
+  onRevoke: (key: string, name: string) => void;
+  onCopy: (key: string) => void;
+}) {
+  const [copiedKey, setCopiedKey] = useState(false);
+
+  // Mask the key - show only first 12 and last 4 chars
+  const maskedKey = apiKey.key.slice(0, 12) + '••••••••' + apiKey.key.slice(-4);
+
+  const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(key);
-      setCopiedKey(id);
-      setTimeout(() => setCopiedKey(null), 2000);
+      await navigator.clipboard.writeText(apiKey.key);
+      setCopiedKey(true);
+      toast.success('API key copied!');
+      setTimeout(() => setCopiedKey(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
+      toast.error('Failed to copy key');
     }
-  };
-
-  const deleteKey = (id: string) => {
-    setApiKeys(prev => prev.filter(k => k.id !== id));
   };
 
   const formatDate = (dateString: string) => {
@@ -82,24 +332,187 @@ export function APIForm() {
     });
   };
 
-  const isExpiringSoon = (expiresAt: string | null) => {
-    if (!expiresAt) return false;
-    const daysUntilExpiry = Math.ceil(
-      (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    );
-    return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
-  };
+  const lastUsedText = apiKey.last_used 
+    ? formatDate(apiKey.last_used)
+    : 'Never used';
 
-  const isExpired = (expiresAt: string | null) => {
-    if (!expiresAt) return false;
-    return new Date(expiresAt).getTime() < Date.now();
-  };
+  if (!apiKey.is_active) return null;
+
+  return (
+    <div className="p-5 bg-[var(--bg-primary)] border border-[var(--border-secondary)] rounded-xl">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="
+            w-10 h-10
+            bg-[var(--bg-secondary-alt)]
+            rounded-lg
+            flex items-center justify-center
+          ">
+            <Key className="w-5 h-5 text-[var(--fg-tertiary)]" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
+              {apiKey.name}
+            </h3>
+            <p className="text-sm text-[var(--fg-tertiary)]">
+              Created {formatDate(apiKey.created_at)}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => onRevoke(apiKey.key, apiKey.name)}
+          className="
+            p-2
+            text-[var(--fg-quaternary)]
+            hover:text-red-500
+            hover:bg-red-500/10
+            rounded-lg
+            transition-colors
+          "
+          title="Revoke key"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Key Value - Always masked, only copy available */}
+      <div className="
+        flex items-center gap-3
+        p-3
+        bg-[var(--bg-secondary-alt)]
+        border border-[var(--border-secondary)]
+        rounded-lg
+        font-mono text-sm
+      ">
+        <span className="flex-1 truncate text-[var(--fg-secondary)]">
+          {maskedKey}
+        </span>
+        <button
+          onClick={copyToClipboard}
+          className="
+            p-1.5
+            text-[var(--fg-quaternary)]
+            hover:text-[var(--fg-tertiary)]
+            transition-colors
+          "
+          title="Copy to clipboard"
+        >
+          {copiedKey ? (
+            <Check className="w-4 h-4 text-green-500" />
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+
+      {/* Metadata */}
+      <div className="flex items-center gap-6 mt-4 text-sm text-[var(--fg-tertiary)]">
+        <span className="flex items-center gap-1">
+          <Calendar className="w-4 h-4" />
+          Last used: {lastUsedText}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// Main Component
+// ============================================
+
+// Mock brand ID - in production this would come from auth context
+const BRAND_ID = 'f64b8b02-4a32-4f1a-9c5d-5e9a3b2c1d0e';
+
+export function APIForm() {
+  const [brandId, setBrandId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<{ key: string; name: string } | null>(null);
+  const [newlyCreatedKey, setNewlyCreatedKey] = useState<{ key: string; name: string } | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch brand ID on mount
+  useEffect(() => {
+    async function fetchBrandId() {
+      try {
+        const response = await fetch('/api/brand?slug=open-session');
+        if (response.ok) {
+          const data = await response.json();
+          setBrandId(data.id);
+        } else {
+          setBrandId(BRAND_ID);
+        }
+      } catch {
+        setBrandId(BRAND_ID);
+      }
+    }
+    fetchBrandId();
+  }, []);
+
+  const { config, isLoading, error, refresh, generateApiKey, revokeApiKey } = useMcpServerConfig(brandId || undefined);
+
+  const handleCreateKey = useCallback(async (name: string) => {
+    setIsCreating(true);
+    try {
+      const newKey = await generateApiKey(name);
+      if (newKey) {
+        setShowCreateModal(false);
+        setNewlyCreatedKey({ key: newKey.key, name: newKey.name });
+        toast.success('API key created successfully!');
+      } else {
+        toast.error('Failed to create API key. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error creating key:', err);
+      toast.error('An error occurred while creating the API key.');
+    } finally {
+      setIsCreating(false);
+    }
+  }, [generateApiKey]);
+
+  const handleRevokeKey = useCallback(async () => {
+    if (!showDeleteModal) return;
+    
+    setIsDeleting(true);
+    try {
+      const success = await revokeApiKey(showDeleteModal.key);
+      if (success) {
+        toast.success(`API key "${showDeleteModal.name}" has been revoked`);
+        setShowDeleteModal(null);
+      } else {
+        toast.error('Failed to revoke API key. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error revoking key:', err);
+      toast.error('An error occurred while revoking the API key.');
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [showDeleteModal, revokeApiKey]);
+
+  const handleCopyKey = useCallback((key: string) => {
+    navigator.clipboard.writeText(key);
+    toast.success('API key copied to clipboard!');
+  }, []);
+
+  // Filter to only active keys
+  const activeKeys = config?.apiKeys?.filter(k => k.is_active) || [];
+
+  if (!brandId) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <RefreshCw className="w-5 h-5 animate-spin text-[var(--fg-tertiary)]" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl">
       <SettingsSectionHeader
-        title="API keys"
-        description="Manage your API keys for programmatic access to your account."
+        title="API Keys"
+        description="Create and manage API keys for external access to your brand data via MCP."
       />
 
       {/* Warning Banner */}
@@ -117,7 +530,7 @@ export function APIForm() {
             Keep your API keys secure
           </p>
           <p className="text-sm text-[var(--fg-warning-secondary)]">
-            Do not share your API keys with anyone. If you believe a key has been compromised, delete it immediately and create a new one.
+            Do not share your API keys publicly. If you believe a key has been compromised, revoke it immediately and create a new one.
           </p>
         </div>
       </div>
@@ -129,12 +542,11 @@ export function APIForm() {
           className="
             flex items-center gap-2
             px-4 py-2
-            bg-[var(--bg-brand-primary)]
-            border border-[var(--border-brand)]
+            bg-[var(--bg-brand-solid)]
             rounded-lg
-            text-sm font-medium text-[var(--fg-brand-primary)]
-            hover:bg-[var(--bg-brand-primary-hover)]
-            transition-all duration-150
+            text-sm font-medium text-white
+            hover:opacity-90
+            transition-opacity
           "
         >
           <Plus className="w-4 h-4" />
@@ -142,168 +554,42 @@ export function APIForm() {
         </button>
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <RefreshCw className="w-5 h-5 animate-spin text-[var(--fg-tertiary)]" />
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
+          <p className="text-sm text-red-500">{error}</p>
+          <button
+            onClick={refresh}
+            className="mt-2 text-sm text-red-500 underline hover:no-underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
       {/* API Keys List */}
-      <div className="space-y-4">
-        {apiKeys.map((apiKey) => {
-          const isVisible = visibleKeys.has(apiKey.id);
-          const expiringSoon = isExpiringSoon(apiKey.expiresAt);
-          const expired = isExpired(apiKey.expiresAt);
+      {!isLoading && !error && (
+        <div className="space-y-4">
+          {activeKeys.map((apiKey) => (
+            <ApiKeyRow
+              key={apiKey.key}
+              apiKey={apiKey}
+              onRevoke={(key, name) => setShowDeleteModal({ key, name })}
+              onCopy={handleCopyKey}
+            />
+          ))}
+        </div>
+      )}
 
-          return (
-            <div
-              key={apiKey.id}
-              className={`
-                p-5
-                bg-[var(--bg-primary)]
-                border rounded-xl
-                ${expired
-                  ? 'border-[var(--border-error)] bg-[var(--bg-error-primary)]'
-                  : expiringSoon
-                    ? 'border-[var(--border-warning)]'
-                    : 'border-[var(--border-secondary)]'
-                }
-              `}
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="
-                    w-10 h-10
-                    bg-[var(--bg-secondary-alt)]
-                    rounded-lg
-                    flex items-center justify-center
-                  ">
-                    <Key className="w-5 h-5 text-[var(--fg-tertiary)]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
-                        {apiKey.name}
-                      </h3>
-                      {expired && (
-                        <span className="
-                          px-2 py-0.5
-                          bg-[var(--bg-error-secondary)]
-                          rounded-full
-                          text-xs font-medium text-[var(--fg-error-primary)]
-                        ">
-                          Expired
-                        </span>
-                      )}
-                      {expiringSoon && !expired && (
-                        <span className="
-                          px-2 py-0.5
-                          bg-[var(--bg-warning-secondary)]
-                          rounded-full
-                          text-xs font-medium text-[var(--fg-warning-primary)]
-                        ">
-                          Expiring soon
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-[var(--fg-tertiary)]">
-                      Created {formatDate(apiKey.createdAt)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => deleteKey(apiKey.id)}
-                    className="
-                      p-2
-                      text-[var(--fg-quaternary)]
-                      hover:text-[var(--fg-error-primary)]
-                      transition-colors
-                    "
-                    title="Delete key"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                  <button
-                    className="
-                      p-2
-                      text-[var(--fg-quaternary)]
-                      hover:text-[var(--fg-tertiary)]
-                      transition-colors
-                    "
-                    title="More options"
-                  >
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Key Value */}
-              <div className="
-                flex items-center gap-3
-                p-3
-                bg-[var(--bg-secondary-alt)]
-                border border-[var(--border-secondary)]
-                rounded-lg
-                font-mono text-sm
-              ">
-                <span className="flex-1 truncate text-[var(--fg-secondary)]">
-                  {isVisible ? apiKey.key : apiKey.key.replace(/./g, '•')}
-                </span>
-                <button
-                  onClick={() => toggleKeyVisibility(apiKey.id)}
-                  className="
-                    p-1.5
-                    text-[var(--fg-quaternary)]
-                    hover:text-[var(--fg-tertiary)]
-                    transition-colors
-                  "
-                  title={isVisible ? 'Hide key' : 'Show key'}
-                >
-                  {isVisible ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-                <button
-                  onClick={() => copyToClipboard(apiKey.key, apiKey.id)}
-                  className="
-                    p-1.5
-                    text-[var(--fg-quaternary)]
-                    hover:text-[var(--fg-tertiary)]
-                    transition-colors
-                  "
-                  title="Copy to clipboard"
-                >
-                  {copiedKey === apiKey.id ? (
-                    <span className="text-xs text-[var(--fg-success-primary)]">Copied!</span>
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-
-              {/* Metadata */}
-              <div className="flex items-center gap-6 mt-4 text-sm text-[var(--fg-tertiary)]">
-                {apiKey.lastUsed && (
-                  <span>Last used {formatDate(apiKey.lastUsed)}</span>
-                )}
-                {!apiKey.lastUsed && (
-                  <span>Never used</span>
-                )}
-                {apiKey.expiresAt && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {expired ? 'Expired' : 'Expires'} {formatDate(apiKey.expiresAt)}
-                  </span>
-                )}
-                {!apiKey.expiresAt && (
-                  <span>No expiration</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {apiKeys.length === 0 && (
+      {/* Empty State */}
+      {!isLoading && !error && activeKeys.length === 0 && (
         <div className="
           py-12
           text-center
@@ -316,19 +602,18 @@ export function APIForm() {
             No API keys
           </h3>
           <p className="text-sm text-[var(--fg-tertiary)] mb-4">
-            Create your first API key to get started.
+            Create your first API key to connect external tools.
           </p>
           <button
             onClick={() => setShowCreateModal(true)}
             className="
               inline-flex items-center gap-2
               px-4 py-2
-              bg-[var(--bg-brand-primary)]
-              border border-[var(--border-brand)]
+              bg-[var(--bg-brand-solid)]
               rounded-lg
-              text-sm font-medium text-[var(--fg-brand-primary)]
-              hover:bg-[var(--bg-brand-primary-hover)]
-              transition-all duration-150
+              text-sm font-medium text-white
+              hover:opacity-90
+              transition-opacity
             "
           >
             <Plus className="w-4 h-4" />
@@ -337,26 +622,48 @@ export function APIForm() {
         </div>
       )}
 
-      {/* Documentation Link */}
-      <div className="mt-8 p-5 bg-[var(--bg-secondary-alt)] border border-[var(--border-secondary)] rounded-xl">
-        <h3 className="text-sm font-semibold text-[var(--fg-primary)] mb-1">
-          API Documentation
-        </h3>
-        <p className="text-sm text-[var(--fg-tertiary)] mb-3">
-          Learn how to use our API to integrate with your applications.
-        </p>
-        <a
-          href="#"
-          className="
-            text-sm font-semibold text-[var(--fg-brand-primary)]
-            hover:text-[var(--fg-brand-primary-hover)]
-            transition-colors
-          "
-        >
-          View documentation →
-        </a>
-      </div>
+      {/* Usage info */}
+      {!isLoading && !error && activeKeys.length > 0 && (
+        <div className="mt-8 p-5 bg-[var(--bg-secondary-alt)] border border-[var(--border-secondary)] rounded-xl">
+          <h3 className="text-sm font-semibold text-[var(--fg-primary)] mb-1">
+            Using your API keys
+          </h3>
+          <p className="text-sm text-[var(--fg-tertiary)] mb-3">
+            Use these keys to connect Claude Desktop, Cursor, or other MCP-compatible tools to your brand data.
+          </p>
+          <p className="text-xs text-[var(--fg-quaternary)]">
+            Go to <strong>Integrations → BOS MCP</strong> for step-by-step setup instructions.
+          </p>
+        </div>
+      )}
+
+      {/* Create Key Modal */}
+      {showCreateModal && (
+        <CreateKeyModal
+          onClose={() => setShowCreateModal(false)}
+          onCreate={handleCreateKey}
+          isCreating={isCreating}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <ConfirmDeleteModal
+          keyName={showDeleteModal.name}
+          onClose={() => setShowDeleteModal(null)}
+          onConfirm={handleRevokeKey}
+          isDeleting={isDeleting}
+        />
+      )}
+
+      {/* New Key Modal */}
+      {newlyCreatedKey && (
+        <NewKeyModal
+          keyValue={newlyCreatedKey.key}
+          keyName={newlyCreatedKey.name}
+          onClose={() => setNewlyCreatedKey(null)}
+        />
+      )}
     </div>
   );
 }
-

@@ -12,7 +12,7 @@ import {
   ChevronDown,
   ArrowLeft,
 } from 'lucide-react';
-import { Tooltip } from '@/components/ui/base/tooltip/tooltip';
+import { Tooltip, TooltipTrigger } from '@/components/ui/base/tooltip/tooltip';
 import type { CanvasPanelMode, CanvasViewMode } from '@/lib/canvas-context';
 
 interface CanvasHeaderProps {
@@ -112,13 +112,13 @@ export function CanvasHeader({
       <div className="flex items-center gap-2 min-w-0">
         {/* Back button on mobile */}
         {showBackButton && (
-          <Tooltip title="Back to chat" placement="bottom" delay={200}>
-            <button
-              onClick={onClose}
+          <Tooltip title="Back to chat" placement="bottom" delay={300}>
+            <TooltipTrigger
+              onPress={onClose}
               className="p-1.5 -ml-1 mr-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-            </button>
+            </TooltipTrigger>
           </Tooltip>
         )}
         <h2 className="text-sm font-medium text-[var(--fg-primary)] truncate max-w-[200px]">
@@ -150,9 +150,9 @@ export function CanvasHeader({
             }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
-          <Tooltip title="Source view" placement="bottom" delay={200}>
-            <button
-              onClick={() => onViewModeChange('source')}
+          <Tooltip title="Source view" placement="bottom" delay={300}>
+            <TooltipTrigger
+              onPress={() => onViewModeChange('source')}
               className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
                 viewMode === 'source' 
                   ? 'text-[var(--fg-primary)]' 
@@ -160,11 +160,11 @@ export function CanvasHeader({
               }`}
             >
               <Code className="w-4 h-4" />
-            </button>
+            </TooltipTrigger>
           </Tooltip>
-          <Tooltip title="Preview" placement="bottom" delay={200}>
-            <button
-              onClick={() => onViewModeChange('view')}
+          <Tooltip title="Preview" placement="bottom" delay={300}>
+            <TooltipTrigger
+              onPress={() => onViewModeChange('view')}
               className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
                 viewMode === 'view' 
                   ? 'text-[var(--fg-primary)]' 
@@ -172,7 +172,7 @@ export function CanvasHeader({
               }`}
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </TooltipTrigger>
           </Tooltip>
         </div>
 
@@ -180,9 +180,9 @@ export function CanvasHeader({
         <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
 
         {/* Copy */}
-        <Tooltip title={copied ? "Copied!" : "Copy content"} placement="bottom" delay={200}>
-          <button
-            onClick={handleCopy}
+        <Tooltip title={copied ? "Copied!" : "Copy content"} placement="bottom" delay={300}>
+          <TooltipTrigger
+            onPress={handleCopy}
             className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
           >
             {copied ? (
@@ -190,22 +190,21 @@ export function CanvasHeader({
             ) : (
               <Copy className="w-4 h-4" />
             )}
-          </button>
+          </TooltipTrigger>
         </Tooltip>
 
         {/* Download with dropdown */}
         <div className="relative">
-          <Tooltip title="Download" placement="bottom" delay={200}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
+          <Tooltip title="Download" placement="bottom" delay={300}>
+            <TooltipTrigger
+              onPress={(e) => {
                 setShowDownloadMenu(!showDownloadMenu);
               }}
               className="flex items-center gap-0.5 p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
             >
               <Download className="w-4 h-4" />
               <ChevronDown className="w-3 h-3" />
-            </button>
+            </TooltipTrigger>
           </Tooltip>
 
           <AnimatePresence>
@@ -239,13 +238,13 @@ export function CanvasHeader({
         {!showBackButton && (
           <>
             <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
-            <Tooltip title="Close (Esc)" placement="bottom" delay={200}>
-              <button
-                onClick={onClose}
+            <Tooltip title="Close (Esc)" placement="bottom" delay={300}>
+              <TooltipTrigger
+                onPress={onClose}
                 className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </TooltipTrigger>
             </Tooltip>
           </>
         )}

@@ -204,10 +204,10 @@ export function CanvasPanel({
             />
           )}
 
-          {/* Canvas Panel */}
+          {/* Canvas Panel - top-14 on mobile, top-12 on desktop to match header */}
           <motion.div
             key="canvas-panel"
-            className={`fixed top-12 right-0 bottom-0 z-40 flex flex-col bg-[var(--bg-primary)] border-l border-[var(--border-primary)] shadow-2xl ${className}`}
+            className={`fixed top-14 lg:top-12 right-0 bottom-0 z-40 flex flex-col bg-[var(--bg-primary)] border-l border-[var(--border-primary)] shadow-2xl ${className}`}
             style={{ 
               width: getPanelWidth(),
               ...themeStyles,

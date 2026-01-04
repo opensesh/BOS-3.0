@@ -78,8 +78,8 @@ export function ResizableDivider({
   return (
     <div
       ref={dividerRef}
-      className="fixed top-12 bottom-0 z-50 flex items-center justify-center cursor-col-resize"
-      style={{ left: `${leftWidth}%`, width: '12px', marginLeft: '-6px' }}
+      className="fixed top-14 lg:top-12 bottom-0 z-50 flex items-center justify-center cursor-col-resize"
+      style={{ left: `calc(${leftWidth}% - 6px)`, width: '12px' }}
       onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -87,9 +87,9 @@ export function ResizableDivider({
       {/* Invisible hit area */}
       <div className="absolute inset-0" />
       
-      {/* Visual divider line */}
+      {/* Visual divider line - centered */}
       <motion.div
-        className="w-[3px] h-full rounded-full"
+        className="absolute left-1/2 -translate-x-1/2 w-[3px] h-full rounded-full"
         initial={false}
         animate={{
           backgroundColor: showIndicator 
@@ -100,9 +100,9 @@ export function ResizableDivider({
         transition={{ duration: 0.15 }}
       />
 
-      {/* Drag handle indicator */}
+      {/* Drag handle indicator - centered on the line */}
       <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-0.5 p-1.5 rounded-md bg-[var(--bg-secondary)] border border-[var(--border-secondary)]"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-0.5 p-1.5 rounded-md bg-[var(--bg-secondary)] border border-[var(--border-secondary)] shadow-md"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ 
           opacity: showIndicator ? 1 : 0,

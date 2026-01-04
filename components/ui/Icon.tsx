@@ -12,7 +12,7 @@ import React from 'react';
 import * as LucideIcons from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'lucide-react';
-import { isFontAwesomeIcon, getFAIconByName } from '@/lib/icons';
+import { isFontAwesomeIcon, getFAIconByName, getFAIconObjectByName } from '@/lib/icons';
 
 interface IconProps {
   /** Icon name - either Lucide (PascalCase) or Font Awesome (fa-prefix) */
@@ -34,8 +34,23 @@ interface IconProps {
  * <Icon name="fa-notion" className="w-5 h-5" />
  */
 export function Icon({ name, className = 'w-5 h-5', 'aria-label': ariaLabel }: IconProps) {
-  // Font Awesome brand icons
+  // Font Awesome brand icons (including custom SVGs)
   if (isFontAwesomeIcon(name)) {
+    const faIconObject = getFAIconObjectByName(name);
+    
+    // Custom SVG icon
+    if (faIconObject?.customSvg) {
+      return (
+        <span 
+          className={className}
+          dangerouslySetInnerHTML={{ __html: faIconObject.customSvg }}
+          aria-label={ariaLabel}
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+        />
+      );
+    }
+    
+    // Regular Font Awesome icon
     const faIcon = getFAIconByName(name);
     if (faIcon) {
       return (
@@ -46,6 +61,7 @@ export function Icon({ name, className = 'w-5 h-5', 'aria-label': ariaLabel }: I
         />
       );
     }
+    
     // Fallback to Link icon if FA icon not found
     return <Link className={className} aria-label={ariaLabel} />;
   }

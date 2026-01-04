@@ -113,11 +113,20 @@ export type LucideIcon = keyof typeof LucideIcons;
 // Font Awesome brand icons with metadata
 export interface FABrandIcon {
   name: string;
-  icon: IconDefinition;
+  icon: IconDefinition | 'custom';
   keywords: string[]; // For search
+  customSvg?: string; // For custom SVG icons
 }
 
 export const FA_BRAND_ICONS: FABrandIcon[] = [
+  // AI & ML
+  { 
+    name: 'fa-anthropic', 
+    icon: 'custom', 
+    keywords: ['anthropic', 'claude', 'ai', 'artificial intelligence', 'llm', 'chatbot'],
+    customSvg: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="m13.788825 3.932 6.43325 16.136075h3.5279L17.316725 3.932H13.788825Z" stroke-width="0.25"></path><path fill="currentColor" d="m6.325375 13.682775 2.20125 -5.67065 2.201275 5.67065H6.325375ZM6.68225 3.932 0.25 20.068075h3.596525l1.3155 -3.3886h6.729425l1.315275 3.3886h3.59655L10.371 3.932H6.68225Z" stroke-width="0.25"></path></svg>'
+  },
+  
   // Productivity & Collaboration
   { name: 'fa-google', icon: faGoogle, keywords: ['google', 'search', 'alphabet'] },
   { name: 'fa-google-drive', icon: faGoogleDrive, keywords: ['google', 'drive', 'storage', 'cloud', 'docs'] },
@@ -259,7 +268,7 @@ export const POPULAR_ICONS = {
     'Building', 'Home', 'Package', 'CreditCard', 'TrendingUp', 'BarChart',
   ],
   fontAwesome: [
-    'fa-google-drive', 'fa-slack', 'fa-figma', 'fa-github',
+    'fa-anthropic', 'fa-google-drive', 'fa-slack', 'fa-figma', 'fa-github',
     'fa-discord', 'fa-linkedin', 'fa-twitter', 'fa-instagram', 'fa-youtube',
     'fa-spotify', 'fa-dropbox', 'fa-trello', 'fa-chrome', 'fa-react',
   ],
@@ -273,5 +282,10 @@ export function isFontAwesomeIcon(iconName: string): boolean {
 // Get FA icon definition by name
 export function getFAIconByName(name: string): IconDefinition | null {
   const icon = FA_BRAND_ICONS.find(i => i.name === name);
-  return icon?.icon || null;
+  return icon?.icon === 'custom' ? null : (icon?.icon || null);
+}
+
+// Get full FA icon object (including custom SVGs)
+export function getFAIconObjectByName(name: string): FABrandIcon | null {
+  return FA_BRAND_ICONS.find(i => i.name === name) || null;
 }

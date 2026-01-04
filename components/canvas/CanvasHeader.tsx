@@ -121,7 +121,7 @@ export function CanvasHeader({
             </TooltipTrigger>
           </Tooltip>
         )}
-        <h2 className="text-sm font-medium text-[var(--fg-primary)] truncate min-w-0">
+        <h2 className="text-sm font-medium text-[var(--fg-secondary)] truncate min-w-0">
           {title}
         </h2>
         <span className="text-[10px] font-medium text-[var(--fg-tertiary)] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] shrink-0">

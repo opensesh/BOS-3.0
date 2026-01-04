@@ -245,7 +245,7 @@ export function ChatTitleDropdown({
                 if (relatedTarget?.closest('button')) return;
                 handleSave();
               }}
-              className="flex-1 min-w-0 bg-transparent text-xs font-medium text-[var(--fg-primary)] outline-none"
+              className="flex-1 min-w-0 bg-transparent text-xs font-medium text-[var(--fg-secondary)] outline-none"
               onClick={(e) => e.stopPropagation()}
             />
             <div className="flex items-center gap-0.5 flex-shrink-0">
@@ -274,7 +274,7 @@ export function ChatTitleDropdown({
         ) : (
           <>
             <span
-              className="text-xs font-medium text-[var(--fg-primary)] truncate flex-1"
+              className="text-xs font-medium text-[var(--fg-secondary)] truncate flex-1"
               onDoubleClick={handleDoubleClick}
               title={`${title} (double-click to rename)`}
             >

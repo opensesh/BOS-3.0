@@ -57,6 +57,8 @@ export default function SpaceChatPage() {
   const [hasSubmittedInitial, setHasSubmittedInitial] = useState(false);
   const [initialAttachments, setInitialAttachments] = useState<MessageAttachment[] | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Track saved message IDs to prevent duplicate saves
+  const savedMessageIdsRef = useRef<Set<string>>(new Set());
 
   // Retrieve attachments from sessionStorage on mount
   useEffect(() => {
@@ -156,6 +158,10 @@ export default function SpaceChatPage() {
         createdAt: new Date(m.createdAt),
         parts: [{ type: 'text' as const, text: m.content }],
       }));
+      
+      // Mark these messages as already saved so we don't re-save them
+      storedMessages.forEach((m) => savedMessageIdsRef.current.add(m.id));
+      
       setMessages(chatMessages as unknown as Parameters<typeof setMessages>[0]);
     }
   }, [storedMessages, messages.length, setMessages]);
@@ -188,8 +194,8 @@ export default function SpaceChatPage() {
 
       // Create the discussion first
       const initChat = async () => {
-        // Create discussion in Supabase/localStorage
-        await createDiscussion(initialQuery.slice(0, 50), space.id);
+        // Create discussion in Supabase/localStorage with the threadId from the URL
+        await createDiscussion(initialQuery.slice(0, 50), space.id, threadId);
 
         // Clear URL params
         router.replace(`/spaces/${slug}/chat/${threadId}`, { scroll: false });
@@ -238,25 +244,37 @@ export default function SpaceChatPage() {
   ]);
 
   // Save messages to storage when they change
+  // User messages are saved immediately, assistant messages are saved when streaming completes
   useEffect(() => {
-    if (messages.length > 0 && discussion) {
-      const lastMessage = messages[messages.length - 1];
-      const content = getMessageContent(lastMessage);
+    if (messages.length === 0 || !discussion) return;
 
-      // Save message (only user and assistant messages, skip system)
-      if (lastMessage.role === 'user' || lastMessage.role === 'assistant') {
-        addMessage(lastMessage.role, content);
+    // Process each message
+    for (const message of messages) {
+      // Skip if already saved
+      if (savedMessageIdsRef.current.has(message.id)) continue;
+      
+      const content = getMessageContent(message);
+      
+      // For user messages: save immediately (they don't change)
+      if (message.role === 'user' && content) {
+        savedMessageIdsRef.current.add(message.id);
+        addMessage('user', content);
       }
-
-      // Update discussion preview and count
-      if (lastMessage.role === 'assistant' && content) {
+      
+      // For assistant messages: only save when streaming is complete (status is ready)
+      // Also check that there's actual content to save
+      if (message.role === 'assistant' && status === 'ready' && content) {
+        savedMessageIdsRef.current.add(message.id);
+        addMessage('assistant', content);
+        
+        // Update discussion preview and count
         updateDiscussion(discussion.id, {
           preview: content.slice(0, 100),
           messageCount: messages.length,
         });
       }
     }
-  }, [messages, discussion, addMessage, updateDiscussion, getMessageContent]);
+  }, [messages, discussion, status, addMessage, updateDiscussion, getMessageContent]);
 
   // Scroll to bottom on new messages
   useEffect(() => {

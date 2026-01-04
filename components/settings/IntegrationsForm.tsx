@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  X, 
   Plus, 
   Server, 
   Plug, 
@@ -13,7 +12,6 @@ import {
   XCircle,
   MoreVertical,
   Zap,
-  ExternalLink,
 } from 'lucide-react';
 import { useMcpConnections } from '@/hooks/useMcpConnections';
 import { McpServerSettings } from './McpServerSettings';
@@ -149,91 +147,6 @@ function Toggle({
   );
 }
 
-function AnnouncementBanner({ onDismiss }: { onDismiss: () => void }) {
-  return (
-    <div className="
-      flex items-center gap-6
-      p-6
-      bg-[var(--bg-secondary-alt)]
-      border border-[var(--border-secondary)]
-      rounded-xl
-      mb-8
-    ">
-      {/* Image placeholder */}
-      <div className="
-        hidden sm:block
-        flex-shrink-0
-        w-48 h-32
-        rounded-lg
-        bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-quaternary)]
-        overflow-hidden
-      ">
-        <div className="w-full h-full flex items-center justify-center text-4xl opacity-50">
-          🔌
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-lg font-semibold text-[var(--fg-primary)]">
-          MCP Integration is here!
-        </h3>
-        <p className="mt-1 text-sm text-[var(--fg-tertiary)]">
-          Connect external AI tools to your brand data, or let Claude & Polar use external MCP servers.
-        </p>
-        <div className="flex items-center gap-3 mt-4">
-          <button
-            onClick={onDismiss}
-            className="
-              px-4 py-2
-              bg-transparent
-              border border-[var(--border-secondary)]
-              rounded-lg
-              text-sm font-medium text-[var(--fg-tertiary)]
-              hover:text-[var(--fg-secondary)]
-              hover:border-[var(--border-primary)]
-              hover:bg-[var(--bg-tertiary)]
-              transition-all duration-150
-            "
-          >
-            Dismiss
-          </button>
-          <a
-            href="#"
-            className="
-              px-4 py-2
-              bg-[var(--bg-brand-primary)]
-              border border-[var(--border-brand)]
-              rounded-lg
-              text-sm font-medium text-[var(--fg-brand-primary)]
-              hover:bg-[var(--bg-brand-primary-hover)]
-              transition-all duration-150
-              inline-flex items-center gap-1
-            "
-          >
-            Learn More
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-      </div>
-
-      {/* Close button */}
-      <button
-        onClick={onDismiss}
-        className="
-          absolute top-4 right-4
-          p-1
-          text-[var(--fg-quaternary)]
-          hover:text-[var(--fg-tertiary)]
-          transition-colors
-        "
-        aria-label="Dismiss"
-      >
-        <X className="w-5 h-5" />
-      </button>
-    </div>
-  );
-}
 
 function TabButton({
   active,
@@ -416,7 +329,6 @@ function McpConnectionRow({
 export function IntegrationsForm() {
   const [activeTab, setActiveTab] = useState<TabId>('mcp-server');
   const [integrations, setIntegrations] = useState<Integration[]>(INITIAL_INTEGRATIONS);
-  const [showBanner, setShowBanner] = useState(true);
   const [brandId, setBrandId] = useState<string | null>(null);
   
   // MCP Connection state
@@ -489,20 +401,13 @@ export function IntegrationsForm() {
 
   return (
     <div className="max-w-4xl">
-      {/* Announcement Banner */}
-      {showBanner && (
-        <div className="relative">
-          <AnnouncementBanner onDismiss={() => setShowBanner(false)} />
-        </div>
-      )}
-
       {/* Tab Navigation */}
       <div className="flex items-center gap-2 mb-6 pb-4 border-b border-[var(--border-secondary)]">
         <TabButton
           active={activeTab === 'mcp-server'}
           onClick={() => setActiveTab('mcp-server')}
           icon={Server}
-          label="BOS API"
+          label="BOS MCP"
         />
         <TabButton
           active={activeTab === 'mcp-client'}

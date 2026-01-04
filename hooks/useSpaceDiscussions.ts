@@ -95,11 +95,12 @@ export function useSpaceDiscussions(spaceSlug: string) {
   }, [spaceSlug]);
 
   // Create a new discussion
+  // If discussionId is provided, use it; otherwise generate a new one
   const createDiscussion = useCallback(
-    async (title: string, spaceId: string): Promise<SpaceDiscussion | null> => {
+    async (title: string, spaceId: string, discussionId?: string): Promise<SpaceDiscussion | null> => {
       const now = new Date().toISOString();
       const newDiscussion: SpaceDiscussion = {
-        id: generateId(),
+        id: discussionId || generateId(),
         spaceId,
         spaceSlug,
         title,

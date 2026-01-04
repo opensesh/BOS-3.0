@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Copy, 
   Check, 
@@ -14,6 +14,10 @@ import {
   Activity,
   RefreshCw,
   ExternalLink,
+  Terminal,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
 } from 'lucide-react';
 import { useMcpServerConfig } from '@/hooks/useMcpConnections';
 import { mcpService } from '@/lib/supabase/mcp-service';
@@ -203,6 +207,177 @@ function UsageStatsCard({ stats }: { stats: McpUsageStats | null }) {
   );
 }
 
+function QuickSetupCard({ 
+  serverUrl, 
+  apiKey,
+  onGenerateKey,
+}: { 
+  serverUrl: string; 
+  apiKey?: string;
+  onGenerateKey: () => void;
+}) {
+  const [copied, setCopied] = useState<'url' | 'config' | null>(null);
+  const [showConfig, setShowConfig] = useState(true);
+  const [activeClient, setActiveClient] = useState<'claude' | 'cursor'>('claude');
+
+  const claudeConfig = `{
+  "mcpServers": {
+    "bos": {
+      "url": "${serverUrl}",
+      "headers": {
+        "Authorization": "Bearer ${apiKey || 'YOUR_API_KEY'}"
+      }
+    }
+  }
+}`;
+
+  const cursorConfig = `{
+  "mcpServers": {
+    "bos": {
+      "serverUrl": "${serverUrl}",
+      "auth": {
+        "type": "bearer",
+        "token": "${apiKey || 'YOUR_API_KEY'}"
+      }
+    }
+  }
+}`;
+
+  const copyToClipboard = async (text: string, type: 'url' | 'config') => {
+    await navigator.clipboard.writeText(text);
+    setCopied(type);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-[var(--bg-secondary-alt)] to-[var(--bg-tertiary)] border border-[var(--border-secondary)] rounded-xl overflow-hidden">
+      {/* Header */}
+      <div 
+        className="flex items-center justify-between p-4 cursor-pointer"
+        onClick={() => setShowConfig(!showConfig)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[var(--bg-brand-solid)] rounded-lg">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-[var(--fg-primary)]">Quick Setup</h4>
+            <p className="text-xs text-[var(--fg-tertiary)]">Connect Claude Desktop or Cursor in 2 minutes</p>
+          </div>
+        </div>
+        {showConfig ? (
+          <ChevronUp className="w-5 h-5 text-[var(--fg-tertiary)]" />
+        ) : (
+          <ChevronDown className="w-5 h-5 text-[var(--fg-tertiary)]" />
+        )}
+      </div>
+
+      {showConfig && (
+        <div className="px-4 pb-4 space-y-4">
+          {/* Step 1: API Key */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-5 h-5 bg-[var(--bg-brand-solid)] text-white text-xs font-bold rounded-full">1</span>
+              <span className="text-sm font-medium text-[var(--fg-secondary)]">Get your API key</span>
+            </div>
+            
+            {apiKey ? (
+              <div className="flex items-center gap-2 ml-7">
+                <code className="flex-1 text-xs font-mono text-green-500 bg-green-500/10 px-3 py-2 rounded-lg truncate">
+                  ✓ API key ready: {apiKey.slice(0, 16)}...
+                </code>
+              </div>
+            ) : (
+              <div className="ml-7">
+                <button
+                  onClick={onGenerateKey}
+                  className="
+                    flex items-center gap-2 px-3 py-2
+                    bg-[var(--bg-brand-solid)]
+                    text-white text-sm font-medium
+                    rounded-lg
+                    hover:opacity-90
+                    transition-opacity
+                  "
+                >
+                  <Key className="w-4 h-4" />
+                  Generate API Key
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Step 2: Add to config */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-5 h-5 bg-[var(--bg-brand-solid)] text-white text-xs font-bold rounded-full">2</span>
+              <span className="text-sm font-medium text-[var(--fg-secondary)]">Add to your config file</span>
+            </div>
+            
+            {/* Client selector tabs */}
+            <div className="ml-7 flex gap-1 bg-[var(--bg-tertiary)] p-1 rounded-lg w-fit">
+              <button
+                onClick={() => setActiveClient('claude')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  activeClient === 'claude'
+                    ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
+                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+                }`}
+              >
+                Claude Desktop
+              </button>
+              <button
+                onClick={() => setActiveClient('cursor')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  activeClient === 'cursor'
+                    ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
+                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+                }`}
+              >
+                Cursor
+              </button>
+            </div>
+            
+            <div className="ml-7 relative">
+              <div className="absolute top-2 right-2 flex gap-1">
+                <button
+                  onClick={() => copyToClipboard(activeClient === 'claude' ? claudeConfig : cursorConfig, 'config')}
+                  className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] rounded transition-colors"
+                  title="Copy config"
+                >
+                  {copied === 'config' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              <pre className="text-xs font-mono text-[var(--fg-tertiary)] bg-[var(--bg-primary)] border border-[var(--border-secondary)] p-3 pr-12 rounded-lg overflow-x-auto">
+                {activeClient === 'claude' ? claudeConfig : cursorConfig}
+              </pre>
+            </div>
+            
+            <p className="ml-7 text-xs text-[var(--fg-quaternary)]">
+              {activeClient === 'claude' ? (
+                <>Add this to <code className="bg-[var(--bg-tertiary)] px-1 rounded">claude_desktop_config.json</code></>
+              ) : (
+                <>Add this to your Cursor MCP settings</>
+              )}
+            </p>
+          </div>
+
+          {/* Step 3: Test */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-5 h-5 bg-[var(--bg-brand-solid)] text-white text-xs font-bold rounded-full">3</span>
+              <span className="text-sm font-medium text-[var(--fg-secondary)]">Test the connection</span>
+            </div>
+            <p className="ml-7 text-xs text-[var(--fg-tertiary)]">
+              Restart {activeClient === 'claude' ? 'Claude Desktop' : 'Cursor'} and try asking: <em>"Search my brand guidelines for logo usage"</em>
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============================================
 // Available Tools
 // ============================================
@@ -260,18 +435,19 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
     }
   }, [config, getUsageStats]);
 
-  const handleGenerateKey = async () => {
-    if (!newKeyName.trim()) return;
+  const handleGenerateKey = useCallback(async (name?: string) => {
+    const keyName = name || newKeyName.trim();
+    if (!keyName) return;
     
     setIsGenerating(true);
-    const newKey = await generateApiKey(newKeyName.trim());
+    const newKey = await generateApiKey(keyName);
     if (newKey) {
       setNewKeyName('');
       // Copy the new key to clipboard
       await navigator.clipboard.writeText(newKey.key);
     }
     setIsGenerating(false);
-  };
+  }, [newKeyName, generateApiKey]);
 
   const handleRevokeKey = async (key: string) => {
     setRevokingKey(key);
@@ -327,10 +503,10 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-[var(--fg-primary)]">
-              BOS as MCP Server
+              BOS MCP Server
             </h3>
             <p className="text-sm text-[var(--fg-tertiary)] max-w-lg">
-              Expose your brand data to external AI tools like Cursor, Claude Desktop, and others via the Model Context Protocol.
+              Connect AI tools like Claude Desktop and Cursor to your brand knowledge.
             </p>
           </div>
         </div>
@@ -341,13 +517,20 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
         />
       </div>
 
-      {/* Server URL */}
+      {/* Quick Setup Card */}
+      <QuickSetupCard 
+        serverUrl={serverUrl} 
+        apiKey={config?.apiKeys?.find(k => k.is_active)?.key}
+        onGenerateKey={() => handleGenerateKey('Default Key')}
+      />
+
+      {/* Server Endpoint (collapsed) */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-[var(--fg-secondary)]">
           Server Endpoint
         </label>
         <div className="flex items-center gap-2">
-          <code className="flex-1 text-sm font-mono text-[var(--fg-tertiary)] bg-[var(--bg-tertiary)] px-3 py-2 rounded-lg truncate">
+          <code className="flex-1 text-xs font-mono text-[var(--fg-tertiary)] bg-[var(--bg-tertiary)] px-3 py-2 rounded-lg truncate">
             {serverUrl}
           </code>
           <button
@@ -358,9 +541,6 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
             {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
           </button>
         </div>
-        <p className="text-xs text-[var(--fg-quaternary)]">
-          Add this URL to your MCP client configuration (e.g., Cursor settings, Claude Desktop config)
-        </p>
       </div>
 
       {/* API Keys Section */}

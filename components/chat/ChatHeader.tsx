@@ -22,6 +22,8 @@ interface ChatHeaderProps {
   content?: string;
   /** Whether the response is still streaming - hides counts during streaming */
   isStreaming?: boolean;
+  /** Hide share button (e.g., when canvas is open) */
+  hideShare?: boolean;
 }
 
 export function ChatHeader({
@@ -38,6 +40,7 @@ export function ChatHeader({
   onDeleteThread,
   content = '',
   isStreaming = false,
+  hideShare = false,
 }: ChatHeaderProps) {
   const tabs = [
     {
@@ -120,7 +123,7 @@ export function ChatHeader({
               onDelete={onDeleteThread}
               content={content}
             />
-            <ShareButton />
+            {!hideShare && <ShareButton />}
           </div>
         </div>
       </div>

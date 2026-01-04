@@ -21,7 +21,7 @@ interface CanvasPanelProps {
  * CanvasPanel Component
  * 
  * Main canvas editor/viewer panel that slides in from the right.
- * Supports half-screen and full-screen modes.
+ * Supports half-screen and full-screen modes with delightful animations.
  */
 export function CanvasPanel({
   defaultPanelMode,
@@ -79,11 +79,6 @@ export function CanvasPanel({
         e.preventDefault();
         setViewMode(viewMode === 'view' ? 'source' : 'view');
       }
-      // Cmd/Ctrl + F to toggle fullscreen
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'f') {
-        e.preventDefault();
-        setPanelMode(panelMode === 'half' ? 'full' : 'half');
-      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -112,10 +107,10 @@ export function CanvasPanel({
     setPanelMode(mode);
   }, [setPanelMode]);
 
-  // Panel width based on mode
+  // Panel width based on mode - always 50% for half mode
   const panelWidth = panelMode === 'full' ? '100%' : '50%';
 
-  // Animation variants
+  // Animation variants - delightful spring animation
   const panelVariants = {
     hidden: {
       x: '100%',
@@ -126,28 +121,53 @@ export function CanvasPanel({
       opacity: 1,
       transition: {
         type: 'spring',
-        stiffness: 300,
-        damping: 30,
+        stiffness: 400,
+        damping: 35,
+        mass: 0.8,
       },
     },
     exit: {
       x: '100%',
       opacity: 0,
       transition: {
-        duration: 0.2,
+        type: 'spring',
+        stiffness: 400,
+        damping: 40,
+        mass: 0.8,
       },
     },
+  };
+
+  // Backdrop for full mode
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    exit: { opacity: 0 },
   };
 
   if (!activeCanvas) return null;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isCanvasOpen && (
         <>
-          {/* Canvas Panel - Fixed to right side */}
+          {/* Backdrop for full mode */}
+          {panelMode === 'full' && (
+            <motion.div
+              key="backdrop"
+              className="fixed inset-0 bg-black/20 z-40"
+              variants={backdropVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={closeCanvas}
+            />
+          )}
+
+          {/* Canvas Panel */}
           <motion.div
-            className={`fixed top-0 right-0 bottom-0 z-40 flex flex-col bg-[var(--bg-primary)] border-l border-[var(--border-primary)] shadow-2xl ${className}`}
+            key="canvas-panel"
+            className={`fixed top-12 right-0 bottom-0 z-40 flex flex-col bg-[var(--bg-primary)] border-l border-[var(--border-primary)] shadow-2xl ${className}`}
             style={{ 
               width: panelWidth,
               ...themeStyles,
@@ -158,10 +178,9 @@ export function CanvasPanel({
             exit="exit"
             layout
           >
-            {/* Header */}
+            {/* Header - matching chat header height */}
             <CanvasHeader
               title={activeCanvas.title}
-              fileType={activeCanvas.contentType === 'markdown' ? 'MD' : activeCanvas.contentType.toUpperCase()}
               viewMode={viewMode}
               panelMode={panelMode}
               content={localContent}
@@ -182,30 +201,6 @@ export function CanvasPanel({
               onChange={handleContentChange}
               themeStyles={themeStyles}
             />
-
-            {/* Footer with keyboard shortcuts */}
-            <div className="px-4 py-2 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 flex items-center justify-between text-xs text-[var(--fg-tertiary)]">
-              <div className="flex items-center gap-4">
-                {hasUnsavedChanges && (
-                  <span className="text-[var(--fg-warning-primary)]">Unsaved changes</span>
-                )}
-                {isSaving && (
-                  <span>Saving...</span>
-                )}
-                <span>Version {activeCanvas.version}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <span>
-                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">⌘E</kbd> Toggle view
-                </span>
-                <span>
-                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">⌘S</kbd> Save
-                </span>
-                <span>
-                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]">Esc</kbd> Close
-                </span>
-              </div>
-            </div>
           </motion.div>
         </>
       )}
@@ -214,4 +209,3 @@ export function CanvasPanel({
 }
 
 export default CanvasPanel;
-

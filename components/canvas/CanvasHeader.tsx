@@ -1,211 +1,221 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X,
-  Copy,
-  Download,
-  Check,
-  Maximize2,
-  Minimize2,
   Eye,
   Code,
-  FileText,
+  Copy,
+  Download,
+  X,
+  Check,
+  ChevronDown,
 } from 'lucide-react';
 import type { CanvasPanelMode, CanvasViewMode } from '@/lib/canvas-context';
 
 interface CanvasHeaderProps {
-  /** Canvas title */
   title: string;
-  /** File type indicator */
-  fileType?: string;
-  /** Current view mode */
   viewMode: CanvasViewMode;
-  /** Current panel mode */
   panelMode: CanvasPanelMode;
-  /** Markdown content for copy/download */
   content: string;
-  /** Whether there are unsaved changes */
-  hasUnsavedChanges?: boolean;
-  /** Whether saving is in progress */
-  isSaving?: boolean;
-  /** Callbacks */
+  hasUnsavedChanges: boolean;
+  isSaving: boolean;
   onViewModeChange: (mode: CanvasViewMode) => void;
   onPanelModeChange: (mode: CanvasPanelMode) => void;
   onClose: () => void;
-  onSave?: () => void;
+  onSave: () => void;
 }
 
 export function CanvasHeader({
   title,
-  fileType = 'MD',
   viewMode,
   panelMode,
   content,
-  hasUnsavedChanges = false,
-  isSaving = false,
+  hasUnsavedChanges,
+  isSaving,
   onViewModeChange,
   onPanelModeChange,
   onClose,
   onSave,
 }: CanvasHeaderProps) {
   const [copied, setCopied] = useState(false);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
-  // Copy content to clipboard
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }, [content]);
 
-  // Download as markdown file
-  const handleDownload = useCallback(() => {
+  const handleDownloadMarkdown = useCallback(() => {
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    // Sanitize title for filename
-    const filename = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    a.download = `${filename || 'canvas'}.md`;
+    a.download = `${title.replace(/\s+/g, '_').toLowerCase()}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setShowDownloadMenu(false);
   }, [content, title]);
 
-  // Toggle panel mode
-  const handleTogglePanelMode = useCallback(() => {
-    onPanelModeChange(panelMode === 'half' ? 'full' : 'half');
-  }, [panelMode, onPanelModeChange]);
+  const handleDownloadPDF = useCallback(() => {
+    // For PDF, we'll create a simple print-friendly version
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${title}</title>
+            <style>
+              body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+              h1 { font-size: 24px; margin-bottom: 16px; }
+              h2 { font-size: 20px; margin-top: 24px; margin-bottom: 12px; }
+              h3 { font-size: 16px; margin-top: 20px; margin-bottom: 8px; }
+              p { line-height: 1.6; margin-bottom: 12px; }
+              pre { background: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto; }
+              code { font-family: monospace; }
+              ul, ol { margin-bottom: 12px; padding-left: 24px; }
+              li { margin-bottom: 4px; }
+            </style>
+          </head>
+          <body>
+            <pre style="white-space: pre-wrap; font-family: inherit;">${content}</pre>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    setShowDownloadMenu(false);
+  }, [content, title]);
+
+  // Close download menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => setShowDownloadMenu(false);
+    if (showDownloadMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showDownloadMenu]);
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-primary)] bg-[var(--bg-secondary)]/80 backdrop-blur-sm">
-      {/* Left side - View mode toggle and title */}
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between h-12 px-4 border-b border-[var(--border-secondary)] bg-[var(--bg-primary)] flex-shrink-0">
+      {/* Left side - Title + MD badge */}
+      <div className="flex items-center gap-2 min-w-0">
+        <h2 className="text-sm font-medium text-[var(--fg-primary)] truncate max-w-[200px]">
+          {title}
+        </h2>
+        <span className="text-[10px] font-medium text-[var(--fg-tertiary)] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] shrink-0">
+          MD
+        </span>
+        {hasUnsavedChanges && (
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-warning-primary)] shrink-0" />
+        )}
+        {isSaving && (
+          <span className="text-[10px] text-[var(--fg-tertiary)]">Saving...</span>
+        )}
+      </div>
+
+      {/* Right side - Controls */}
+      <div className="flex items-center gap-1">
         {/* View/Source Toggle */}
-        <div className="relative flex items-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]/50 p-0.5">
-          {/* Animated background indicator */}
-          <motion.div
-            className="absolute top-0.5 bottom-0.5 rounded-md bg-[var(--bg-tertiary)]"
-            initial={false}
-            animate={{
-              left: viewMode === 'view' ? '2px' : 'calc(50% + 1px)',
-              width: 'calc(50% - 3px)',
-            }}
-            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          />
+        <div className="flex items-center bg-[var(--bg-secondary)] rounded-md p-0.5">
           <button
             onClick={() => onViewModeChange('view')}
-            className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
               viewMode === 'view'
-                ? 'text-[var(--fg-primary)]'
+                ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
                 : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
             }`}
-            title="Preview"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3 h-3" />
+            <span>Preview</span>
           </button>
           <button
             onClick={() => onViewModeChange('source')}
-            className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
               viewMode === 'source'
-                ? 'text-[var(--fg-primary)]'
+                ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
                 : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
             }`}
-            title="Source"
           >
-            <Code className="w-4 h-4" />
+            <Code className="w-3 h-3" />
+            <span>Source</span>
           </button>
         </div>
 
-        {/* Title and file type */}
-        <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-[var(--fg-tertiary)]" />
-          <span className="text-sm font-medium text-[var(--fg-primary)] truncate max-w-[200px]">
-            {title}
-          </span>
-          <span className="text-xs text-[var(--fg-tertiary)] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)]">
-            {fileType}
-          </span>
-          {hasUnsavedChanges && (
-            <span className="w-2 h-2 rounded-full bg-[var(--fg-warning-primary)]" title="Unsaved changes" />
-          )}
-        </div>
-      </div>
+        {/* Divider */}
+        <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
 
-      {/* Right side - Actions */}
-      <div className="flex items-center gap-1">
-        {/* Copy button */}
+        {/* Copy */}
         <button
           onClick={handleCopy}
-          className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-          title={copied ? 'Copied!' : 'Copy'}
+          className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
+          title="Copy content"
         >
-          <AnimatePresence mode="wait">
-            {copied ? (
+          {copied ? (
+            <Check className="w-4 h-4 text-green-500" />
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
+        </button>
+
+        {/* Download with dropdown */}
+        <div className="relative">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDownloadMenu(!showDownloadMenu);
+            }}
+            className="flex items-center gap-0.5 p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
+            title="Download"
+          >
+            <Download className="w-4 h-4" />
+            <ChevronDown className="w-3 h-3" />
+          </button>
+
+          <AnimatePresence>
+            {showDownloadMenu && (
               <motion.div
-                key="check"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-full mt-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg py-1 min-w-[140px] z-50"
+                onClick={(e) => e.stopPropagation()}
               >
-                <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="copy"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-              >
-                <Copy className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]" />
+                <button
+                  onClick={handleDownloadMarkdown}
+                  className="w-full px-3 py-2 text-left text-sm text-[var(--fg-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                >
+                  Markdown (.md)
+                </button>
+                <button
+                  onClick={handleDownloadPDF}
+                  className="w-full px-3 py-2 text-left text-sm text-[var(--fg-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                >
+                  PDF (Print)
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
-        </button>
+        </div>
 
-        {/* Download button */}
-        <button
-          onClick={handleDownload}
-          className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-          title="Download"
-        >
-          <Download className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]" />
-        </button>
+        {/* Divider */}
+        <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
 
-        {/* Separator */}
-        <div className="w-px h-5 bg-[var(--border-primary)] mx-1" />
-
-        {/* Expand/Collapse button */}
-        <button
-          onClick={handleTogglePanelMode}
-          className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-          title={panelMode === 'half' ? 'Expand' : 'Collapse'}
-        >
-          {panelMode === 'half' ? (
-            <Maximize2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]" />
-          ) : (
-            <Minimize2 className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]" />
-          )}
-        </button>
-
-        {/* Close button */}
+        {/* Close */}
         <button
           onClick={onClose}
-          className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors group"
-          title="Close"
+          className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
+          title="Close canvas (Esc)"
         >
-          <X className="w-4 h-4 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]" />
+          <X className="w-4 h-4" />
         </button>
       </div>
     </div>
   );
 }
-
-export default CanvasHeader;
-

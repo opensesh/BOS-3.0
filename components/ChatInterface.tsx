@@ -21,6 +21,7 @@ import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { useAttachments } from '@/hooks/useAttachments';
 import { ModelId } from '@/lib/ai/providers';
 import { useChatContext } from '@/lib/chat-context';
+import { useCanvasContextOptional } from '@/lib/canvas-context';
 import { AnimatePresence } from 'framer-motion';
 import type { PageContext } from '@/lib/brand-knowledge';
 import {
@@ -132,6 +133,10 @@ export function ChatInterface() {
     setBrandSearchEnabled,
   } = useChatContext();
 
+  // Canvas context for adjusting layout when canvas is open
+  const canvasContext = useCanvasContextOptional();
+  const isCanvasOpen = canvasContext?.isCanvasOpen ?? false;
+  const canvasPanelMode = canvasContext?.panelMode ?? 'half';
 
   // Custom useChat hook for native SDK streaming
   const { messages, sendMessage, status, error, setMessages } = useChat({
@@ -827,12 +832,23 @@ export function ChatInterface() {
     return firstUserMessage?.content.slice(0, 50) || 'New Thread';
   }, [parsedMessages, generatedTitle]);
 
+  // Calculate right position for canvas
+  const chatRightOffset = isCanvasOpen && canvasPanelMode === 'half' ? '50%' : '0';
+
   return (
     <>
       <BackgroundGradient fadeOut={hasMessages} />
-      {hasMessages && <div className="fixed inset-x-0 bottom-0 top-14 lg:top-12 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)]" />}
+      {hasMessages && (
+        <div 
+          className="fixed bottom-0 top-14 lg:top-12 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)] transition-[right] duration-300 ease-out"
+          style={{ left: 0, right: chatRightOffset }}
+        />
+      )}
 
-      <div className={`fixed inset-x-0 bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,top] duration-200 ease-out ${hasMessages ? '' : 'items-center'}`}>
+      <div 
+        className={`fixed bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[right] duration-300 ease-out ${hasMessages ? '' : 'items-center'}`}
+        style={{ left: 0, right: chatRightOffset }}
+      >
         {/* Chat Mode */}
         {hasMessages && (
           <div className="flex flex-col h-full">
@@ -862,6 +878,7 @@ export function ChatInterface() {
                 resetChat();
               }}
               isStreaming={isLoading}
+              hideShare={isCanvasOpen}
             />
 
             {/* Scrollable content */}

@@ -26,3 +26,4 @@ export { InlineStreamingDisplay, InlineStreamingIndicator, StreamingTrailIndicat
 export { UserMessageBubble } from './UserMessageBubble';
 export { DateFilterDropdown, type DateFilterValue } from './DateFilterDropdown';
 export { AddToProjectModal } from './AddToProjectModal';
+export { AddToSpaceModal } from './AddToSpaceModal';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -14,12 +14,18 @@ import {
   X,
   Plus,
   ArrowLeft,
+  MoreHorizontal,
+  Trash2,
+  Layers,
+  FolderPlus,
 } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useChatContext } from '@/lib/chat-context';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 import { DateFilterDropdown, type DateFilterValue } from '@/components/chat/DateFilterDropdown';
+import { AddToSpaceModal } from '@/components/chat/AddToSpaceModal';
+import { AddToProjectModal } from '@/components/chat/AddToProjectModal';
 
 type SortField = 'title' | 'date';
 type SortDirection = 'asc' | 'desc';
@@ -43,10 +49,113 @@ function ChatsPageHeader() {
   );
 }
 
+// Chat row menu component
+function ChatRowMenu({
+  chatId,
+  chatTitle,
+  onDelete,
+  onAddToSpace,
+  onAddToProject,
+}: {
+  chatId: string;
+  chatTitle: string;
+  onDelete: () => void;
+  onAddToSpace: () => void;
+  onAddToProject: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
+        title="More options"
+      >
+        <MoreHorizontal className="w-4 h-4" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 z-20 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] shadow-[var(--shadow-lg)] overflow-hidden min-w-[160px]">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onAddToProject();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+          >
+            <FolderPlus className="w-4 h-4" />
+            <span>Add to Project</span>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onAddToSpace();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+          >
+            <Layers className="w-4 h-4" />
+            <span>Add to Space</span>
+          </button>
+          <div className="border-t border-[var(--border-primary)] my-1" />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+              onDelete();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ChatsPage() {
   const router = useRouter();
-  const { chatHistory, loadSession, triggerChatReset } = useChatContext();
+  const { 
+    chatHistory, 
+    loadSession, 
+    triggerChatReset, 
+    deleteFromHistory,
+    // Projects
+    projects,
+    currentProject,
+    setCurrentProject,
+    createProject,
+    assignChatToProject,
+  } = useChatContext();
   const { setBreadcrumbs } = useBreadcrumbs();
+  
+  // Modal states
+  const [spaceModalChatId, setSpaceModalChatId] = useState<string | null>(null);
+  const [spaceModalChatTitle, setSpaceModalChatTitle] = useState<string>('');
+  const [projectModalChatId, setProjectModalChatId] = useState<string | null>(null);
+  const [projectModalChatTitle, setProjectModalChatTitle] = useState<string>('');
   
   // Set breadcrumbs on mount
   useEffect(() => {
@@ -258,41 +367,60 @@ export default function ChatsPage() {
                   {/* Table Body */}
                   <div className="divide-y divide-[var(--border-secondary)]">
                     {filteredChats.map((chat, index) => (
-                      <motion.button
+                      <motion.div
                         key={chat.id}
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.15, delay: index * 0.02 }}
-                        onClick={() => handleChatClick(chat.id)}
-                        className="
-                          w-full flex items-center px-4 py-3.5
-                          text-left
-                          hover:bg-[var(--bg-tertiary)]
-                          active:bg-[var(--bg-quaternary)]
-                          transition-colors
-                          group
-                        "
+                        className="relative group"
                       >
-                        <div className="flex-1 flex items-center gap-3 min-w-0">
-                          <div className="
-                            w-8 h-8 rounded-lg
-                            bg-[var(--bg-tertiary)]
-                            group-hover:bg-[var(--bg-quaternary)]
-                            flex items-center justify-center
-                            flex-shrink-0
+                        <button
+                          onClick={() => handleChatClick(chat.id)}
+                          className="
+                            w-full flex items-center px-4 py-3.5
+                            text-left
+                            hover:bg-[var(--bg-tertiary)]
+                            active:bg-[var(--bg-quaternary)]
                             transition-colors
-                          ">
-                            <MessageSquare className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                          "
+                        >
+                          <div className="flex-1 flex items-center gap-3 min-w-0">
+                            <div className="
+                              w-8 h-8 rounded-lg
+                              bg-[var(--bg-tertiary)]
+                              group-hover:bg-[var(--bg-quaternary)]
+                              flex items-center justify-center
+                              flex-shrink-0
+                              transition-colors
+                            ">
+                              <MessageSquare className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                            </div>
+                            <span className="text-sm text-[var(--fg-primary)] truncate pr-8">
+                              {chat.title}
+                            </span>
                           </div>
-                          <span className="text-sm text-[var(--fg-primary)] truncate">
-                            {chat.title}
-                          </span>
+                          <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)] w-32 justify-end flex-shrink-0 pr-8">
+                            <Clock className="w-3 h-3" />
+                            <span>{formatDate(chat.timestamp)}</span>
+                          </div>
+                        </button>
+                        {/* Three-dot menu */}
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                          <ChatRowMenu
+                            chatId={chat.id}
+                            chatTitle={chat.title}
+                            onDelete={() => deleteFromHistory(chat.id)}
+                            onAddToSpace={() => {
+                              setSpaceModalChatId(chat.id);
+                              setSpaceModalChatTitle(chat.title);
+                            }}
+                            onAddToProject={() => {
+                              setProjectModalChatId(chat.id);
+                              setProjectModalChatTitle(chat.title);
+                            }}
+                          />
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)] w-32 justify-end flex-shrink-0">
-                          <Clock className="w-3 h-3" />
-                          <span>{formatDate(chat.timestamp)}</span>
-                        </div>
-                      </motion.button>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
@@ -356,6 +484,37 @@ export default function ChatsPage() {
           </div>
         </div>
       </MainContent>
+
+      {/* Add to Space Modal */}
+      <AddToSpaceModal
+        isOpen={!!spaceModalChatId}
+        onClose={() => {
+          setSpaceModalChatId(null);
+          setSpaceModalChatTitle('');
+        }}
+        chatId={spaceModalChatId || ''}
+        chatTitle={spaceModalChatTitle}
+      />
+
+      {/* Add to Project Modal */}
+      <AddToProjectModal
+        isOpen={!!projectModalChatId}
+        onClose={() => {
+          setProjectModalChatId(null);
+          setProjectModalChatTitle('');
+        }}
+        projects={projects}
+        currentProject={currentProject}
+        chatId={projectModalChatId}
+        onSelectProject={setCurrentProject}
+        onAssignChatToProject={async (chatId, projectId) => {
+          await assignChatToProject(chatId, projectId);
+          return true;
+        }}
+        onCreateProject={async (name) => {
+          await createProject(name);
+        }}
+      />
     </div>
   );
 }

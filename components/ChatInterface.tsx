@@ -35,6 +35,7 @@ import {
   LinksView,
   extractResourceCards,
   AddToProjectModal,
+  AddToSpaceModal,
   type FollowUpAttachment,
 } from './chat';
 // Article reference context (kept for potential future use)
@@ -92,6 +93,7 @@ export function ChatInterface() {
   const [generatedTitle, setGeneratedTitle] = useState<string | null>(null);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const [isAddToProjectModalOpen, setIsAddToProjectModalOpen] = useState(false);
+  const [isAddToSpaceModalOpen, setIsAddToSpaceModalOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -917,6 +919,7 @@ export function ChatInterface() {
                 }
               }}
               onAddToProject={() => setIsAddToProjectModalOpen(true)}
+              onAddToSpace={() => setIsAddToSpaceModalOpen(true)}
               onDeleteThread={() => {
                 // Delete and go back to home
                 resetChat();
@@ -1336,6 +1339,14 @@ export function ChatInterface() {
         onCreateProject={async (name) => {
           await createProject(name);
         }}
+      />
+
+      {/* Add to Space Modal */}
+      <AddToSpaceModal
+        isOpen={isAddToSpaceModalOpen}
+        onClose={() => setIsAddToSpaceModalOpen(false)}
+        chatId={currentSessionId || ''}
+        chatTitle={generatedTitle || messages[0]?.content?.slice(0, 50) || 'Chat'}
       />
     </>
   );

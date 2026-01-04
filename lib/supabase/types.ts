@@ -40,6 +40,16 @@ export interface StoredSourceInfo {
   publishedAt?: string;
 }
 
+// Stored attachment info for persistence
+export interface StoredAttachment {
+  id: string;
+  type: 'image';
+  data: string; // Base64 data URL or storage URL
+  mimeType: string;
+  name?: string;
+  storagePath?: string; // If uploaded to Supabase Storage
+}
+
 // Message metadata for extended features
 export interface MessageMetadata {
   has_thinking?: boolean;
@@ -50,6 +60,8 @@ export interface MessageMetadata {
   finish_reason?: string;
   // Sources/citations from the response
   sources?: StoredSourceInfo[];
+  // Image/file attachments
+  attachments?: StoredAttachment[];
 }
 
 // Application-level types
@@ -61,6 +73,8 @@ export interface ChatMessage {
   metadata?: MessageMetadata;
   // Full source info for proper display in UI
   sources?: StoredSourceInfo[];
+  // Image/file attachments for user messages
+  attachments?: StoredAttachment[];
   thinking?: ThinkingBlock[];
   toolExecutions?: ToolExecution[];
   artifacts?: Artifact[];

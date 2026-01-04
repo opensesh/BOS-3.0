@@ -221,16 +221,25 @@ export function ChatInterface() {
             ? getMessageContent(firstAssistantMessage).slice(0, 100)
             : '';
           // Convert messages to the format expected by chat history
-          // Include sources so they persist when reloading chat sessions
+          // Include sources and attachments so they persist when reloading chat sessions
           const chatMessages = messages.map(m => {
-            // Extract sources from the message if available
+            // Extract sources and attachments from the message if available
             const msgSources = (m as { sources?: SourceInfo[] }).sources;
+            const msgAttachments = (m as { attachments?: MessageAttachment[] }).attachments;
             return {
               id: m.id,
               role: m.role as 'user' | 'assistant',
               content: getMessageContent(m),
               timestamp: new Date().toISOString(),
               sources: msgSources,
+              // Include attachments for persistence
+              attachments: msgAttachments?.map(a => ({
+                id: a.id,
+                type: a.type,
+                data: a.data,
+                mimeType: a.mimeType,
+                name: a.name,
+              })),
             };
           });
           addToHistory(title, preview, chatMessages);
@@ -252,12 +261,20 @@ export function ChatInterface() {
           const sessionMessages = await getSessionMessages(sessionToLoad);
           if (sessionMessages && sessionMessages.length > 0) {
             // Convert ChatMessage[] to the format expected by useChat
-            // Include sources so they display in the loaded session
+            // Include sources and attachments so they display in the loaded session
             const formattedMessages = sessionMessages.map((msg, idx) => ({
               id: msg.id || `msg-${idx}`,
               role: msg.role as 'user' | 'assistant',
               content: msg.content,
               sources: msg.sources,
+              // Restore attachments for user messages
+              attachments: msg.attachments?.map(a => ({
+                id: a.id,
+                type: a.type as 'image',
+                data: a.data,
+                mimeType: a.mimeType,
+                name: a.name,
+              })),
             }));
             setMessages(formattedMessages);
             setActiveTab('answer');
@@ -301,16 +318,25 @@ export function ChatInterface() {
         const preview = getMessageContent(lastAssistantMessage).slice(0, 150);
         
         // Convert messages to chat history format
-        // Include sources so they persist when reloading chat sessions
+        // Include sources and attachments so they persist when reloading chat sessions
         const chatMessages = messages.map(m => {
-          // Extract sources from the message if available
+          // Extract sources and attachments from the message if available
           const msgSources = (m as { sources?: SourceInfo[] }).sources;
+          const msgAttachments = (m as { attachments?: MessageAttachment[] }).attachments;
           return {
             id: m.id,
             role: m.role as 'user' | 'assistant',
             content: getMessageContent(m),
             timestamp: new Date().toISOString(),
             sources: msgSources,
+            // Include attachments for persistence
+            attachments: msgAttachments?.map(a => ({
+              id: a.id,
+              type: a.type,
+              data: a.data,
+              mimeType: a.mimeType,
+              name: a.name,
+            })),
           };
         });
         

@@ -1,7 +1,7 @@
 'use client';
 
 import { createClient } from './client';
-import type { ChatSession, ChatMessage, DbChat, DbMessage, ChatInsert, MessageInsert, MessageMetadata, StoredSourceInfo } from './types';
+import type { ChatSession, ChatMessage, DbChat, DbMessage, ChatInsert, MessageInsert, MessageMetadata, StoredSourceInfo, StoredAttachment } from './types';
 
 // Track if tables are available (to avoid repeated error logs)
 let tablesChecked = false;
@@ -70,6 +70,16 @@ function dbMessageToAppMessage(msg: DbMessage): ChatMessage {
     publishedAt: s.publishedAt,
   }));
 
+  // Extract attachments from metadata if present
+  const attachments = metadata?.attachments?.map((a: StoredAttachment) => ({
+    id: a.id,
+    type: a.type,
+    data: a.data,
+    mimeType: a.mimeType,
+    name: a.name,
+    storagePath: a.storagePath,
+  }));
+
   return {
     id: msg.id,
     role: msg.role as 'user' | 'assistant',
@@ -77,7 +87,49 @@ function dbMessageToAppMessage(msg: DbMessage): ChatMessage {
     model: msg.model || undefined,
     timestamp: msg.created_at,
     sources: sources && sources.length > 0 ? sources : undefined,
+    attachments: attachments && attachments.length > 0 ? attachments : undefined,
   };
+}
+
+/**
+ * Build metadata object for a message, including sources and attachments
+ */
+function buildMessageMetadata(m: ChatMessage): MessageMetadata | undefined {
+  const hasSources = m.sources && m.sources.length > 0;
+  const hasAttachments = m.attachments && m.attachments.length > 0;
+  
+  if (!hasSources && !hasAttachments) {
+    return undefined;
+  }
+  
+  const metadata: MessageMetadata = {};
+  
+  if (hasSources && m.sources) {
+    metadata.sources = m.sources.map(s => ({
+      id: (s as StoredSourceInfo).id || s.url,
+      name: (s as StoredSourceInfo).name || s.title || '',
+      url: s.url,
+      title: s.title,
+      snippet: s.snippet,
+      favicon: (s as StoredSourceInfo).favicon,
+      type: (s as StoredSourceInfo).type,
+      category: (s as StoredSourceInfo).category,
+      publishedAt: (s as StoredSourceInfo).publishedAt,
+    }));
+  }
+  
+  if (hasAttachments && m.attachments) {
+    metadata.attachments = m.attachments.map(a => ({
+      id: a.id,
+      type: a.type,
+      data: a.data,
+      mimeType: a.mimeType,
+      name: a.name,
+      storagePath: a.storagePath,
+    }));
+  }
+  
+  return metadata;
 }
 
 /**
@@ -125,32 +177,13 @@ export const chatService = {
         const newMessages = messages.filter(m => !existingIds.has(m.id));
 
         if (newMessages.length > 0) {
-          const messagesToInsert: MessageInsert[] = newMessages.map(m => {
-            // Build metadata with sources if present
-            const metadata: MessageMetadata | undefined = m.sources && m.sources.length > 0 
-              ? { 
-                  sources: m.sources.map(s => ({
-                    id: (s as StoredSourceInfo).id || s.url,
-                    name: (s as StoredSourceInfo).name || s.title || '',
-                    url: s.url,
-                    title: s.title,
-                    snippet: s.snippet,
-                    favicon: (s as StoredSourceInfo).favicon,
-                    type: (s as StoredSourceInfo).type,
-                    category: (s as StoredSourceInfo).category,
-                    publishedAt: (s as StoredSourceInfo).publishedAt,
-                  }))
-                }
-              : undefined;
-
-            return {
-              chat_id: existingId,
-              role: m.role,
-              content: m.content,
-              model: m.model,
-              metadata,
-            };
-          });
+          const messagesToInsert: MessageInsert[] = newMessages.map(m => ({
+            chat_id: existingId,
+            role: m.role,
+            content: m.content,
+            model: m.model,
+            metadata: buildMessageMetadata(m),
+          }));
 
           const { error: msgError } = await supabase
             .from('messages')
@@ -187,32 +220,13 @@ export const chatService = {
 
       // Insert all messages
       if (messages.length > 0) {
-        const messagesToInsert: MessageInsert[] = messages.map(m => {
-          // Build metadata with sources if present
-          const metadata: MessageMetadata | undefined = m.sources && m.sources.length > 0 
-            ? { 
-                sources: m.sources.map(s => ({
-                  id: (s as StoredSourceInfo).id || s.url,
-                  name: (s as StoredSourceInfo).name || s.title || '',
-                  url: s.url,
-                  title: s.title,
-                  snippet: s.snippet,
-                  favicon: (s as StoredSourceInfo).favicon,
-                  type: (s as StoredSourceInfo).type,
-                  category: (s as StoredSourceInfo).category,
-                  publishedAt: (s as StoredSourceInfo).publishedAt,
-                }))
-              }
-            : undefined;
-
-          return {
-            chat_id: chat.id,
-            role: m.role,
-            content: m.content,
-            model: m.model,
-            metadata,
-          };
-        });
+        const messagesToInsert: MessageInsert[] = messages.map(m => ({
+          chat_id: chat.id,
+          role: m.role,
+          content: m.content,
+          model: m.model,
+          metadata: buildMessageMetadata(m),
+        }));
 
         const { error: msgError } = await supabase
           .from('messages')

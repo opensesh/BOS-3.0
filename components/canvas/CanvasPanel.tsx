@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCanvasContext, type CanvasPanelMode, type CanvasViewMode } from '@/lib/canvas-context';
 import { useBrandColors } from '@/hooks/useBrandColors';
@@ -21,7 +21,8 @@ interface CanvasPanelProps {
  * CanvasPanel Component
  * 
  * Main canvas editor/viewer panel that slides in from the right.
- * Supports half-screen and full-screen modes with delightful animations.
+ * - Desktop: 50% width (half mode) or 100% (full mode)
+ * - Tablet/Mobile: Always 100% width with back button
  */
 export function CanvasPanel({
   defaultPanelMode,
@@ -43,6 +44,18 @@ export function CanvasPanel({
     setLocalContent,
     saveCanvas,
   } = useCanvasContext();
+
+  // Track if we're on mobile/tablet
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Brand theming
   const { brandColors } = useBrandColors();
@@ -107,8 +120,11 @@ export function CanvasPanel({
     setPanelMode(mode);
   }, [setPanelMode]);
 
-  // Panel width based on mode - always 50% for half mode
-  const panelWidth = panelMode === 'full' ? '100%' : '50%';
+  // Panel width: 100% on mobile, or based on mode on desktop
+  const getPanelWidth = () => {
+    if (isMobile) return '100%';
+    return panelMode === 'full' ? '100%' : '50%';
+  };
 
   // Animation variants - delightful spring animation
   const panelVariants = {
@@ -138,7 +154,7 @@ export function CanvasPanel({
     },
   };
 
-  // Backdrop for full mode
+  // Backdrop for full mode on desktop
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
@@ -151,8 +167,8 @@ export function CanvasPanel({
     <AnimatePresence mode="wait">
       {isCanvasOpen && (
         <>
-          {/* Backdrop for full mode */}
-          {panelMode === 'full' && (
+          {/* Backdrop for full mode on desktop */}
+          {panelMode === 'full' && !isMobile && (
             <motion.div
               key="backdrop"
               className="fixed inset-0 bg-black/20 z-40"
@@ -169,7 +185,7 @@ export function CanvasPanel({
             key="canvas-panel"
             className={`fixed top-12 right-0 bottom-0 z-40 flex flex-col bg-[var(--bg-primary)] border-l border-[var(--border-primary)] shadow-2xl ${className}`}
             style={{ 
-              width: panelWidth,
+              width: getPanelWidth(),
               ...themeStyles,
             }}
             variants={panelVariants}
@@ -190,6 +206,7 @@ export function CanvasPanel({
               onPanelModeChange={handlePanelModeChange}
               onClose={closeCanvas}
               onSave={saveCanvas}
+              showBackButton={isMobile}
             />
 
             {/* Content */}

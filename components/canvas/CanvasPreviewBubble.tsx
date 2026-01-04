@@ -161,8 +161,8 @@ export function CanvasPreviewBubble({
                 <div className="h-4 bg-gradient-to-t from-[var(--bg-secondary)]/80 to-transparent pointer-events-none -mt-4 relative z-[1]" />
               )}
 
-              {/* Open canvas button */}
-              <div className="px-4 py-2 border-t border-[var(--border-secondary)]">
+              {/* Open canvas button - right aligned */}
+              <div className="px-4 py-2 border-t border-[var(--border-secondary)] flex justify-end">
                 <button
                   onClick={handleOpenCanvas}
                   disabled={isStreaming}

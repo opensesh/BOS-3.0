@@ -494,14 +494,7 @@ export function ChatInterface() {
     error: voiceError,
     startListening,
     stopListening,
-    resetTranscript,
-  } = useVoiceRecognition((finalTranscript) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:onResultCallback',message:'onResult callback executed',data:{finalTranscript},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    setInput((prev) => prev + (prev ? ' ' : '') + finalTranscript);
-    resetTranscript();
-  });
+  } = useVoiceRecognition();
 
   // Attachment handling
   const {
@@ -520,16 +513,27 @@ export function ChatInterface() {
     openFilePicker,
   } = useAttachments();
 
+  // Track previous transcript to correctly replace old value with new
+  const prevTranscriptRef = useRef('');
+  
   useEffect(() => {
-    if (transcript && isListening) {
+    if (isListening && transcript) {
       setInput((prev) => {
-        const base = prev.replace(transcript, '').trim();
+        // Remove the PREVIOUS transcript (not the new one) from input
+        const prevTranscript = prevTranscriptRef.current;
+        let base = prev;
+        if (prevTranscript && prev.endsWith(prevTranscript)) {
+          base = prev.slice(0, -prevTranscript.length).trim();
+        }
+        // Append the NEW transcript
         const result = base + (base ? ' ' : '') + transcript;
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:useEffect',message:'Updating input from transcript',data:{prev,transcript,base,result,replaceWorked:prev!==base},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
-        // #endregion
         return result;
       });
+      // Update ref to current transcript for next iteration
+      prevTranscriptRef.current = transcript;
+    } else if (!isListening) {
+      // Reset when done listening
+      prevTranscriptRef.current = '';
     }
   }, [transcript, isListening]);
 
@@ -832,7 +836,7 @@ export function ChatInterface() {
     return firstUserMessage?.content.slice(0, 50) || 'New Thread';
   }, [parsedMessages, generatedTitle]);
 
-  // Calculate right position for canvas
+  // Calculate right position for canvas (only on desktop)
   const chatRightOffset = isCanvasOpen && canvasPanelMode === 'half' ? '50%' : '0';
 
   return (
@@ -840,14 +844,14 @@ export function ChatInterface() {
       <BackgroundGradient fadeOut={hasMessages} />
       {hasMessages && (
         <div 
-          className="fixed bottom-0 top-14 lg:top-12 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)] transition-[right] duration-300 ease-out"
-          style={{ left: 0, right: chatRightOffset }}
+          className="fixed left-0 bottom-0 top-14 lg:top-12 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)] transition-[left,right] duration-300 ease-out"
+          style={{ right: chatRightOffset }}
         />
       )}
 
       <div 
-        className={`fixed bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[right] duration-300 ease-out ${hasMessages ? '' : 'items-center'}`}
-        style={{ left: 0, right: chatRightOffset }}
+        className={`fixed left-0 bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,right] duration-300 ease-out ${hasMessages ? '' : 'items-center'}`}
+        style={{ right: chatRightOffset }}
       >
         {/* Chat Mode */}
         {hasMessages && (

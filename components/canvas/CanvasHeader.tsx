@@ -10,6 +10,7 @@ import {
   X,
   Check,
   ChevronDown,
+  ArrowLeft,
 } from 'lucide-react';
 import type { CanvasPanelMode, CanvasViewMode } from '@/lib/canvas-context';
 
@@ -24,6 +25,8 @@ interface CanvasHeaderProps {
   onPanelModeChange: (mode: CanvasPanelMode) => void;
   onClose: () => void;
   onSave: () => void;
+  /** Show back button instead of X (for mobile) */
+  showBackButton?: boolean;
 }
 
 export function CanvasHeader({
@@ -37,6 +40,7 @@ export function CanvasHeader({
   onPanelModeChange,
   onClose,
   onSave,
+  showBackButton = false,
 }: CanvasHeaderProps) {
   const [copied, setCopied] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
@@ -103,8 +107,18 @@ export function CanvasHeader({
 
   return (
     <div className="flex items-center justify-between h-12 px-4 border-b border-[var(--border-secondary)] bg-[var(--bg-primary)] flex-shrink-0">
-      {/* Left side - Title + MD badge */}
+      {/* Left side - Back button (mobile) + Title + MD badge */}
       <div className="flex items-center gap-2 min-w-0">
+        {/* Back button on mobile */}
+        {showBackButton && (
+          <button
+            onClick={onClose}
+            className="p-1 -ml-1 mr-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            title="Back to chat"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+        )}
         <h2 className="text-sm font-medium text-[var(--fg-primary)] truncate max-w-[200px]">
           {title}
         </h2>
@@ -204,17 +218,19 @@ export function CanvasHeader({
           </AnimatePresence>
         </div>
 
-        {/* Divider */}
-        <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
-
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
-          title="Close canvas (Esc)"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        {/* Close button - hidden on mobile since we have back button */}
+        {!showBackButton && (
+          <>
+            <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
+              title="Close canvas (Esc)"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

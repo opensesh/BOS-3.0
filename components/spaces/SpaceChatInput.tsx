@@ -65,11 +65,7 @@ export function SpaceChatInput({
     error: voiceError,
     startListening,
     stopListening,
-    resetTranscript,
-  } = useVoiceRecognition((finalTranscript) => {
-    setQuery((prev) => prev + (prev ? ' ' : '') + finalTranscript);
-    resetTranscript();
-  });
+  } = useVoiceRecognition();
 
   // Attachment handling
   const {
@@ -88,17 +84,28 @@ export function SpaceChatInput({
     openFilePicker,
   } = useAttachments();
 
+  // Track previous transcript to correctly replace old value with new
+  const prevTranscriptRef = useRef('');
+  
   // Update input with live transcript
   useEffect(() => {
-    if (transcript && isListening) {
+    if (isListening && transcript) {
       setQuery((prev) => {
-        const base = prev.replace(transcript, '').trim();
+        // Remove the PREVIOUS transcript (not the new one) from input
+        const prevTranscript = prevTranscriptRef.current;
+        let base = prev;
+        if (prevTranscript && prev.endsWith(prevTranscript)) {
+          base = prev.slice(0, -prevTranscript.length).trim();
+        }
+        // Append the NEW transcript
         const result = base + (base ? ' ' : '') + transcript;
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SpaceChatInput.tsx:useEffect',message:'Updating input from transcript',data:{prev,transcript,base,result,replaceWorked:prev!==base},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
-        // #endregion
         return result;
       });
+      // Update ref to current transcript for next iteration
+      prevTranscriptRef.current = transcript;
+    } else if (!isListening) {
+      // Reset when done listening
+      prevTranscriptRef.current = '';
     }
   }, [transcript, isListening]);
 

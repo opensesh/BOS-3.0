@@ -200,22 +200,31 @@ interface ArtDirectionSettingsModalProps {
 }
 
 // ============================================
-// CATEGORY SELECT DROPDOWN
+// CATEGORY SELECT DROPDOWN (with Add New option)
 // ============================================
 
+// Default categories + any custom ones the user adds
+const DEFAULT_CATEGORIES: string[] = ['Auto', 'Lifestyle', 'Move', 'Escape', 'Work', 'Feel'];
+
 interface CategorySelectProps {
-  value: ArtDirectionCategory;
-  onChange: (value: ArtDirectionCategory) => void;
+  value: string;
+  onChange: (value: string) => void;
   disabled?: boolean;
+  customCategories?: string[];
+  onAddCategory?: (category: string) => void;
 }
 
-function CategorySelect({ value, onChange, disabled }: CategorySelectProps) {
+function CategorySelect({ value, onChange, disabled, customCategories = [], onAddCategory }: CategorySelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newValue, setNewValue] = useState('');
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const categoryInfo = ART_DIRECTION_CATEGORIES.find(c => c.id === value);
+  // Combine default and custom categories
+  const allCategories = [...DEFAULT_CATEGORIES, ...customCategories.filter(c => !DEFAULT_CATEGORIES.includes(c))];
 
   // Calculate dropdown position based on available space
   useEffect(() => {
@@ -223,7 +232,7 @@ function CategorySelect({ value, onChange, disabled }: CategorySelectProps) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const spaceBelow = viewportHeight - buttonRect.bottom;
-      const dropdownHeight = 240;
+      const dropdownHeight = 280;
       
       if (spaceBelow < dropdownHeight && buttonRect.top > spaceBelow) {
         setDropdownPosition('top');
@@ -237,28 +246,28 @@ function CategorySelect({ value, onChange, disabled }: CategorySelectProps) {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setIsAddingNew(false);
+        setNewValue('');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const getCategoryColor = (category: ArtDirectionCategory) => {
-    switch (category) {
-      case 'Auto':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'Lifestyle':
-        return 'bg-pink-500/10 text-pink-500';
-      case 'Move':
-        return 'bg-orange-500/10 text-orange-500';
-      case 'Escape':
-        return 'bg-emerald-500/10 text-emerald-500';
-      case 'Work':
-        return 'bg-purple-500/10 text-purple-500';
-      case 'Feel':
-        return 'bg-rose-500/10 text-rose-500';
-      default:
-        return 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]';
+  useEffect(() => {
+    if (isAddingNew && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isAddingNew]);
+
+  const handleAddNew = () => {
+    if (newValue.trim()) {
+      const formattedValue = newValue.trim();
+      onChange(formattedValue);
+      onAddCategory?.(formattedValue);
+      setNewValue('');
+      setIsAddingNew(false);
+      setIsOpen(false);
     }
   };
 
@@ -268,13 +277,11 @@ function CategorySelect({ value, onChange, disabled }: CategorySelectProps) {
         ref={buttonRef}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded-md border border-[var(--border-primary)] bg-[var(--bg-secondary)] transition-colors min-w-[90px] ${
+        className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded-md border border-[var(--border-primary)] bg-[var(--bg-secondary)] transition-colors min-w-[80px] ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[var(--bg-tertiary)]'
         }`}
       >
-        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getCategoryColor(value)}`}>
-          {value}
-        </span>
+        <span className="text-[var(--fg-primary)] truncate">{value}</span>
         <ChevronDown className={`w-3 h-3 text-[var(--fg-tertiary)] flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
@@ -284,30 +291,75 @@ function CategorySelect({ value, onChange, disabled }: CategorySelectProps) {
             initial={{ opacity: 0, y: dropdownPosition === 'bottom' ? -4 : 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -4 : 4 }}
-            className={`absolute left-0 z-[100] py-1 min-w-[180px] max-h-[220px] overflow-auto rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-xl ${
+            className={`absolute left-0 z-[100] py-1 min-w-[160px] max-h-[260px] overflow-auto rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-xl ${
               dropdownPosition === 'bottom' 
                 ? 'top-full mt-1' 
                 : 'bottom-full mb-1'
             }`}
           >
-            {ART_DIRECTION_CATEGORIES.map((category) => (
+            {allCategories.map((category) => (
               <button
-                key={category.id}
+                key={category}
                 onClick={() => {
-                  onChange(category.id);
+                  onChange(category);
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-[var(--bg-secondary)] transition-colors text-left ${
-                  value === category.id ? 'bg-[var(--bg-secondary)]/50' : ''
+                className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-[var(--bg-secondary)] transition-colors text-left ${
+                  value === category ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-primary)]'
                 }`}
               >
-                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getCategoryColor(category.id)}`}>
-                  {category.id}
-                </span>
-                <span className="text-[10px] text-[var(--fg-muted)] truncate">{category.subtitle}</span>
-                {value === category.id && <Check className="w-3 h-3 ml-auto text-[var(--fg-brand-primary)]" />}
+                <span>{category}</span>
+                {value === category && <Check className="w-3 h-3 ml-auto" />}
               </button>
             ))}
+            
+            {/* Add new category option */}
+            <div className="border-t border-[var(--border-secondary)] my-1" />
+            {isAddingNew ? (
+              <div className="px-2 py-1.5 flex items-center gap-1">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={newValue}
+                  onChange={(e) => setNewValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAddNew();
+                    if (e.key === 'Escape') {
+                      setIsAddingNew(false);
+                      setNewValue('');
+                    }
+                  }}
+                  placeholder="Category name..."
+                  className="flex-1 px-2 py-1 text-xs rounded border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--fg-primary)] focus:outline-none focus:border-[var(--border-brand)]"
+                />
+                <button
+                  onClick={handleAddNew}
+                  disabled={!newValue.trim()}
+                  className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] disabled:opacity-50"
+                  title="Save"
+                >
+                  <Check className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => {
+                    setIsAddingNew(false);
+                    setNewValue('');
+                  }}
+                  className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]"
+                  title="Cancel"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsAddingNew(true)}
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Add new</span>
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

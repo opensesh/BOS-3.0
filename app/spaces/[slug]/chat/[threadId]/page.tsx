@@ -91,6 +91,7 @@ export default function SpaceChatPage() {
 
   const {
     messages: storedMessages,
+    isLoading: isLoadingStoredMessages,
     addMessage,
     setMessages: setStoredMessages,
   } = useDiscussionMessages(threadId);
@@ -245,8 +246,11 @@ export default function SpaceChatPage() {
 
   // Save messages to storage when they change
   // User messages are saved immediately, assistant messages are saved when streaming completes
+  // NOTE: We don't require `discussion` to be truthy for saving messages because
+  // addMessage already has the threadId from useDiscussionMessages(threadId).
+  // The discussion state may not be updated yet due to React's async state batching.
   useEffect(() => {
-    if (messages.length === 0 || !discussion) return;
+    if (messages.length === 0) return;
 
     // Process each message
     for (const message of messages) {
@@ -266,15 +270,26 @@ export default function SpaceChatPage() {
       if (message.role === 'assistant' && status === 'ready' && content) {
         savedMessageIdsRef.current.add(message.id);
         addMessage('assistant', content);
-        
-        // Update discussion preview and count
+      }
+    }
+  }, [messages, status, addMessage, getMessageContent]);
+
+  // Update discussion preview and count separately (requires discussion to be loaded)
+  useEffect(() => {
+    if (!discussion || messages.length === 0 || status !== 'ready') return;
+    
+    // Find the last assistant message to use as preview
+    const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant');
+    if (lastAssistantMessage) {
+      const content = getMessageContent(lastAssistantMessage);
+      if (content) {
         updateDiscussion(discussion.id, {
           preview: content.slice(0, 100),
           messageCount: messages.length,
         });
       }
     }
-  }, [messages, discussion, status, addMessage, updateDiscussion, getMessageContent]);
+  }, [discussion, messages, status, updateDiscussion, getMessageContent]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -376,6 +391,9 @@ export default function SpaceChatPage() {
   }
 
   const hasMessages = messages.length > 0;
+  
+  // Show loading state when loading stored messages for an existing chat (not a new chat)
+  const showLoadingStoredMessages = isLoadingStoredMessages && !isNew && !hasSubmittedInitial && messages.length === 0;
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans overflow-hidden">
@@ -397,6 +415,16 @@ export default function SpaceChatPage() {
           <div className="max-w-3xl mx-auto px-4">
             {activeTab === 'answer' && (
               <>
+                {/* Loading state for existing chats */}
+                {showLoadingStoredMessages && (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="w-6 h-6 border-2 border-[var(--border-brand-solid)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                      <p className="text-[var(--fg-tertiary)] text-sm">Loading conversation...</p>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Space Reference Card */}
                 {hasMessages && (
                   <div className="pt-6">

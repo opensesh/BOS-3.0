@@ -5,13 +5,13 @@ import {
   Plus, 
   Server, 
   Plug, 
-  Settings2, 
   Trash2, 
   RefreshCw,
   CheckCircle,
   XCircle,
   MoreVertical,
   Zap,
+  Settings2,
 } from 'lucide-react';
 import { useMcpConnections } from '@/hooks/useMcpConnections';
 import { McpServerSettings } from './McpServerSettings';
@@ -22,87 +22,11 @@ import type { McpConnection } from '@/lib/supabase/types';
 // Types
 // ============================================
 
-interface Integration {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  iconBg: string;
-  enabled: boolean;
-}
-
-type TabId = 'mcp-server' | 'mcp-client' | 'apps';
+type TabId = 'mcp-server' | 'mcp-client';
 
 // ============================================
 // Constants
 // ============================================
-
-const INITIAL_INTEGRATIONS: Integration[] = [
-  {
-    id: 'linear',
-    name: 'Linear',
-    description: 'Streamline software projects, sprints, tasks, and bug tracking.',
-    icon: '◆',
-    iconBg: 'bg-indigo-600',
-    enabled: true,
-  },
-  {
-    id: 'github',
-    name: 'GitHub',
-    description: 'Link pull requests and automate workflows.',
-    icon: '⬤',
-    iconBg: 'bg-black dark:bg-white dark:text-black',
-    enabled: true,
-  },
-  {
-    id: 'figma',
-    name: 'Figma',
-    description: 'Embed file previews in projects.',
-    icon: 'F',
-    iconBg: 'bg-gradient-to-br from-pink-500 via-red-500 to-purple-500',
-    enabled: true,
-  },
-  {
-    id: 'zapier',
-    name: 'Zapier',
-    description: 'Build custom automations and integrations with other apps.',
-    icon: '⚡',
-    iconBg: 'bg-orange-500',
-    enabled: true,
-  },
-  {
-    id: 'notion',
-    name: 'Notion',
-    description: 'Embed notion pages and notes in projects.',
-    icon: 'N',
-    iconBg: 'bg-black dark:bg-white dark:text-black',
-    enabled: true,
-  },
-  {
-    id: 'slack',
-    name: 'Slack',
-    description: 'Send notifications to channels and create projects from messages.',
-    icon: '#',
-    iconBg: 'bg-gradient-to-br from-green-400 via-blue-500 to-purple-500',
-    enabled: false,
-  },
-  {
-    id: 'jira',
-    name: 'Jira',
-    description: 'Connect project management and issue tracking.',
-    icon: '◇',
-    iconBg: 'bg-blue-600',
-    enabled: false,
-  },
-  {
-    id: 'asana',
-    name: 'Asana',
-    description: 'Sync tasks and projects with your team.',
-    icon: '○',
-    iconBg: 'bg-gradient-to-br from-pink-500 to-orange-400',
-    enabled: false,
-  },
-];
 
 // Mock brand ID - in production this would come from auth context
 const BRAND_ID = 'f64b8b02-4a32-4f1a-9c5d-5e9a3b2c1d0e';
@@ -328,7 +252,6 @@ function McpConnectionRow({
 
 export function IntegrationsForm() {
   const [activeTab, setActiveTab] = useState<TabId>('mcp-server');
-  const [integrations, setIntegrations] = useState<Integration[]>(INITIAL_INTEGRATIONS);
   const [brandId, setBrandId] = useState<string | null>(null);
   
   // MCP Connection state
@@ -343,7 +266,6 @@ export function IntegrationsForm() {
     deleteConnection,
     toggleConnection,
     testConnection,
-    refresh: refreshConnections,
   } = useMcpConnections();
 
   // Fetch brand ID on mount
@@ -366,12 +288,6 @@ export function IntegrationsForm() {
     }
     fetchBrandId();
   }, []);
-
-  const toggleIntegration = (id: string, enabled: boolean) => {
-    setIntegrations(prev =>
-      prev.map(int => int.id === id ? { ...int, enabled } : int)
-    );
-  };
 
   const handleSaveConnection = async (data: Parameters<typeof createConnection>[0]) => {
     if (editingConnection) {
@@ -413,14 +329,8 @@ export function IntegrationsForm() {
           active={activeTab === 'mcp-client'}
           onClick={() => setActiveTab('mcp-client')}
           icon={Plug}
-          label="MCP Connections"
+          label="Connect Apps"
           badge={connections.filter(c => c.isActive).length}
-        />
-        <TabButton
-          active={activeTab === 'apps'}
-          onClick={() => setActiveTab('apps')}
-          icon={Settings2}
-          label="Connected Apps"
         />
       </div>
 
@@ -431,20 +341,15 @@ export function IntegrationsForm() {
 
       {activeTab === 'mcp-client' && (
         <div className="space-y-6">
-          {/* Header */}
+          {/* Header - no icon */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-[var(--bg-tertiary)] rounded-lg">
-                <Plug className="w-5 h-5 text-[var(--fg-tertiary)]" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-[var(--fg-primary)]">
-                  MCP Connections
-                </h3>
-                <p className="text-sm text-[var(--fg-tertiary)] max-w-lg">
-                  Connect to external MCP servers to extend what Claude and Polar can do. These tools become available in your chat sessions.
-                </p>
-              </div>
+            <div>
+              <h3 className="text-lg font-semibold text-[var(--fg-primary)]">
+                Connect Apps
+              </h3>
+              <p className="text-sm text-[var(--fg-tertiary)] max-w-lg mt-1">
+                Connect to external MCP servers to extend what Claude and Polar can do. These tools become available in your chat sessions.
+              </p>
             </div>
             <button
               onClick={() => setShowConnectionModal(true)}
@@ -471,7 +376,7 @@ export function IntegrationsForm() {
             <div className="text-center py-12 bg-[var(--bg-secondary-alt)] rounded-xl border border-[var(--border-secondary)]">
               <Plug className="w-10 h-10 text-[var(--fg-quaternary)] mx-auto mb-3" />
               <h4 className="text-sm font-medium text-[var(--fg-secondary)]">
-                No MCP connections yet
+                No connections yet
               </h4>
               <p className="text-sm text-[var(--fg-tertiary)] mt-1 max-w-sm mx-auto">
                 Add an MCP server to give your AI assistants access to external tools and data.
@@ -506,72 +411,6 @@ export function IntegrationsForm() {
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {activeTab === 'apps' && (
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-[var(--bg-tertiary)] rounded-lg">
-                <Settings2 className="w-5 h-5 text-[var(--fg-tertiary)]" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-[var(--fg-primary)]">
-                  Connected Apps
-                </h3>
-                <p className="text-sm text-[var(--fg-tertiary)] max-w-lg">
-                  Manage integrations with your favorite tools. Enable or disable connections as needed.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Integrations List */}
-          <div className="bg-[var(--bg-secondary-alt)] rounded-xl border border-[var(--border-secondary)]">
-            <div className="divide-y divide-[var(--border-secondary)]">
-              {integrations.map((integration) => (
-                <div
-                  key={integration.id}
-                  className="flex items-center justify-between gap-4 p-4"
-                >
-                  <div className="flex items-center gap-4 min-w-0">
-                    {/* Icon */}
-                    <div className={`
-                      flex-shrink-0
-                      w-12 h-12
-                      ${integration.iconBg}
-                      rounded-xl
-                      flex items-center justify-center
-                      text-white text-lg font-bold
-                    `}>
-                      {integration.icon}
-                    </div>
-
-                    {/* Info */}
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
-                        {integration.name}
-                      </h3>
-                      <p className="text-sm text-[var(--fg-tertiary)] truncate">
-                        {integration.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Toggle */}
-                  <div className="flex items-center flex-shrink-0">
-                    <Toggle
-                      enabled={integration.enabled}
-                      onChange={(enabled) => toggleIntegration(integration.id, enabled)}
-                      label={`Toggle ${integration.name} integration`}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 

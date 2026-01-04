@@ -24,6 +24,7 @@ const routeLabels: Record<string, string> = {
   'spaces': 'Spaces',
   'chats': 'Recent Chats',
   'demo': 'Demo',
+  'account': 'Settings',
   // Brand Hub subpages
   'logo': 'Logo',
   'colors': 'Colors',

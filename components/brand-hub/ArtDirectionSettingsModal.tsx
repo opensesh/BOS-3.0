@@ -27,7 +27,6 @@ interface StaticArtImage {
   id: string;
   name: string;
   category: ArtDirectionCategory;
-  photographer?: string;
   tags: string[];
   path: string;
   format: 'png' | 'jpg' | 'webp';
@@ -650,20 +649,20 @@ interface AddArtImageRowProps {
   onAdd: (data: {
     file: File;
     name: string;
-    category: ArtDirectionCategory;
-    photographer: string;
+    category: string;
     tags: string;
     altText: string;
   }) => void;
   onCancel: () => void;
   isAdding: boolean;
+  customCategories: string[];
+  onAddCategory: (category: string) => void;
 }
 
-function AddArtImageRow({ onAdd, onCancel, isAdding }: AddArtImageRowProps) {
+function AddArtImageRow({ onAdd, onCancel, isAdding, customCategories, onAddCategory }: AddArtImageRowProps) {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<ArtDirectionCategory>('Auto');
-  const [photographer, setPhotographer] = useState('');
+  const [category, setCategory] = useState<string>('Auto');
   const [tags, setTags] = useState('');
   const [altText, setAltText] = useState('');
   const [isDragging, setIsDragging] = useState(false);
@@ -733,7 +732,6 @@ function AddArtImageRow({ onAdd, onCancel, isAdding }: AddArtImageRowProps) {
       file,
       name: name.trim(),
       category,
-      photographer: photographer.trim(),
       tags: tags.trim(),
       altText: altText.trim(),
     });
@@ -741,34 +739,15 @@ function AddArtImageRow({ onAdd, onCancel, isAdding }: AddArtImageRowProps) {
 
   const isValid = file && name.trim();
 
-  const getCategoryColor = (cat: ArtDirectionCategory) => {
-    switch (cat) {
-      case 'Auto':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'Lifestyle':
-        return 'bg-pink-500/10 text-pink-500';
-      case 'Move':
-        return 'bg-orange-500/10 text-orange-500';
-      case 'Escape':
-        return 'bg-emerald-500/10 text-emerald-500';
-      case 'Work':
-        return 'bg-purple-500/10 text-purple-500';
-      case 'Feel':
-        return 'bg-rose-500/10 text-rose-500';
-      default:
-        return 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]';
-    }
-  };
-
   return (
     <tr className="border-b border-[var(--border-brand)] bg-[var(--bg-brand-primary)]/5">
       {/* File Upload */}
-      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[50px] sm:w-[60px]">
+      <td className="py-2 sm:py-3 px-2 sm:px-3">
         <label
           onDrop={handleDrop}
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
-          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center cursor-pointer border-2 border-dashed transition-colors overflow-hidden ${
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center cursor-pointer border-2 border-dashed transition-colors overflow-hidden flex-shrink-0 ${
             isDragging
               ? 'border-[var(--border-brand)] bg-[var(--bg-brand-primary)]'
               : file
@@ -796,7 +775,7 @@ function AddArtImageRow({ onAdd, onCancel, isAdding }: AddArtImageRowProps) {
       </td>
 
       {/* Name */}
-      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[100px] sm:w-[140px] md:w-[180px]">
+      <td className="py-2 sm:py-3 px-2 sm:px-3">
         <input
           type="text"
           value={name}
@@ -808,26 +787,17 @@ function AddArtImageRow({ onAdd, onCancel, isAdding }: AddArtImageRowProps) {
       </td>
 
       {/* Category */}
-      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[80px] sm:w-[100px]">
+      <td className="py-2 sm:py-3 px-2 sm:px-3">
         <CategorySelect
           value={category}
           onChange={setCategory}
+          customCategories={customCategories}
+          onAddCategory={onAddCategory}
         />
       </td>
 
-      {/* Photographer - hidden on mobile */}
-      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[80px] sm:w-[100px] hidden sm:table-cell">
-        <input
-          type="text"
-          value={photographer}
-          onChange={(e) => setPhotographer(e.target.value)}
-          placeholder="Photographer"
-          className="w-full px-2 py-1 text-xs rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:outline-none"
-        />
-      </td>
-
-      {/* Tags - hidden on mobile and tablet */}
-      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[100px] sm:w-[140px] hidden md:table-cell">
+      {/* Tags - hidden on mobile */}
+      <td className="py-2 sm:py-3 px-2 sm:px-3 hidden sm:table-cell">
         <input
           type="text"
           value={tags}
@@ -837,15 +807,15 @@ function AddArtImageRow({ onAdd, onCancel, isAdding }: AddArtImageRowProps) {
         />
       </td>
 
-      {/* Format - hidden on mobile and tablet */}
-      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[50px] sm:w-[60px] hidden md:table-cell">
+      {/* Format - hidden on mobile */}
+      <td className="py-2 sm:py-3 px-2 sm:px-3 hidden sm:table-cell">
         <span className="text-[10px] font-mono text-[var(--fg-muted)] uppercase">
           {file ? file.type.split('/')[1] : '—'}
         </span>
       </td>
 
       {/* Actions */}
-      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[50px] sm:w-[60px]">
+      <td className="py-2 sm:py-3 px-2 sm:px-3">
         <div className="flex items-center justify-end gap-0.5 sm:gap-1">
           <button
             onClick={handleSubmit}
@@ -896,6 +866,13 @@ export function ArtDirectionSettingsModal({ isOpen, onClose }: ArtDirectionSetti
   const [editValues, setEditValues] = useState<EditingArtImage | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+
+  const handleAddCategory = useCallback((category: string) => {
+    if (!customCategories.includes(category) && !DEFAULT_CATEGORIES.includes(category)) {
+      setCustomCategories(prev => [...prev, category]);
+    }
+  }, [customCategories]);
 
   const handleStartEdit = useCallback((image: BrandArtImage) => {
     const meta = image.metadata as BrandArtImageMetadata;
@@ -903,7 +880,6 @@ export function ArtDirectionSettingsModal({ isOpen, onClose }: ArtDirectionSetti
     setEditValues({
       name: image.name,
       category: meta.artCategory || 'Auto',
-      photographer: meta.photographer || '',
       tags: meta.tags?.join(', ') || '',
       altText: meta.altText || '',
     });
@@ -930,8 +906,7 @@ export function ArtDirectionSettingsModal({ isOpen, onClose }: ArtDirectionSetti
       await editImage(editingId, {
         name: editValues.name,
         metadata: {
-          artCategory: editValues.category,
-          photographer: editValues.photographer || undefined,
+          artCategory: editValues.category as ArtDirectionCategory,
           tags: editValues.tags ? editValues.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
           altText: editValues.altText || undefined,
         },
@@ -962,8 +937,7 @@ export function ArtDirectionSettingsModal({ isOpen, onClose }: ArtDirectionSetti
   const handleAddImage = useCallback(async (data: {
     file: File;
     name: string;
-    category: ArtDirectionCategory;
-    photographer: string;
+    category: string;
     tags: string;
     altText: string;
   }) => {
@@ -971,8 +945,7 @@ export function ArtDirectionSettingsModal({ isOpen, onClose }: ArtDirectionSetti
     setError(null);
     try {
       const metadata: BrandArtImageMetadata = {
-        artCategory: data.category,
-        photographer: data.photographer || undefined,
+        artCategory: data.category as ArtDirectionCategory,
         tags: data.tags ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
         altText: data.altText || undefined,
       };
@@ -1044,7 +1017,7 @@ export function ArtDirectionSettingsModal({ isOpen, onClose }: ArtDirectionSetti
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="w-full max-w-3xl max-h-[65vh] overflow-hidden rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col pointer-events-auto"
+              className="w-full max-w-2xl max-h-[65vh] overflow-hidden rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col pointer-events-auto"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--border-primary)] shrink-0">
@@ -1089,78 +1062,77 @@ export function ArtDirectionSettingsModal({ isOpen, onClose }: ArtDirectionSetti
               )}
 
               {/* Table Content - Scrollable area */}
-              <div className="flex-1 overflow-auto min-h-0">
+              <div className="flex-1 overflow-y-auto min-h-0">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-16 gap-3">
                     <Loader2 className="w-5 h-5 animate-spin text-[var(--fg-brand-primary)]" />
                     <span className="text-[var(--fg-tertiary)]">Loading images...</span>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[480px]">
-                      <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)] z-10">
-                        <tr>
-                          <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[50px] sm:w-[60px]">
-                            
-                          </th>
-                          <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[100px] sm:w-[140px] md:w-[180px]">
-                            Name
-                          </th>
-                          <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px] sm:w-[100px]">
-                            Category
-                          </th>
-                          <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px] sm:w-[100px] hidden sm:table-cell">
-                            Photographer
-                          </th>
-                          <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[100px] sm:w-[140px] hidden md:table-cell">
-                            Tags
-                          </th>
-                          <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[50px] sm:w-[60px] hidden md:table-cell">
-                            Format
-                          </th>
-                          <th className="py-2.5 px-2 sm:px-3 text-right text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[50px] sm:w-[60px]">
-                            
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {/* Add new image row (when active) */}
-                        {isAddingNew && (
-                          <AddArtImageRow
-                            onAdd={handleAddImage}
-                            onCancel={() => setIsAddingNew(false)}
-                            isAdding={isSaving}
-                          />
-                        )}
-                        
-                        {/* Static pre-populated images */}
-                        {STATIC_ART_IMAGES.map((image) => (
-                          <StaticArtImageRow
-                            key={`static-${image.id}`}
-                            image={image}
-                            onDownload={handleDownloadStaticImage}
-                          />
-                        ))}
-                        
-                        {/* Dynamic user-added images from Supabase */}
-                        {sortedImages.map((image) => (
-                          <ArtImageRow
-                            key={image.id}
-                            image={image}
-                            isEditing={editingId === image.id}
-                            editValues={editingId === image.id ? editValues : null}
-                            onStartEdit={() => handleStartEdit(image)}
-                            onCancelEdit={handleCancelEdit}
-                            onUpdateField={handleUpdateField}
-                            onSave={handleSaveEdit}
-                            onDelete={() => handleDelete(image.id)}
-                            onDownload={handleDownloadImage}
-                            isSaving={isSaving}
-                          />
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <table className="w-full table-fixed">
+                    <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)] z-10">
+                      <tr>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[56px] sm:w-[68px]">
+                          
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[90px] sm:w-[100px]">
+                          Category
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[100px] hidden sm:table-cell">
+                          Tags
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[50px] hidden sm:table-cell">
+                          Format
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-right text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[44px] sm:w-[52px]">
+                          
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Add new image row (when active) */}
+                      {isAddingNew && (
+                        <AddArtImageRow
+                          onAdd={handleAddImage}
+                          onCancel={() => setIsAddingNew(false)}
+                          isAdding={isSaving}
+                          customCategories={customCategories}
+                          onAddCategory={handleAddCategory}
+                        />
+                      )}
+                      
+                      {/* Static pre-populated images */}
+                      {STATIC_ART_IMAGES.map((image) => (
+                        <StaticArtImageRow
+                          key={`static-${image.id}`}
+                          image={image}
+                          onDownload={handleDownloadStaticImage}
+                        />
+                      ))}
+                      
+                      {/* Dynamic user-added images from Supabase */}
+                      {sortedImages.map((image) => (
+                        <ArtImageRow
+                          key={image.id}
+                          image={image}
+                          isEditing={editingId === image.id}
+                          editValues={editingId === image.id ? editValues : null}
+                          onStartEdit={() => handleStartEdit(image)}
+                          onCancelEdit={handleCancelEdit}
+                          onUpdateField={handleUpdateField}
+                          onSave={handleSaveEdit}
+                          onDelete={() => handleDelete(image.id)}
+                          onDownload={handleDownloadImage}
+                          isSaving={isSaving}
+                          customCategories={customCategories}
+                          onAddCategory={handleAddCategory}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
                 )}
               </div>
 

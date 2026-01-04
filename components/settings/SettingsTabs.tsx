@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, useLayoutEffect } from 'react';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Tab {
@@ -17,8 +18,11 @@ interface SettingsTabsProps {
 
 export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Check scroll position to show/hide navigation arrows
   const checkScrollPosition = useCallback(() => {
@@ -29,6 +33,24 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
     setShowLeftArrow(scrollLeft > 0);
     setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
   }, []);
+
+  // Update sliding indicator position
+  useLayoutEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const activeButton = container.querySelector(`[data-tab-id="${activeTab}"]`) as HTMLButtonElement;
+    if (activeButton) {
+      setIndicatorStyle({
+        left: activeButton.offsetLeft,
+        width: activeButton.offsetWidth,
+      });
+      // Mark as initialized after first measurement
+      if (!isInitialized) {
+        requestAnimationFrame(() => setIsInitialized(true));
+      }
+    }
+  }, [activeTab, tabs, isInitialized]);
 
   useEffect(() => {
     checkScrollPosition();
@@ -72,7 +94,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
         <div 
           className="
             absolute left-0 top-0 bottom-0 w-16
-            bg-gradient-to-r from-[var(--bg-secondary-alt)] via-[var(--bg-secondary-alt)]/80 to-transparent
+            bg-gradient-to-r from-[var(--bg-tertiary)] via-[var(--bg-tertiary)]/80 to-transparent
             rounded-l-lg
           "
         />
@@ -114,7 +136,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
         <div 
           className="
             absolute right-0 top-0 bottom-0 w-16
-            bg-gradient-to-l from-[var(--bg-secondary-alt)] via-[var(--bg-secondary-alt)]/80 to-transparent
+            bg-gradient-to-l from-[var(--bg-tertiary)] via-[var(--bg-tertiary)]/80 to-transparent
             rounded-r-lg
           "
         />
@@ -146,10 +168,10 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
       <div
         ref={scrollContainerRef}
         className="
-          flex items-center gap-1
+          relative
+          flex items-center gap-0.5
           p-1
-          bg-[var(--bg-secondary-alt)]
-          border border-[var(--border-secondary)]
+          bg-[var(--bg-tertiary)]
           rounded-lg
           overflow-x-auto
           scrollbar-hide
@@ -164,27 +186,57 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
           WebkitOverflowScrolling: 'touch',
         }}
       >
+        {/* Sliding indicator with spring animation */}
+        <motion.div
+          className="absolute top-1 bottom-1 rounded-md bg-[var(--bg-primary)] shadow-sm"
+          initial={false}
+          animate={{
+            left: indicatorStyle.left,
+            width: indicatorStyle.width,
+          }}
+          transition={{
+            type: 'spring',
+            stiffness: 500,
+            damping: 35,
+            mass: 1,
+          }}
+          style={{
+            // Hide until initialized to prevent flash
+            opacity: isInitialized ? 1 : 0,
+          }}
+          aria-hidden="true"
+        />
+
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
-            <button
+            <motion.button
               key={tab.id}
+              data-tab-id={tab.id}
               onClick={() => onTabChange(tab.id)}
               role="tab"
               aria-selected={isActive}
               aria-controls={`tabpanel-${tab.id}`}
-              className={`
+              className="
+                relative z-10 
                 flex items-center gap-2
-                px-3 py-2
+                px-3 py-1.5
                 rounded-md
-                text-sm font-semibold
+                text-xs font-medium
                 whitespace-nowrap
-                transition-all duration-150
-                ${isActive
-                  ? 'bg-[var(--bg-primary)] text-[var(--fg-secondary)] shadow-sm'
-                  : 'text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)]/50'
-                }
-              `}
+                cursor-pointer
+              "
+              animate={{
+                color: isActive ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
+              }}
+              whileHover={!isActive ? { 
+                color: 'var(--fg-secondary)',
+              } : {}}
+              whileTap={{ scale: 0.98 }}
+              transition={{
+                color: { duration: 0.15, ease: 'easeOut' },
+                scale: { type: 'spring', stiffness: 400, damping: 25 },
+              }}
             >
               {tab.label}
               {tab.badge && (
@@ -194,6 +246,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
                     px-2 py-0.5
                     text-xs font-medium
                     rounded-full
+                    transition-colors duration-150
                     ${isActive
                       ? 'bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]'
                       : 'bg-[var(--bg-quaternary)] text-[var(--fg-quaternary)]'
@@ -203,7 +256,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
                   {tab.badge}
                 </span>
               )}
-            </button>
+            </motion.button>
           );
         })}
       </div>

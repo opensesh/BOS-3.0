@@ -143,10 +143,10 @@ function AddResourceCard({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="group flex items-center justify-center p-3 rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all w-16 h-16"
+      className="group flex items-center justify-center rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all w-16 h-16 cursor-pointer active:scale-95"
       title="Add Resource"
     >
-      <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+      <Plus className="w-6 h-6 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] group-hover:scale-110 transition-all pointer-events-none" />
     </button>
   );
 }

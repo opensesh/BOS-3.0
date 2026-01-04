@@ -12,12 +12,7 @@ import {
   ChevronDown,
   ArrowLeft,
 } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip } from '@/components/ui/base/tooltip/tooltip';
 import type { CanvasPanelMode, CanvasViewMode } from '@/lib/canvas-context';
 
 interface CanvasHeaderProps {
@@ -112,181 +107,149 @@ export function CanvasHeader({
   }, [showDownloadMenu]);
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className="flex items-center justify-between h-12 px-4 border-b border-[var(--border-secondary)] bg-[var(--bg-primary)] flex-shrink-0">
-        {/* Left side - Back button (mobile) + Title + MD badge */}
-        <div className="flex items-center gap-2 min-w-0">
-          {/* Back button on mobile */}
-          {showBackButton && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={onClose}
-                  className="p-1.5 -ml-1 mr-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Back to chat</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-          <h2 className="text-sm font-medium text-[var(--fg-primary)] truncate max-w-[200px]">
-            {title}
-          </h2>
-          <span className="text-[10px] font-medium text-[var(--fg-tertiary)] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] shrink-0">
-            MD
-          </span>
-          {hasUnsavedChanges && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-warning-primary)] shrink-0" />
-          )}
-          {isSaving && (
-            <span className="text-[10px] text-[var(--fg-tertiary)]">Saving...</span>
-          )}
+    <div className="flex items-center justify-between h-12 px-4 border-b border-[var(--border-secondary)] bg-[var(--bg-primary)] flex-shrink-0">
+      {/* Left side - Back button (mobile) + Title + MD badge */}
+      <div className="flex items-center gap-2 min-w-0">
+        {/* Back button on mobile */}
+        {showBackButton && (
+          <Tooltip title="Back to chat" placement="bottom" delay={200}>
+            <button
+              onClick={onClose}
+              className="p-1.5 -ml-1 mr-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          </Tooltip>
+        )}
+        <h2 className="text-sm font-medium text-[var(--fg-primary)] truncate max-w-[200px]">
+          {title}
+        </h2>
+        <span className="text-[10px] font-medium text-[var(--fg-tertiary)] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] shrink-0">
+          MD
+        </span>
+        {hasUnsavedChanges && (
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-warning-primary)] shrink-0" />
+        )}
+        {isSaving && (
+          <span className="text-[10px] text-[var(--fg-tertiary)]">Saving...</span>
+        )}
+      </div>
+
+      {/* Right side - Controls */}
+      <div className="flex items-center gap-1">
+        {/* View/Source Toggle - icon only with animated indicator */}
+        <div className="relative flex items-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]/50 p-0.5">
+          {/* Animated background indicator */}
+          <motion.div
+            className="absolute top-0.5 bottom-0.5 rounded-md bg-[var(--bg-tertiary)]"
+            initial={false}
+            animate={{
+              left: viewMode === 'source' ? '2px' : 'calc(50% + 1px)',
+              width: 'calc(50% - 3px)',
+              height: 'calc(100% - 4px)',
+            }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          />
+          <Tooltip title="Source view" placement="bottom" delay={200}>
+            <button
+              onClick={() => onViewModeChange('source')}
+              className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
+                viewMode === 'source' 
+                  ? 'text-[var(--fg-primary)]' 
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+              }`}
+            >
+              <Code className="w-4 h-4" />
+            </button>
+          </Tooltip>
+          <Tooltip title="Preview" placement="bottom" delay={200}>
+            <button
+              onClick={() => onViewModeChange('view')}
+              className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
+                viewMode === 'view' 
+                  ? 'text-[var(--fg-primary)]' 
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+              }`}
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </Tooltip>
         </div>
 
-        {/* Right side - Controls */}
-        <div className="flex items-center gap-1">
-          {/* View/Source Toggle - icon only with animated indicator */}
-          <div className="relative flex items-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]/50 p-0.5">
-            {/* Animated background indicator */}
-            <motion.div
-              className="absolute top-0.5 bottom-0.5 rounded-md bg-[var(--bg-tertiary)]"
-              initial={false}
-              animate={{
-                left: viewMode === 'source' ? '2px' : 'calc(50% + 1px)',
-                width: 'calc(50% - 3px)',
-                height: 'calc(100% - 4px)',
+        {/* Divider */}
+        <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
+
+        {/* Copy */}
+        <Tooltip title={copied ? "Copied!" : "Copy content"} placement="bottom" delay={200}>
+          <button
+            onClick={handleCopy}
+            className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
+          >
+            {copied ? (
+              <Check className="w-4 h-4 text-green-500" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+          </button>
+        </Tooltip>
+
+        {/* Download with dropdown */}
+        <div className="relative">
+          <Tooltip title="Download" placement="bottom" delay={200}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDownloadMenu(!showDownloadMenu);
               }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            />
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => onViewModeChange('source')}
-                  className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
-                    viewMode === 'source' 
-                      ? 'text-[var(--fg-primary)]' 
-                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                  }`}
-                >
-                  <Code className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Source view</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => onViewModeChange('view')}
-                  className={`relative z-10 w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-200 ${
-                    viewMode === 'view' 
-                      ? 'text-[var(--fg-primary)]' 
-                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                  }`}
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Preview</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
-
-          {/* Copy */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleCopy}
-                className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
-              >
-                {copied ? (
-                  <Check className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>{copied ? 'Copied!' : 'Copy content'}</p>
-            </TooltipContent>
+              className="flex items-center gap-0.5 p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
+            >
+              <Download className="w-4 h-4" />
+              <ChevronDown className="w-3 h-3" />
+            </button>
           </Tooltip>
 
-          {/* Download with dropdown */}
-          <div className="relative">
-            <Tooltip>
-              <TooltipTrigger asChild>
+          <AnimatePresence>
+            {showDownloadMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-full mt-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg py-1 min-w-[140px] z-50"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowDownloadMenu(!showDownloadMenu);
-                  }}
-                  className="flex items-center gap-0.5 p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
+                  onClick={handleDownloadMarkdown}
+                  className="w-full px-3 py-2 text-left text-sm text-[var(--fg-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
                 >
-                  <Download className="w-4 h-4" />
-                  <ChevronDown className="w-3 h-3" />
+                  Markdown (.md)
                 </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Download</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <AnimatePresence>
-              {showDownloadMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg py-1 min-w-[140px] z-50"
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  onClick={handleDownloadPDF}
+                  className="w-full px-3 py-2 text-left text-sm text-[var(--fg-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
                 >
-                  <button
-                    onClick={handleDownloadMarkdown}
-                    className="w-full px-3 py-2 text-left text-sm text-[var(--fg-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
-                  >
-                    Markdown (.md)
-                  </button>
-                  <button
-                    onClick={handleDownloadPDF}
-                    className="w-full px-3 py-2 text-left text-sm text-[var(--fg-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
-                  >
-                    PDF (Print)
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Close button - hidden on mobile since we have back button */}
-          {!showBackButton && (
-            <>
-              <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={onClose}
-                    className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Close (Esc)</p>
-                </TooltipContent>
-              </Tooltip>
-            </>
-          )}
+                  PDF (Print)
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+
+        {/* Close button - hidden on mobile since we have back button */}
+        {!showBackButton && (
+          <>
+            <div className="w-px h-5 bg-[var(--border-secondary)] mx-1" />
+            <Tooltip title="Close (Esc)" placement="bottom" delay={200}>
+              <button
+                onClick={onClose}
+                className="p-1.5 rounded hover:bg-[var(--bg-secondary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </Tooltip>
+          </>
+        )}
       </div>
-    </TooltipProvider>
+    </div>
   );
 }

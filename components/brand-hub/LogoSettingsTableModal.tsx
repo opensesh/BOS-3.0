@@ -5,19 +5,110 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   Plus, 
-  Trash2, 
   Check, 
   ChevronDown, 
   Loader2,
   Download,
   Image as ImageIcon,
   Upload,
-  Lock,
   Shield,
 } from 'lucide-react';
 import { useBrandLogos, DEFAULT_LOGO_TYPES, DEFAULT_VARIANTS, DEFAULT_CATEGORIES } from '@/hooks/useBrandLogos';
 import type { BrandLogo, BrandLogoMetadata, BrandLogoVariant, BrandLogoType, BrandLogoCategory } from '@/lib/supabase/types';
-import { ConfirmDialog } from './BrandHubSettingsModal';
+
+// ============================================
+// STATIC SYSTEM LOGOS (Pre-populated from brand assets)
+// ============================================
+
+interface StaticLogo {
+  id: string;
+  name: string;
+  category: 'main' | 'accessory';
+  logoType: string;
+  variants: { variant: string; path: string }[];
+}
+
+const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
+  // Main Logos
+  {
+    id: 'brandmark',
+    name: 'Brandmark',
+    category: 'main',
+    logoType: 'brandmark',
+    variants: [
+      { variant: 'vanilla', path: '/assets/logos/brandmark-vanilla.svg' },
+      { variant: 'glass', path: '/assets/logos/brandmark-glass.svg' },
+      { variant: 'charcoal', path: '/assets/logos/brandmark-charcoal.svg' },
+    ],
+  },
+  {
+    id: 'combo',
+    name: 'Combo',
+    category: 'main',
+    logoType: 'combo',
+    variants: [
+      { variant: 'vanilla', path: '/assets/logos/logo_main_combo_vanilla.svg' },
+      { variant: 'glass', path: '/assets/logos/logo_main_combo_glass.svg' },
+      { variant: 'charcoal', path: '/assets/logos/logo_main_combo_charcoal.svg' },
+    ],
+  },
+  {
+    id: 'stacked',
+    name: 'Stacked',
+    category: 'main',
+    logoType: 'stacked',
+    variants: [
+      { variant: 'vanilla', path: '/assets/logos/stacked-vanilla.svg' },
+      { variant: 'glass', path: '/assets/logos/stacked-glass.svg' },
+      { variant: 'charcoal', path: '/assets/logos/stacked-charcoal.svg' },
+    ],
+  },
+  {
+    id: 'horizontal',
+    name: 'Horizontal',
+    category: 'main',
+    logoType: 'horizontal',
+    variants: [
+      { variant: 'vanilla', path: '/assets/logos/horizontal-vanilla.svg' },
+      { variant: 'glass', path: '/assets/logos/horizontal-glass.svg' },
+      { variant: 'charcoal', path: '/assets/logos/horizontal-charcoal.svg' },
+    ],
+  },
+  // Accessory Logos
+  {
+    id: 'core',
+    name: 'Core',
+    category: 'accessory',
+    logoType: 'core',
+    variants: [
+      { variant: 'vanilla', path: '/assets/logos/core.svg' },
+      { variant: 'glass', path: '/assets/logos/core-glass.svg' },
+      { variant: 'charcoal', path: '/assets/logos/core-charcoal.svg' },
+    ],
+  },
+  {
+    id: 'outline',
+    name: 'Outline',
+    category: 'accessory',
+    logoType: 'outline',
+    variants: [
+      { variant: 'vanilla', path: '/assets/logos/outline.svg' },
+      { variant: 'glass', path: '/assets/logos/outline-glass.svg' },
+      { variant: 'charcoal', path: '/assets/logos/outline-charcoal.svg' },
+    ],
+  },
+  {
+    id: 'filled',
+    name: 'Filled',
+    category: 'accessory',
+    logoType: 'filled',
+    variants: [
+      { variant: 'vanilla', path: '/assets/logos/filled.svg' },
+      { variant: 'glass', path: '/assets/logos/filled-glass.svg' },
+      { variant: 'charcoal', path: '/assets/logos/filled-charcoal.svg' },
+    ],
+  },
+];
 
 interface LogoSettingsTableModalProps {
   isOpen: boolean;
@@ -48,12 +139,32 @@ function CustomSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newValue, setNewValue] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Calculate dropdown position based on available space
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - buttonRect.bottom;
+      const spaceAbove = buttonRect.top;
+      const dropdownHeight = 220; // Approximate max height of dropdown
+      
+      // Position above if not enough space below and more space above
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        setDropdownPosition('top');
+      } else {
+        setDropdownPosition('bottom');
+      }
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setIsAddingNew(false);
         setNewValue('');
@@ -79,24 +190,29 @@ function CustomSelect({
   };
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={containerRef} className="relative">
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-md border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors min-w-[80px]"
       >
         <span className="text-[var(--fg-primary)] truncate">
           {value ? formatLabel(value) : placeholder}
         </span>
-        <ChevronDown className="w-3 h-3 text-[var(--fg-tertiary)] flex-shrink-0" />
+        <ChevronDown className={`w-3 h-3 text-[var(--fg-tertiary)] flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: dropdownPosition === 'bottom' ? -4 : 4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full mt-1 left-0 z-20 py-1 min-w-[140px] max-h-[200px] overflow-auto rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-lg"
+            exit={{ opacity: 0, y: dropdownPosition === 'bottom' ? -4 : 4 }}
+            className={`absolute left-0 z-[100] py-1 min-w-[160px] max-h-[200px] overflow-auto rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-xl ${
+              dropdownPosition === 'bottom' 
+                ? 'top-full mt-1' 
+                : 'bottom-full mb-1'
+            }`}
           >
             {options.map((option) => (
               <button
@@ -164,15 +280,111 @@ function CustomSelect({
 // LOGO ROW COMPONENT
 // ============================================
 
+// ============================================
+// STATIC SYSTEM LOGO ROW (Pre-populated logos)
+// ============================================
+
+interface StaticLogoRowProps {
+  logo: StaticLogo;
+  onDownload: (path: string, name: string) => void;
+}
+
+function StaticLogoRow({ logo, onDownload }: StaticLogoRowProps) {
+  const formatLabel = (value: string) => {
+    return value
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Show first variant's image as preview
+  const previewPath = logo.variants[0]?.path || '';
+  const variantCount = logo.variants.length;
+
+  return (
+    <tr className="group border-b border-[var(--border-secondary)] hover:bg-[var(--bg-secondary)]/30 transition-colors">
+      {/* Preview */}
+      <td className="py-2 px-3 w-[60px]">
+        <div className="w-10 h-10 rounded-lg bg-[var(--color-charcoal)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden">
+          <img 
+            src={previewPath} 
+            alt={logo.name} 
+            className="w-8 h-8 object-contain"
+          />
+        </div>
+      </td>
+
+      {/* Name */}
+      <td className="py-2 px-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-[var(--fg-primary)]">
+            {logo.name}
+          </span>
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]" title="System logo - protected">
+            <Shield className="w-2.5 h-2.5" />
+            Protected
+          </span>
+        </div>
+      </td>
+
+      {/* Category */}
+      <td className="py-2 px-3 w-[100px]">
+        <span className={`inline-flex px-2 py-0.5 text-[10px] font-medium rounded ${
+          logo.category === 'main' 
+            ? 'bg-[var(--bg-brand-primary)]/10 text-[var(--fg-brand-primary)]' 
+            : 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]'
+        }`}>
+          {formatLabel(logo.category)}
+        </span>
+      </td>
+
+      {/* Type */}
+      <td className="py-2 px-3 w-[100px]">
+        <span className="text-xs text-[var(--fg-secondary)]">
+          {formatLabel(logo.logoType)}
+        </span>
+      </td>
+
+      {/* Variant */}
+      <td className="py-2 px-3 w-[100px]">
+        <span className="text-xs text-[var(--fg-tertiary)]">
+          {variantCount} variant{variantCount !== 1 ? 's' : ''}
+        </span>
+      </td>
+
+      {/* Format */}
+      <td className="py-2 px-3 w-[70px]">
+        <span className="text-[10px] font-mono text-[var(--fg-muted)] uppercase">
+          svg
+        </span>
+      </td>
+
+      {/* Actions */}
+      <td className="py-2 px-3 w-[60px]">
+        <div className="flex items-center justify-end">
+          <button
+            onClick={() => onDownload(previewPath, `${logo.id}-vanilla.svg`)}
+            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] opacity-0 group-hover:opacity-100 transition-all"
+            title="Download"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+// ============================================
+// DYNAMIC LOGO ROW COMPONENT (User-added logos)
+// ============================================
+
 interface LogoRowProps {
   logo: BrandLogo;
   onDownload: (logo: BrandLogo) => void;
-  onDelete: (logo: BrandLogo) => void;
-  canDelete: boolean;
 }
 
-function LogoRow({ logo, onDownload, onDelete, canDelete }: LogoRowProps) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+function LogoRow({ logo, onDownload }: LogoRowProps) {
   const meta = logo.metadata as BrandLogoMetadata;
 
   // Determine category display
@@ -253,8 +465,8 @@ function LogoRow({ logo, onDownload, onDelete, canDelete }: LogoRowProps) {
         </td>
 
         {/* Actions */}
-        <td className="py-2 px-3 w-[80px]">
-          <div className="flex items-center justify-end gap-1">
+        <td className="py-2 px-3 w-[60px]">
+          <div className="flex items-center justify-end">
             <button
               onClick={() => onDownload(logo)}
               className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] opacity-0 group-hover:opacity-100 transition-all"
@@ -262,39 +474,9 @@ function LogoRow({ logo, onDownload, onDelete, canDelete }: LogoRowProps) {
             >
               <Download className="w-3.5 h-3.5" />
             </button>
-            {canDelete ? (
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--fg-tertiary)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                title="Delete"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            ) : (
-              <span 
-                className="p-1.5 text-[var(--fg-muted)] opacity-0 group-hover:opacity-30 cursor-not-allowed"
-                title="Protected logo cannot be deleted"
-              >
-                <Lock className="w-3.5 h-3.5" />
-              </span>
-            )}
           </div>
         </td>
       </tr>
-
-      {/* Delete Confirmation */}
-      <ConfirmDialog
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={() => {
-          onDelete(logo);
-          setShowDeleteConfirm(false);
-        }}
-        title="Delete Logo"
-        message={`Are you sure you want to delete "${logo.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        variant="danger"
-      />
     </>
   );
 }
@@ -420,7 +602,7 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
           onChange={(v) => setCategory(v as BrandLogoCategory)}
           options={DEFAULT_CATEGORIES}
           formatLabel={formatLabel}
-          allowCustom={false}
+          allowCustom={true}
         />
       </td>
 
@@ -454,7 +636,7 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
       </td>
 
       {/* Actions */}
-      <td className="py-3 px-3 w-[80px]">
+      <td className="py-3 px-3 w-[60px]">
         <div className="flex items-center justify-end gap-1">
           <button
             onClick={handleSubmit}
@@ -490,8 +672,6 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
     logos,
     isLoading,
     uploadLogoFile,
-    removeLogo,
-    canDeleteLogo,
     availableTypes,
     availableVariants,
   } = useBrandLogos();
@@ -527,16 +707,6 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
     }
   }, [uploadLogoFile]);
 
-  const handleDeleteLogo = useCallback(async (logo: BrandLogo) => {
-    try {
-      setError(null);
-      await removeLogo(logo.id);
-    } catch (err) {
-      console.error('Error deleting logo:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete logo');
-    }
-  }, [removeLogo]);
-
   const handleDownloadLogo = useCallback((logo: BrandLogo) => {
     if (logo.publicUrl) {
       const link = document.createElement('a');
@@ -546,6 +716,16 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
       link.click();
       document.body.removeChild(link);
     }
+  }, []);
+
+  // Download static logo from path
+  const handleDownloadStaticLogo = useCallback((path: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = path;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }, []);
 
   // Sort logos: main first, then accessory; within each, by name
@@ -561,6 +741,9 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
     return a.name.localeCompare(b.name);
   });
 
+  // Total count includes both static and dynamic logos
+  const totalLogoCount = STATIC_SYSTEM_LOGOS.length + logos.length;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -574,22 +757,22 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
             onClick={onClose}
           />
 
-          {/* Modal */}
+          {/* Modal - Centered in viewport */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-4 top-[5%] mx-auto max-w-4xl max-h-[90vh] overflow-hidden z-50 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl"
+            className="fixed inset-4 md:inset-8 lg:inset-12 mx-auto my-auto max-w-5xl max-h-[85vh] w-full overflow-hidden z-50 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-[var(--border-primary)]">
+            <div className="flex items-center justify-between p-5 border-b border-[var(--border-primary)] shrink-0">
               <div>
                 <h2 className="text-lg font-display font-bold text-[var(--fg-primary)]">
                   Manage Logos
                 </h2>
                 <p className="text-sm text-[var(--fg-tertiary)]">
-                  {logos.length} logo{logos.length !== 1 ? 's' : ''} in your brand library
+                  {totalLogoCount} logo{totalLogoCount !== 1 ? 's' : ''} in your brand library
                 </p>
               </div>
 
@@ -624,35 +807,16 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
               </div>
             )}
 
-            {/* Table Content */}
-            <div className="overflow-auto max-h-[calc(90vh-5rem)]">
+            {/* Table Content - Scrollable area */}
+            <div className="flex-1 overflow-auto min-h-0">
               {isLoading ? (
                 <div className="flex items-center justify-center py-16 gap-3">
                   <Loader2 className="w-5 h-5 animate-spin text-[var(--fg-brand-primary)]" />
                   <span className="text-[var(--fg-tertiary)]">Loading logos...</span>
                 </div>
-              ) : logos.length === 0 && !isAddingNew ? (
-                <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                  <div className="w-14 h-14 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center mb-4">
-                    <ImageIcon className="w-7 h-7 text-[var(--fg-tertiary)]" />
-                  </div>
-                  <h3 className="text-base font-medium text-[var(--fg-primary)]">No logos yet</h3>
-                  <p className="mt-1 text-sm text-[var(--fg-tertiary)] max-w-xs">
-                    Add your brand logos. You can upload SVG or PNG files.
-                  </p>
-                  <motion.button
-                    onClick={() => setIsAddingNew(true)}
-                    className="mt-4 p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
-                    title="Add first logo"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
-                  </motion.button>
-                </div>
               ) : (
                 <table className="w-full table-fixed">
-                  <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
+                  <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)] z-10">
                     <tr>
                       <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[60px]">
                         
@@ -672,12 +836,13 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
                       <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[70px]">
                         Format
                       </th>
-                      <th className="py-2.5 px-3 text-right text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px]">
+                      <th className="py-2.5 px-3 text-right text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[60px]">
                         
                       </th>
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Add new logo row (when active) */}
                     {isAddingNew && (
                       <AddLogoRow
                         onAdd={handleAddLogo}
@@ -687,13 +852,22 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
                         availableVariants={availableVariants}
                       />
                     )}
+                    
+                    {/* Static system logos (pre-populated) */}
+                    {STATIC_SYSTEM_LOGOS.map((logo) => (
+                      <StaticLogoRow
+                        key={`static-${logo.id}`}
+                        logo={logo}
+                        onDownload={handleDownloadStaticLogo}
+                      />
+                    ))}
+                    
+                    {/* Dynamic user-added logos from Supabase */}
                     {sortedLogos.map((logo) => (
                       <LogoRow
                         key={logo.id}
                         logo={logo}
                         onDownload={handleDownloadLogo}
-                        onDelete={handleDeleteLogo}
-                        canDelete={canDeleteLogo(logo)}
                       />
                     ))}
                   </tbody>
@@ -702,10 +876,10 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
             </div>
 
             {/* Footer info */}
-            <div className="p-4 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]/50">
+            <div className="p-4 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 shrink-0">
               <p className="text-xs text-[var(--fg-muted)] flex items-center gap-2">
-                <Shield className="w-3.5 h-3.5" />
-                <span>Protected logos (marked with shield) cannot be deleted. Upload both SVG and PNG formats for best results.</span>
+                <Shield className="w-3.5 h-3.5 shrink-0" />
+                <span>Brand logos are protected. Add new logos using the + button. Upload both SVG and PNG formats for best results.</span>
               </p>
             </div>
           </motion.div>

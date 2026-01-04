@@ -304,32 +304,32 @@ function StaticLogoRow({ logo, onDownload }: StaticLogoRowProps) {
   return (
     <tr className="group border-b border-[var(--border-secondary)] hover:bg-[var(--bg-secondary)]/30 transition-colors">
       {/* Preview */}
-      <td className="py-2 px-3 w-[60px]">
-        <div className="w-10 h-10 rounded-lg bg-[var(--color-charcoal)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden">
+      <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px]">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[var(--color-charcoal)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden">
           <img 
             src={previewPath} 
             alt={logo.name} 
-            className="w-8 h-8 object-contain"
+            className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
           />
         </div>
       </td>
 
       {/* Name */}
-      <td className="py-2 px-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-[var(--fg-primary)]">
+      <td className="py-2 px-2 sm:px-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)]">
             {logo.name}
           </span>
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]" title="System logo - protected">
-            <Shield className="w-2.5 h-2.5" />
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] w-fit" title="System logo - protected">
+            <Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
             Protected
           </span>
         </div>
       </td>
 
       {/* Category */}
-      <td className="py-2 px-3 w-[100px]">
-        <span className={`inline-flex px-2 py-0.5 text-[10px] font-medium rounded ${
+      <td className="py-2 px-2 sm:px-3 w-[80px] sm:w-[100px]">
+        <span className={`inline-flex px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded ${
           logo.category === 'main' 
             ? 'bg-[var(--bg-brand-primary)]/10 text-[var(--fg-brand-primary)]' 
             : 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]'
@@ -339,35 +339,35 @@ function StaticLogoRow({ logo, onDownload }: StaticLogoRowProps) {
       </td>
 
       {/* Type */}
-      <td className="py-2 px-3 w-[100px]">
-        <span className="text-xs text-[var(--fg-secondary)]">
+      <td className="py-2 px-2 sm:px-3 w-[80px] sm:w-[100px]">
+        <span className="text-[10px] sm:text-xs text-[var(--fg-secondary)]">
           {formatLabel(logo.logoType)}
         </span>
       </td>
 
-      {/* Variant */}
-      <td className="py-2 px-3 w-[100px]">
-        <span className="text-xs text-[var(--fg-tertiary)]">
+      {/* Variant - hidden on mobile */}
+      <td className="py-2 px-2 sm:px-3 w-[70px] sm:w-[90px] hidden sm:table-cell">
+        <span className="text-[10px] sm:text-xs text-[var(--fg-tertiary)]">
           {variantCount} variant{variantCount !== 1 ? 's' : ''}
         </span>
       </td>
 
-      {/* Format */}
-      <td className="py-2 px-3 w-[70px]">
+      {/* Format - hidden on mobile and tablet */}
+      <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px] hidden md:table-cell">
         <span className="text-[10px] font-mono text-[var(--fg-muted)] uppercase">
           svg
         </span>
       </td>
 
       {/* Actions */}
-      <td className="py-2 px-3 w-[60px]">
+      <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px]">
         <div className="flex items-center justify-end">
           <button
             onClick={() => onDownload(previewPath, `${logo.id}-vanilla.svg`)}
-            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] opacity-0 group-hover:opacity-100 transition-all"
+            className="p-1 sm:p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] sm:opacity-0 sm:group-hover:opacity-100 transition-all"
             title="Download"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </button>
         </div>
       </td>
@@ -403,29 +403,29 @@ function LogoRow({ logo, onDownload }: LogoRowProps) {
     <>
       <tr className="group border-b border-[var(--border-secondary)] hover:bg-[var(--bg-secondary)]/30 transition-colors">
         {/* Preview */}
-        <td className="py-2 px-3 w-[60px]">
-          <div className="w-10 h-10 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden">
+        <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px]">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center overflow-hidden">
             {logo.publicUrl ? (
               <img 
                 src={logo.publicUrl} 
                 alt={logo.name} 
-                className="w-8 h-8 object-contain"
+                className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
               />
             ) : (
-              <ImageIcon className="w-5 h-5 text-[var(--fg-muted)]" />
+              <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--fg-muted)]" />
             )}
           </div>
         </td>
 
         {/* Name */}
-        <td className="py-2 px-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-[var(--fg-primary)]">
+        <td className="py-2 px-2 sm:px-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span className="text-xs sm:text-sm font-medium text-[var(--fg-primary)]">
               {logo.name}
             </span>
             {logo.isSystem && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]" title="System logo - cannot be deleted">
-                <Shield className="w-2.5 h-2.5" />
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium rounded bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] w-fit" title="System logo - cannot be deleted">
+                <Shield className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                 Protected
               </span>
             )}
@@ -433,8 +433,8 @@ function LogoRow({ logo, onDownload }: LogoRowProps) {
         </td>
 
         {/* Category */}
-        <td className="py-2 px-3 w-[100px]">
-          <span className={`inline-flex px-2 py-0.5 text-[10px] font-medium rounded ${
+        <td className="py-2 px-2 sm:px-3 w-[80px] sm:w-[100px]">
+          <span className={`inline-flex px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium rounded ${
             category === 'main' 
               ? 'bg-[var(--bg-brand-primary)]/10 text-[var(--fg-brand-primary)]' 
               : 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]'
@@ -444,35 +444,35 @@ function LogoRow({ logo, onDownload }: LogoRowProps) {
         </td>
 
         {/* Type */}
-        <td className="py-2 px-3 w-[100px]">
-          <span className="text-xs text-[var(--fg-secondary)]">
+        <td className="py-2 px-2 sm:px-3 w-[80px] sm:w-[100px]">
+          <span className="text-[10px] sm:text-xs text-[var(--fg-secondary)]">
             {formatLabel(logoType)}
           </span>
         </td>
 
-        {/* Variant */}
-        <td className="py-2 px-3 w-[100px]">
-          <span className="text-xs text-[var(--fg-tertiary)]">
+        {/* Variant - hidden on mobile */}
+        <td className="py-2 px-2 sm:px-3 w-[70px] sm:w-[90px] hidden sm:table-cell">
+          <span className="text-[10px] sm:text-xs text-[var(--fg-tertiary)]">
             {formatLabel(variant)}
           </span>
         </td>
 
-        {/* Format */}
-        <td className="py-2 px-3 w-[70px]">
+        {/* Format - hidden on mobile and tablet */}
+        <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px] hidden md:table-cell">
           <span className="text-[10px] font-mono text-[var(--fg-muted)] uppercase">
             {logo.mimeType?.split('/')[1] || 'svg'}
           </span>
         </td>
 
         {/* Actions */}
-        <td className="py-2 px-3 w-[60px]">
+        <td className="py-2 px-2 sm:px-3 w-[50px] sm:w-[60px]">
           <div className="flex items-center justify-end">
             <button
               onClick={() => onDownload(logo)}
-              className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] opacity-0 group-hover:opacity-100 transition-all"
+              className="p-1 sm:p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] sm:opacity-0 sm:group-hover:opacity-100 transition-all"
               title="Download"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </button>
           </div>
         </td>
@@ -551,12 +551,12 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
   return (
     <tr className="border-b border-[var(--border-brand)] bg-[var(--bg-brand-primary)]/5">
       {/* File Upload */}
-      <td className="py-3 px-3 w-[60px]">
+      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[50px] sm:w-[60px]">
         <label
           onDrop={handleDrop}
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
-          className={`w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer border-2 border-dashed transition-colors ${
+          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center cursor-pointer border-2 border-dashed transition-colors ${
             isDragging
               ? 'border-[var(--border-brand)] bg-[var(--bg-brand-primary)]'
               : file
@@ -568,10 +568,10 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
             <img 
               src={URL.createObjectURL(file)} 
               alt="Preview" 
-              className="w-8 h-8 object-contain"
+              className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
             />
           ) : (
-            <Upload className="w-4 h-4 text-[var(--fg-tertiary)]" />
+            <Upload className="w-3 h-3 sm:w-4 sm:h-4 text-[var(--fg-tertiary)]" />
           )}
           <input
             ref={fileInputRef}
@@ -584,19 +584,19 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
       </td>
 
       {/* Name */}
-      <td className="py-3 px-3">
+      <td className="py-2 sm:py-3 px-2 sm:px-3">
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Logo name"
           autoFocus
-          className="w-full px-2 py-1 text-sm rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:outline-none"
+          className="w-full px-2 py-1 text-xs sm:text-sm rounded border border-[var(--border-brand)] bg-[var(--bg-primary)] text-[var(--fg-primary)] focus:outline-none"
         />
       </td>
 
       {/* Category */}
-      <td className="py-3 px-3 w-[100px]">
+      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[80px] sm:w-[100px]">
         <CustomSelect
           value={category}
           onChange={(v) => setCategory(v as BrandLogoCategory)}
@@ -607,7 +607,7 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
       </td>
 
       {/* Type */}
-      <td className="py-3 px-3 w-[100px]">
+      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[80px] sm:w-[100px]">
         <CustomSelect
           value={logoType}
           onChange={setLogoType}
@@ -617,8 +617,8 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
         />
       </td>
 
-      {/* Variant */}
-      <td className="py-3 px-3 w-[100px]">
+      {/* Variant - hidden on mobile */}
+      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[70px] sm:w-[90px] hidden sm:table-cell">
         <CustomSelect
           value={variant}
           onChange={setVariant}
@@ -628,34 +628,34 @@ function AddLogoRow({ onAdd, onCancel, isAdding, availableTypes, availableVarian
         />
       </td>
 
-      {/* Format (shows file type) */}
-      <td className="py-3 px-3 w-[70px]">
+      {/* Format (shows file type) - hidden on mobile and tablet */}
+      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[50px] sm:w-[60px] hidden md:table-cell">
         <span className="text-[10px] font-mono text-[var(--fg-muted)] uppercase">
           {file ? file.type.split('/')[1] : '—'}
         </span>
       </td>
 
       {/* Actions */}
-      <td className="py-3 px-3 w-[60px]">
-        <div className="flex items-center justify-end gap-1">
+      <td className="py-2 sm:py-3 px-2 sm:px-3 w-[50px] sm:w-[60px]">
+        <div className="flex items-center justify-end gap-0.5 sm:gap-1">
           <button
             onClick={handleSubmit}
             disabled={isAdding || !file || !name.trim()}
-            className="p-1.5 rounded-lg border border-[var(--fg-brand-primary)] text-[var(--fg-brand-primary)] hover:bg-[var(--bg-brand-solid)] hover:text-white hover:border-[var(--bg-brand-solid)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1 sm:p-1.5 rounded-lg border border-[var(--fg-brand-primary)] text-[var(--fg-brand-primary)] hover:bg-[var(--bg-brand-solid)] hover:text-white hover:border-[var(--bg-brand-solid)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="Add logo"
           >
             {isAdding ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin" />
             ) : (
-              <Check className="w-3.5 h-3.5" />
+              <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             )}
           </button>
           <button
             onClick={onCancel}
-            className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+            className="p-1 sm:p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
             title="Cancel"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </button>
         </div>
       </td>
@@ -757,31 +757,32 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
             onClick={onClose}
           />
 
-          {/* Modal - Centered in viewport */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-4 md:inset-8 lg:inset-12 mx-auto my-auto max-w-5xl max-h-[85vh] w-full overflow-hidden z-50 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col"
-          >
+          {/* Modal container - Full screen flex for centering */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-4xl max-h-full overflow-hidden rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col pointer-events-auto"
+            >
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-[var(--border-primary)] shrink-0">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--border-primary)] shrink-0">
               <div>
-                <h2 className="text-lg font-display font-bold text-[var(--fg-primary)]">
+                <h2 className="text-base sm:text-lg font-display font-bold text-[var(--fg-primary)]">
                   Manage Logos
                 </h2>
-                <p className="text-sm text-[var(--fg-tertiary)]">
+                <p className="text-xs sm:text-sm text-[var(--fg-tertiary)]">
                   {totalLogoCount} logo{totalLogoCount !== 1 ? 's' : ''} in your brand library
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {/* Add Logo Button */}
                 <motion.button
                   onClick={() => setIsAddingNew(true)}
                   disabled={isAddingNew}
-                  className="p-2.5 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 sm:p-2.5 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Add new logo"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -792,10 +793,10 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
                 {/* Close button */}
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+                  className="p-1.5 sm:p-2 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
                   title="Close"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
@@ -815,32 +816,33 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
                   <span className="text-[var(--fg-tertiary)]">Loading logos...</span>
                 </div>
               ) : (
-                <table className="w-full table-fixed">
-                  <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)] z-10">
-                    <tr>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[60px]">
-                        
-                      </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[100px]">
-                        Category
-                      </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[100px]">
-                        Type
-                      </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[100px]">
-                        Variant
-                      </th>
-                      <th className="py-2.5 px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[70px]">
-                        Format
-                      </th>
-                      <th className="py-2.5 px-3 text-right text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[60px]">
-                        
-                      </th>
-                    </tr>
-                  </thead>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[600px]">
+                    <thead className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)] z-10">
+                      <tr>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[50px] sm:w-[60px]">
+                          
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider min-w-[120px]">
+                          Name
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px] sm:w-[100px]">
+                          Category
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[80px] sm:w-[100px]">
+                          Type
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[70px] sm:w-[90px] hidden sm:table-cell">
+                          Variant
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-left text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[50px] sm:w-[60px] hidden md:table-cell">
+                          Format
+                        </th>
+                        <th className="py-2.5 px-2 sm:px-3 text-right text-[10px] font-semibold text-[var(--fg-tertiary)] uppercase tracking-wider w-[50px] sm:w-[60px]">
+                          
+                        </th>
+                      </tr>
+                    </thead>
                   <tbody>
                     {/* Add new logo row (when active) */}
                     {isAddingNew && (
@@ -870,19 +872,22 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
                         onDownload={handleDownloadLogo}
                       />
                     ))}
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
 
             {/* Footer info */}
-            <div className="p-4 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 shrink-0">
-              <p className="text-xs text-[var(--fg-muted)] flex items-center gap-2">
-                <Shield className="w-3.5 h-3.5 shrink-0" />
-                <span>Brand logos are protected. Add new logos using the + button. Upload both SVG and PNG formats for best results.</span>
+            <div className="p-3 sm:p-4 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 shrink-0">
+              <p className="text-[10px] sm:text-xs text-[var(--fg-muted)] flex items-center gap-2">
+                <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Brand logos are protected. Add new logos using the + button. Upload both SVG and PNG formats for best results.</span>
+                <span className="sm:hidden">Brand logos are protected. Use + to add new logos.</span>
               </p>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

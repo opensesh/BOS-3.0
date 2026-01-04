@@ -167,14 +167,26 @@ export function CanvasPreviewBubble({
                 <div className="h-4 bg-gradient-to-t from-[var(--bg-secondary)]/80 to-transparent pointer-events-none -mt-4 relative z-[1]" />
               )}
 
-              {/* Open canvas button - right aligned */}
+              {/* Open canvas button - right aligned, always clickable */}
               <div className="px-4 py-2 border-t border-[var(--border-secondary)] flex justify-end">
                 <button
                   onClick={handleOpenCanvas}
-                  disabled={isStreaming}
-                  className="text-sm text-[var(--fg-brand-primary)] hover:text-[var(--fg-brand-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="text-sm text-[var(--fg-brand-primary)] hover:text-[var(--fg-brand-primary-hover)] transition-colors flex items-center gap-1.5"
                 >
-                  Open in Canvas →
+                  {isStreaming ? (
+                    <>
+                      <span>Open in Canvas</span>
+                      <motion.span
+                        className="inline-block"
+                        animate={{ x: [0, 3, 0] }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        →
+                      </motion.span>
+                    </>
+                  ) : (
+                    'Open in Canvas →'
+                  )}
                 </button>
               </div>
             </div>

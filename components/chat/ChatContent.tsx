@@ -119,12 +119,31 @@ export function ChatContent({
     persistCanvas();
   }, [canvasResponse, isStreaming, isCanvasStreaming, chatId]);
 
-  // Handle opening the canvas panel
+  // Handle opening the canvas panel (works during streaming too)
   const handleOpenCanvas = useCallback((canvas: Canvas) => {
     if (canvasContext) {
+      // Set streaming state if we're still streaming
+      if (isStreaming || isCanvasStreaming) {
+        canvasContext.setIsStreaming(true);
+      }
       canvasContext.openCanvas(canvas);
     }
-  }, [canvasContext]);
+  }, [canvasContext, isStreaming, isCanvasStreaming]);
+
+  // Sync streaming content to canvas panel if it's open
+  useEffect(() => {
+    if (!canvasContext || !canvasContext.isCanvasOpen || !canvasResponse) return;
+    
+    // Update canvas panel content during streaming
+    if (isStreaming || isCanvasStreaming) {
+      canvasContext.setLocalContent(canvasResponse.content);
+    }
+    
+    // When streaming completes, turn off streaming indicator
+    if (!isStreaming && !isCanvasStreaming && canvasContext.isStreaming) {
+      canvasContext.setIsStreaming(false);
+    }
+  }, [canvasContext, canvasResponse?.content, isStreaming, isCanvasStreaming]);
 
   // Parse content into sections
   // For canvas responses, only show the preamble (acknowledgment text before canvas)

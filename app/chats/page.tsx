@@ -399,7 +399,7 @@ export default function ChatsPage() {
                               {chat.title}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)] w-32 justify-end flex-shrink-0 pr-8">
+                          <div className="flex items-center gap-1.5 text-xs text-[var(--fg-tertiary)] flex-shrink-0 pr-8 whitespace-nowrap">
                             <Clock className="w-3 h-3" />
                             <span>{formatDate(chat.timestamp)}</span>
                           </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Tab {
   id: string;
@@ -28,9 +29,10 @@ export function TabSelector({
 }: TabSelectorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Update indicator position when active tab changes
-  useEffect(() => {
+  // Use useLayoutEffect to measure before paint, avoiding visual jump
+  useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -40,8 +42,12 @@ export function TabSelector({
         left: activeButton.offsetLeft,
         width: activeButton.offsetWidth,
       });
+      // Mark as initialized after first measurement
+      if (!isInitialized) {
+        requestAnimationFrame(() => setIsInitialized(true));
+      }
     }
-  }, [activeTab, tabs]);
+  }, [activeTab, tabs, isInitialized]);
 
   const handleTabClick = (tabId: string) => {
     if (locked) return;
@@ -53,12 +59,23 @@ export function TabSelector({
       ref={containerRef}
       className={`relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-tertiary)] transition-opacity duration-200 ${locked ? 'opacity-50' : ''} ${className}`}
     >
-      {/* Sliding indicator (the "button" that moves) */}
-      <div
-        className="absolute top-1 bottom-1 rounded-md bg-[var(--bg-primary)] shadow-sm transition-all duration-200 ease-out"
-        style={{
+      {/* Sliding indicator with spring animation */}
+      <motion.div
+        className="absolute top-1 bottom-1 rounded-md bg-[var(--bg-primary)] shadow-sm"
+        initial={false}
+        animate={{
           left: indicatorStyle.left,
           width: indicatorStyle.width,
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 500,
+          damping: 35,
+          mass: 1,
+        }}
+        style={{
+          // Hide until initialized to prevent flash
+          opacity: isInitialized ? 1 : 0,
         }}
         aria-hidden="true"
       />
@@ -67,7 +84,7 @@ export function TabSelector({
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
-          <button
+          <motion.button
             key={tab.id}
             data-tab-id={tab.id}
             onClick={() => handleTabClick(tab.id)}
@@ -76,19 +93,26 @@ export function TabSelector({
             aria-disabled={locked && !isActive}
             className={`
               relative z-10 px-3 py-1.5 text-xs font-medium rounded-md
-              transition-colors duration-150 ease-out
               ${locked && !isActive ? 'cursor-not-allowed' : 'cursor-pointer'}
-              ${
-                isActive
-                  ? 'text-[var(--fg-primary)]'
-                  : locked
-                  ? 'text-[var(--fg-quaternary)]'
-                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-              }
             `}
+            animate={{
+              color: isActive 
+                ? 'var(--fg-primary)' 
+                : locked 
+                  ? 'var(--fg-quaternary)' 
+                  : 'var(--fg-tertiary)',
+            }}
+            whileHover={!locked && !isActive ? { 
+              color: 'var(--fg-secondary)',
+            } : {}}
+            whileTap={!locked ? { scale: 0.98 } : {}}
+            transition={{
+              color: { duration: 0.15, ease: 'easeOut' },
+              scale: { type: 'spring', stiffness: 400, damping: 25 },
+            }}
           >
             {tab.label}
-          </button>
+          </motion.button>
         );
       })}
     </div>

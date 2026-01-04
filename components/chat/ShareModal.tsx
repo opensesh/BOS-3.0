@@ -32,11 +32,10 @@ export function ShareButton({ threadUrl = '' }: { threadUrl?: string }) {
     <div className="relative" ref={modalRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center gap-1.5 px-2 sm:px-3 py-1 h-7 bg-[var(--bg-brand-solid)] text-white rounded-lg hover:bg-[var(--bg-brand-solid)]/90 transition-colors text-xs font-medium"
+        className="flex items-center justify-center w-7 h-7 bg-[var(--bg-brand-solid)] text-white rounded-lg hover:bg-[var(--color-vanilla)] hover:text-[var(--fg-brand-aperol)] transition-all duration-200"
         title="Share"
       >
-        <Share2 className="w-3.5 h-3.5 flex-shrink-0" />
-        <span className="hidden sm:inline">Share</span>
+        <Share2 className="w-3.5 h-3.5" />
       </button>
 
       {isOpen && (

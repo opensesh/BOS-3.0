@@ -8,7 +8,6 @@ import { ArrowLeft, AlertCircle } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { SpaceReferenceCard } from '@/components/spaces/SpaceReferenceCard';
-import { SpaceResourceCards } from '@/components/spaces/SpaceResourceCards';
 import { useSpaces } from '@/hooks/useSpaces';
 import { useSpaceDiscussions, useDiscussionMessages } from '@/hooks/useSpaceDiscussions';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
@@ -21,11 +20,21 @@ import {
   type FollowUpAttachment,
 } from '@/components/chat';
 
+// Message attachment interface
+interface MessageAttachment {
+  id: string;
+  type: 'image';
+  data: string;
+  mimeType: string;
+  name?: string;
+}
+
 interface ParsedMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   modelUsed?: string;
+  attachments?: MessageAttachment[];
 }
 
 export default function SpaceChatPage() {
@@ -216,12 +225,24 @@ export default function SpaceChatPage() {
 
   // Parse messages
   const parsedMessages: ParsedMessage[] = useMemo(() => {
-    return messages.map((message) => ({
-      id: message.id,
-      role: message.role as 'user' | 'assistant',
-      content: getMessageContent(message),
-      modelUsed,
-    }));
+    return messages.map((message) => {
+      // Extract attachments from the message
+      const msgAttachments = (message as { attachments?: MessageAttachment[] }).attachments;
+      
+      return {
+        id: message.id,
+        role: message.role as 'user' | 'assistant',
+        content: getMessageContent(message),
+        modelUsed,
+        attachments: msgAttachments?.map(a => ({
+          id: a.id,
+          type: a.type as 'image',
+          data: a.data,
+          mimeType: a.mimeType,
+          name: a.name,
+        })),
+      };
+    });
   }, [messages, modelUsed, getMessageContent]);
 
   // Thread title
@@ -324,15 +345,6 @@ export default function SpaceChatPage() {
                       spaceSlug={space.slug}
                       spaceIcon={space.icon}
                     />
-
-                    {/* Space Resources */}
-                    <SpaceResourceCards
-                      files={space.files}
-                      links={space.links}
-                      instructions={space.instructions}
-                      tasks={space.tasks}
-                      isReadOnly
-                    />
                   </div>
                 )}
 
@@ -352,6 +364,7 @@ export default function SpaceChatPage() {
                           onRegenerate={() => handleFollowUpSubmit(message.content)}
                           isLastResponse={idx === parsedMessages.length - 2}
                           messageId={nextMessage.id}
+                          attachments={message.attachments}
                         />
                       );
                     }
@@ -364,6 +377,7 @@ export default function SpaceChatPage() {
                           isStreaming={true}
                           onFollowUpClick={handleFollowUpSubmit}
                           isLastResponse={true}
+                          attachments={message.attachments}
                         />
                       );
                     }

@@ -12,6 +12,14 @@ export interface ChatHistoryItem {
   timestamp: Date;
   messages?: ChatMessage[];
   projectId?: string | null;
+  spaceSlug?: string | null;
+}
+
+export interface SpaceOption {
+  id: string;
+  slug: string;
+  title: string;
+  icon?: string;
 }
 
 interface ChatContextValue {
@@ -43,6 +51,13 @@ interface ChatContextValue {
   createProject: (name: string) => Promise<Project | null>;
   assignChatToProject: (chatId: string, projectId: string | null) => Promise<void>;
   isLoadingProjects: boolean;
+  // Spaces
+  spaces: SpaceOption[];
+  currentSpace: SpaceOption | null;
+  setCurrentSpace: (space: SpaceOption | null) => void;
+  loadSpaces: () => void;
+  createSpace: (title: string) => SpaceOption | null;
+  assignChatToSpace: (chatId: string, spaceSlug: string | null) => Promise<void>;
   // Writing style
   currentWritingStyle: WritingStyle | null;
   setCurrentWritingStyle: (style: WritingStyle | null) => void;

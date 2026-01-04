@@ -11,32 +11,44 @@ import {
   ChevronRight,
   Check,
   X,
+  Layers,
 } from 'lucide-react';
 import { WritingStyleSelector, type WritingStyle } from './writing-style-selector';
 import { ProjectSelector, type Project } from './project-selector';
+import { SpaceSelector, type SpaceOption } from './space-selector';
 
 interface PlusMenuProps {
   onAddFiles: () => void;
   onProjectSelect: (project: Project | null) => void;
   onStyleSelect: (style: WritingStyle | null) => void;
+  onSpaceSelect?: (space: SpaceOption | null) => void;
   currentProject: Project | null;
   currentStyle: WritingStyle | null;
+  currentSpace?: SpaceOption | null;
   projects: Project[];
+  spaces?: SpaceOption[];
   onCreateProject: (name: string) => Promise<void>;
+  onCreateSpace?: (title: string) => Promise<void>;
   disabled?: boolean;
+  showSpaceOption?: boolean;
 }
 
-type Submenu = 'none' | 'project' | 'style' | 'connectors';
+type Submenu = 'none' | 'project' | 'style' | 'space' | 'connectors';
 
 export function PlusMenu({
   onAddFiles,
   onProjectSelect,
   onStyleSelect,
+  onSpaceSelect,
   currentProject,
   currentStyle,
+  currentSpace,
   projects,
+  spaces = [],
   onCreateProject,
+  onCreateSpace,
   disabled,
+  showSpaceOption = true,
 }: PlusMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<Submenu>('none');
@@ -132,6 +144,14 @@ export function PlusMenu({
       submenu: 'project' as Submenu,
       hasValue: !!currentProject,
     },
+    ...(showSpaceOption && onSpaceSelect ? [{
+      id: 'space',
+      icon: Layers,
+      label: 'Add to space',
+      hasSubmenu: true,
+      submenu: 'space' as Submenu,
+      hasValue: !!currentSpace,
+    }] : []),
     {
       id: 'style',
       icon: PenTool,
@@ -242,6 +262,30 @@ export function PlusMenu({
                               handleClose();
                             }}
                             onCreateProject={onCreateProject}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Space Submenu */}
+                    <AnimatePresence>
+                      {item.submenu === 'space' && isActiveSubmenu && onSpaceSelect && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="overflow-hidden border-t border-[var(--border-secondary)]"
+                        >
+                          <SpaceSelector
+                            spaces={spaces}
+                            currentSpace={currentSpace || null}
+                            onSelect={(space) => {
+                              onSpaceSelect(space);
+                              handleClose();
+                            }}
+                            onCreateSpace={onCreateSpace}
+                            showCreateOption={!!onCreateSpace}
                           />
                         </motion.div>
                       )}

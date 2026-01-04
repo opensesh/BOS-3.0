@@ -53,6 +53,7 @@ export default function SpacePage() {
     discussions,
     isLoading: discussionsLoading,
     createDiscussion,
+    deleteDiscussion,
   } = useSpaceDiscussions(slug);
 
   const space = getSpace(slug);
@@ -273,6 +274,7 @@ export default function SpacePage() {
                       messageCount={discussion.messageCount}
                       updatedAt={discussion.updatedAt}
                       spaceSlug={space.slug}
+                      onDelete={deleteDiscussion}
                     />
                   ))}
                 </div>

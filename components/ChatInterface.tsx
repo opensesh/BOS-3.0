@@ -38,6 +38,7 @@ import {
   AddToSpaceModal,
   type FollowUpAttachment,
 } from './chat';
+import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 // Article reference context (kept for potential future use)
 interface ArticleContext {
   title: string;
@@ -103,6 +104,9 @@ export function ChatInterface() {
   const isNearBottomRef = useRef(true);
   const userHasScrolledUpRef = useRef(false);
 
+  // Breadcrumbs context
+  const { setBreadcrumbs } = useBreadcrumbs();
+
   // Chat context for cross-component communication
   const { 
     shouldResetChat, 
@@ -158,6 +162,50 @@ export function ChatInterface() {
 
   // Derive hasMessages early so it can be used in effects
   const hasMessages = messages.length > 0;
+
+  // Set breadcrumbs on mount - show "Home / Recent Chats" as navigation hint
+  useEffect(() => {
+    setBreadcrumbs([
+      { label: 'Home', href: '/' },
+      { label: 'Recent Chats', href: '/chats' },
+    ]);
+  }, [setBreadcrumbs]);
+
+  // Navigate to Recent Chats (back button handler)
+  const handleBackToChats = useCallback(() => {
+    // Save current chat to history if there are messages
+    if (messages.length > 0) {
+      const firstUserMessage = messages.find(m => m.role === 'user');
+      const firstAssistantMessage = messages.find(m => m.role === 'assistant');
+      if (firstUserMessage) {
+        const title = generatedTitle || getMessageContent(firstUserMessage).slice(0, 50) || 'Untitled Chat';
+        const preview = firstAssistantMessage 
+          ? getMessageContent(firstAssistantMessage).slice(0, 100)
+          : '';
+        const chatMessages = messages.map(m => {
+          const msgSources = (m as { sources?: SourceInfo[] }).sources;
+          const msgAttachments = (m as { attachments?: MessageAttachment[] }).attachments;
+          return {
+            id: m.id,
+            role: m.role as 'user' | 'assistant',
+            content: getMessageContent(m),
+            timestamp: new Date().toISOString(),
+            sources: msgSources,
+            attachments: msgAttachments?.map(a => ({
+              id: a.id,
+              type: a.type,
+              data: a.data,
+              mimeType: a.mimeType,
+              name: a.name,
+            })),
+          };
+        });
+        addToHistory(title, preview, chatMessages);
+      }
+    }
+    // Navigate to Recent Chats
+    router.push('/chats');
+  }, [messages, generatedTitle, getMessageContent, addToHistory, router]);
 
   // Reset chat function
   const resetChat = useCallback(() => {
@@ -905,7 +953,7 @@ export function ChatInterface() {
               hasResources={allSources.length > 0 || allResourceCards.length > 0 || allImages.length > 0}
               resourcesCount={allSources.length + allResourceCards.length + allImages.length}
               threadTitle={threadTitle}
-              onBack={resetChat}
+              onBack={handleBackToChats}
               onRenameThread={async (newTitle) => {
                 // Update the local generated title immediately for UI responsiveness
                 setGeneratedTitle(newTitle);

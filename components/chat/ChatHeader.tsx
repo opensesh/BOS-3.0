@@ -67,7 +67,7 @@ export function ChatHeader({
               <button
                 onClick={onBack}
                 className="p-1 -ml-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-                title="Back to home"
+                title="Back to Recent Chats"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
               </button>

@@ -471,50 +471,116 @@ export interface CanvasResponse {
   action: 'create' | 'update';
   title: string;
   content: string;
+  /** Whether the canvas is still being streamed (no closing tag yet) */
+  isStreaming?: boolean;
 }
 
 /**
  * Parse canvas response from AI content
  * Looks for <canvas> tags in the response
+ * Handles both complete and streaming (partial) canvas tags
  */
-export function parseCanvasResponse(content: string): { canvas: CanvasResponse | null; cleanContent: string } {
-  // Match <canvas ...>content</canvas> with flexible attribute order
-  // Supports: title="...", action="create|update" in any order
-  const canvasRegex = /<canvas\s+([^>]*)>([\s\S]*?)<\/canvas>/i;
-  const match = content.match(canvasRegex);
+export function parseCanvasResponse(content: string): { 
+  canvas: CanvasResponse | null; 
+  cleanContent: string;
+  /** Text that appears before the canvas tag (acknowledgment) */
+  preamble: string;
+} {
+  // First, try to match complete <canvas ...>content</canvas>
+  const completeCanvasRegex = /<canvas\s+([^>]*)>([\s\S]*?)<\/canvas>/i;
+  const completeMatch = content.match(completeCanvasRegex);
 
-  if (!match) {
-    return { canvas: null, cleanContent: content };
+  if (completeMatch) {
+    const [fullMatch, attributes, canvasContent] = completeMatch;
+
+    // Parse title from attributes
+    const titleMatch = attributes.match(/title="([^"]+)"/);
+    const actionMatch = attributes.match(/action="(create|update)"/);
+
+    if (!titleMatch) {
+      // Canvas tag without title - treat as regular content
+      return { canvas: null, cleanContent: content, preamble: '' };
+    }
+
+    const title = titleMatch[1];
+    const action = actionMatch ? (actionMatch[1] as 'create' | 'update') : 'create';
+    
+    // Extract preamble (text before the canvas tag)
+    const canvasStartIndex = content.indexOf('<canvas');
+    const preamble = canvasStartIndex > 0 ? content.slice(0, canvasStartIndex).trim() : '';
+    
+    // Clean content is the preamble only (canvas is shown in bubble)
+    const cleanContent = preamble;
+
+    return {
+      canvas: {
+        action,
+        title,
+        content: canvasContent.trim(),
+        isStreaming: false,
+      },
+      cleanContent,
+      preamble,
+    };
   }
 
-  const [fullMatch, attributes, canvasContent] = match;
+  // Check for streaming/partial canvas tag (opening tag present but no closing tag)
+  const partialCanvasRegex = /<canvas\s+([^>]*)>([\s\S]*)$/i;
+  const partialMatch = content.match(partialCanvasRegex);
 
-  // Parse title from attributes
-  const titleMatch = attributes.match(/title="([^"]+)"/);
-  const actionMatch = attributes.match(/action="(create|update)"/);
+  if (partialMatch) {
+    const [, attributes, canvasContent] = partialMatch;
 
-  if (!titleMatch) {
-    // Canvas tag without title - treat as regular content
-    return { canvas: null, cleanContent: content };
+    // Parse title from attributes
+    const titleMatch = attributes.match(/title="([^"]+)"/);
+    const actionMatch = attributes.match(/action="(create|update)"/);
+
+    if (!titleMatch) {
+      // Canvas tag without title - still streaming attributes, hide everything after <canvas
+      const canvasStartIndex = content.indexOf('<canvas');
+      const cleanContent = canvasStartIndex > 0 ? content.slice(0, canvasStartIndex).trim() : '';
+      return { canvas: null, cleanContent, preamble: cleanContent };
+    }
+
+    const title = titleMatch[1];
+    const action = actionMatch ? (actionMatch[1] as 'create' | 'update') : 'create';
+    
+    // Extract preamble (text before the canvas tag)
+    const canvasStartIndex = content.indexOf('<canvas');
+    const preamble = canvasStartIndex > 0 ? content.slice(0, canvasStartIndex).trim() : '';
+    
+    // Clean content is the preamble only
+    const cleanContent = preamble;
+
+    return {
+      canvas: {
+        action,
+        title,
+        content: canvasContent.trim(),
+        isStreaming: true,
+      },
+      cleanContent,
+      preamble,
+    };
   }
 
-  const title = titleMatch[1];
-  const action = actionMatch ? (actionMatch[1] as 'create' | 'update') : 'create';
-
-  return {
-    canvas: {
-      action,
-      title,
-      content: canvasContent.trim(),
-    },
-    cleanContent: content.replace(fullMatch, '').trim(),
-  };
+  // No canvas tag found at all
+  return { canvas: null, cleanContent: content, preamble: '' };
 }
 
 /**
- * Check if content contains a canvas response
+ * Check if content contains a canvas response (complete or streaming)
  */
 export function hasCanvasResponse(content: string): boolean {
   // Check for canvas tag with title attribute (in any position)
   return /<canvas\s+[^>]*title="[^"]+"[^>]*>/i.test(content);
+}
+
+/**
+ * Check if content contains a streaming/partial canvas (opening tag but no closing)
+ */
+export function isStreamingCanvas(content: string): boolean {
+  const hasOpeningTag = /<canvas\s+[^>]*title="[^"]+"[^>]*>/i.test(content);
+  const hasClosingTag = /<\/canvas>/i.test(content);
+  return hasOpeningTag && !hasClosingTag;
 }

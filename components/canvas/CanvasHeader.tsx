@@ -108,7 +108,7 @@ export function CanvasHeader({
 
   return (
     <div className="flex items-center justify-between h-12 px-4 border-b border-[var(--border-secondary)] bg-[var(--bg-primary)] flex-shrink-0">
-      {/* Left side - Back button (mobile) + Title + MD badge */}
+      {/* Left side - Back button (mobile) + Title */}
       <div className="flex items-center gap-2 min-w-0 flex-1">
         {/* Back button on mobile */}
         {showBackButton && (
@@ -121,12 +121,9 @@ export function CanvasHeader({
             </TooltipTrigger>
           </Tooltip>
         )}
-        <h2 className="text-sm font-medium text-[var(--fg-secondary)] truncate min-w-0">
+        <h2 className="text-xs font-medium text-[var(--fg-tertiary)] truncate min-w-0">
           {title}
         </h2>
-        <span className="text-[10px] font-medium text-[var(--fg-tertiary)] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] shrink-0">
-          MD
-        </span>
         {hasUnsavedChanges && (
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-warning-primary)] shrink-0" />
         )}

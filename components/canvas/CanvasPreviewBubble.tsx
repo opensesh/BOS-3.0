@@ -62,9 +62,14 @@ export function CanvasPreviewBubble({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ 
+        type: 'spring',
+        stiffness: 400,
+        damping: 25,
+        mass: 0.8,
+      }}
       className="rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)]/30 overflow-hidden"
     >
       {/* Fixed Header - Collapsible trigger - matching ThinkingBubble */}
@@ -104,11 +109,6 @@ export function CanvasPreviewBubble({
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ml-3">
-          {/* MD badge */}
-          <span className="text-[10px] font-medium text-[var(--fg-tertiary)] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)]">
-            MD
-          </span>
-          
           {/* Chevron toggle */}
           <div className="text-[var(--fg-tertiary)] group-hover:text-[var(--fg-secondary)] transition-colors">
             {isExpanded ? (
@@ -120,20 +120,26 @@ export function CanvasPreviewBubble({
         </div>
       </button>
 
-      {/* Expandable scrollable content */}
+      {/* Expandable scrollable content with delightful animation */}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ 
+              height: { type: 'spring', stiffness: 400, damping: 30 },
+              opacity: { duration: 0.15 }
+            }}
             className="overflow-hidden"
           >
             <div className="border-t border-[var(--border-secondary)]">
               {/* Scrollable content area with max height */}
-              <div
+              <motion.div
                 ref={contentRef}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
                 className="px-4 py-3 text-[13px] text-[var(--fg-tertiary)] leading-relaxed max-h-[200px] overflow-y-auto"
               >
                 {canvas.content ? (
@@ -143,7 +149,7 @@ export function CanvasPreviewBubble({
                     {/* Streaming cursor */}
                     {isStreaming && (
                       <motion.span
-                        className="inline-block w-[2px] h-3 bg-[var(--fg-tertiary)] ml-0.5 align-middle"
+                        className="inline-block w-[2px] h-3 bg-[var(--fg-brand-primary)] ml-0.5 align-middle"
                         animate={{ opacity: [1, 0] }}
                         transition={{ duration: 0.5, repeat: Infinity }}
                       />
@@ -154,7 +160,7 @@ export function CanvasPreviewBubble({
                     {isStreaming ? 'Generating content...' : 'Empty canvas'}
                   </span>
                 )}
-              </div>
+              </motion.div>
 
               {/* Scroll fade indicator */}
               {hasOverflow && (

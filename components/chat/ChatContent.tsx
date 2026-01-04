@@ -61,11 +61,16 @@ export function ChatContent({
   const showCitations = modelUsed?.includes('sonar') || modelUsed?.includes('perplexity');
 
   // Parse canvas from content - this extracts <canvas> tags
-  const { canvas: canvasResponse, cleanContent } = React.useMemo(() => {
+  // Now handles both complete and streaming/partial canvas tags
+  const { canvas: canvasResponse, cleanContent, preamble } = React.useMemo(() => {
     return parseCanvasResponse(content);
   }, [content]);
 
+  // Track if we're in a canvas streaming state
+  const isCanvasStreaming = canvasResponse?.isStreaming ?? false;
+
   // Create a local canvas object for immediate display (no Supabase dependency)
+  // This shows immediately when canvas tag is detected, even during streaming
   const localCanvas: Canvas | null = React.useMemo(() => {
     if (!canvasResponse) return null;
     
@@ -88,8 +93,9 @@ export function ChatContent({
   }, [canvasResponse, persistedCanvas]);
 
   // Persist canvas to Supabase when streaming completes
+  // Only persist when both the AI stream AND canvas content are complete
   useEffect(() => {
-    if (!canvasResponse || isStreaming || canvasSavedRef.current) return;
+    if (!canvasResponse || isStreaming || isCanvasStreaming || canvasSavedRef.current) return;
     
     const persistCanvas = async () => {
       try {
@@ -111,7 +117,7 @@ export function ChatContent({
     };
     
     persistCanvas();
-  }, [canvasResponse, isStreaming, chatId]);
+  }, [canvasResponse, isStreaming, isCanvasStreaming, chatId]);
 
   // Handle opening the canvas panel
   const handleOpenCanvas = useCallback((canvas: Canvas) => {
@@ -120,12 +126,18 @@ export function ChatContent({
     }
   }, [canvasContext]);
 
-  // Parse content into sections (using cleaned content without canvas tags)
+  // Parse content into sections
+  // For canvas responses, only show the preamble (acknowledgment text before canvas)
   const sections = React.useMemo(() => {
-    // If there's a canvas, don't show any sections - the canvas IS the content
-    if (canvasResponse) return [];
+    if (canvasResponse) {
+      // Show preamble as acknowledgment text, if any
+      if (preamble) {
+        return parseContentToSections(preamble, sources);
+      }
+      return [];
+    }
     return parseContentToSections(cleanContent, sources);
-  }, [cleanContent, sources, canvasResponse]);
+  }, [cleanContent, preamble, sources, canvasResponse]);
 
   // Extract resource cards from content
   const resourceCards = React.useMemo(() => {
@@ -148,12 +160,13 @@ export function ChatContent({
         attachments={attachments}
       />
 
-      {/* Canvas Preview Bubble - Shows immediately when canvas is detected */}
+      {/* Canvas Preview Bubble - Shows immediately when canvas tag is detected */}
+      {/* Displays during streaming with a delightful open animation */}
       {localCanvas && (
         <div className="mt-4">
           <CanvasPreviewBubble
             canvas={localCanvas}
-            isStreaming={isStreaming}
+            isStreaming={isStreaming || isCanvasStreaming}
             onOpenCanvas={handleOpenCanvas}
             defaultCollapsed={false}
           />

@@ -55,14 +55,17 @@ export function ChatResponse({
     return modelUsed?.includes('sonar') || modelUsed?.includes('perplexity');
   }, [modelUsed]);
 
-  // Parse canvas from content
-  const { canvas: canvasResponse, cleanContent } = useMemo(() => {
+  // Parse canvas from content - includes preamble for acknowledgment text
+  const { canvas: canvasResponse, cleanContent, preamble } = useMemo(() => {
     return parseCanvasResponse(content);
   }, [content]);
 
-  // Create or update canvas when response contains canvas tags
+  // Track if canvas is streaming (has opening tag but no closing tag yet)
+  const isCanvasStreaming = canvasResponse?.isStreaming ?? false;
+
+  // Create or update canvas when response contains canvas tags (only when complete)
   useEffect(() => {
-    if (!canvasResponse || isStreaming) return;
+    if (!canvasResponse || isStreaming || isCanvasStreaming) return;
     
     // Prevent duplicate canvas creation
     if (canvasCreatedRef.current && lastCanvasContentRef.current === canvasResponse.content) {
@@ -115,12 +118,19 @@ export function ChatResponse({
     };
     
     handleCanvas();
-  }, [canvasResponse, isStreaming, canvas, chatId, canvasContext]);
+  }, [canvasResponse, isStreaming, isCanvasStreaming, canvas, chatId, canvasContext]);
 
-  // Parse content into sections (using cleaned content without canvas tags)
+  // Parse content into sections
+  // For canvas responses, show preamble (acknowledgment) text only
   const sections = useMemo(() => {
+    if (canvasResponse && preamble) {
+      return parseContentToSections(preamble, sources);
+    }
+    if (canvasResponse) {
+      return [];
+    }
     return parseContentToSections(cleanContent, sources);
-  }, [cleanContent, sources]);
+  }, [cleanContent, preamble, sources, canvasResponse]);
 
   // Extract resource cards from content
   const resourceCards = useMemo(() => {
@@ -160,11 +170,9 @@ export function ChatResponse({
                 query={query}
                 sections={sections}
                 sources={sources}
-                isStreaming={isStreaming}
+                isStreaming={isStreaming && !canvasResponse}
                 showCitations={showCitations}
                 resourceCards={resourceCards}
-                canvas={canvas}
-                isCanvasStreaming={isStreaming && !!canvasResponse}
               />
 
               {/* Response actions */}

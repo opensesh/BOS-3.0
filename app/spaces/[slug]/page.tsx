@@ -74,8 +74,17 @@ export default function SpacePage() {
   // Check if this is a user space (can be edited/deleted) or an example space
   const isUserSpace = spaces.some((s) => s.slug === slug);
 
+  // Attachment data type
+  interface AttachmentData {
+    id: string;
+    type: 'image';
+    data: string;
+    mimeType: string;
+    name?: string;
+  }
+
   // Handle starting a new chat
-  const handleStartChat = async (query: string, discussionId: string) => {
+  const handleStartChat = async (query: string, discussionId: string, attachments?: AttachmentData[]) => {
     if (!space) return;
 
     // Navigate to the chat page
@@ -85,6 +94,8 @@ export default function SpacePage() {
       spaceTitle: space.title,
       ...(space.icon && { spaceIcon: space.icon }),
       isNew: 'true',
+      // Signal that there are attachments to retrieve from sessionStorage
+      ...(attachments && attachments.length > 0 && { hasAttachments: 'true' }),
     });
 
     router.push(`/spaces/${slug}/chat/${discussionId}?${searchParams.toString()}`);

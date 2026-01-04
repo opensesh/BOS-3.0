@@ -15,13 +15,22 @@ import { DataSourcesDropdown } from '@/components/ui/data-sources-dropdown';
 import { ModelSelector } from '@/components/ui/model-selector';
 import { ActiveSettingsIndicators } from '@/components/ui/active-settings-indicators';
 
+// Attachment data for passing to chat
+interface AttachmentData {
+  id: string;
+  type: 'image';
+  data: string;
+  mimeType: string;
+  name?: string;
+}
+
 interface SpaceChatInputProps {
   spaceSlug: string;
   spaceId: string;
   spaceTitle: string;
   spaceIcon?: string;
   placeholder?: string;
-  onStartChat?: (query: string, discussionId: string) => void;
+  onStartChat?: (query: string, discussionId: string, attachments?: AttachmentData[]) => void;
 }
 
 /**
@@ -126,9 +135,31 @@ export function SpaceChatInput({
     // Generate a new discussion ID
     const discussionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+    // Convert attachments to serializable format
+    const attachmentData: AttachmentData[] = attachments.map(att => ({
+      id: att.id,
+      type: 'image' as const,
+      data: att.data,
+      mimeType: att.mimeType,
+      name: att.name,
+    }));
+
+    // Store attachments in sessionStorage for the chat page to retrieve
+    // (base64 data is too large for URL params)
+    if (attachmentData.length > 0) {
+      try {
+        sessionStorage.setItem(
+          `space-chat-attachments-${discussionId}`,
+          JSON.stringify(attachmentData)
+        );
+      } catch (err) {
+        console.error('Failed to store attachments:', err);
+      }
+    }
+
     // If callback provided, use it
     if (onStartChat) {
-      onStartChat(query.trim(), discussionId);
+      onStartChat(query.trim(), discussionId, attachmentData.length > 0 ? attachmentData : undefined);
       setQuery('');
       clearAttachments();
       return;
@@ -141,6 +172,7 @@ export function SpaceChatInput({
       spaceTitle,
       ...(spaceIcon && { spaceIcon }),
       isNew: 'true',
+      ...(attachmentData.length > 0 && { hasAttachments: 'true' }),
     });
 
     clearAttachments();

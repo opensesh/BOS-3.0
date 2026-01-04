@@ -48,13 +48,32 @@ export default function SpaceChatPage() {
   // URL params for new chat
   const initialQuery = searchParams.get('q');
   const isNew = searchParams.get('isNew') === 'true';
+  const hasAttachments = searchParams.get('hasAttachments') === 'true';
 
   const [selectedModel, setSelectedModel] = useState<ModelId>('auto');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [modelUsed, setModelUsed] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<'answer' | 'resources'>('answer');
   const [hasSubmittedInitial, setHasSubmittedInitial] = useState(false);
+  const [initialAttachments, setInitialAttachments] = useState<MessageAttachment[] | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Retrieve attachments from sessionStorage on mount
+  useEffect(() => {
+    if (hasAttachments && threadId) {
+      try {
+        const stored = sessionStorage.getItem(`space-chat-attachments-${threadId}`);
+        if (stored) {
+          const parsed = JSON.parse(stored) as MessageAttachment[];
+          setInitialAttachments(parsed);
+          // Clean up after retrieval
+          sessionStorage.removeItem(`space-chat-attachments-${threadId}`);
+        }
+      } catch (err) {
+        console.error('Failed to retrieve attachments:', err);
+      }
+    }
+  }, [hasAttachments, threadId]);
 
   // Get space data
   const { getSpace, isLoaded: spacesLoaded } = useSpaces();
@@ -161,7 +180,10 @@ export default function SpaceChatPage() {
 
   // Handle initial query from URL (new chat)
   useEffect(() => {
-    if (isNew && initialQuery && !hasSubmittedInitial && space && spaceContext) {
+    // Wait for attachments to be loaded if expected
+    const attachmentsReady = !hasAttachments || initialAttachments !== null;
+    
+    if (isNew && initialQuery && !hasSubmittedInitial && space && spaceContext && attachmentsReady) {
       setHasSubmittedInitial(true);
 
       // Create the discussion first
@@ -172,11 +194,29 @@ export default function SpaceChatPage() {
         // Clear URL params
         router.replace(`/spaces/${slug}/chat/${threadId}`, { scroll: false });
 
-        // Send the message with space context (no longer prepending context to message)
-        await sendMessage(
-          { text: initialQuery },
-          { body: { model: selectedModel, context: spaceContext } }
-        );
+        // Prepare files if we have attachments
+        if (initialAttachments && initialAttachments.length > 0) {
+          const files = initialAttachments.map((att) => ({
+            type: 'image' as const,
+            data: att.data,
+            mimeType: att.mimeType,
+          }));
+
+          // Send the message with attachments and space context
+          await sendMessage(
+            { 
+              text: initialQuery || 'What do you see in this image?', 
+              files: files as unknown as FileList 
+            },
+            { body: { model: selectedModel, context: spaceContext } }
+          );
+        } else {
+          // Send the message with space context (no attachments)
+          await sendMessage(
+            { text: initialQuery },
+            { body: { model: selectedModel, context: spaceContext } }
+          );
+        }
       };
 
       initChat();
@@ -185,6 +225,8 @@ export default function SpaceChatPage() {
     isNew,
     initialQuery,
     hasSubmittedInitial,
+    hasAttachments,
+    initialAttachments,
     space,
     spaceContext,
     slug,

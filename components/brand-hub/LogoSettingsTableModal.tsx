@@ -11,7 +11,6 @@ import {
   Download,
   Image as ImageIcon,
   Upload,
-  Shield,
 } from 'lucide-react';
 import { useBrandLogos, DEFAULT_LOGO_TYPES, DEFAULT_VARIANTS, DEFAULT_CATEGORIES } from '@/hooks/useBrandLogos';
 import type { BrandLogo, BrandLogoMetadata, BrandLogoVariant, BrandLogoType, BrandLogoCategory } from '@/lib/supabase/types';
@@ -761,7 +760,7 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="w-full max-w-4xl max-h-full overflow-hidden rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col pointer-events-auto"
+              className="w-full max-w-3xl max-h-full overflow-hidden rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col pointer-events-auto"
             >
             {/* Header */}
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--border-primary)] shrink-0">
@@ -877,10 +876,9 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
 
             {/* Footer info */}
             <div className="p-3 sm:p-4 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 shrink-0">
-              <p className="text-[10px] sm:text-xs text-[var(--fg-muted)] flex items-center gap-2">
-                <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-                <span className="hidden sm:inline">Brand logos are protected. Add new logos using the + button. Upload both SVG and PNG formats for best results.</span>
-                <span className="sm:hidden">Brand logos are protected. Use + to add new logos.</span>
+              <p className="text-[10px] sm:text-xs text-[var(--fg-muted)]">
+                <span className="hidden sm:inline">Add new logos using the + button. Upload both SVG and PNG formats for best results.</span>
+                <span className="sm:hidden">Use + to add new logos.</span>
               </p>
             </div>
             </motion.div>

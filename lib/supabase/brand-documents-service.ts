@@ -6,6 +6,7 @@
  */
 
 import { createClient } from './client';
+import { triggerEmbeddingProcessor } from './embedding-trigger';
 import type {
   DbBrandDocument,
   DbBrandDocumentVersion,
@@ -127,6 +128,9 @@ export async function createDocument(
     });
   }
 
+  // Trigger embedding processor (fire and forget)
+  triggerEmbeddingProcessor();
+
   return newDoc;
 }
 
@@ -170,6 +174,9 @@ export async function updateDocument(
       change_summary: changeSummary,
       created_by: createdBy,
     });
+    
+    // Trigger embedding processor (fire and forget)
+    triggerEmbeddingProcessor();
   }
 
   return updatedDoc;

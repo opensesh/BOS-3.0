@@ -6,6 +6,7 @@
  */
 
 import { createClient } from './client';
+import { triggerEmbeddingProcessor } from './embedding-trigger';
 import type {
   DbBrandAsset,
   BrandAsset,
@@ -232,7 +233,12 @@ export async function createAsset(asset: BrandAssetInsert): Promise<BrandAsset> 
   }
 
   const publicUrl = getPublicUrl(data.storage_path);
-  return dbBrandAssetToApp(data as DbBrandAsset, publicUrl);
+  const newAsset = dbBrandAssetToApp(data as DbBrandAsset, publicUrl);
+  
+  // Trigger embedding processor (fire and forget)
+  triggerEmbeddingProcessor();
+  
+  return newAsset;
 }
 
 /**
@@ -255,7 +261,12 @@ export async function updateAsset(
   }
 
   const publicUrl = getPublicUrl(data.storage_path);
-  return dbBrandAssetToApp(data as DbBrandAsset, publicUrl);
+  const updatedAsset = dbBrandAssetToApp(data as DbBrandAsset, publicUrl);
+  
+  // Trigger embedding processor (fire and forget)
+  triggerEmbeddingProcessor();
+  
+  return updatedAsset;
 }
 
 /**
@@ -353,7 +364,7 @@ export async function uploadAsset(
     throw uploadError;
   }
 
-  // Create metadata record
+  // Create metadata record (createAsset already triggers embedding processor)
   const asset = await createAsset({
     brand_id: brandId,
     name: metadata.name,

@@ -109,19 +109,19 @@ export function CanvasHeader({
   return (
     <div className="flex items-center justify-between h-12 px-4 border-b border-[var(--border-secondary)] bg-[var(--bg-primary)] flex-shrink-0">
       {/* Left side - Back button (mobile) + Title + MD badge */}
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         {/* Back button on mobile */}
         {showBackButton && (
           <Tooltip title="Back to chat" placement="bottom" delay={300}>
             <TooltipTrigger
               onPress={onClose}
-              className="p-1.5 -ml-1 mr-1 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+              className="p-1.5 rounded-md text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)] transition-colors shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
             </TooltipTrigger>
           </Tooltip>
         )}
-        <h2 className="text-sm font-medium text-[var(--fg-primary)] truncate max-w-[200px]">
+        <h2 className="text-sm font-medium text-[var(--fg-primary)] truncate min-w-0">
           {title}
         </h2>
         <span className="text-[10px] font-medium text-[var(--fg-tertiary)] px-1.5 py-0.5 rounded bg-[var(--bg-tertiary)] shrink-0">
@@ -131,12 +131,12 @@ export function CanvasHeader({
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-warning-primary)] shrink-0" />
         )}
         {isSaving && (
-          <span className="text-[10px] text-[var(--fg-tertiary)]">Saving...</span>
+          <span className="text-[10px] text-[var(--fg-tertiary)] shrink-0">Saving...</span>
         )}
       </div>
 
       {/* Right side - Controls */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0 ml-3">
         {/* View/Source Toggle - icon only with animated indicator */}
         <div className="relative flex items-center rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]/50 p-0.5">
           {/* Animated background indicator */}

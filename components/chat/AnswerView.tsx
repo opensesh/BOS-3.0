@@ -136,6 +136,7 @@ export function AnswerView({
         thinking={thinking}
         isStreaming={isStreaming}
         hasContent={sections.length > 0}
+        sourcesCount={sources.length}
       />
 
       {/* Answer Content - Appears below reasoning and canvas */}

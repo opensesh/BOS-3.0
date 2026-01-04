@@ -29,27 +29,6 @@ export function CanvasContent({
 }: CanvasContentProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
-
-  // Track container width changes for responsive layout
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Use ResizeObserver to detect container width changes
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setContainerWidth(entry.contentRect.width);
-      }
-    });
-
-    resizeObserver.observe(container);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
 
   // Auto-scroll during streaming
   useEffect(() => {
@@ -62,15 +41,6 @@ export function CanvasContent({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange?.(e.target.value);
   }, [onChange]);
-
-  // Calculate responsive max width based on container width
-  const getResponsiveMaxWidth = () => {
-    if (containerWidth === 0) return '100%';
-    if (containerWidth < 640) return '100%'; // Mobile
-    if (containerWidth < 768) return '90%'; // Small tablet
-    if (containerWidth < 1024) return '85%'; // Tablet
-    return '48rem'; // Desktop (max-w-3xl equivalent)
-  };
 
   // Render source view (editable)
   if (viewMode === 'source') {
@@ -102,22 +72,14 @@ export function CanvasContent({
   // Render preview view (rendered markdown)
   return (
     <div 
-      ref={containerRef}
+      ref={previewRef}
       className="flex-1 overflow-auto bg-[var(--bg-primary)]"
       style={themeStyles}
     >
-      <div 
-        ref={previewRef}
-        className="mx-auto p-6"
-        style={{ 
-          maxWidth: getResponsiveMaxWidth(),
-          width: '100%'
-        }}
-      >
+      <div className="w-full max-w-3xl mx-auto p-6">
         <MarkdownRenderer 
           content={content} 
           isStreaming={isStreaming}
-          containerWidth={containerWidth}
         />
       </div>
     </div>
@@ -130,12 +92,10 @@ export function CanvasContent({
  */
 function MarkdownRenderer({ 
   content, 
-  isStreaming,
-  containerWidth
+  isStreaming
 }: { 
   content: string; 
   isStreaming?: boolean;
-  containerWidth?: number;
 }) {
   const lines = content.split('\n');
   const elements: React.ReactNode[] = [];
@@ -426,7 +386,7 @@ function MarkdownRenderer({
   }
 
   return (
-    <div className="canvas-content w-full" key={containerWidth}>
+    <div className="canvas-content w-full">
       {elements}
       {isStreaming && (
         <motion.span

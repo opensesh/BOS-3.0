@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
 import { ArtDirectionSettingsModal } from '@/components/brand-hub/ArtDirectionSettingsModal';
+import { TabSelector } from '@/components/brain/TabSelector';
 import { Download, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import JSZip from 'jszip';
@@ -421,39 +422,23 @@ export default function ArtDirectionPage() {
         onSettingsClick={() => setIsSettingsOpen(true)}
         settingsTooltip="Manage art direction images"
       >
-        {/* Filter Buttons + Download Button - Same row, matching original layout */}
-        <div className="flex flex-wrap gap-2 items-center mb-8">
-          {categories.map((category) => {
-            const isActive = selectedCategory === category;
-            return (
-              <motion.button
-                key={category}
-                onClick={() => handleCategoryChange(category)}
-                className={`
-                  px-3 py-2 rounded-full text-sm font-medium transition-all duration-200
-                  ${isActive
-                    ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)] shadow-lg shadow-[var(--bg-brand-solid)]/20'
-                    : 'bg-[var(--fg-primary)]/10 text-[var(--fg-primary)]/70 hover:bg-[var(--fg-primary)]/20 hover:text-[var(--fg-primary)]'
-                  }
-                `}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              >
-                {category}
-              </motion.button>
-            );
-          })}
+        {/* Category Tabs + Download Button */}
+        <div className="flex flex-wrap gap-3 items-center mb-8">
+          <TabSelector
+            tabs={categories.map(category => ({ id: category, label: category }))}
+            activeTab={selectedCategory}
+            onChange={(tabId) => handleCategoryChange(tabId as Category)}
+          />
 
           {/* Download Button - Icon Only, pushed to right */}
           <motion.button
             onClick={handleDownloadAll}
             disabled={isDownloading}
             className={`
-              w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center ml-auto
+              w-9 h-9 rounded-lg transition-all duration-200 flex items-center justify-center ml-auto
               ${isDownloading
                 ? 'bg-[var(--fg-primary)]/5 text-[var(--fg-primary)]/40 cursor-not-allowed'
-                : 'bg-[var(--bg-secondary)] border border-[var(--fg-primary)]/20 text-[var(--fg-primary)] hover:bg-[var(--fg-primary)]/10'
+                : 'bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
               }
             `}
             whileHover={!isDownloading ? { scale: 1.05 } : {}}

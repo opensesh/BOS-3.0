@@ -327,7 +327,7 @@ export default function SpaceChatPage() {
   // Loading state
   if (!spacesLoaded) {
     return (
-      <div className="flex h-screen bg-os-bg-dark text-os-text-primary-dark items-center justify-center">
+      <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-brand-aperol border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-os-text-secondary-dark">Loading...</p>
@@ -339,7 +339,7 @@ export default function SpaceChatPage() {
   // Space not found
   if (!space) {
     return (
-      <div className="flex h-screen bg-os-bg-dark text-os-text-primary-dark items-center justify-center">
+      <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-mono font-bold mb-4">Space Not Found</h1>
           <p className="text-os-text-secondary-dark mb-6">
@@ -360,7 +360,7 @@ export default function SpaceChatPage() {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex h-screen bg-os-bg-dark dark:bg-os-bg-dark text-os-text-primary-dark font-sans overflow-hidden">
+    <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans overflow-hidden">
       <Sidebar />
 
       <MainContent className="overflow-hidden">
@@ -447,7 +447,7 @@ export default function SpaceChatPage() {
 
             {activeTab === 'resources' && (
               <div className="py-6">
-                <p className="text-os-text-secondary-dark text-sm">No resources available</p>
+                <p className="text-[var(--fg-secondary)] text-sm">No resources available</p>
               </div>
             )}
           </div>
@@ -455,8 +455,8 @@ export default function SpaceChatPage() {
 
         {/* Follow-up input */}
         <div className="relative">
-          <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-os-bg-dark to-transparent pointer-events-none" />
-          <div className="bg-os-bg-dark px-4 py-4">
+          <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-[var(--bg-primary)] to-transparent pointer-events-none" />
+          <div className="bg-[var(--bg-primary)] px-4 py-4">
             <FollowUpInput
               onSubmit={handleFollowUpSubmit}
               isLoading={isLoading}

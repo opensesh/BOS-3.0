@@ -6,6 +6,14 @@ import { LayoutGrid, Clock, Lock, Plus, Trash2 } from 'lucide-react';
 import { Space } from '@/types';
 import { DeleteConfirmModal } from '@/components/spaces/DeleteConfirmModal';
 import { cn } from '@/lib/utils';
+import { Icon } from '@/components/ui/Icon';
+
+// Helper to check if a string is an emoji (vs an icon name)
+function isEmoji(str: string): boolean {
+  // Emoji regex - detects common emoji patterns
+  const emojiRegex = /^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
+  return emojiRegex.test(str) || str.length <= 2;
+}
 
 interface SpaceCardProps {
   space?: Space;
@@ -109,7 +117,11 @@ export function SpaceCard({ space, isCreate = false, onDelete, onCreateClick }: 
         <div className="flex items-start justify-between mb-4">
           <div className="w-12 h-12 bg-bg-tertiary rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-bg-brand-primary transition-colors">
             {space.icon ? (
-              <span className="text-2xl">{space.icon}</span>
+              isEmoji(space.icon) ? (
+                <span className="text-2xl">{space.icon}</span>
+              ) : (
+                <Icon name={space.icon} className="w-6 h-6 text-fg-tertiary group-hover:text-fg-brand-primary transition-colors" />
+              )
             ) : (
               <LayoutGrid className="w-6 h-6 text-fg-tertiary group-hover:text-fg-brand-primary transition-colors" />
             )}

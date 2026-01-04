@@ -3,6 +3,14 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowUpRight, Layers, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
+
+// Helper to check if a string is an emoji (vs an icon name)
+function isEmoji(str: string): boolean {
+  // Emoji regex - detects common emoji patterns
+  const emojiRegex = /^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
+  return emojiRegex.test(str) || str.length <= 2;
+}
 
 interface SpaceReferenceCardProps {
   spaceTitle: string;
@@ -41,7 +49,11 @@ export function SpaceReferenceCard({
       {/* Icon */}
       <div className="w-10 h-10 rounded-lg bg-[var(--bg-brand-primary)] flex items-center justify-center flex-shrink-0">
         {spaceIcon ? (
-          <span className="text-lg">{spaceIcon}</span>
+          isEmoji(spaceIcon) ? (
+            <span className="text-lg">{spaceIcon}</span>
+          ) : (
+            <Icon name={spaceIcon} className="w-5 h-5 text-[var(--fg-brand-primary)]" />
+          )
         ) : (
           <Layers className="w-5 h-5 text-[var(--fg-brand-primary)]" />
         )}

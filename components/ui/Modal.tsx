@@ -57,7 +57,7 @@ export function Modal({
         className={({ isEntering, isExiting }) =>
           cn(
             'relative w-full rounded-xl',
-            'bg-os-surface-dark border border-os-border-dark',
+            'bg-[var(--bg-secondary)] border border-[var(--border-secondary)]',
             'shadow-2xl',
             'max-h-[90vh] overflow-hidden flex flex-col',
             'outline-none',
@@ -71,10 +71,10 @@ export function Modal({
           {({ close }) => (
             <>
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-os-border-dark flex-shrink-0">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-secondary)] flex-shrink-0">
                 <Heading
                   slot="title"
-                  className="text-lg font-display font-semibold text-brand-vanilla"
+                  className="text-lg font-display font-semibold text-[var(--fg-primary)]"
                 >
                   {title}
                 </Heading>
@@ -85,7 +85,7 @@ export function Modal({
                       close();
                       onClose();
                     }}
-                    className="p-1.5 rounded-lg text-os-text-secondary-dark hover:text-brand-vanilla hover:bg-os-border-dark transition-colors focus:outline-none focus:ring-2 focus:ring-brand-aperol/50"
+                    className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors focus:outline-none focus:ring-2 focus:ring-brand-aperol/50"
                     aria-label="Close modal"
                   >
                     <X className="w-5 h-5" />
@@ -140,12 +140,12 @@ export function ConfirmModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
-      <p className="text-os-text-secondary-dark mb-6">{message}</p>
+      <p className="text-[var(--fg-secondary)] mb-6">{message}</p>
       <div className="flex justify-end gap-3">
         <button
           onClick={onClose}
           disabled={isLoading}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-os-text-primary-dark bg-os-border-dark hover:bg-os-border-dark/80 transition-colors disabled:opacity-50"
+          className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--fg-primary)] bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] transition-colors disabled:opacity-50"
         >
           {cancelText}
         </button>

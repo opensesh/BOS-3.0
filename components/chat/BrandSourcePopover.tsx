@@ -19,9 +19,11 @@ export interface BrandSourceInfo {
 interface BrandSourcePopoverProps {
   sources: BrandSourceInfo[];
   position?: 'above' | 'below';
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
-export function BrandSourcePopover({ sources, position = 'above' }: BrandSourcePopoverProps) {
+export function BrandSourcePopover({ sources, position = 'above', onMouseEnter, onMouseLeave }: BrandSourcePopoverProps) {
   if (sources.length === 0) return null;
 
   const positionClasses = position === 'above' 
@@ -30,7 +32,11 @@ export function BrandSourcePopover({ sources, position = 'above' }: BrandSourceP
 
   // Using span-based elements to avoid hydration errors when rendered inside <p> tags
   return (
-    <span className={`absolute left-0 ${positionClasses} w-72 bg-[var(--bg-secondary)] rounded-xl shadow-2xl z-50 overflow-hidden block`}>
+    <span 
+      className={`absolute left-0 ${positionClasses} w-72 bg-[var(--bg-secondary)] rounded-xl shadow-2xl z-50 overflow-hidden block`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {/* Header */}
       <span className="px-3 py-2.5 flex items-center gap-2 bg-[var(--bg-primary)]/30">
         <Hexagon className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/50" />

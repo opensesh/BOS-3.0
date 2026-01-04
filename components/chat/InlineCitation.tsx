@@ -22,6 +22,8 @@ export function InlineCitation({
   const [showPopover, setShowPopover] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState<'above' | 'below'>('above');
   const containerRef = useRef<HTMLSpanElement>(null);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isHoveringPopoverRef = useRef(false);
 
   // Check if primary source is a brand source
   const primarySourceData = sources[0];
@@ -74,6 +76,52 @@ export function InlineCitation({
     }
   }, [showPopover, calculatePosition]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Handle mouse enter on trigger
+  const handleMouseEnter = () => {
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+    setShowPopover(true);
+  };
+
+  // Handle mouse leave on trigger
+  const handleMouseLeave = () => {
+    // Add a small delay before hiding to allow moving to popover
+    hideTimeoutRef.current = setTimeout(() => {
+      // Only hide if not hovering over popover
+      if (!isHoveringPopoverRef.current) {
+        setShowPopover(false);
+      }
+    }, 150); // 150ms delay allows smooth transition to popover
+  };
+
+  // Handle mouse enter on popover
+  const handlePopoverMouseEnter = () => {
+    isHoveringPopoverRef.current = true;
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  };
+
+  // Handle mouse leave on popover
+  const handlePopoverMouseLeave = () => {
+    isHoveringPopoverRef.current = false;
+    setShowPopover(false);
+  };
+
   // Handle click to navigate to the brand source page
   const handleClick = (e: React.MouseEvent) => {
     if (!isBrandSource) return;
@@ -98,8 +146,8 @@ export function InlineCitation({
     <span
       ref={containerRef}
       className="relative inline-flex"
-      onMouseEnter={() => setShowPopover(true)}
-      onMouseLeave={() => setShowPopover(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <span
         onClick={handleClick}
@@ -122,9 +170,19 @@ export function InlineCitation({
       {/* Popover - use brand popover for brand sources, external popover for web sources */}
       {showPopover && sources.length > 0 && (
         isBrandSource && brandSources.length > 0 ? (
-          <BrandSourcePopover sources={brandSources} position={popoverPosition} />
+          <BrandSourcePopover 
+            sources={brandSources} 
+            position={popoverPosition}
+            onMouseEnter={handlePopoverMouseEnter}
+            onMouseLeave={handlePopoverMouseLeave}
+          />
         ) : externalSources.length > 0 ? (
-          <SourcePopover sources={externalSources} position={popoverPosition} />
+          <SourcePopover 
+            sources={externalSources} 
+            position={popoverPosition}
+            onMouseEnter={handlePopoverMouseEnter}
+            onMouseLeave={handlePopoverMouseLeave}
+          />
         ) : null
       )}
     </span>

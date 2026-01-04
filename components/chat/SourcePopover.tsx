@@ -8,9 +8,11 @@ import { SourceInfo } from './AnswerView';
 interface SourcePopoverProps {
   sources: SourceInfo[];
   position?: 'above' | 'below';
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
-export function SourcePopover({ sources, position = 'above' }: SourcePopoverProps) {
+export function SourcePopover({ sources, position = 'above', onMouseEnter, onMouseLeave }: SourcePopoverProps) {
   if (sources.length === 0) return null;
 
   const positionClasses = position === 'above' 
@@ -19,7 +21,11 @@ export function SourcePopover({ sources, position = 'above' }: SourcePopoverProp
 
   // Using span-based elements to avoid hydration errors when rendered inside <p> tags
   return (
-    <span className={`absolute left-0 ${positionClasses} w-72 bg-[var(--bg-secondary)] rounded-xl shadow-2xl z-50 overflow-hidden block`}>
+    <span 
+      className={`absolute left-0 ${positionClasses} w-72 bg-[var(--bg-secondary)] rounded-xl shadow-2xl z-50 overflow-hidden block`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       {/* Header */}
       <span className="px-3 py-2.5 flex items-center gap-2 bg-[var(--bg-primary)]/30">
         <Globe className="w-3.5 h-3.5 text-[var(--fg-tertiary)]/50" />

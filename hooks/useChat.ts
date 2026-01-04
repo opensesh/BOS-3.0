@@ -66,6 +66,10 @@ export type ChatStatus = 'ready' | 'submitted' | 'streaming' | 'error';
 // Default timeout for API requests (2 minutes for extended thinking)
 const DEFAULT_TIMEOUT = 120000;
 
+// Stall timeout - if no new data received for this long during streaming, consider it stalled
+// This catches cases where sources are streamed but the continuation hangs
+const STREAM_STALL_TIMEOUT = 45000; // 45 seconds
+
 // Stream chunk types from our API
 interface StreamChunk {
   type: 'thinking' | 'text' | 'tool_use' | 'tool_result' | 'sources' | 'done' | 'error';
@@ -269,126 +273,164 @@ export function useChat(options: UseChatOptions = {}) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
+      
+      // Track streaming state for stall detection
+      let hasReceivedText = false;
+      let hasReceivedSources = false;
+      let lastChunkTime = Date.now();
+      
+      // Stall detection - if we receive sources but no text for too long, something's wrong
+      // This catches the case where web search completes but the continuation fails
+      const stallCheckInterval = setInterval(() => {
+        const timeSinceLastChunk = Date.now() - lastChunkTime;
         
-        if (done) break;
+        // If we have sources but no text and stream has stalled, abort
+        if (hasReceivedSources && !hasReceivedText && timeSinceLastChunk > STREAM_STALL_TIMEOUT) {
+          console.warn('[useChat] Stream stalled: sources received but no text for', STREAM_STALL_TIMEOUT, 'ms');
+          if (abortControllerRef.current) {
+            // Set error state with a helpful message
+            setError(new Error('Response generation stalled after gathering sources. Please try again.'));
+            setStatus('error');
+            abortControllerRef.current.abort();
+          }
+        }
+      }, 5000); // Check every 5 seconds
 
-        buffer += decoder.decode(value, { stream: true });
-        
-        // Process complete SSE messages
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim();
-            const chunk = parseSSEData(data);
-            
-            if (!chunk) continue;
+          // Update last chunk time for stall detection
+          lastChunkTime = Date.now();
+          
+          buffer += decoder.decode(value, { stream: true });
+          
+          // Process complete SSE messages
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-            if (chunk.type === 'text' && chunk.content) {
-              // Append text to assistant message
-              setMessages(prev => {
-                const newMessages = [...prev];
-                const lastIndex = newMessages.length - 1;
-                if (newMessages[lastIndex]?.role === 'assistant') {
-                  newMessages[lastIndex] = {
-                    ...newMessages[lastIndex],
-                    content: newMessages[lastIndex].content + chunk.content,
-                  };
-                }
-                return newMessages;
-              });
-            } else if (chunk.type === 'thinking') {
-              // Handle thinking chunks - including empty ones that signal "thinking started"
-              // This ensures the thinking bubble appears immediately when extended thinking begins
-              setMessages(prev => {
-                const newMessages = [...prev];
-                const lastIndex = newMessages.length - 1;
-                if (newMessages[lastIndex]?.role === 'assistant') {
-                  // For empty thinking chunks, initialize with empty string if not already set
-                  // For non-empty chunks, append the content
-                  const currentThinking = newMessages[lastIndex].thinking || '';
-                  const newThinking = chunk.content ? currentThinking + chunk.content : currentThinking || '';
-                  newMessages[lastIndex] = {
-                    ...newMessages[lastIndex],
-                    thinking: newThinking,
-                  };
-                }
-                return newMessages;
-              });
-            } else if (chunk.type === 'tool_use') {
-              // Add tool call to assistant message
-              setMessages(prev => {
-                const newMessages = [...prev];
-                const lastIndex = newMessages.length - 1;
-                if (newMessages[lastIndex]?.role === 'assistant') {
-                  const toolCalls = newMessages[lastIndex].toolCalls || [];
-                  toolCalls.push({
-                    id: generateId(),
-                    name: chunk.toolName || 'unknown',
-                    input: chunk.toolInput,
-                    status: 'running',
-                  });
-                  newMessages[lastIndex] = {
-                    ...newMessages[lastIndex],
-                    toolCalls,
-                  };
-                }
-                return newMessages;
-              });
-            } else if (chunk.type === 'tool_result') {
-              // Update tool call with result
-              setMessages(prev => {
-                const newMessages = [...prev];
-                const lastIndex = newMessages.length - 1;
-                if (newMessages[lastIndex]?.role === 'assistant' && newMessages[lastIndex].toolCalls) {
-                  const toolCalls = [...newMessages[lastIndex].toolCalls!];
-                  const lastToolIndex = toolCalls.length - 1;
-                  if (lastToolIndex >= 0) {
-                    toolCalls[lastToolIndex] = {
-                      ...toolCalls[lastToolIndex],
-                      result: chunk.toolResult,
-                      status: 'completed',
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6).trim();
+              const chunk = parseSSEData(data);
+              
+              if (!chunk) continue;
+
+              if (chunk.type === 'text' && chunk.content) {
+                hasReceivedText = true;
+                // Append text to assistant message
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  const lastIndex = newMessages.length - 1;
+                  if (newMessages[lastIndex]?.role === 'assistant') {
+                    newMessages[lastIndex] = {
+                      ...newMessages[lastIndex],
+                      content: newMessages[lastIndex].content + chunk.content,
                     };
+                  }
+                  return newMessages;
+                });
+              } else if (chunk.type === 'thinking') {
+                // Handle thinking chunks - including empty ones that signal "thinking started"
+                // This ensures the thinking bubble appears immediately when extended thinking begins
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  const lastIndex = newMessages.length - 1;
+                  if (newMessages[lastIndex]?.role === 'assistant') {
+                    // For empty thinking chunks, initialize with empty string if not already set
+                    // For non-empty chunks, append the content
+                    const currentThinking = newMessages[lastIndex].thinking || '';
+                    const newThinking = chunk.content ? currentThinking + chunk.content : currentThinking || '';
+                    newMessages[lastIndex] = {
+                      ...newMessages[lastIndex],
+                      thinking: newThinking,
+                    };
+                  }
+                  return newMessages;
+                });
+              } else if (chunk.type === 'tool_use') {
+                // Add tool call to assistant message
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  const lastIndex = newMessages.length - 1;
+                  if (newMessages[lastIndex]?.role === 'assistant') {
+                    const toolCalls = newMessages[lastIndex].toolCalls || [];
+                    toolCalls.push({
+                      id: generateId(),
+                      name: chunk.toolName || 'unknown',
+                      input: chunk.toolInput,
+                      status: 'running',
+                    });
                     newMessages[lastIndex] = {
                       ...newMessages[lastIndex],
                       toolCalls,
                     };
                   }
+                  return newMessages;
+                });
+              } else if (chunk.type === 'tool_result') {
+                // Update tool call with result
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  const lastIndex = newMessages.length - 1;
+                  if (newMessages[lastIndex]?.role === 'assistant' && newMessages[lastIndex].toolCalls) {
+                    const toolCalls = [...newMessages[lastIndex].toolCalls!];
+                    const lastToolIndex = toolCalls.length - 1;
+                    if (lastToolIndex >= 0) {
+                      toolCalls[lastToolIndex] = {
+                        ...toolCalls[lastToolIndex],
+                        result: chunk.toolResult,
+                        status: 'completed',
+                      };
+                      newMessages[lastIndex] = {
+                        ...newMessages[lastIndex],
+                        toolCalls,
+                      };
+                    }
+                  }
+                  return newMessages;
+                });
+              } else if (chunk.type === 'sources' && chunk.sources) {
+                hasReceivedSources = true;
+                // Add sources/citations to assistant message (with deduplication)
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  const lastIndex = newMessages.length - 1;
+                  if (newMessages[lastIndex]?.role === 'assistant') {
+                    const existingSources = newMessages[lastIndex].sources || [];
+                    const existingIds = new Set(existingSources.map(s => s.id));
+                    const existingUrls = new Set(existingSources.map(s => s.url));
+                    // Filter out duplicates by ID or URL
+                    const newSources = chunk.sources!.filter(
+                      s => !existingIds.has(s.id) && !existingUrls.has(s.url)
+                    );
+                    newMessages[lastIndex] = {
+                      ...newMessages[lastIndex],
+                      sources: [...existingSources, ...newSources],
+                    };
+                  }
+                  return newMessages;
+                });
+              } else if (chunk.type === 'error') {
+                throw new Error(chunk.error || 'Unknown streaming error');
+              } else if (chunk.type === 'done') {
+                // Stream completed - check if we have a valid response
+                // If we have sources but no text, something went wrong
+                if (hasReceivedSources && !hasReceivedText) {
+                  console.warn('[useChat] Stream ended with sources but no text content');
+                  // Don't throw - the server should have sent a fallback message
+                  // If it didn't, the message will appear empty which is still better than an error
                 }
-                return newMessages;
-              });
-            } else if (chunk.type === 'sources' && chunk.sources) {
-              // Add sources/citations to assistant message (with deduplication)
-              setMessages(prev => {
-                const newMessages = [...prev];
-                const lastIndex = newMessages.length - 1;
-                if (newMessages[lastIndex]?.role === 'assistant') {
-                  const existingSources = newMessages[lastIndex].sources || [];
-                  const existingIds = new Set(existingSources.map(s => s.id));
-                  const existingUrls = new Set(existingSources.map(s => s.url));
-                  // Filter out duplicates by ID or URL
-                  const newSources = chunk.sources!.filter(
-                    s => !existingIds.has(s.id) && !existingUrls.has(s.url)
-                  );
-                  newMessages[lastIndex] = {
-                    ...newMessages[lastIndex],
-                    sources: [...existingSources, ...newSources],
-                  };
-                }
-                return newMessages;
-              });
-            } else if (chunk.type === 'error') {
-              throw new Error(chunk.error || 'Unknown streaming error');
-            } else if (chunk.type === 'done') {
-              // Stream completed
-              break;
+                break;
+              }
             }
           }
         }
+      } finally {
+        // Always clear the stall check interval
+        clearInterval(stallCheckInterval);
       }
 
       setStatus('ready');

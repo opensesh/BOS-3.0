@@ -96,9 +96,13 @@ export function FollowUpInput({
   // Update input with live transcript
   useEffect(() => {
     if (isListening && transcript) {
+      // IMPORTANT: Capture the previous transcript BEFORE setInput (refs are sync, setState is async)
+      const prevTranscript = prevTranscriptRef.current;
+      // Update ref immediately for the next effect run
+      prevTranscriptRef.current = transcript;
+      
       setInput((prev) => {
-        // Remove the PREVIOUS transcript (not the new one) from input
-        const prevTranscript = prevTranscriptRef.current;
+        // Remove the PREVIOUS transcript from input
         let base = prev;
         if (prevTranscript && prev.endsWith(prevTranscript)) {
           base = prev.slice(0, -prevTranscript.length).trim();
@@ -107,8 +111,6 @@ export function FollowUpInput({
         const result = base + (base ? ' ' : '') + transcript;
         return result;
       });
-      // Update ref to current transcript for next iteration
-      prevTranscriptRef.current = transcript;
     } else if (!isListening) {
       // Reset when done listening
       prevTranscriptRef.current = '';

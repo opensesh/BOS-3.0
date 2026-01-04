@@ -545,9 +545,13 @@ export function ChatInterface() {
   
   useEffect(() => {
     if (isListening && transcript) {
+      // IMPORTANT: Capture the previous transcript BEFORE setInput (refs are sync, setState is async)
+      const prevTranscript = prevTranscriptRef.current;
+      // Update ref immediately for the next effect run
+      prevTranscriptRef.current = transcript;
+      
       setInput((prev) => {
-        // Remove the PREVIOUS transcript (not the new one) from input
-        const prevTranscript = prevTranscriptRef.current;
+        // Remove the PREVIOUS transcript from input
         let base = prev;
         const endsWithPrev = prevTranscript && prev.endsWith(prevTranscript);
         if (endsWithPrev) {
@@ -556,12 +560,10 @@ export function ChatInterface() {
         // Append the NEW transcript
         const result = base + (base ? ' ' : '') + transcript;
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:transcriptEffect',message:'Processing transcript',data:{prev,prevTranscript,transcript,endsWithPrev,base,result,prevLength:prev.length,transcriptLength:transcript.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'voice-loop'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:transcriptEffect',message:'Processing transcript',data:{prev,prevTranscript,transcript,endsWithPrev,base,result,prevLength:prev.length,transcriptLength:transcript.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'voice-loop-fix'})}).catch(()=>{});
         // #endregion
         return result;
       });
-      // Update ref to current transcript for next iteration
-      prevTranscriptRef.current = transcript;
     } else if (!isListening) {
       // Reset when done listening
       prevTranscriptRef.current = '';

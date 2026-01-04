@@ -57,9 +57,14 @@ export interface UseChatOptions {
   onError?: (error: Error) => void;
   onFinish?: (message: ChatMessage) => void;
   initialMessages?: ChatMessage[];
+  /** Timeout in milliseconds for API requests. Default: 120000 (2 minutes) */
+  timeout?: number;
 }
 
 export type ChatStatus = 'ready' | 'submitted' | 'streaming' | 'error';
+
+// Default timeout for API requests (2 minutes for extended thinking)
+const DEFAULT_TIMEOUT = 120000;
 
 // Stream chunk types from our API
 interface StreamChunk {
@@ -82,6 +87,7 @@ export function useChat(options: UseChatOptions = {}) {
     onError,
     onFinish,
     initialMessages = [],
+    timeout = DEFAULT_TIMEOUT,
   } = options;
 
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -90,6 +96,30 @@ export function useChat(options: UseChatOptions = {}) {
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const currentAssistantMessageRef = useRef<ChatMessage | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutOccurredRef = useRef(false);
+  
+  // Use ref to always have access to the latest messages for the API call
+  // This prevents stale closure issues when extended thinking is toggled mid-conversation
+  const messagesRef = useRef<ChatMessage[]>(initialMessages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Helper to safely clear timeout
+  const clearTimeoutSafe = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  // Helper to reset state on completion/error
+  const resetRequestState = useCallback(() => {
+    clearTimeoutSafe();
+    abortControllerRef.current = null;
+    currentAssistantMessageRef.current = null;
+  }, [clearTimeoutSafe]);
 
   // Generate unique ID for messages
   const generateId = useCallback(() => {
@@ -111,7 +141,7 @@ export function useChat(options: UseChatOptions = {}) {
   // Send a message and stream the response
   const sendMessage = useCallback(async (
     message: { text: string; files?: Array<{ type: string; data: string; mimeType: string }> },
-    options?: SendMessageOptions
+    sendOptions?: SendMessageOptions
   ) => {
     // Process file attachments for state storage
     const messageAttachments: MessageAttachment[] = message.files?.map((file, idx) => ({
@@ -134,8 +164,37 @@ export function useChat(options: UseChatOptions = {}) {
     setStatus('submitted');
     setError(null);
 
+    // Clear any existing timeout/abort controller
+    clearTimeoutSafe();
+    timeoutOccurredRef.current = false;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     // Create abort controller for this request
     abortControllerRef.current = new AbortController();
+
+    // Set up timeout to prevent hung requests
+    // Extended thinking can take longer, so use a generous timeout
+    timeoutRef.current = setTimeout(() => {
+      if (abortControllerRef.current) {
+        console.warn('[useChat] Request timeout - aborting');
+        timeoutOccurredRef.current = true;
+        abortControllerRef.current.abort();
+        setError(new Error('Request timed out. Please try again.'));
+        setStatus('error');
+        // Remove the empty assistant message on timeout
+        setMessages(prev => {
+          const newMessages = [...prev];
+          if (newMessages[newMessages.length - 1]?.role === 'assistant' && 
+              !newMessages[newMessages.length - 1]?.content) {
+            newMessages.pop();
+          }
+          return newMessages;
+        });
+        resetRequestState();
+      }
+    }, timeout);
 
     // Prepare assistant message placeholder
     const assistantMessage: ChatMessage = {
@@ -150,8 +209,12 @@ export function useChat(options: UseChatOptions = {}) {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
+      // Use the ref to get the latest messages, avoiding stale closure issues
+      // This is critical for when extended thinking is toggled mid-conversation
+      const currentMessages = messagesRef.current;
+      
       // Prepare request body with properly formatted messages
-      const apiMessages = [...messages, userMessage].map(m => {
+      const apiMessages = [...currentMessages, userMessage].map(m => {
         const baseMessage: Record<string, unknown> = {
           role: m.role,
           content: m.content,
@@ -176,7 +239,7 @@ export function useChat(options: UseChatOptions = {}) {
 
       const body: Record<string, unknown> = {
         messages: apiMessages,
-        ...options?.body,
+        ...sendOptions?.body,
       };
 
       const response = await fetch(api, {
@@ -187,6 +250,9 @@ export function useChat(options: UseChatOptions = {}) {
         body: JSON.stringify(body),
         signal: abortControllerRef.current.signal,
       });
+
+      // Clear timeout once we start receiving the response
+      clearTimeoutSafe();
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -339,13 +405,22 @@ export function useChat(options: UseChatOptions = {}) {
       }
 
     } catch (err) {
+      // Clear timeout on any error
+      clearTimeoutSafe();
+      
       if ((err as Error).name === 'AbortError') {
-        // Request was cancelled
+        // Request was cancelled - check if it was due to timeout
+        // If timeout occurred, the timeout handler already processed the state
+        if (timeoutOccurredRef.current) {
+          return;
+        }
+        // Otherwise it was a manual cancel, just reset to ready
         setStatus('ready');
         return;
       }
 
       const error = err instanceof Error ? err : new Error(String(err));
+      console.error('[useChat] Error during message send:', error.message);
       setError(error);
       setStatus('error');
       
@@ -363,10 +438,11 @@ export function useChat(options: UseChatOptions = {}) {
         onError(error);
       }
     } finally {
-      abortControllerRef.current = null;
-      currentAssistantMessageRef.current = null;
+      resetRequestState();
     }
-  }, [api, messages, generateId, parseSSEData, onError, onFinish]);
+  // Note: We intentionally don't include `messages` in deps - we use messagesRef instead
+  // This prevents stale closure issues when toggling settings mid-conversation
+  }, [api, generateId, parseSSEData, onError, onFinish, timeout, clearTimeoutSafe, resetRequestState]);
 
   // Stop the current streaming request
   const stop = useCallback(() => {
@@ -386,11 +462,12 @@ export function useChat(options: UseChatOptions = {}) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      clearTimeoutSafe();
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, []);
+  }, [clearTimeoutSafe]);
 
   return {
     messages,

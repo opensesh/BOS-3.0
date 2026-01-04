@@ -314,37 +314,55 @@ async function streamWithAnthropicNative(
         let hasStreamedText = false;
         let thinkingEventCount = 0;
 
+        // Track if an error occurred in event handlers
+        let streamError: Error | null = null;
+
         // Process text events - strip any raw <thinking> tags the model might output
         stream.on('text', (text: string) => {
-          const cleanText = stripThinkingTags(text);
-          if (cleanText) {
-            hasStreamedText = true;
-            controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+          try {
+            const cleanText = stripThinkingTags(text);
+            if (cleanText) {
+              hasStreamedText = true;
+              controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+            }
+          } catch (err) {
+            console.error('[Stream] Error in text handler:', err);
+            streamError = err instanceof Error ? err : new Error(String(err));
           }
         });
 
         // Stream thinking deltas in real-time using the official SDK event
         // This provides word-by-word streaming for Extended Thinking content
         stream.on('thinking', (thinkingDelta: string) => {
-          thinkingEventCount++;
-          if (thinkingEventCount === 1) {
-            console.log('[Extended Thinking] First thinking delta received');
+          try {
+            thinkingEventCount++;
+            if (thinkingEventCount === 1) {
+              console.log('[Extended Thinking] First thinking delta received');
+            }
+            controller.enqueue(sse.encode({ 
+              type: 'thinking', 
+              content: thinkingDelta 
+            }));
+          } catch (err) {
+            console.error('[Stream] Error in thinking handler:', err);
+            streamError = err instanceof Error ? err : new Error(String(err));
           }
-          controller.enqueue(sse.encode({ 
-            type: 'thinking', 
-            content: thinkingDelta 
-          }));
         });
 
         // Handle content blocks (tool use start)
         stream.on('contentBlock', (block) => {
-          if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
-            currentToolUse = { id: block.id, name: block.name, input: '' };
-            controller.enqueue(sse.encode({ 
-              type: 'tool_use', 
-              toolName: block.name,
-              content: `Using tool: ${block.name}` 
-            }));
+          try {
+            if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
+              currentToolUse = { id: block.id, name: block.name, input: '' };
+              controller.enqueue(sse.encode({ 
+                type: 'tool_use', 
+                toolName: block.name,
+                content: `Using tool: ${block.name}` 
+              }));
+            }
+          } catch (err) {
+            console.error('[Stream] Error in contentBlock handler:', err);
+            streamError = err instanceof Error ? err : new Error(String(err));
           }
         });
 
@@ -357,19 +375,35 @@ async function streamWithAnthropicNative(
 
         // Process complete messages for tool calls
         stream.on('message', (message) => {
-          for (const block of message.content || []) {
-            if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
-              pendingToolCalls.push({
-                id: block.id,
-                name: block.name,
-                input: (block as { input?: Record<string, unknown> }).input || {},
-              });
+          try {
+            for (const block of message.content || []) {
+              if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
+                pendingToolCalls.push({
+                  id: block.id,
+                  name: block.name,
+                  input: (block as { input?: Record<string, unknown> }).input || {},
+                });
+              }
             }
+          } catch (err) {
+            console.error('[Stream] Error in message handler:', err);
+            streamError = err instanceof Error ? err : new Error(String(err));
           }
+        });
+        
+        // Handle stream errors
+        stream.on('error', (err: Error) => {
+          console.error('[Stream] Anthropic stream error:', err);
+          streamError = err;
         });
 
         // Wait for initial response
         const response = await stream.finalMessage();
+        
+        // Check if any errors occurred during streaming
+        if (streamError) {
+          throw streamError;
+        }
         
         // CRITICAL FIX: For extended thinking, text blocks might come in the final message
         // rather than being streamed via 'text' events. Check immediately after finalMessage.
@@ -498,22 +532,44 @@ async function streamWithAnthropicNative(
 
           // Stream the continuation response in real-time
           let hasText = false;
+          let continueStreamError: Error | null = null;
           
           continueStream.on('text', (text: string) => {
-            const cleanText = stripThinkingTags(text);
-            if (cleanText) {
-              hasText = true;
-              controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+            try {
+              const cleanText = stripThinkingTags(text);
+              if (cleanText) {
+                hasText = true;
+                controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+              }
+            } catch (err) {
+              console.error('[ContinueStream] Error in text handler:', err);
+              continueStreamError = err instanceof Error ? err : new Error(String(err));
             }
           });
 
           // Stream thinking deltas in real-time for continuation response
           continueStream.on('thinking', (thinkingDelta: string) => {
-            controller.enqueue(sse.encode({ type: 'thinking', content: thinkingDelta }));
+            try {
+              controller.enqueue(sse.encode({ type: 'thinking', content: thinkingDelta }));
+            } catch (err) {
+              console.error('[ContinueStream] Error in thinking handler:', err);
+              continueStreamError = err instanceof Error ? err : new Error(String(err));
+            }
+          });
+          
+          // Handle stream errors
+          continueStream.on('error', (err: Error) => {
+            console.error('[ContinueStream] Anthropic stream error:', err);
+            continueStreamError = err;
           });
 
           // Wait for the continuation to complete
           const continueResponse = await continueStream.finalMessage();
+          
+          // Check for errors during continuation
+          if (continueStreamError) {
+            throw continueStreamError;
+          }
           
           console.log('Continuation complete:', {
             stopReason: continueResponse.stop_reason,

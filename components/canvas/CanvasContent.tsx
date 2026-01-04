@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { CanvasViewMode } from '@/lib/canvas-context';
 
@@ -29,6 +29,27 @@ export function CanvasContent({
 }: CanvasContentProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  // Track container width changes for responsive layout
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Use ResizeObserver to detect container width changes
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   // Auto-scroll during streaming
   useEffect(() => {
@@ -41,6 +62,15 @@ export function CanvasContent({
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange?.(e.target.value);
   }, [onChange]);
+
+  // Calculate responsive max width based on container width
+  const getResponsiveMaxWidth = () => {
+    if (containerWidth === 0) return '100%';
+    if (containerWidth < 640) return '100%'; // Mobile
+    if (containerWidth < 768) return '90%'; // Small tablet
+    if (containerWidth < 1024) return '85%'; // Tablet
+    return '48rem'; // Desktop (max-w-3xl equivalent)
+  };
 
   // Render source view (editable)
   if (viewMode === 'source') {
@@ -72,12 +102,23 @@ export function CanvasContent({
   // Render preview view (rendered markdown)
   return (
     <div 
-      ref={previewRef}
+      ref={containerRef}
       className="flex-1 overflow-auto bg-[var(--bg-primary)]"
       style={themeStyles}
     >
-      <div className="max-w-3xl mx-auto p-6">
-        <MarkdownRenderer content={content} isStreaming={isStreaming} />
+      <div 
+        ref={previewRef}
+        className="mx-auto p-6"
+        style={{ 
+          maxWidth: getResponsiveMaxWidth(),
+          width: '100%'
+        }}
+      >
+        <MarkdownRenderer 
+          content={content} 
+          isStreaming={isStreaming}
+          containerWidth={containerWidth}
+        />
       </div>
     </div>
   );
@@ -89,10 +130,12 @@ export function CanvasContent({
  */
 function MarkdownRenderer({ 
   content, 
-  isStreaming 
+  isStreaming,
+  containerWidth
 }: { 
   content: string; 
   isStreaming?: boolean;
+  containerWidth?: number;
 }) {
   const lines = content.split('\n');
   const elements: React.ReactNode[] = [];
@@ -173,9 +216,9 @@ function MarkdownRenderer({
         elements.push(
           <pre 
             key={`code-${index}`} 
-            className="my-4 p-4 rounded-xl bg-[var(--bg-tertiary)] overflow-x-auto"
+            className="my-4 p-4 rounded-xl bg-[var(--bg-tertiary)] overflow-x-auto w-full"
           >
-            <code className={`language-${codeLanguage} font-mono text-sm text-[var(--fg-primary)]`}>
+            <code className={`language-${codeLanguage} font-mono text-sm text-[var(--fg-primary)] block`}>
               {codeContent.join('\n')}
             </code>
           </pre>
@@ -214,14 +257,14 @@ function MarkdownRenderer({
     } else if (inTable) {
       // End of table, render it
       elements.push(
-        <div key={`table-${index}`} className="my-4 overflow-x-auto">
-          <table className="w-full border-collapse">
+        <div key={`table-${index}`} className="my-4 overflow-x-auto -mx-2 px-2">
+          <table className="w-full min-w-full border-collapse">
             <thead>
               <tr className="border-b border-[var(--border-primary)]">
                 {tableHeader.map((cell, i) => (
                   <th 
                     key={i} 
-                    className="px-4 py-2 text-left text-sm font-semibold text-[var(--fg-secondary)]"
+                    className="px-3 py-2 text-left text-sm font-semibold text-[var(--fg-secondary)] whitespace-nowrap"
                   >
                     {cell}
                   </th>
@@ -237,7 +280,7 @@ function MarkdownRenderer({
                   {row.map((cell, cellIndex) => (
                     <td 
                       key={cellIndex} 
-                      className="px-4 py-2 text-sm text-[var(--fg-primary)]"
+                      className="px-3 py-2 text-sm text-[var(--fg-primary)]"
                     >
                       {processInlineMarkdown(cell)}
                     </td>
@@ -346,14 +389,14 @@ function MarkdownRenderer({
   // Handle unclosed table at end
   if (inTable && tableRows.length > 0) {
     elements.push(
-      <div key="table-end" className="my-4 overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div key="table-end" className="my-4 overflow-x-auto -mx-2 px-2">
+        <table className="w-full min-w-full border-collapse">
           <thead>
             <tr className="border-b border-[var(--border-primary)]">
               {tableHeader.map((cell, i) => (
                 <th 
                   key={i} 
-                  className="px-4 py-2 text-left text-sm font-semibold text-[var(--fg-secondary)]"
+                  className="px-3 py-2 text-left text-sm font-semibold text-[var(--fg-secondary)] whitespace-nowrap"
                 >
                   {cell}
                 </th>
@@ -369,7 +412,7 @@ function MarkdownRenderer({
                 {row.map((cell, cellIndex) => (
                   <td 
                     key={cellIndex} 
-                    className="px-4 py-2 text-sm text-[var(--fg-primary)]"
+                    className="px-3 py-2 text-sm text-[var(--fg-primary)]"
                   >
                     {processInlineMarkdown(cell)}
                   </td>
@@ -383,7 +426,7 @@ function MarkdownRenderer({
   }
 
   return (
-    <div className="canvas-content">
+    <div className="canvas-content w-full" key={containerWidth}>
       {elements}
       {isStreaming && (
         <motion.span

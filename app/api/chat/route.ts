@@ -431,6 +431,10 @@ async function streamWithAnthropicNative(
           let totalToolRounds = 0;
           const MAX_TOOL_ROUNDS = 5; // Safety limit to prevent infinite loops
           
+          // Track if we've already streamed meaningful content during tool use
+          // This includes canvas content injected from create_artifact
+          let hasToolOutputText = false;
+          
           // Loop to handle multiple rounds of tool use
           while (currentResponse.stop_reason === 'tool_use' && currentToolCalls.length > 0 && totalToolRounds < MAX_TOOL_ROUNDS) {
             totalToolRounds++;
@@ -496,6 +500,55 @@ async function streamWithAnthropicNative(
                     // Quick delay between sources - fast enough to feel responsive (30ms = ~500ms for 18 sources)
                     await new Promise(resolve => setTimeout(resolve, 30));
                   }
+                }
+              }
+              
+              // CANVAS SUPPORT: When create_artifact is used, inject <canvas> tags into the stream
+              // This allows the UI to display the CanvasPreviewBubble with typing animation
+              if (toolCall.name === 'create_artifact' && result.success && result.data) {
+                const artifactData = result.data as { 
+                  type?: string; 
+                  title?: string; 
+                  content?: string;
+                };
+                
+                // Only inject canvas for document/markdown types
+                if (artifactData.content && artifactData.title) {
+                  console.log('[Canvas] Injecting canvas tags for artifact:', artifactData.title);
+                  
+                  // Stream the canvas opening tag immediately so UI can show preview
+                  const canvasOpenTag = `<canvas title="${artifactData.title}" action="create">`;
+                  controller.enqueue(sse.encode({ type: 'text', content: canvasOpenTag }));
+                  
+                  // Stream the content in chunks to show "typing" effect in preview
+                  // Split into lines and stream each one with a small delay
+                  const contentLines = artifactData.content.split('\n');
+                  const CHARS_PER_CHUNK = 100; // Stream ~100 chars at a time for smooth typing
+                  
+                  let currentChunk = '';
+                  for (const line of contentLines) {
+                    currentChunk += line + '\n';
+                    
+                    // Stream when chunk is big enough or at end
+                    if (currentChunk.length >= CHARS_PER_CHUNK) {
+                      controller.enqueue(sse.encode({ type: 'text', content: currentChunk }));
+                      currentChunk = '';
+                      // Small delay for typing effect (10ms per chunk = ~1s for 10KB)
+                      await new Promise(resolve => setTimeout(resolve, 10));
+                    }
+                  }
+                  
+                  // Stream any remaining content
+                  if (currentChunk) {
+                    controller.enqueue(sse.encode({ type: 'text', content: currentChunk }));
+                  }
+                  
+                  // Close the canvas tag
+                  controller.enqueue(sse.encode({ type: 'text', content: '</canvas>' }));
+                  
+                  // Mark that we've streamed canvas content
+                  hasToolOutputText = true;
+                  hasStreamedText = true; // Also update outer scope for safety
                 }
               }
 
@@ -669,12 +722,16 @@ async function streamWithAnthropicNative(
                 // Continue the loop
               } else {
                 // No more tool use - we're done with tools
-                // If we have text, great! If not, show error
-                if (!hasContinuationText) {
+                // If we have text (from streaming OR from canvas injection), great! If not, show error
+                const hasAnyOutput = hasContinuationText || hasToolOutputText;
+                
+                if (!hasAnyOutput) {
                   console.error('[Tool Use] All tool rounds completed but no response text generated!', {
                     totalRounds: totalToolRounds,
                     finalStopReason: continueResponse.stop_reason,
                     contentTypes: continueResponse.content?.map((b: { type: string }) => b.type) || [],
+                    hasToolOutputText,
+                    hasContinuationText,
                   });
                   
                   const errorMessage = "I found some relevant information but encountered an issue generating a complete response. " +

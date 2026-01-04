@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { AnswerView, parseContentToSections, extractResourceCards, parseCanvasResponse, SourceInfo } from './AnswerView';
+import { StreamingSourcesCounter } from './InlineStreamingDisplay';
 import { ResponseActions } from './ResponseActions';
 import { RelatedQuestions } from './RelatedQuestions';
 import { CanvasPreviewBubble } from '@/components/canvas';
@@ -177,6 +178,8 @@ export function ChatContent({
         resourceCards={resourceCards}
         thinking={thinking}
         attachments={attachments}
+        // Don't show sources in AnswerView when we have a canvas - we show them below
+        hideSourcesCounter={hasCanvas}
       />
 
       {/* Canvas Preview Bubble - Shows immediately when canvas tag is detected */}
@@ -190,6 +193,14 @@ export function ChatContent({
             defaultCollapsed={false}
           />
         </div>
+      )}
+
+      {/* Sources Counter - Shows after canvas bubble during streaming */}
+      {hasCanvas && (
+        <StreamingSourcesCounter
+          isStreaming={isStreaming || isCanvasStreaming}
+          sourcesCount={sources.length}
+        />
       )}
 
       {/* Response actions - shown for all completed responses */}

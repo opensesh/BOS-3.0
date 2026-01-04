@@ -94,6 +94,8 @@ interface AnswerViewProps {
   thinking?: string;
   /** Attached images from user message */
   attachments?: MessageAttachment[];
+  /** Hide the sources counter (when canvas shows it separately) */
+  hideSourcesCounter?: boolean;
 }
 
 export function AnswerView({
@@ -105,6 +107,7 @@ export function AnswerView({
   resourceCards = [],
   thinking,
   attachments,
+  hideSourcesCounter = false,
 }: AnswerViewProps) {
   // Group sources by index for citation display
   const getSourcesForCitation = (citations?: SourceInfo[]): SourceInfo[] => {
@@ -136,7 +139,6 @@ export function AnswerView({
         thinking={thinking}
         isStreaming={isStreaming}
         hasContent={sections.length > 0}
-        sourcesCount={sources.length}
       />
 
       {/* Answer Content - Appears below reasoning and canvas */}

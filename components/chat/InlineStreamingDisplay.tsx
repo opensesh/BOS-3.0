@@ -13,8 +13,6 @@ interface InlineStreamingDisplayProps {
   isStreaming: boolean;
   /** Whether any text content has arrived yet */
   hasContent: boolean;
-  /** Number of sources found so far (for streaming counter) */
-  sourcesCount?: number;
 }
 
 /**
@@ -39,7 +37,6 @@ export function InlineStreamingDisplay({
   thinking,
   isStreaming,
   hasContent,
-  sourcesCount = 0,
 }: InlineStreamingDisplayProps) {
   // Note: thinking can be an empty string when "thinking has started" but no content yet
   // We treat both undefined/null and empty string differently:
@@ -127,35 +124,50 @@ export function InlineStreamingDisplay({
           <ThinkingDotFlow />
         </div>
       )}
-      
-      {/* Streaming Sources Counter - Shows sources counting up as they're found */}
-      <AnimatePresence>
-        {isStreaming && sourcesCount > 0 && (
-          <motion.div 
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="py-2"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)]/60 border border-[var(--border-secondary)]">
-              <Globe className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
-              <span className="text-[13px] text-[var(--fg-tertiary)]">
-                Finding sources...{' '}
-                <motion.span
-                  key={sourcesCount}
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-[var(--fg-primary)] font-medium"
-                >
-                  {sourcesCount}
-                </motion.span>
-              </span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
+  );
+}
+
+/**
+ * StreamingSourcesCounter
+ * 
+ * Shows the "Finding sources..." counter during streaming.
+ * Should be rendered AFTER the canvas preview bubble in ChatContent.
+ */
+export function StreamingSourcesCounter({
+  isStreaming,
+  sourcesCount,
+}: {
+  isStreaming: boolean;
+  sourcesCount: number;
+}) {
+  return (
+    <AnimatePresence>
+      {isStreaming && sourcesCount > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="mt-3"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)]/60 border border-[var(--border-secondary)]">
+            <Globe className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
+            <span className="text-[13px] text-[var(--fg-tertiary)]">
+              Finding sources...{' '}
+              <motion.span
+                key={sourcesCount}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-[var(--fg-primary)] font-medium"
+              >
+                {sourcesCount}
+              </motion.span>
+            </span>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

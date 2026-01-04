@@ -171,6 +171,20 @@ export function ChatInterface() {
     ]);
   }, [setBreadcrumbs]);
 
+  // Helper to get message content (must be defined before callbacks that use it)
+  const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
+    if (typeof message.content === 'string') return message.content;
+    if (Array.isArray(message.parts)) {
+      return message.parts
+        .filter((part): part is { type: string; text: string } => 
+          part && typeof part === 'object' && part.type === 'text' && typeof part.text === 'string'
+        )
+        .map((part) => part.text)
+        .join('');
+    }
+    return '';
+  }, []);
+
   // Navigate to Recent Chats (back button handler)
   const handleBackToChats = useCallback(() => {
     // Save current chat to history if there are messages
@@ -216,20 +230,6 @@ export function ChatInterface() {
     setGeneratedTitle(null);
     setIsGeneratingTitle(false);
   }, [setMessages]);
-
-  // Helper to get message content (must be defined before generateTitle which uses it)
-  const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
-    if (typeof message.content === 'string') return message.content;
-    if (Array.isArray(message.parts)) {
-      return message.parts
-        .filter((part): part is { type: string; text: string } => 
-          part && typeof part === 'object' && part.type === 'text' && typeof part.text === 'string'
-        )
-        .map((part) => part.text)
-        .join('');
-    }
-    return '';
-  }, []);
 
 
   // Generate a semantic title for the conversation

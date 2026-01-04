@@ -8,6 +8,15 @@ import { CanvasPreviewBubble } from '@/components/canvas';
 import { useCanvasContextOptional } from '@/lib/canvas-context';
 import { canvasService, type Canvas } from '@/lib/supabase/canvas-service';
 
+// Message attachment interface
+interface MessageAttachment {
+  id: string;
+  type: 'image';
+  data: string;
+  mimeType: string;
+  name?: string;
+}
+
 interface ChatContentProps {
   query: string;
   content: string;
@@ -23,6 +32,8 @@ interface ChatContentProps {
   messageId?: string;
   /** Chat/session ID for feedback context */
   chatId?: string;
+  /** Attached images from user message */
+  attachments?: MessageAttachment[];
 }
 
 export function ChatContent({
@@ -37,6 +48,7 @@ export function ChatContent({
   thinking,
   messageId,
   chatId,
+  attachments,
 }: ChatContentProps) {
   // Canvas context for opening canvas panel
   const canvasContext = useCanvasContextOptional();
@@ -133,6 +145,7 @@ export function ChatContent({
         showCitations={showCitations}
         resourceCards={resourceCards}
         thinking={thinking}
+        attachments={attachments}
       />
 
       {/* Canvas Preview Bubble - Shows immediately when canvas is detected */}

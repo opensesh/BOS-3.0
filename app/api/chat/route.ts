@@ -120,6 +120,13 @@ function processMessagesWithImages(messages: ClientMessage[]): ClientMessage[] {
     const imageFiles = msg.experimental_attachments || msg.files;
 
     if (msg.role === 'user' && imageFiles && imageFiles.length > 0) {
+      console.log('[Image Processing] Found attachments:', {
+        count: imageFiles.length,
+        types: imageFiles.map(f => f.type),
+        hasData: imageFiles.map(f => !!f.data),
+        dataPrefixes: imageFiles.map(f => f.data?.substring(0, 50)),
+      });
+
       const parts: Array<{ type: 'text'; text: string } | { type: 'image'; image: string }> = [];
 
       const textContent = typeof msg.content === 'string'
@@ -134,9 +141,12 @@ function processMessagesWithImages(messages: ClientMessage[]): ClientMessage[] {
 
       for (const file of imageFiles) {
         if (file.type === 'image' && file.data) {
+          console.log('[Image Processing] Adding image part, mimeType:', file.mimeType);
           parts.push({ type: 'image', image: file.data });
         }
       }
+
+      console.log('[Image Processing] Final parts:', parts.map(p => p.type));
 
       if (parts.length > 0) {
         return {
@@ -183,6 +193,7 @@ function convertToAnthropicMessages(messages: ClientMessage[]): Anthropic.Messag
   return messages.map(msg => {
     // Handle multipart messages (with images)
     if (Array.isArray(msg.content)) {
+      console.log('[Anthropic Conversion] Processing multipart message with', msg.content.length, 'parts');
       const content: Anthropic.Messages.ContentBlockParam[] = [];
       
       for (const part of msg.content as unknown as Array<{ type: string; text?: string; image?: string }>) {
@@ -192,6 +203,7 @@ function convertToAnthropicMessages(messages: ClientMessage[]): Anthropic.Messag
           // Extract base64 data from data URL
           const matches = part.image.match(/^data:([^;]+);base64,(.+)$/);
           if (matches) {
+            console.log('[Anthropic Conversion] Adding image with media_type:', matches[1]);
             content.push({
               type: 'image',
               source: {
@@ -200,9 +212,13 @@ function convertToAnthropicMessages(messages: ClientMessage[]): Anthropic.Messag
                 data: matches[2],
               },
             });
+          } else {
+            console.log('[Anthropic Conversion] Image data URL did not match expected format:', part.image.substring(0, 50));
           }
         }
       }
+      
+      console.log('[Anthropic Conversion] Final content blocks:', content.map(c => c.type));
       
       return {
         role: msg.role as 'user' | 'assistant',
@@ -1112,6 +1128,16 @@ export async function POST(req: Request) {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Log incoming messages to debug image attachments
+    const lastMessage = messages[messages.length - 1];
+    const hasAttachments = lastMessage?.experimental_attachments || lastMessage?.files;
+    console.log('[Chat API] Processing request:', {
+      messageCount: messages.length,
+      lastMessageRole: lastMessage?.role,
+      hasAttachments: !!hasAttachments,
+      attachmentCount: hasAttachments?.length || 0,
+    });
 
     // Process messages to handle image attachments
     const processedMessages = processMessagesWithImages(messages as ClientMessage[]);

@@ -93,7 +93,11 @@ export function SpaceChatInput({
     if (transcript && isListening) {
       setQuery((prev) => {
         const base = prev.replace(transcript, '').trim();
-        return base + (base ? ' ' : '') + transcript;
+        const result = base + (base ? ' ' : '') + transcript;
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SpaceChatInput.tsx:useEffect',message:'Updating input from transcript',data:{prev,transcript,base,result,replaceWorked:prev!==base},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
+        // #endregion
+        return result;
       });
     }
   }, [transcript, isListening]);

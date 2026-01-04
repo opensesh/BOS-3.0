@@ -17,6 +17,15 @@ export interface SourceInfo {
   type?: 'external' | 'brand-doc' | 'asset' | 'discover';
 }
 
+// Image attachment for messages
+export interface MessageAttachment {
+  id: string;
+  type: 'image';
+  data: string; // Base64 data URL
+  mimeType: string;
+  name?: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -27,6 +36,8 @@ export interface ChatMessage {
   thinking?: string;
   toolCalls?: ToolCall[];
   sources?: SourceInfo[];
+  // Attachments (images, files)
+  attachments?: MessageAttachment[];
 }
 
 export interface ToolCall {
@@ -99,14 +110,23 @@ export function useChat(options: UseChatOptions = {}) {
 
   // Send a message and stream the response
   const sendMessage = useCallback(async (
-    message: { text: string; files?: unknown },
+    message: { text: string; files?: Array<{ type: string; data: string; mimeType: string }> },
     options?: SendMessageOptions
   ) => {
+    // Process file attachments for state storage
+    const messageAttachments: MessageAttachment[] = message.files?.map((file, idx) => ({
+      id: `att-${Date.now()}-${idx}`,
+      type: 'image' as const,
+      data: file.data,
+      mimeType: file.mimeType,
+    })) || [];
+
     const userMessage: ChatMessage = {
       id: generateId(),
       role: 'user',
       content: message.text,
       createdAt: new Date(),
+      attachments: messageAttachments.length > 0 ? messageAttachments : undefined,
     };
 
     // Add user message to state
@@ -130,22 +150,34 @@ export function useChat(options: UseChatOptions = {}) {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      // Prepare request body
-      const body: Record<string, unknown> = {
-        messages: [...messages, userMessage].map(m => ({
+      // Prepare request body with properly formatted messages
+      const apiMessages = [...messages, userMessage].map(m => {
+        const baseMessage: Record<string, unknown> = {
           role: m.role,
           content: m.content,
-          ...(m.parts ? { parts: m.parts } : {}),
-        })),
+        };
+        
+        // Include parts if present
+        if (m.parts) {
+          baseMessage.parts = m.parts;
+        }
+        
+        // Include attachments for API (convert to expected format)
+        if (m.attachments && m.attachments.length > 0) {
+          baseMessage.experimental_attachments = m.attachments.map(att => ({
+            type: 'image',
+            data: att.data,
+            mimeType: att.mimeType,
+          }));
+        }
+        
+        return baseMessage;
+      });
+
+      const body: Record<string, unknown> = {
+        messages: apiMessages,
         ...options?.body,
       };
-
-      // Handle file attachments
-      if (message.files) {
-        const lastMessage = body.messages as Array<{ role: string; content: string; experimental_attachments?: unknown[] }>;
-        const lastIndex = lastMessage.length - 1;
-        lastMessage[lastIndex].experimental_attachments = message.files as unknown[];
-      }
 
       const response = await fetch(api, {
         method: 'POST',

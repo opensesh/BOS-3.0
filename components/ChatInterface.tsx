@@ -53,6 +53,15 @@ interface IdeaContext {
 }
 
 
+// Message attachment interface
+interface MessageAttachment {
+  id: string;
+  type: 'image';
+  data: string;
+  mimeType: string;
+  name?: string;
+}
+
 // Interface for parsed message with sources
 interface ParsedMessage {
   id: string;
@@ -63,6 +72,8 @@ interface ParsedMessage {
   modelUsed?: string;
   /** Claude's thinking/reasoning content during extended thinking */
   thinking?: string;
+  /** Attached images/files */
+  attachments?: MessageAttachment[];
 }
 
 export function ChatInterface() {
@@ -480,6 +491,9 @@ export function ChatInterface() {
     stopListening,
     resetTranscript,
   } = useVoiceRecognition((finalTranscript) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:onResultCallback',message:'onResult callback executed',data:{finalTranscript},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     setInput((prev) => prev + (prev ? ' ' : '') + finalTranscript);
     resetTranscript();
   });
@@ -505,7 +519,11 @@ export function ChatInterface() {
     if (transcript && isListening) {
       setInput((prev) => {
         const base = prev.replace(transcript, '').trim();
-        return base + (base ? ' ' : '') + transcript;
+        const result = base + (base ? ' ' : '') + transcript;
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:useEffect',message:'Updating input from transcript',data:{prev,transcript,base,result,replaceWorked:prev!==base},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
+        // #endregion
+        return result;
       });
     }
   }, [transcript, isListening]);
@@ -761,6 +779,7 @@ export function ChatInterface() {
       const messageAny = message as any;
       const messageSources = messageAny.sources as SourceInfo[] | undefined;
       const messageThinking = messageAny.thinking as string | undefined;
+      const messageAttachments = messageAny.attachments as MessageAttachment[] | undefined;
       
       return {
         id: message.id,
@@ -770,6 +789,7 @@ export function ChatInterface() {
         images: [],
         modelUsed,
         thinking: messageThinking,
+        attachments: messageAttachments,
       };
     });
   }, [messages, modelUsed, getMessageContent]);
@@ -869,6 +889,7 @@ export function ChatInterface() {
                               thinking={nextMessage.thinking}
                               messageId={nextMessage.id}
                               chatId={currentSessionId}
+                              attachments={message.attachments}
                             />
                           );
                         }
@@ -888,6 +909,7 @@ export function ChatInterface() {
                               isLastResponse={true}
                               thinking={streamingThinking}
                               chatId={currentSessionId}
+                              attachments={message.attachments}
                             />
                           );
                         }

@@ -74,6 +74,15 @@ export interface ContentSection {
   items?: string[]; // For lists
 }
 
+// Message attachment interface
+interface MessageAttachment {
+  id: string;
+  type: 'image';
+  data: string;
+  mimeType: string;
+  name?: string;
+}
+
 interface AnswerViewProps {
   query: string;
   sections: ContentSection[];
@@ -83,6 +92,8 @@ interface AnswerViewProps {
   resourceCards?: BrandResourceCardProps[];
   /** Claude's thinking/reasoning content during extended thinking */
   thinking?: string;
+  /** Attached images from user message */
+  attachments?: MessageAttachment[];
 }
 
 export function AnswerView({
@@ -93,6 +104,7 @@ export function AnswerView({
   showCitations = true,
   resourceCards = [],
   thinking,
+  attachments,
 }: AnswerViewProps) {
   // Group sources by index for citation display
   const getSourcesForCitation = (citations?: SourceInfo[]): SourceInfo[] => {
@@ -103,7 +115,7 @@ export function AnswerView({
   return (
     <div>
       {/* User Query Display - Right aligned bubble with show more */}
-      <UserMessageBubble query={query} />
+      <UserMessageBubble query={query} attachments={attachments} />
 
       {/* 
         IMPORTANT: Response Layout Structure

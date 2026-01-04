@@ -448,7 +448,7 @@ function LogoRow({ logo, onDownload }: LogoRowProps) {
 
         {/* Variant - hidden on mobile */}
         <td className="py-2 px-2 sm:px-3 w-[70px] sm:w-[90px] hidden sm:table-cell">
-          <span className="text-[10px] sm:text-xs text-[var(--fg-tertiary)]">
+          <span className="text-[10px] sm:text-xs text-[var(--fg-tertiary)] truncate block" title={formatLabel(variant)}>
             {formatLabel(variant)}
           </span>
         </td>
@@ -760,7 +760,7 @@ export function LogoSettingsTableModal({ isOpen, onClose }: LogoSettingsTableMod
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className="w-full max-w-3xl max-h-full overflow-hidden rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col pointer-events-auto"
+              className="w-full max-w-3xl max-h-[65vh] overflow-hidden rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-2xl flex flex-col pointer-events-auto"
             >
             {/* Header */}
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-[var(--border-primary)] shrink-0">

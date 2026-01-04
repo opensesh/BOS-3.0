@@ -222,7 +222,7 @@ export function ChatTitleDropdown({
         ref={triggerRef}
         className={`
           flex items-center gap-1.5 px-2.5 h-7 rounded-lg border transition-all cursor-pointer
-          min-w-0 max-w-[240px] overflow-hidden flex-shrink
+          min-w-0 max-w-[200px] overflow-hidden flex-shrink
           ${isOpen || isEditing
             ? 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'
             : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50'
@@ -274,7 +274,7 @@ export function ChatTitleDropdown({
         ) : (
           <>
             <span
-              className="text-xs font-medium text-[var(--fg-secondary)] truncate flex-1"
+              className="text-xs font-medium text-[var(--fg-secondary)] truncate flex-1 min-w-0"
               onDoubleClick={handleDoubleClick}
               title={`${title} (double-click to rename)`}
             >

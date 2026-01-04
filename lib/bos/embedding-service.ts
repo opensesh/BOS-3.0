@@ -29,12 +29,15 @@ interface OpenAIEmbeddingResponse {
 
 /**
  * Get the OpenAI API key from environment
+ * Handles Vercel CLI export format which may include quotes
  */
 function getOpenAIApiKey(): string {
-  const apiKey = process.env.OPENAI_API_KEY;
+  let apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY environment variable is not set');
   }
+  // Strip quotes and trailing commas (Vercel CLI export format)
+  apiKey = apiKey.replace(/^["']|["'],?$/g, '').trim();
   return apiKey;
 }
 

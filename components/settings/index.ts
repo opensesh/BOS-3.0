@@ -18,4 +18,6 @@ export { EmailForm } from './EmailForm';
 export { NotificationsForm } from './NotificationsForm';
 export { IntegrationsForm } from './IntegrationsForm';
 export { APIForm } from './APIForm';
+export { McpServerSettings } from './McpServerSettings';
+export { McpConnectionModal } from './McpConnectionModal';
 

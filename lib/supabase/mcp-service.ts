@@ -10,12 +10,26 @@ import type {
   McpServerType,
   McpAuthType,
   McpHealthStatus,
-  dbMcpConnectionToApp,
+  DbMcpServerConfig,
+  McpServerConfig,
+  McpServerConfigUpdate,
+  McpApiKey,
+  McpUsageStats,
 } from './types';
+import { dbMcpServerConfigToApp } from './types';
 
 // Re-export types and converter
-export { dbMcpConnectionToApp } from './types';
-export type { McpConnection, McpTool, McpServerType, McpAuthType, McpHealthStatus };
+export { dbMcpConnectionToApp, dbMcpServerConfigToApp } from './types';
+export type { 
+  McpConnection, 
+  McpTool, 
+  McpServerType, 
+  McpAuthType, 
+  McpHealthStatus,
+  McpServerConfig,
+  McpApiKey,
+  McpUsageStats,
+};
 
 // Track if tables are available
 let tablesChecked = false;
@@ -478,6 +492,283 @@ export const mcpService = {
         url: conn.serverUrl,
         ...(conn.authConfig.token ? { auth: { token: conn.authConfig.token } } : {}),
       }));
+  },
+
+  /**
+   * Test an MCP connection by attempting to list tools
+   */
+  async testConnection(id: string): Promise<{ success: boolean; tools?: McpTool[]; error?: string }> {
+    const connection = await this.getConnection(id);
+    if (!connection) {
+      return { success: false, error: 'Connection not found' };
+    }
+
+    try {
+      // For remote HTTP connections, try to make a tools/list request
+      if (connection.serverType === 'remote' && connection.serverUrl.startsWith('http')) {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+
+        // Add auth headers based on type
+        if (connection.authType === 'bearer' && connection.authConfig.token) {
+          headers['Authorization'] = `Bearer ${connection.authConfig.token}`;
+        } else if (connection.authType === 'api_key' && connection.authConfig.apiKey) {
+          const headerName = connection.authConfig.apiKeyHeader || 'X-API-Key';
+          headers[headerName] = connection.authConfig.apiKey;
+        }
+
+        const response = await fetch(connection.serverUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/list',
+          }),
+        });
+
+        if (!response.ok) {
+          await this.updateHealthStatus(id, 'unhealthy');
+          return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+        }
+
+        const data = await response.json();
+        
+        if (data.error) {
+          await this.updateHealthStatus(id, 'unhealthy');
+          return { success: false, error: data.error.message || 'Unknown error' };
+        }
+
+        const tools = data.result?.tools || [];
+        await this.updateAvailableTools(id, tools);
+        
+        return { success: true, tools };
+      }
+
+      // For non-HTTP connections, we can't easily test them
+      return { success: true, tools: connection.availableTools || [] };
+    } catch (err) {
+      await this.updateHealthStatus(id, 'unhealthy');
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Connection test failed' 
+      };
+    }
+  },
+
+  /**
+   * Discover tools from an MCP server
+   */
+  async discoverTools(serverUrl: string, authConfig?: { token?: string; apiKey?: string }): Promise<McpTool[]> {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (authConfig?.token) {
+        headers['Authorization'] = `Bearer ${authConfig.token}`;
+      } else if (authConfig?.apiKey) {
+        headers['X-API-Key'] = authConfig.apiKey;
+      }
+
+      const response = await fetch(serverUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/list',
+        }),
+      });
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const data = await response.json();
+      return data.result?.tools || [];
+    } catch {
+      return [];
+    }
+  },
+
+  // ============================================
+  // MCP SERVER CONFIG (BOS as MCP Server)
+  // ============================================
+
+  /**
+   * Get MCP server config for a brand
+   */
+  async getServerConfig(brandId: string): Promise<McpServerConfig | null> {
+    const supabase = createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from('mcp_server_config')
+        .select('*')
+        .eq('brand_id', brandId)
+        .single();
+
+      if (error || !data) {
+        // If not found, create default config
+        if (error?.code === 'PGRST116') {
+          return this.createServerConfig(brandId);
+        }
+        console.error('Error fetching MCP server config:', error);
+        return null;
+      }
+
+      return dbMcpServerConfigToApp(data as DbMcpServerConfig);
+    } catch (err) {
+      console.error('Error in getServerConfig:', err);
+      return null;
+    }
+  },
+
+  /**
+   * Create a new MCP server config for a brand
+   */
+  async createServerConfig(brandId: string): Promise<McpServerConfig | null> {
+    const supabase = createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from('mcp_server_config')
+        .insert({
+          brand_id: brandId,
+          is_enabled: true,
+          allowed_tools: [
+            'search_brand_knowledge',
+            'get_brand_colors',
+            'get_brand_assets',
+            'get_brand_guidelines',
+            'search_brand_assets',
+          ],
+        })
+        .select()
+        .single();
+
+      if (error || !data) {
+        console.error('Error creating MCP server config:', error);
+        return null;
+      }
+
+      return dbMcpServerConfigToApp(data as DbMcpServerConfig);
+    } catch (err) {
+      console.error('Error in createServerConfig:', err);
+      return null;
+    }
+  },
+
+  /**
+   * Update MCP server config
+   */
+  async updateServerConfig(configId: string, updates: McpServerConfigUpdate): Promise<McpServerConfig | null> {
+    const supabase = createClient();
+
+    try {
+      const { data, error } = await supabase
+        .from('mcp_server_config')
+        .update(updates)
+        .eq('id', configId)
+        .select()
+        .single();
+
+      if (error || !data) {
+        console.error('Error updating MCP server config:', error);
+        return null;
+      }
+
+      return dbMcpServerConfigToApp(data as DbMcpServerConfig);
+    } catch (err) {
+      console.error('Error in updateServerConfig:', err);
+      return null;
+    }
+  },
+
+  /**
+   * Generate a new API key for MCP server access
+   */
+  async generateApiKey(configId: string, keyName: string, createdBy?: string): Promise<McpApiKey | null> {
+    const supabase = createClient();
+
+    try {
+      const { data, error } = await supabase.rpc('add_mcp_api_key', {
+        p_config_id: configId,
+        p_key_name: keyName,
+        p_created_by: createdBy || null,
+      });
+
+      if (error || !data) {
+        console.error('Error generating API key:', error);
+        return null;
+      }
+
+      return data as McpApiKey;
+    } catch (err) {
+      console.error('Error in generateApiKey:', err);
+      return null;
+    }
+  },
+
+  /**
+   * Revoke an API key
+   */
+  async revokeApiKey(configId: string, key: string): Promise<boolean> {
+    const supabase = createClient();
+
+    try {
+      const { error } = await supabase.rpc('revoke_mcp_api_key', {
+        p_config_id: configId,
+        p_key: key,
+      });
+
+      return !error;
+    } catch {
+      return false;
+    }
+  },
+
+  /**
+   * Get usage statistics for MCP server
+   */
+  async getUsageStats(configId: string, days = 30): Promise<McpUsageStats | null> {
+    const supabase = createClient();
+
+    try {
+      const { data, error } = await supabase.rpc('get_mcp_usage_stats', {
+        p_config_id: configId,
+        p_days: days,
+      });
+
+      if (error || !data || data.length === 0) {
+        console.error('Error fetching usage stats:', error);
+        return null;
+      }
+
+      const stats = data[0];
+      return {
+        totalRequests: stats.total_requests || 0,
+        successfulRequests: stats.successful_requests || 0,
+        failedRequests: stats.failed_requests || 0,
+        avgResponseTime: stats.avg_response_time || 0,
+        requestsByTool: stats.requests_by_tool || {},
+        requestsByDay: stats.requests_by_day || [],
+      };
+    } catch (err) {
+      console.error('Error in getUsageStats:', err);
+      return null;
+    }
+  },
+
+  /**
+   * Get MCP server endpoint URL
+   */
+  getMcpServerUrl(): string {
+    // This would be your Supabase Edge Function URL
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return `${supabaseUrl}/functions/v1/bos-mcp-server`;
   },
 };
 

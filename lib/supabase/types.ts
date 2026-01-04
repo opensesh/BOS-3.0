@@ -417,6 +417,89 @@ export interface McpConnectionUpdate {
 }
 
 // ============================================
+// MCP SERVER CONFIG (BOS as MCP Server)
+// ============================================
+
+export interface McpApiKey {
+  key: string;
+  name: string;
+  created_at: string;
+  last_used: string | null;
+  is_active: boolean;
+  created_by?: string;
+}
+
+export interface DbMcpServerConfig {
+  id: string;
+  brand_id: string;
+  is_enabled: boolean;
+  allowed_tools: string[];
+  api_keys: McpApiKey[];
+  rate_limit_per_minute: number;
+  rate_limit_per_day: number;
+  total_requests: number;
+  last_request_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface McpServerConfig {
+  id: string;
+  brandId: string;
+  isEnabled: boolean;
+  allowedTools: string[];
+  apiKeys: McpApiKey[];
+  rateLimitPerMinute: number;
+  rateLimitPerDay: number;
+  totalRequests: number;
+  lastRequestAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface McpServerConfigInsert {
+  brand_id: string;
+  is_enabled?: boolean;
+  allowed_tools?: string[];
+  api_keys?: McpApiKey[];
+  rate_limit_per_minute?: number;
+  rate_limit_per_day?: number;
+}
+
+export interface McpServerConfigUpdate {
+  is_enabled?: boolean;
+  allowed_tools?: string[];
+  api_keys?: McpApiKey[];
+  rate_limit_per_minute?: number;
+  rate_limit_per_day?: number;
+}
+
+export interface McpUsageStats {
+  totalRequests: number;
+  successfulRequests: number;
+  failedRequests: number;
+  avgResponseTime: number;
+  requestsByTool: Record<string, number>;
+  requestsByDay: Array<{ date: string; count: number }>;
+}
+
+export function dbMcpServerConfigToApp(db: DbMcpServerConfig): McpServerConfig {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    isEnabled: db.is_enabled,
+    allowedTools: db.allowed_tools || [],
+    apiKeys: db.api_keys || [],
+    rateLimitPerMinute: db.rate_limit_per_minute,
+    rateLimitPerDay: db.rate_limit_per_day,
+    totalRequests: db.total_requests,
+    lastRequestAt: db.last_request_at || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// ============================================
 // USER PROFILES (Account Settings)
 // ============================================
 

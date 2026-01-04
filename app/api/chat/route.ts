@@ -14,6 +14,7 @@ import { autoSelectModel } from '@/lib/ai/auto-router';
 import { buildBrandSystemPrompt, shouldIncludeFullDocs, BRAND_SOURCES, type PageContext } from '@/lib/brand-knowledge';
 import { getToolsForAnthropic } from '@/lib/ai/tools';
 import { executeTool } from '@/lib/ai/tools/executors';
+import { getAvailableMcpTools, mcpToolsToAnthropic } from '@/lib/ai/tools/mcp-executor';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type Anthropic from '@anthropic-ai/sdk';
@@ -266,10 +267,23 @@ async function streamWithAnthropicNative(
   const modelId = getAnthropicModelId(selectedModel);
   const sse = createSSEEncoder();
   
-  // Prepare tools if enabled
-  const tools = options.enableTools && supportsToolUse(selectedModel) 
-    ? getToolsForAnthropic() 
-    : undefined;
+  // Prepare tools if enabled (including MCP tools)
+  let tools: Anthropic.Messages.Tool[] | undefined;
+  if (options.enableTools && supportsToolUse(selectedModel)) {
+    // Get built-in tools
+    const builtInTools = getToolsForAnthropic();
+    
+    // Get MCP tools from active connections
+    const mcpTools = await getAvailableMcpTools();
+    const mcpToolsFormatted = mcpToolsToAnthropic(mcpTools) as Anthropic.Messages.Tool[];
+    
+    // Merge all tools
+    tools = [...builtInTools, ...mcpToolsFormatted];
+    
+    if (mcpTools.length > 0) {
+      console.log(`[Tools] Loaded ${builtInTools.length} built-in tools + ${mcpTools.length} MCP tools`);
+    }
+  }
   
   // Prepare thinking config if enabled
   const thinkingConfig = options.enableThinking && supportsExtendedThinking(selectedModel)

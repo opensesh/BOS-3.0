@@ -416,12 +416,28 @@ export const toolExecutors: Record<ToolName, (input: Record<string, unknown>, co
 
 /**
  * Execute a tool by name
+ * Handles both built-in tools and external MCP tools
  */
 export async function executeTool(
   toolName: string,
   input: Record<string, unknown>,
   context: ToolExecutionContext
 ): Promise<ToolResult> {
+  // Check if this is an MCP tool (prefixed with mcp_)
+  if (toolName.startsWith('mcp_')) {
+    try {
+      const { executeMcpToolByName } = await import('./mcp-executor');
+      return executeMcpToolByName(toolName, input, context.userId);
+    } catch (error) {
+      console.error('MCP tool execution error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'MCP tool execution failed' 
+      };
+    }
+  }
+
+  // Handle built-in tools
   const executor = toolExecutors[toolName as ToolName];
   
   if (!executor) {

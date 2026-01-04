@@ -106,14 +106,17 @@ export function ResizableDivider({
 
       {/* Drag handle indicator - centered exactly on the line */}
       <motion.div
-        className="absolute top-1/2 left-1/2 flex flex-col gap-0.5 p-1.5 rounded-md bg-[var(--bg-secondary)] border border-[var(--border-secondary)] shadow-md"
+        className="absolute flex flex-col gap-0.5 p-1.5 rounded-md bg-[var(--bg-secondary)] border border-[var(--border-secondary)] shadow-md"
         style={{
-          transform: 'translate(-50%, -50%)',
+          top: '50%',
+          left: '50%',
         }}
-        initial={{ opacity: 0, scale: 0.8 }}
+        initial={{ opacity: 0, scale: 0.8, x: '-50%', y: '-50%' }}
         animate={{ 
           opacity: showIndicator ? 1 : 0,
           scale: showIndicator ? 1 : 0.8,
+          x: '-50%',
+          y: '-50%',
         }}
         transition={{ duration: 0.15 }}
       >

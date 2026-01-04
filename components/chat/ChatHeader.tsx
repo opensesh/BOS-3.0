@@ -61,7 +61,7 @@ export function ChatHeader({
       <div className="px-4">
         <div className="flex items-center justify-between h-12">
           {/* Left side - Back button and tabs */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Back button */}
             {onBack && (
               <button
@@ -113,7 +113,7 @@ export function ChatHeader({
           </div>
 
           {/* Right side - Title dropdown and Share */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
             <ChatTitleDropdown
               title={threadTitle}
               createdAt={threadCreatedAt}

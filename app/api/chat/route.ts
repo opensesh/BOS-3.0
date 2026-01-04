@@ -421,263 +421,289 @@ async function streamWithAnthropicNative(
           }
         }
 
-        // Handle tool calls if any
+        // Handle tool calls - supports multiple rounds of tool use
+        // Claude may need to use multiple tools in sequence (e.g., web_search then create_artifact)
         if (response.stop_reason === 'tool_use' && pendingToolCalls.length > 0) {
-          console.log('[Tool Use] Starting tool execution phase:', {
-            toolCount: pendingToolCalls.length,
-            tools: pendingToolCalls.map(t => t.name),
-            timestamp: new Date().toISOString(),
-          });
+          // Track conversation history for multi-turn tool use
+          let conversationMessages: Anthropic.Messages.MessageParam[] = [...anthropicMessages];
+          let currentToolCalls = [...pendingToolCalls];
+          let currentResponse = response;
+          let totalToolRounds = 0;
+          const MAX_TOOL_ROUNDS = 5; // Safety limit to prevent infinite loops
           
-          const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
-
-          for (const toolCall of pendingToolCalls) {
-            console.log(`[Tool Use] Executing tool: ${toolCall.name}`, {
-              inputKeys: Object.keys(toolCall.input),
+          // Loop to handle multiple rounds of tool use
+          while (currentResponse.stop_reason === 'tool_use' && currentToolCalls.length > 0 && totalToolRounds < MAX_TOOL_ROUNDS) {
+            totalToolRounds++;
+            
+            console.log(`[Tool Use] Starting tool execution round ${totalToolRounds}:`, {
+              toolCount: currentToolCalls.length,
+              tools: currentToolCalls.map(t => t.name),
               timestamp: new Date().toISOString(),
             });
             
-            controller.enqueue(sse.encode({ 
-              type: 'tool_use', 
-              toolName: toolCall.name,
-              toolInput: toolCall.input,
-              content: `Executing ${toolCall.name}...` 
-            }));
+            const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
 
-            // Execute the tool with timing
-            const toolStartTime = Date.now();
-            const result = await executeTool(toolCall.name, toolCall.input, {});
-            console.log(`[Tool Use] Tool ${toolCall.name} completed in ${Date.now() - toolStartTime}ms`, {
-              success: result.success,
-              hasData: !!result.data,
-              error: result.error || null,
-            });
-            
-            controller.enqueue(sse.encode({ 
-              type: 'tool_result', 
-              toolName: toolCall.name,
-              toolResult: result.data || result.error,
-              content: result.success ? 'Tool completed successfully' : `Error: ${result.error}` 
-            }));
+            for (const toolCall of currentToolCalls) {
+              console.log(`[Tool Use] Executing tool: ${toolCall.name}`, {
+                inputKeys: Object.keys(toolCall.input),
+                timestamp: new Date().toISOString(),
+              });
+              
+              controller.enqueue(sse.encode({ 
+                type: 'tool_use', 
+                toolName: toolCall.name,
+                toolInput: toolCall.input,
+                content: `Executing ${toolCall.name}...` 
+              }));
 
-            // Extract sources from web_search and stream them ONE BY ONE for smooth UX
-            if (toolCall.name === 'web_search' && result.success && result.data) {
-              const webSearchData = result.data as { sources?: Array<{ title: string; url: string }> };
-              if (webSearchData.sources && Array.isArray(webSearchData.sources)) {
-                for (let i = 0; i < webSearchData.sources.length; i++) {
-                  const source = webSearchData.sources[i];
-                  // Generate truly unique ID using URL hash + timestamp + index
-                  const urlHash = source.url.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0).toString(36);
-                  const sourceData: SourceData = {
-                    id: `ws-${urlHash}-${Date.now()}-${i}`,
-                    name: extractHostname(source.url),
-                    url: source.url,
-                    title: source.title || extractTitleFromUrl(source.url),
-                    favicon: getFaviconUrl(source.url),
-                    type: 'external',
-                  };
-                  collectedSources.push(sourceData);
-                  
-                  // Stream each source individually for a smooth "finding sources" feel
-                  controller.enqueue(sse.encode({ type: 'sources', sources: [sourceData] }));
-                  
-                  // Quick delay between sources - fast enough to feel responsive (30ms = ~500ms for 18 sources)
-                  await new Promise(resolve => setTimeout(resolve, 30));
-                }
-              }
-            }
+              // Execute the tool with timing
+              const toolStartTime = Date.now();
+              const result = await executeTool(toolCall.name, toolCall.input, {});
+              console.log(`[Tool Use] Tool ${toolCall.name} completed in ${Date.now() - toolStartTime}ms`, {
+                success: result.success,
+                hasData: !!result.data,
+                error: result.error || null,
+              });
+              
+              controller.enqueue(sse.encode({ 
+                type: 'tool_result', 
+                toolName: toolCall.name,
+                toolResult: result.data || result.error,
+                content: result.success ? 'Tool completed successfully' : `Error: ${result.error}` 
+              }));
 
-            toolResults.push({
-              type: 'tool_result',
-              tool_use_id: toolCall.id,
-              content: JSON.stringify(result.success ? result.data : { error: result.error }),
-            });
-          }
-
-          // Continue conversation with tool results using STREAMING
-          // This provides real-time feedback instead of blocking until full response
-          console.log('Continuing with tool results (streaming):', toolResults.length, 'results');
-          
-          // Debug: Log response content structure
-          const contentTypes = response.content.map((b: { type: string }) => b.type);
-          console.log('Response content blocks:', contentTypes);
-          
-          // Check if we have thinking blocks in the response
-          const hasThinkingBlocks = contentTypes.some(
-            (t: string) => t === 'thinking' || t === 'redacted_thinking'
-          );
-          
-          // Determine if we should use thinking for continuation:
-          // - Only enable thinking if original request had it AND response contains thinking blocks
-          // - Anthropic requires thinking blocks in assistant messages when thinking is enabled
-          const useThinkingForContinuation = thinkingConfig && hasThinkingBlocks;
-          
-          // Handle thinking blocks in the assistant message based on thinking mode:
-          // - When thinking is ENABLED: Must include thinking blocks AND they must come FIRST
-          // - When thinking is DISABLED: Must filter out thinking blocks entirely
-          let assistantContent;
-          if (useThinkingForContinuation) {
-            // When thinking is enabled, ensure thinking blocks come first (Anthropic requirement)
-            const thinkingBlocks = response.content.filter(
-              (block: { type: string }) => block.type === 'thinking' || block.type === 'redacted_thinking'
-            );
-            const otherBlocks = response.content.filter(
-              (block: { type: string }) => block.type !== 'thinking' && block.type !== 'redacted_thinking'
-            );
-            assistantContent = [...thinkingBlocks, ...otherBlocks];
-            console.log('Using thinking for continuation, reordered blocks:', assistantContent.map((b: { type: string }) => b.type));
-          } else {
-            // When thinking is disabled (or no thinking blocks available), filter them out
-            assistantContent = response.content.filter(
-              (block: { type: string }) => block.type !== 'thinking' && block.type !== 'redacted_thinking'
-            );
-            console.log('Not using thinking for continuation, filtered blocks:', assistantContent.map((b: { type: string }) => b.type));
-          }
-          
-          // Set up timeout for continuation stream
-          // This prevents hanging if Claude's API stalls after receiving tool results
-          const CONTINUATION_TIMEOUT = 60000; // 60 seconds for continuation
-          let continuationTimedOut = false;
-          const continuationAbortController = new AbortController();
-          
-          const continuationTimeoutId = setTimeout(() => {
-            console.error('[ContinueStream] Continuation timeout reached after', CONTINUATION_TIMEOUT, 'ms');
-            continuationTimedOut = true;
-            continuationAbortController.abort();
-          }, CONTINUATION_TIMEOUT);
-          
-          try {
-            console.log('[ContinueStream] Starting continuation request', {
-              timestamp: new Date().toISOString(),
-              toolResultCount: toolResults.length,
-              sourceCount: collectedSources.length,
-              useThinking: useThinkingForContinuation,
-            });
-            
-            const continuationStartTime = Date.now();
-            
-            const continueStream = await client.messages.stream({
-              model: modelId,
-              max_tokens: 16000,
-              system: systemPrompt,
-              messages: [
-                ...anthropicMessages,
-                { role: 'assistant', content: assistantContent },
-                { role: 'user', content: toolResults },
-              ],
-              // Only include thinking config if we're actually using thinking for continuation
-              ...(useThinkingForContinuation ? { thinking: thinkingConfig } : {}),
-            });
-
-            // Stream the continuation response in real-time
-            let hasContinuationText = false;
-            let continueStreamError: Error | null = null;
-            let lastActivityTime = Date.now();
-            
-            // Stall detection: abort if no activity for 30 seconds during streaming
-            const STALL_TIMEOUT = 30000;
-            const stallCheckInterval = setInterval(() => {
-              if (Date.now() - lastActivityTime > STALL_TIMEOUT) {
-                console.error('[ContinueStream] Stream stalled - no activity for', STALL_TIMEOUT, 'ms');
-                continueStreamError = new Error('Stream stalled - no response received');
-                continuationAbortController.abort();
-              }
-            }, 5000); // Check every 5 seconds
-            
-            continueStream.on('text', (text: string) => {
-              try {
-                lastActivityTime = Date.now();
-                const cleanText = stripThinkingTags(text);
-                if (cleanText) {
-                  hasContinuationText = true;
-                  controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
-                }
-              } catch (err) {
-                console.error('[ContinueStream] Error in text handler:', err);
-                continueStreamError = err instanceof Error ? err : new Error(String(err));
-              }
-            });
-
-            // Stream thinking deltas in real-time for continuation response
-            continueStream.on('thinking', (thinkingDelta: string) => {
-              try {
-                lastActivityTime = Date.now();
-                controller.enqueue(sse.encode({ type: 'thinking', content: thinkingDelta }));
-              } catch (err) {
-                console.error('[ContinueStream] Error in thinking handler:', err);
-                continueStreamError = err instanceof Error ? err : new Error(String(err));
-              }
-            });
-            
-            // Handle stream errors
-            continueStream.on('error', (err: Error) => {
-              console.error('[ContinueStream] Anthropic stream error:', err);
-              continueStreamError = err;
-            });
-
-            // Wait for the continuation to complete
-            const continueResponse = await continueStream.finalMessage();
-            
-            // Clear timers
-            clearTimeout(continuationTimeoutId);
-            clearInterval(stallCheckInterval);
-            
-            // Check for errors during continuation
-            if (continueStreamError) {
-              throw continueStreamError;
-            }
-            
-            const continuationDuration = Date.now() - continuationStartTime;
-            console.log('[ContinueStream] Continuation complete:', {
-              stopReason: continueResponse.stop_reason,
-              contentBlocks: continueResponse.content?.length || 0,
-              hasContinuationText,
-              durationMs: continuationDuration,
-              timestamp: new Date().toISOString(),
-            });
-            
-            // If streaming didn't produce text, try to extract from final message
-            if (!hasContinuationText) {
-              console.warn('Continuation streaming produced no text, checking final message...');
-              for (const block of continueResponse.content || []) {
-                if (block.type === 'text' && 'text' in block && block.text) {
-                  const cleanText = stripThinkingTags(block.text);
-                  if (cleanText) {
-                    console.log('Found text in final message, sending immediately...');
-                    controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
-                    hasContinuationText = true;
+              // Extract sources from web_search and stream them ONE BY ONE for smooth UX
+              if (toolCall.name === 'web_search' && result.success && result.data) {
+                const webSearchData = result.data as { sources?: Array<{ title: string; url: string }> };
+                if (webSearchData.sources && Array.isArray(webSearchData.sources)) {
+                  for (let i = 0; i < webSearchData.sources.length; i++) {
+                    const source = webSearchData.sources[i];
+                    // Generate truly unique ID using URL hash + timestamp + index
+                    const urlHash = source.url.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0).toString(36);
+                    const sourceData: SourceData = {
+                      id: `ws-${urlHash}-${Date.now()}-${i}`,
+                      name: extractHostname(source.url),
+                      url: source.url,
+                      title: source.title || extractTitleFromUrl(source.url),
+                      favicon: getFaviconUrl(source.url),
+                      type: 'external',
+                    };
+                    collectedSources.push(sourceData);
+                    
+                    // Stream each source individually for a smooth "finding sources" feel
+                    controller.enqueue(sse.encode({ type: 'sources', sources: [sourceData] }));
+                    
+                    // Quick delay between sources - fast enough to feel responsive (30ms = ~500ms for 18 sources)
+                    await new Promise(resolve => setTimeout(resolve, 30));
                   }
                 }
               }
+
+              toolResults.push({
+                type: 'tool_result',
+                tool_use_id: toolCall.id,
+                content: JSON.stringify(result.success ? result.data : { error: result.error }),
+              });
+            }
+
+            // Continue conversation with tool results
+            console.log(`[Tool Use] Round ${totalToolRounds}: Continuing with`, toolResults.length, 'tool results');
+            
+            // Build assistant content for this round
+            const contentTypes = currentResponse.content.map((b: { type: string }) => b.type);
+            console.log('Response content blocks:', contentTypes);
+            
+            // Check if we have thinking blocks
+            const hasThinkingBlocks = contentTypes.some(
+              (t: string) => t === 'thinking' || t === 'redacted_thinking'
+            );
+            
+            const useThinkingForContinuation = thinkingConfig && hasThinkingBlocks;
+            
+            let assistantContent;
+            if (useThinkingForContinuation) {
+              const thinkingBlocks = currentResponse.content.filter(
+                (block: { type: string }) => block.type === 'thinking' || block.type === 'redacted_thinking'
+              );
+              const otherBlocks = currentResponse.content.filter(
+                (block: { type: string }) => block.type !== 'thinking' && block.type !== 'redacted_thinking'
+              );
+              assistantContent = [...thinkingBlocks, ...otherBlocks];
+            } else {
+              assistantContent = currentResponse.content.filter(
+                (block: { type: string }) => block.type !== 'thinking' && block.type !== 'redacted_thinking'
+              );
             }
             
-            // CRITICAL FIX: If STILL no text after tool use, send a helpful error message
-            // This prevents the frustrating "sources shown but no answer" scenario
-            if (!hasContinuationText) {
-              console.error('[ContinueStream] Tool use completed but no response text generated!', {
-                toolCount: pendingToolCalls.length,
-                toolNames: pendingToolCalls.map(t => t.name),
-                stopReason: continueResponse.stop_reason,
-                contentTypes: continueResponse.content?.map((b: { type: string }) => b.type) || [],
+            // Update conversation history
+            conversationMessages = [
+              ...conversationMessages,
+              { role: 'assistant' as const, content: assistantContent },
+              { role: 'user' as const, content: toolResults },
+            ];
+            
+            // Set up timeout for continuation
+            const CONTINUATION_TIMEOUT = 60000;
+            let continuationTimedOut = false;
+            
+            const continuationTimeoutId = setTimeout(() => {
+              console.error(`[Tool Use] Round ${totalToolRounds}: Timeout after`, CONTINUATION_TIMEOUT, 'ms');
+              continuationTimedOut = true;
+            }, CONTINUATION_TIMEOUT);
+            
+            try {
+              console.log(`[Tool Use] Round ${totalToolRounds}: Starting continuation request`);
+              const continuationStartTime = Date.now();
+              
+              const continueStream = await client.messages.stream({
+                model: modelId,
+                max_tokens: 16000,
+                system: systemPrompt,
+                messages: conversationMessages,
+                ...(tools ? { tools } : {}), // Include tools so Claude can use more if needed
+                ...(useThinkingForContinuation ? { thinking: thinkingConfig } : {}),
+              });
+
+              let hasContinuationText = false;
+              let continueStreamError: Error | null = null;
+              let newToolCalls: Array<{ id: string; name: string; input: Record<string, unknown> }> = [];
+              let currentToolInput = '';
+              let currentToolUse: { id: string; name: string } | null = null;
+              
+              continueStream.on('text', (text: string) => {
+                try {
+                  const cleanText = stripThinkingTags(text);
+                  if (cleanText) {
+                    hasContinuationText = true;
+                    controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+                  }
+                } catch (err) {
+                  console.error('[ContinueStream] Error in text handler:', err);
+                  continueStreamError = err instanceof Error ? err : new Error(String(err));
+                }
+              });
+
+              continueStream.on('thinking', (thinkingDelta: string) => {
+                try {
+                  controller.enqueue(sse.encode({ type: 'thinking', content: thinkingDelta }));
+                } catch (err) {
+                  console.error('[ContinueStream] Error in thinking handler:', err);
+                  continueStreamError = err instanceof Error ? err : new Error(String(err));
+                }
               });
               
-              const errorMessage = "I found some relevant information but encountered an issue generating a complete response. " +
-                "Please try rephrasing your question or ask me to be more specific about what you'd like to know.";
-              controller.enqueue(sse.encode({ type: 'text', content: errorMessage }));
+              // Track tool use in continuation (for multi-round)
+              continueStream.on('contentBlock', (block) => {
+                if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
+                  currentToolUse = { id: block.id, name: block.name };
+                  currentToolInput = '';
+                  controller.enqueue(sse.encode({ 
+                    type: 'tool_use', 
+                    toolName: block.name,
+                    content: `Using tool: ${block.name}` 
+                  }));
+                }
+              });
+              
+              continueStream.on('inputJson', (json: string) => {
+                if (currentToolUse) {
+                  currentToolInput += json;
+                }
+              });
+              
+              continueStream.on('message', (message) => {
+                // Collect any tool_use blocks from the message
+                for (const block of message.content || []) {
+                  if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
+                    newToolCalls.push({
+                      id: block.id,
+                      name: block.name,
+                      input: (block as { input?: Record<string, unknown> }).input || {},
+                    });
+                  }
+                }
+              });
+              
+              continueStream.on('error', (err: Error) => {
+                console.error('[ContinueStream] Anthropic stream error:', err);
+                continueStreamError = err;
+              });
+
+              // Wait for the continuation to complete
+              const continueResponse = await continueStream.finalMessage();
+              
+              clearTimeout(continuationTimeoutId);
+              
+              if (continueStreamError) {
+                throw continueStreamError;
+              }
+              
+              const continuationDuration = Date.now() - continuationStartTime;
+              console.log(`[Tool Use] Round ${totalToolRounds}: Continuation complete:`, {
+                stopReason: continueResponse.stop_reason,
+                contentBlocks: continueResponse.content?.length || 0,
+                hasContinuationText,
+                newToolCalls: newToolCalls.length,
+                durationMs: continuationDuration,
+              });
+              
+              // If streaming didn't produce text, try to extract from final message
+              if (!hasContinuationText) {
+                for (const block of continueResponse.content || []) {
+                  if (block.type === 'text' && 'text' in block && block.text) {
+                    const cleanText = stripThinkingTags(block.text);
+                    if (cleanText) {
+                      console.log('Found text in final message, sending immediately...');
+                      controller.enqueue(sse.encode({ type: 'text', content: cleanText }));
+                      hasContinuationText = true;
+                    }
+                  }
+                }
+              }
+              
+              // Check if Claude wants to use more tools
+              if (continueResponse.stop_reason === 'tool_use' && newToolCalls.length > 0) {
+                console.log(`[Tool Use] Claude wants to use ${newToolCalls.length} more tools, continuing...`);
+                currentToolCalls = newToolCalls;
+                currentResponse = continueResponse;
+                // Continue the loop
+              } else {
+                // No more tool use - we're done with tools
+                // If we have text, great! If not, show error
+                if (!hasContinuationText) {
+                  console.error('[Tool Use] All tool rounds completed but no response text generated!', {
+                    totalRounds: totalToolRounds,
+                    finalStopReason: continueResponse.stop_reason,
+                    contentTypes: continueResponse.content?.map((b: { type: string }) => b.type) || [],
+                  });
+                  
+                  const errorMessage = "I found some relevant information but encountered an issue generating a complete response. " +
+                    "Please try rephrasing your question or ask me to be more specific about what you'd like to know.";
+                  controller.enqueue(sse.encode({ type: 'text', content: errorMessage }));
+                }
+                break; // Exit the tool use loop
+              }
+              
+            } catch (continuationError) {
+              clearTimeout(continuationTimeoutId);
+              
+              if (continuationTimedOut) {
+                console.error(`[Tool Use] Round ${totalToolRounds}: Request timed out`);
+                const timeoutMessage = "I gathered some information but took too long to process it. " +
+                  "Please try asking a more specific question, or try again in a moment.";
+                controller.enqueue(sse.encode({ type: 'text', content: timeoutMessage }));
+              } else {
+                throw continuationError;
+              }
+              break; // Exit on error
             }
-            
-          } catch (continuationError) {
-            // Clear timers on error
-            clearTimeout(continuationTimeoutId);
-            
-            if (continuationTimedOut) {
-              console.error('[ContinueStream] Continuation request timed out');
-              const timeoutMessage = "I gathered some information but took too long to process it. " +
-                "Please try asking a more specific question, or try again in a moment.";
-              controller.enqueue(sse.encode({ type: 'text', content: timeoutMessage }));
-            } else {
-              throw continuationError;
-            }
+          }
+          
+          // Safety check: if we hit max rounds, let the user know
+          if (totalToolRounds >= MAX_TOOL_ROUNDS) {
+            console.warn('[Tool Use] Hit maximum tool rounds limit:', MAX_TOOL_ROUNDS);
+            const limitMessage = "\n\n(Note: I reached the limit of tool operations. If you need more detailed information, please ask a follow-up question.)";
+            controller.enqueue(sse.encode({ type: 'text', content: limitMessage }));
           }
         }
 

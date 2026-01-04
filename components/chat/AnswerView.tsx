@@ -466,19 +466,32 @@ export interface CanvasResponse {
  * Looks for <canvas> tags in the response
  */
 export function parseCanvasResponse(content: string): { canvas: CanvasResponse | null; cleanContent: string } {
-  // Match <canvas title="..." action="create|update">content</canvas>
-  const canvasRegex = /<canvas\s+title="([^"]+)"(?:\s+action="(create|update)")?\s*>([\s\S]*?)<\/canvas>/i;
+  // Match <canvas ...>content</canvas> with flexible attribute order
+  // Supports: title="...", action="create|update" in any order
+  const canvasRegex = /<canvas\s+([^>]*)>([\s\S]*?)<\/canvas>/i;
   const match = content.match(canvasRegex);
 
   if (!match) {
     return { canvas: null, cleanContent: content };
   }
 
-  const [fullMatch, title, action, canvasContent] = match;
+  const [fullMatch, attributes, canvasContent] = match;
+
+  // Parse title from attributes
+  const titleMatch = attributes.match(/title="([^"]+)"/);
+  const actionMatch = attributes.match(/action="(create|update)"/);
+
+  if (!titleMatch) {
+    // Canvas tag without title - treat as regular content
+    return { canvas: null, cleanContent: content };
+  }
+
+  const title = titleMatch[1];
+  const action = actionMatch ? (actionMatch[1] as 'create' | 'update') : 'create';
 
   return {
     canvas: {
-      action: (action as 'create' | 'update') || 'create',
+      action,
       title,
       content: canvasContent.trim(),
     },
@@ -490,5 +503,6 @@ export function parseCanvasResponse(content: string): { canvas: CanvasResponse |
  * Check if content contains a canvas response
  */
 export function hasCanvasResponse(content: string): boolean {
-  return /<canvas\s+title="[^"]+"/i.test(content);
+  // Check for canvas tag with title attribute (in any position)
+  return /<canvas\s+[^>]*title="[^"]+"[^>]*>/i.test(content);
 }

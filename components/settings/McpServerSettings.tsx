@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { 
   Copy, 
   Check, 
@@ -12,12 +11,71 @@ import {
   ExternalLink,
   AlertCircle,
   CheckCircle,
-  Zap,
-  XCircle,
+  Link2,
+  FileCode,
+  Monitor,
+  Code2,
+  Sparkles,
+  MessageSquare,
 } from 'lucide-react';
 import { useMcpServerConfig } from '@/hooks/useMcpConnections';
 import { mcpService } from '@/lib/supabase/mcp-service';
 import { toast } from 'sonner';
+
+// ============================================
+// Types
+// ============================================
+
+type Platform = 'claude' | 'cursor' | 'vscode' | 'chatgpt';
+type ConnectionMethod = 'url' | 'config';
+
+interface PlatformInfo {
+  id: Platform;
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  supportsUrl: boolean;
+  supportsConfig: boolean;
+  description: string;
+}
+
+// ============================================
+// Constants
+// ============================================
+
+const PLATFORMS: PlatformInfo[] = [
+  {
+    id: 'claude',
+    name: 'Claude Desktop',
+    icon: Sparkles,
+    supportsUrl: true,
+    supportsConfig: true,
+    description: 'Anthropic\'s desktop app',
+  },
+  {
+    id: 'cursor',
+    name: 'Cursor',
+    icon: Code2,
+    supportsUrl: true,
+    supportsConfig: true,
+    description: 'AI-powered code editor',
+  },
+  {
+    id: 'vscode',
+    name: 'VS Code',
+    icon: Monitor,
+    supportsUrl: true,
+    supportsConfig: false,
+    description: 'Continue or Cline extension',
+  },
+  {
+    id: 'chatgpt',
+    name: 'ChatGPT',
+    icon: MessageSquare,
+    supportsUrl: false,
+    supportsConfig: false,
+    description: 'Via Custom GPT Actions',
+  },
+];
 
 // ============================================
 // Sub-components
@@ -63,7 +121,6 @@ function Toggle({
   );
 }
 
-// Modal for showing newly generated key
 function NewKeyModal({
   keyValue,
   keyName,
@@ -84,13 +141,11 @@ function NewKeyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
       
-      {/* Modal */}
       <div className="relative bg-[var(--bg-primary)] rounded-xl border border-[var(--border-secondary)] shadow-2xl max-w-lg w-full mx-4 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-green-500/10 rounded-lg">
@@ -131,7 +186,7 @@ function NewKeyModal({
         <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
           <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-[var(--fg-secondary)]">
-            <strong>Important:</strong> Copy this key now. You won't be able to see it again after closing this dialog.
+            <strong>Important:</strong> Copy this key now. You won&apos;t be able to see it again after closing this dialog.
           </p>
         </div>
 
@@ -153,27 +208,202 @@ function NewKeyModal({
   );
 }
 
-function QuickSetupCard({ 
+// ============================================
+// Platform Instructions Components
+// ============================================
+
+function UrlInstructions({ 
+  platform, 
   serverUrl, 
   apiKey,
-  onGenerateKey,
-  onTestConnection,
-  isGenerating,
-  isTesting,
-  testResult,
+  onCopy,
+  copied,
 }: { 
+  platform: Platform; 
   serverUrl: string; 
   apiKey?: string;
-  onGenerateKey: () => void;
-  onTestConnection: () => void;
-  isGenerating: boolean;
-  isTesting: boolean;
-  testResult: { success: boolean; message: string; toolCount?: number } | null;
+  onCopy: (text: string, type: string) => void;
+  copied: string | null;
 }) {
-  const [copied, setCopied] = useState<'url' | 'config' | null>(null);
-  const [showConfig, setShowConfig] = useState(true);
-  const [activeClient, setActiveClient] = useState<'claude' | 'cursor'>('claude');
+  const instructions: Record<Platform, React.ReactNode> = {
+    claude: (
+      <div className="space-y-3">
+        <ol className="text-sm text-[var(--fg-secondary)] space-y-2 list-decimal list-inside">
+          <li>Open <strong>Claude Desktop</strong> → <strong>Settings</strong> → <strong>Connectors</strong></li>
+          <li>Click <strong>&quot;Add custom connector&quot;</strong></li>
+          <li>Enter the details below:</li>
+        </ol>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Name</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)]">BOS MCP Server</code>
+            </div>
+            <button
+              onClick={() => onCopy('BOS MCP Server', 'name')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors"
+            >
+              {copied === 'name' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Remote MCP Server URL</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{serverUrl}</code>
+            </div>
+            <button
+              onClick={() => onCopy(serverUrl, 'url')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'url' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <p className="text-xs text-[var(--fg-secondary)]">
+            <strong>Advanced Settings:</strong> Expand and add an Authorization header with value:
+          </p>
+          <div className="flex items-center justify-between gap-2 mt-2 p-2 bg-[var(--bg-primary)] rounded border border-[var(--border-secondary)]">
+            <code className="text-xs font-mono text-[var(--fg-primary)] break-all">
+              Bearer {apiKey || 'YOUR_API_KEY'}
+            </code>
+            <button
+              onClick={() => onCopy(`Bearer ${apiKey || 'YOUR_API_KEY'}`, 'auth')}
+              className="p-1 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'auth' ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    ),
+    cursor: (
+      <div className="space-y-3">
+        <ol className="text-sm text-[var(--fg-secondary)] space-y-2 list-decimal list-inside">
+          <li>Open <strong>Cursor Settings</strong> (Cmd/Ctrl + ,)</li>
+          <li>Navigate to <strong>Features</strong> → <strong>MCP Servers</strong></li>
+          <li>Click <strong>&quot;Add new MCP server&quot;</strong></li>
+          <li>Enter the details below:</li>
+        </ol>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Server URL</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{serverUrl}</code>
+            </div>
+            <button
+              onClick={() => onCopy(serverUrl, 'url')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'url' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">API Key / Bearer Token</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{apiKey || 'YOUR_API_KEY'}</code>
+            </div>
+            <button
+              onClick={() => onCopy(apiKey || 'YOUR_API_KEY', 'token')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'token' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    ),
+    vscode: (
+      <div className="space-y-3">
+        <p className="text-sm text-[var(--fg-secondary)]">
+          For <strong>Continue</strong> or <strong>Cline</strong> extensions:
+        </p>
+        <ol className="text-sm text-[var(--fg-secondary)] space-y-2 list-decimal list-inside">
+          <li>Open the extension settings</li>
+          <li>Add a new MCP server with these details:</li>
+        </ol>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Server URL</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{serverUrl}</code>
+            </div>
+            <button
+              onClick={() => onCopy(serverUrl, 'url')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'url' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Authorization Header</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">Bearer {apiKey || 'YOUR_API_KEY'}</code>
+            </div>
+            <button
+              onClick={() => onCopy(`Bearer ${apiKey || 'YOUR_API_KEY'}`, 'auth')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'auth' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    ),
+    chatgpt: (
+      <div className="space-y-3">
+        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <p className="text-xs text-[var(--fg-secondary)]">
+            <strong>Note:</strong> ChatGPT doesn&apos;t natively support MCP. Use Custom GPT Actions instead.
+          </p>
+        </div>
+        <ol className="text-sm text-[var(--fg-secondary)] space-y-2 list-decimal list-inside">
+          <li>Create a <strong>Custom GPT</strong> in ChatGPT</li>
+          <li>Go to <strong>Configure</strong> → <strong>Actions</strong></li>
+          <li>Click <strong>&quot;Create new action&quot;</strong></li>
+          <li>Set Authentication to <strong>API Key</strong> (Bearer)</li>
+          <li>Use the server URL as your API endpoint</li>
+        </ol>
+        
+        <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">API Endpoint</p>
+            <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{serverUrl}</code>
+          </div>
+          <button
+            onClick={() => onCopy(serverUrl, 'url')}
+            className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+          >
+            {copied === 'url' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      </div>
+    ),
+  };
 
+  return instructions[platform];
+}
+
+function ConfigInstructions({ 
+  platform, 
+  serverUrl, 
+  apiKey,
+  onCopy,
+  copied,
+}: { 
+  platform: Platform; 
+  serverUrl: string; 
+  apiKey?: string;
+  onCopy: (text: string, type: string) => void;
+  copied: string | null;
+}) {
   const claudeConfig = `{
   "mcpServers": {
     "bos": {
@@ -197,11 +427,106 @@ function QuickSetupCard({
   }
 }`;
 
-  const copyToClipboard = async (text: string, type: 'url' | 'config') => {
+  const configs: Record<Platform, { config: string; path: string; instructions: string }> = {
+    claude: {
+      config: claudeConfig,
+      path: 'claude_desktop_config.json',
+      instructions: 'Add this to your Claude Desktop config file:',
+    },
+    cursor: {
+      config: cursorConfig,
+      path: '.cursor/mcp.json',
+      instructions: 'Add this to your Cursor MCP config:',
+    },
+    vscode: {
+      config: '',
+      path: '',
+      instructions: '',
+    },
+    chatgpt: {
+      config: '',
+      path: '',
+      instructions: '',
+    },
+  };
+
+  const info = configs[platform];
+
+  if (!info.config) {
+    return (
+      <div className="p-3 bg-[var(--bg-tertiary)] rounded-lg">
+        <p className="text-sm text-[var(--fg-tertiary)]">
+          Config file method not available for {PLATFORMS.find(p => p.id === platform)?.name}. 
+          Use the URL method instead.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-[var(--fg-secondary)]">{info.instructions}</p>
+      
+      <div className="relative">
+        <div className="absolute top-2 right-2">
+          <button
+            onClick={() => onCopy(info.config, 'config')}
+            className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] rounded transition-colors"
+            title="Copy config"
+          >
+            {copied === 'config' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+        <pre className="text-xs font-mono text-[var(--fg-tertiary)] bg-[var(--bg-primary)] border border-[var(--border-secondary)] p-3 pr-12 rounded-lg overflow-x-auto">
+          {info.config}
+        </pre>
+      </div>
+      
+      <p className="text-xs text-[var(--fg-quaternary)]">
+        File location: <code className="bg-[var(--bg-tertiary)] px-1 rounded">{info.path}</code>
+      </p>
+    </div>
+  );
+}
+
+// ============================================
+// Quick Setup Card
+// ============================================
+
+function QuickSetupCard({ 
+  serverUrl, 
+  apiKey,
+  onGenerateKey,
+  isGenerating,
+}: { 
+  serverUrl: string; 
+  apiKey?: string;
+  onGenerateKey: () => void;
+  isGenerating: boolean;
+}) {
+  const [showConfig, setShowConfig] = useState(true);
+  const [activePlatform, setActivePlatform] = useState<Platform>('claude');
+  const [connectionMethod, setConnectionMethod] = useState<ConnectionMethod>('url');
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const currentPlatform = PLATFORMS.find(p => p.id === activePlatform)!;
+
+  const copyToClipboard = async (text: string, type: string) => {
     await navigator.clipboard.writeText(text);
     setCopied(type);
     toast.success('Copied to clipboard!');
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  // Auto-select appropriate method when platform changes
+  const handlePlatformChange = (platform: Platform) => {
+    setActivePlatform(platform);
+    const platformInfo = PLATFORMS.find(p => p.id === platform)!;
+    if (!platformInfo.supportsUrl && platformInfo.supportsConfig) {
+      setConnectionMethod('config');
+    } else if (platformInfo.supportsUrl && !platformInfo.supportsConfig) {
+      setConnectionMethod('url');
+    }
   };
 
   return (
@@ -213,7 +538,7 @@ function QuickSetupCard({
       >
         <div>
           <h4 className="text-sm font-semibold text-[var(--fg-primary)]">Quick Setup</h4>
-          <p className="text-xs text-[var(--fg-tertiary)]">Connect Claude Desktop or Cursor in 2 minutes</p>
+          <p className="text-xs text-[var(--fg-tertiary)]">Connect your AI tools in minutes</p>
         </div>
         {showConfig ? (
           <ChevronUp className="w-5 h-5 text-[var(--fg-tertiary)]" />
@@ -273,124 +598,109 @@ function QuickSetupCard({
             )}
           </div>
 
-          {/* Step 2: Add to config */}
-          <div className="space-y-2">
+          {/* Step 2: Connect Your AI Tool */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="flex items-center justify-center w-5 h-5 bg-[var(--bg-brand-solid)] text-white text-xs font-bold rounded-full">2</span>
-              <span className="text-sm font-medium text-[var(--fg-secondary)]">Add to your config file</span>
+              <span className="text-sm font-medium text-[var(--fg-secondary)]">Connect your AI tool</span>
             </div>
             
-            {/* Client selector tabs */}
-            <div className="ml-7 flex gap-1 bg-[var(--bg-tertiary)] p-1 rounded-lg w-fit">
-              <button
-                onClick={(e) => { e.stopPropagation(); setActiveClient('claude'); }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  activeClient === 'claude'
-                    ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
-                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                }`}
-              >
-                Claude Desktop
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); setActiveClient('cursor'); }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  activeClient === 'cursor'
-                    ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
-                    : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                }`}
-              >
-                Cursor
-              </button>
-            </div>
-            
-            <div className="ml-7 relative" onClick={(e) => e.stopPropagation()}>
-              <div className="absolute top-2 right-2 flex gap-1">
-                <button
-                  onClick={() => copyToClipboard(activeClient === 'claude' ? claudeConfig : cursorConfig, 'config')}
-                  className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] rounded transition-colors"
-                  title="Copy config"
-                >
-                  {copied === 'config' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                </button>
+            <div className="ml-7 space-y-3" onClick={(e) => e.stopPropagation()}>
+              {/* Platform selector */}
+              <div className="flex flex-wrap gap-1.5">
+                {PLATFORMS.map((platform) => {
+                  const Icon = platform.icon;
+                  return (
+                    <button
+                      key={platform.id}
+                      onClick={() => handlePlatformChange(platform.id)}
+                      className={`
+                        flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
+                        transition-colors border
+                        ${activePlatform === platform.id
+                          ? 'bg-[var(--bg-brand-solid)] text-white border-transparent'
+                          : 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)] border-[var(--border-secondary)] hover:bg-[var(--bg-quaternary)]'
+                        }
+                      `}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {platform.name}
+                    </button>
+                  );
+                })}
               </div>
-              <pre className="text-xs font-mono text-[var(--fg-tertiary)] bg-[var(--bg-primary)] border border-[var(--border-secondary)] p-3 pr-12 rounded-lg overflow-x-auto">
-                {activeClient === 'claude' ? claudeConfig : cursorConfig}
-              </pre>
-            </div>
-            
-            <p className="ml-7 text-xs text-[var(--fg-quaternary)]">
-              {activeClient === 'claude' ? (
-                <>Add this to <code className="bg-[var(--bg-tertiary)] px-1 rounded">claude_desktop_config.json</code></>
-              ) : (
-                <>Add this to your Cursor MCP settings</>
-              )}
-            </p>
-          </div>
-
-          {/* Step 3: Test */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-5 h-5 bg-[var(--bg-brand-solid)] text-white text-xs font-bold rounded-full">3</span>
-              <span className="text-sm font-medium text-[var(--fg-secondary)]">Test the connection</span>
-            </div>
-            <div className="ml-7 space-y-2">
-              <button
-                onClick={onTestConnection}
-                disabled={!apiKey || isTesting}
-                className="
-                  flex items-center gap-2 px-3 py-2
-                  bg-[var(--bg-tertiary)]
-                  text-[var(--fg-primary)] text-sm font-medium
-                  rounded-lg
-                  hover:bg-[var(--bg-quaternary)]
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-colors
-                "
-              >
-                {isTesting ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Zap className="w-4 h-4" />
-                )}
-                {isTesting ? 'Testing...' : 'Test Connection'}
-              </button>
               
-              {/* Test result */}
-              {testResult && (
-                <div className={`
-                  flex items-start gap-2 p-3 rounded-lg
-                  ${testResult.success 
-                    ? 'bg-green-500/10 border border-green-500/20' 
-                    : 'bg-red-500/10 border border-red-500/20'
-                  }
-                `}>
-                  {testResult.success ? (
-                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              {/* Connection method tabs */}
+              {(currentPlatform.supportsUrl || currentPlatform.supportsConfig) && (
+                <div className="flex gap-1 bg-[var(--bg-tertiary)] p-1 rounded-lg w-fit">
+                  {currentPlatform.supportsUrl && (
+                    <button
+                      onClick={() => setConnectionMethod('url')}
+                      className={`
+                        flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+                        ${connectionMethod === 'url'
+                          ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
+                          : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+                        }
+                      `}
+                    >
+                      <Link2 className="w-3 h-3" />
+                      URL Method
+                      <span className="text-[10px] text-green-500 font-semibold ml-1">Recommended</span>
+                    </button>
                   )}
-                  <div>
-                    <p className={`text-sm font-medium ${testResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
-                      {testResult.success ? 'Connection successful!' : 'Connection failed'}
-                    </p>
-                    <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">
-                      {testResult.message}
-                    </p>
-                    {testResult.success && testResult.toolCount && (
-                      <p className="text-xs text-[var(--fg-quaternary)] mt-1">
-                        {testResult.toolCount} tools available
-                      </p>
-                    )}
-                  </div>
+                  {currentPlatform.supportsConfig && (
+                    <button
+                      onClick={() => setConnectionMethod('config')}
+                      className={`
+                        flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+                        ${connectionMethod === 'config'
+                          ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
+                          : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+                        }
+                      `}
+                    >
+                      <FileCode className="w-3 h-3" />
+                      Config File
+                    </button>
+                  )}
                 </div>
               )}
               
-              {!apiKey && (
-                <p className="text-xs text-[var(--fg-quaternary)]">
-                  Generate an API key first to test the connection
-                </p>
-              )}
+              {/* Instructions */}
+              <div className="bg-[var(--bg-tertiary)] rounded-lg p-4">
+                {connectionMethod === 'url' ? (
+                  <UrlInstructions 
+                    platform={activePlatform} 
+                    serverUrl={serverUrl}
+                    apiKey={apiKey}
+                    onCopy={copyToClipboard}
+                    copied={copied}
+                  />
+                ) : (
+                  <ConfigInstructions 
+                    platform={activePlatform}
+                    serverUrl={serverUrl}
+                    apiKey={apiKey}
+                    onCopy={copyToClipboard}
+                    copied={copied}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3: Verify */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-5 h-5 bg-[var(--bg-brand-solid)] text-white text-xs font-bold rounded-full">3</span>
+              <span className="text-sm font-medium text-[var(--fg-secondary)]">Verify in your AI tool</span>
+            </div>
+            <div className="ml-7">
+              <p className="text-xs text-[var(--fg-tertiary)]">
+                After adding the connection, open your AI tool and try asking about your brand. 
+                The tool should now have access to your brand knowledge, colors, assets, and guidelines.
+              </p>
             </div>
           </div>
         </div>
@@ -408,12 +718,9 @@ interface McpServerSettingsProps {
 }
 
 export function McpServerSettings({ brandId }: McpServerSettingsProps) {
-  const router = useRouter();
   const { config, isLoading, error, refresh, updateConfig, generateApiKey } = useMcpServerConfig(brandId);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isTogglingServer, setIsTogglingServer] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string; toolCount?: number } | null>(null);
   const [newlyGeneratedKey, setNewlyGeneratedKey] = useState<{ key: string; name: string } | null>(null);
 
   const serverUrl = mcpService.getMcpServerUrl();
@@ -425,7 +732,6 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
       const newKey = await generateApiKey(keyName);
       
       if (newKey) {
-        // Show the modal with the new key
         setNewlyGeneratedKey({ key: newKey.key, name: newKey.name });
         toast.success('API key created successfully!');
       } else {
@@ -456,92 +762,6 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
     }
   }, [updateConfig]);
 
-  const handleTestConnection = useCallback(async () => {
-    const activeKey = config?.apiKeys?.find(k => k.is_active)?.key;
-    if (!activeKey) {
-      toast.error('Please generate an API key first');
-      return;
-    }
-
-    setIsTesting(true);
-    setTestResult(null);
-    
-    try {
-      // First, test initialize
-      const initResponse = await fetch(serverUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${activeKey}`,
-        },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'initialize',
-        }),
-      });
-
-      if (!initResponse.ok) {
-        const errorText = await initResponse.text();
-        setTestResult({
-          success: false,
-          message: `Server responded with ${initResponse.status}: ${errorText}`,
-        });
-        return;
-      }
-
-      const initData = await initResponse.json();
-      if (initData.error) {
-        setTestResult({
-          success: false,
-          message: initData.error.message || 'Server returned an error',
-        });
-        return;
-      }
-
-      // Then list tools
-      const toolsResponse = await fetch(serverUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${activeKey}`,
-        },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 2,
-          method: 'tools/list',
-        }),
-      });
-
-      if (!toolsResponse.ok) {
-        setTestResult({
-          success: true,
-          message: `Connected to ${initData.result?.name || 'BOS MCP Server'} v${initData.result?.version || '1.0.0'}`,
-        });
-        return;
-      }
-
-      const toolsData = await toolsResponse.json();
-      const toolCount = toolsData.result?.tools?.length || 0;
-
-      setTestResult({
-        success: true,
-        message: `Connected to ${initData.result?.name || 'BOS MCP Server'} v${initData.result?.version || '1.0.0'}`,
-        toolCount,
-      });
-      toast.success('Connection test passed!');
-    } catch (err) {
-      console.error('Test connection error:', err);
-      setTestResult({
-        success: false,
-        message: err instanceof Error ? err.message : 'Failed to connect to server',
-      });
-      toast.error('Connection test failed');
-    } finally {
-      setIsTesting(false);
-    }
-  }, [config, serverUrl]);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -564,7 +784,6 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
     );
   }
 
-  // Get the first active API key for display in config
   const activeApiKey = config?.apiKeys?.find(k => k.is_active)?.key;
 
   return (
@@ -576,7 +795,7 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
             BOS MCP Server
           </h3>
           <p className="text-sm text-[var(--fg-tertiary)] max-w-lg mt-1">
-            Connect AI tools like Claude Desktop and Cursor to your brand knowledge.
+            Connect AI tools like Claude Desktop, Cursor, and VS Code to your brand knowledge.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -592,19 +811,12 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
         </div>
       </div>
 
-      {/* Server Status */}
-      {config?.isEnabled ? (
-        <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-          <CheckCircle className="w-4 h-4 text-green-500" />
-          <span className="text-sm text-green-600 dark:text-green-400">
-            MCP Server is active and ready for connections
-          </span>
-        </div>
-      ) : (
+      {/* Server Status - Only show when disabled */}
+      {!config?.isEnabled && (
         <div className="flex items-center gap-2 p-3 bg-[var(--bg-tertiary)] border border-[var(--border-secondary)] rounded-lg">
           <AlertCircle className="w-4 h-4 text-[var(--fg-tertiary)]" />
           <span className="text-sm text-[var(--fg-tertiary)]">
-            MCP Server is disabled. Enable it to allow external connections.
+            MCP Server is disabled. Enable it to allow external AI tools to connect.
           </span>
         </div>
       )}
@@ -615,10 +827,7 @@ export function McpServerSettings({ brandId }: McpServerSettingsProps) {
           serverUrl={serverUrl} 
           apiKey={activeApiKey}
           onGenerateKey={handleGenerateKey}
-          onTestConnection={handleTestConnection}
           isGenerating={isGenerating}
-          isTesting={isTesting}
-          testResult={testResult}
         />
       )}
 

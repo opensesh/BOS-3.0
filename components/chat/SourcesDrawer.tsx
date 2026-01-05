@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { X, Globe, ExternalLink, Hexagon, ArrowRight, Compass, Rss, Search } from 'lucide-react';
 import { SourceInfo } from './AnswerView';
@@ -25,6 +26,14 @@ const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], query = '' }: SourcesDrawerProps) {
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure we're mounted on client side for portal
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   // Separate sources by type
   const { discoverSources, webSources } = useMemo(() => {
     const discover: SourceInfo[] = [];
@@ -41,7 +50,8 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
     return { discoverSources: discover, webSources: web };
   }, [sources]);
 
-  if (!isOpen) return null;
+  // Don't render until mounted or if not open
+  if (!mounted || !isOpen) return null;
 
   const totalCount = sources.length + resourceCards.length;
   const hasDiscoverSources = discoverSources.length > 0;
@@ -52,15 +62,16 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
   // Generate search query for external links
   const searchQuery = encodeURIComponent(query || 'related topics');
 
-  return (
+  // Portal content to document.body to escape stacking context
+  const drawerContent = (
     <>
-      {/* Backdrop - top-12 aligns with bottom of chat header */}
+      {/* Backdrop - covers entire viewport including canvas */}
       <div
-        className="fixed inset-0 top-12 bg-black/30 z-[100] backdrop-blur-[2px]"
+        className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Drawer - top-12 aligns with bottom of chat header */}
+      {/* Drawer - top-12 aligns with bottom of header */}
       <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col animate-slide-in-right shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-[var(--bg-secondary)]/30">
@@ -308,5 +319,8 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
       </div>
     </>
   );
+
+  // Render using portal to escape parent stacking context
+  return createPortal(drawerContent, document.body);
 }
 

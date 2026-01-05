@@ -212,12 +212,12 @@ export function ChatInterface() {
             })),
           };
         });
-        addToHistory(title, preview, chatMessages);
+        addToHistory(title, preview, chatMessages, currentProject?.id);
       }
     }
     // Navigate to Recent Chats
     router.push('/chats');
-  }, [messages, generatedTitle, getMessageContent, addToHistory, router]);
+  }, [messages, generatedTitle, getMessageContent, addToHistory, router, currentProject]);
 
   // Reset chat function
   const resetChat = useCallback(() => {
@@ -296,7 +296,7 @@ export function ChatInterface() {
               })),
             };
           });
-          addToHistory(title, preview, chatMessages);
+          addToHistory(title, preview, chatMessages, currentProject?.id);
         }
       }
       resetChat();
@@ -305,7 +305,7 @@ export function ChatInterface() {
       setCurrentSessionId(null);
       acknowledgeChatReset();
     }
-  }, [shouldResetChat, acknowledgeChatReset, resetChat, messages, addToHistory, getMessageContent, setCurrentSessionId, generatedTitle]);
+  }, [shouldResetChat, acknowledgeChatReset, resetChat, messages, addToHistory, getMessageContent, setCurrentSessionId, generatedTitle, currentProject]);
 
   // Listen for session load signals from context (e.g., clicking chat history)
   useEffect(() => {
@@ -395,11 +395,12 @@ export function ChatInterface() {
         });
         
         // Save to history (this also updates Supabase)
-        addToHistory(title, preview, chatMessages);
+        // Pass the current project ID so chats are associated with projects
+        addToHistory(title, preview, chatMessages, currentProject?.id);
       }
     }
     prevStatusRef.current = status;
-  }, [status, messages, addToHistory, getMessageContent, generatedTitle, generateTitle]);
+  }, [status, messages, addToHistory, getMessageContent, generatedTitle, generateTitle, currentProject]);
 
   // Process URL search params for article follow-up queries or prompt pre-fill
   useEffect(() => {

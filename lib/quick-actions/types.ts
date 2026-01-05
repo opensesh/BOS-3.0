@@ -7,94 +7,223 @@
  */
 
 // =============================================================================
-// Platform Definitions
+// Content Format (Tier 1)
 // =============================================================================
 
-export type SocialPlatform = 
-  | 'instagram'
-  | 'linkedin'
-  | 'tiktok'
-  | 'x'
-  | 'youtube'
-  | 'facebook'
-  | 'pinterest'
-  | 'threads';
+export type ContentFormat = 'short_form' | 'long_form' | 'written';
 
-export interface PlatformConfig {
-  id: SocialPlatform;
+export interface ContentFormatConfig {
+  id: ContentFormat;
+  label: string;
+  description: string;
+}
+
+export const CONTENT_FORMATS: ContentFormatConfig[] = [
+  {
+    id: 'short_form',
+    label: 'Short-form',
+    description: 'Quick, digestible content (< 60 seconds or single image)',
+  },
+  {
+    id: 'long_form',
+    label: 'Long-form',
+    description: 'Extended content (videos, articles, carousels)',
+  },
+  {
+    id: 'written',
+    label: 'Written',
+    description: 'Text-focused content (posts, captions, threads)',
+  },
+];
+
+// =============================================================================
+// Channel (Social Media Platform)
+// =============================================================================
+
+export interface Channel {
+  id: string;
   label: string;
   shortLabel: string;
-  icon: string;
-  contentTypes: ContentType[];
-  maxLength?: Record<string, number>;
+  icon: string | null;
+  supportedFormats: ContentFormat[];
+  isDefault: boolean;
+  displayOrder: number;
+  userId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// =============================================================================
-// Content Type Definitions (Platform-specific)
-// =============================================================================
-
-export type ContentType = 
-  // Instagram
-  | 'post'
-  | 'carousel'
-  | 'reel'
-  | 'story'
-  // LinkedIn
-  | 'article'
-  | 'poll'
-  | 'document'
-  // TikTok
-  | 'video'
-  // X (Twitter)
-  | 'tweet'
-  | 'thread'
-  // YouTube
-  | 'video-description'
-  | 'community-post'
-  | 'short'
-  // Facebook
-  | 'facebook-post'
-  | 'facebook-reel'
-  // Pinterest
-  | 'pin'
-  | 'idea-pin'
-  // Threads
-  | 'threads-post';
-
-export interface ContentTypeConfig {
-  id: ContentType;
+// Database row format (snake_case)
+export interface ChannelRow {
+  id: string;
   label: string;
-  description: string;
-  platforms: SocialPlatform[];
-  maxLength?: number;
+  short_label: string;
+  icon: string | null;
+  supported_formats: ContentFormat[];
+  is_default: boolean;
+  display_order: number;
+  user_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Convert DB row to app model
+export function channelFromRow(row: ChannelRow): Channel {
+  return {
+    id: row.id,
+    label: row.label,
+    shortLabel: row.short_label,
+    icon: row.icon,
+    supportedFormats: row.supported_formats,
+    isDefault: row.is_default,
+    displayOrder: row.display_order,
+    userId: row.user_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
 // =============================================================================
-// Goal Definitions
+// Content Sub-type (Tier 2 - Dynamic based on channels + format)
 // =============================================================================
 
-export type PostGoal = 
-  | 'awareness'
-  | 'engagement'
-  | 'conversion'
-  | 'education'
-  | 'entertainment'
-  | 'community';
-
-export interface GoalConfig {
-  id: PostGoal;
+export interface ContentSubtype {
+  id: string;
   label: string;
-  description: string;
+  format: ContentFormat;
+  channelIds: string[];
+  isDefault: boolean;
+  displayOrder: number;
+  userId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Database row format
+export interface ContentSubtypeRow {
+  id: string;
+  label: string;
+  format: ContentFormat;
+  channel_ids: string[];
+  is_default: boolean;
+  display_order: number;
+  user_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function contentSubtypeFromRow(row: ContentSubtypeRow): ContentSubtype {
+  return {
+    id: row.id,
+    label: row.label,
+    format: row.format,
+    channelIds: row.channel_ids,
+    isDefault: row.is_default,
+    displayOrder: row.display_order,
+    userId: row.user_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
 // =============================================================================
-// Tone Scale
+// Goal
 // =============================================================================
 
-export type TonePreset = 
-  | 'casual'
-  | 'balanced'
-  | 'professional';
+export interface Goal {
+  id: string;
+  label: string;
+  description: string | null;
+  isDefault: boolean;
+  displayOrder: number;
+  userId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GoalRow {
+  id: string;
+  label: string;
+  description: string | null;
+  is_default: boolean;
+  display_order: number;
+  user_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function goalFromRow(row: GoalRow): Goal {
+  return {
+    id: row.id,
+    label: row.label,
+    description: row.description,
+    isDefault: row.is_default,
+    displayOrder: row.display_order,
+    userId: row.user_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+// =============================================================================
+// Content Pillar
+// =============================================================================
+
+export interface ContentPillar {
+  id: string;
+  label: string;
+  isDefault: boolean;
+  displayOrder: number;
+  userId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContentPillarRow {
+  id: string;
+  label: string;
+  is_default: boolean;
+  display_order: number;
+  user_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function contentPillarFromRow(row: ContentPillarRow): ContentPillar {
+  return {
+    id: row.id,
+    label: row.label,
+    isDefault: row.is_default,
+    displayOrder: row.display_order,
+    userId: row.user_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+// =============================================================================
+// Tone
+// =============================================================================
+
+export type TonePreset = 'casual' | 'balanced' | 'professional';
+
+export const TONE_PRESETS: { id: TonePreset; label: string }[] = [
+  { id: 'casual', label: 'Casual' },
+  { id: 'balanced', label: 'Balanced' },
+  { id: 'professional', label: 'Professional' },
+];
+
+// =============================================================================
+// Product (Placeholder for now)
+// =============================================================================
+
+export type ProductType = 'product' | 'service' | 'other';
+
+export const PRODUCT_TYPES: { id: ProductType; label: string }[] = [
+  { id: 'product', label: 'Product' },
+  { id: 'service', label: 'Service' },
+  { id: 'other', label: 'Other' },
+];
 
 // =============================================================================
 // Reference Types
@@ -122,14 +251,16 @@ export interface ReferenceUrl {
 
 export interface PostCopyFormData {
   // Required fields
-  channels: SocialPlatform[];
-  contentType: ContentType;
-  goal: PostGoal;
+  channelIds: string[];
+  contentFormat: ContentFormat;
+  contentSubtypeId: string | null;
+  goalId: string;
   keyMessage: string;
   
   // Optional fields
-  contentPillar?: string;
-  tone?: TonePreset;
+  productType?: ProductType;
+  contentPillarId?: string;
+  tone: TonePreset;
   references?: {
     files: ReferenceFile[];
     urls: ReferenceUrl[];
@@ -154,209 +285,53 @@ export interface QuickActionConfig {
   id: QuickActionType;
   title: string;
   description: string;
-  formComponent: string;
+  prePrompt: string;
   skillId?: string; // Maps to brain skill
 }
 
+export const QUICK_ACTIONS: QuickActionConfig[] = [
+  {
+    id: 'create-post-copy',
+    title: 'Create Post Copy',
+    description: 'Generate engaging social media copy for your posts',
+    prePrompt: 'Create a post',
+    skillId: 'create-post-copy',
+  },
+  {
+    id: 'plan-campaign',
+    title: 'Plan Campaign',
+    description: 'Plan a comprehensive marketing campaign',
+    prePrompt: 'Help me plan a campaign',
+  },
+  {
+    id: 'brainstorm-ideas',
+    title: 'Brainstorm Ideas',
+    description: 'Generate creative content ideas',
+    prePrompt: 'Brainstorm content ideas',
+  },
+  {
+    id: 'get-feedback',
+    title: 'Get Feedback',
+    description: 'Get feedback on your content',
+    prePrompt: 'Give me feedback on this',
+  },
+];
+
 // =============================================================================
-// Form Message Type (for chat)
+// Form State (for chat context)
 // =============================================================================
 
-export interface QuickActionFormMessage {
-  type: 'quick-action-form';
-  actionType: QuickActionType;
+export interface QuickActionFormState {
+  type: QuickActionType;
   formId: string;
   data?: Partial<PostCopyFormData>;
-  status: 'pending' | 'submitted' | 'cancelled';
+  status: 'active' | 'submitting' | 'submitted' | 'cancelled';
+  isExpanded: boolean;
 }
-
-// =============================================================================
-// Platform Data (Research-based content types per platform)
-// =============================================================================
-
-export const PLATFORMS: PlatformConfig[] = [
-  {
-    id: 'instagram',
-    label: 'Instagram',
-    shortLabel: 'IG',
-    icon: 'instagram',
-    contentTypes: ['post', 'carousel', 'reel', 'story'],
-    maxLength: {
-      post: 2200,
-      carousel: 2200,
-      reel: 2200,
-      story: 250,
-    },
-  },
-  {
-    id: 'linkedin',
-    label: 'LinkedIn',
-    shortLabel: 'LI',
-    icon: 'linkedin',
-    contentTypes: ['post', 'article', 'carousel', 'poll', 'document'],
-    maxLength: {
-      post: 3000,
-      article: 125000,
-      carousel: 3000,
-      poll: 140,
-    },
-  },
-  {
-    id: 'tiktok',
-    label: 'TikTok',
-    shortLabel: 'TT',
-    icon: 'tiktok',
-    contentTypes: ['video', 'story', 'carousel'],
-    maxLength: {
-      video: 4000,
-      story: 150,
-      carousel: 4000,
-    },
-  },
-  {
-    id: 'x',
-    label: 'X (Twitter)',
-    shortLabel: 'X',
-    icon: 'twitter',
-    contentTypes: ['tweet', 'thread'],
-    maxLength: {
-      tweet: 280,
-      thread: 25000, // ~89 tweets
-    },
-  },
-  {
-    id: 'youtube',
-    label: 'YouTube',
-    shortLabel: 'YT',
-    icon: 'youtube',
-    contentTypes: ['video-description', 'community-post', 'short'],
-    maxLength: {
-      'video-description': 5000,
-      'community-post': 1000,
-      short: 100,
-    },
-  },
-  {
-    id: 'facebook',
-    label: 'Facebook',
-    shortLabel: 'FB',
-    icon: 'facebook',
-    contentTypes: ['facebook-post', 'facebook-reel', 'story'],
-    maxLength: {
-      'facebook-post': 63206,
-      'facebook-reel': 2200,
-      story: 250,
-    },
-  },
-  {
-    id: 'pinterest',
-    label: 'Pinterest',
-    shortLabel: 'PIN',
-    icon: 'pin',
-    contentTypes: ['pin', 'idea-pin'],
-    maxLength: {
-      pin: 500,
-      'idea-pin': 500,
-    },
-  },
-  {
-    id: 'threads',
-    label: 'Threads',
-    shortLabel: 'THR',
-    icon: 'threads',
-    contentTypes: ['threads-post', 'carousel'],
-    maxLength: {
-      'threads-post': 500,
-      carousel: 500,
-    },
-  },
-];
-
-export const CONTENT_TYPES: ContentTypeConfig[] = [
-  // Universal
-  { id: 'post', label: 'Post', description: 'Standard feed post', platforms: ['instagram', 'linkedin', 'facebook'] },
-  { id: 'carousel', label: 'Carousel', description: 'Multi-image/slide post', platforms: ['instagram', 'linkedin', 'tiktok', 'threads'] },
-  { id: 'story', label: 'Story', description: 'Temporary 24-hour content', platforms: ['instagram', 'tiktok', 'facebook'] },
-  
-  // Video formats
-  { id: 'reel', label: 'Reel', description: 'Short-form vertical video', platforms: ['instagram'] },
-  { id: 'video', label: 'Video', description: 'Video content', platforms: ['tiktok'] },
-  { id: 'short', label: 'Short', description: 'Vertical short-form video', platforms: ['youtube'] },
-  { id: 'facebook-reel', label: 'Reel', description: 'Short-form vertical video', platforms: ['facebook'] },
-  
-  // LinkedIn specific
-  { id: 'article', label: 'Article', description: 'Long-form article', platforms: ['linkedin'] },
-  { id: 'poll', label: 'Poll', description: 'Interactive poll', platforms: ['linkedin'] },
-  { id: 'document', label: 'Document', description: 'PDF carousel/document post', platforms: ['linkedin'] },
-  
-  // X specific
-  { id: 'tweet', label: 'Tweet', description: 'Single tweet (280 chars)', platforms: ['x'] },
-  { id: 'thread', label: 'Thread', description: 'Multi-tweet thread', platforms: ['x'] },
-  
-  // YouTube specific
-  { id: 'video-description', label: 'Video Description', description: 'YouTube video description', platforms: ['youtube'] },
-  { id: 'community-post', label: 'Community Post', description: 'YouTube Community tab post', platforms: ['youtube'] },
-  
-  // Pinterest specific
-  { id: 'pin', label: 'Pin', description: 'Standard pin', platforms: ['pinterest'] },
-  { id: 'idea-pin', label: 'Idea Pin', description: 'Multi-page idea pin', platforms: ['pinterest'] },
-  
-  // Threads specific
-  { id: 'threads-post', label: 'Post', description: 'Threads post', platforms: ['threads'] },
-  
-  // Facebook specific
-  { id: 'facebook-post', label: 'Post', description: 'Facebook post', platforms: ['facebook'] },
-];
-
-export const GOALS: GoalConfig[] = [
-  { id: 'awareness', label: 'Awareness', description: 'Increase brand visibility and reach' },
-  { id: 'engagement', label: 'Engagement', description: 'Drive likes, comments, and shares' },
-  { id: 'conversion', label: 'Conversion', description: 'Drive specific actions (clicks, sign-ups, sales)' },
-  { id: 'education', label: 'Education', description: 'Teach or inform your audience' },
-  { id: 'entertainment', label: 'Entertainment', description: 'Entertain and delight your audience' },
-  { id: 'community', label: 'Community', description: 'Build and nurture community' },
-];
-
-export const DEFAULT_CONTENT_PILLARS = [
-  'Educational',
-  'Behind-the-scenes',
-  'Product/Service',
-  'User-generated',
-  'Inspirational',
-  'Entertainment',
-  'Industry News',
-  'Tips & Tricks',
-];
 
 // =============================================================================
 // Helper Functions
 // =============================================================================
-
-/**
- * Get content types available for selected platforms
- */
-export function getContentTypesForPlatforms(platforms: SocialPlatform[]): ContentTypeConfig[] {
-  if (platforms.length === 0) return [];
-  
-  // Return content types that are available on ALL selected platforms
-  return CONTENT_TYPES.filter(ct => 
-    platforms.every(platform => ct.platforms.includes(platform))
-  );
-}
-
-/**
- * Get platform config by ID
- */
-export function getPlatformById(id: SocialPlatform): PlatformConfig | undefined {
-  return PLATFORMS.find(p => p.id === id);
-}
-
-/**
- * Get content type config by ID
- */
-export function getContentTypeById(id: ContentType): ContentTypeConfig | undefined {
-  return CONTENT_TYPES.find(ct => ct.id === id);
-}
 
 /**
  * Generate a unique form ID
@@ -370,11 +345,13 @@ export function generateFormId(): string {
  */
 export function createInitialFormData(): PostCopyFormData {
   return {
-    channels: [],
-    contentType: 'post',
-    goal: 'engagement',
+    channelIds: [],
+    contentFormat: 'written',
+    contentSubtypeId: null,
+    goalId: '',
     keyMessage: '',
-    contentPillar: undefined,
+    productType: undefined,
+    contentPillarId: undefined,
     tone: 'balanced',
     references: {
       files: [],
@@ -385,3 +362,51 @@ export function createInitialFormData(): PostCopyFormData {
   };
 }
 
+/**
+ * Get available content formats for selected channels
+ */
+export function getAvailableFormatsForChannels(
+  channels: Channel[],
+  selectedChannelIds: string[]
+): ContentFormat[] {
+  if (selectedChannelIds.length === 0) return ['short_form', 'long_form', 'written'];
+  
+  const selectedChannels = channels.filter(c => selectedChannelIds.includes(c.id));
+  if (selectedChannels.length === 0) return ['short_form', 'long_form', 'written'];
+  
+  // Find formats available in ALL selected channels
+  const formatSets = selectedChannels.map(c => new Set(c.supportedFormats));
+  const intersection = formatSets.reduce((acc, set) => {
+    return new Set([...acc].filter(format => set.has(format)));
+  });
+  
+  return Array.from(intersection) as ContentFormat[];
+}
+
+/**
+ * Filter content subtypes by selected channels and format
+ */
+export function filterSubtypesByChannelsAndFormat(
+  subtypes: ContentSubtype[],
+  selectedChannelIds: string[],
+  format: ContentFormat
+): ContentSubtype[] {
+  if (selectedChannelIds.length === 0) return [];
+  
+  return subtypes.filter(subtype => {
+    // Must match the format
+    if (subtype.format !== format) return false;
+    
+    // Must be available for at least one selected channel
+    return selectedChannelIds.some(channelId => 
+      subtype.channelIds.includes(channelId)
+    );
+  });
+}
+
+/**
+ * Get quick action config by type
+ */
+export function getQuickActionConfig(type: QuickActionType): QuickActionConfig | undefined {
+  return QUICK_ACTIONS.find(action => action.id === type);
+}

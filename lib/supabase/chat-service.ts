@@ -300,6 +300,7 @@ export const chatService = {
         title: chat.title,
         preview,
         messages,
+        project_id: chat.project_id,
         created_at: chat.created_at,
         updated_at: chat.updated_at,
       };
@@ -367,6 +368,7 @@ export const chatService = {
           title: chat.title,
           preview,
           messages: chatMessages,
+          project_id: chat.project_id,
           created_at: chat.created_at,
           updated_at: chat.updated_at,
         };
@@ -419,6 +421,7 @@ export const chatService = {
         title: chat.title,
         preview,
         messages: chatMessages,
+        project_id: chat.project_id,
         created_at: chat.created_at,
         updated_at: chat.updated_at,
       };

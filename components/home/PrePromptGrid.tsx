@@ -16,10 +16,17 @@ import {
 } from 'lucide-react';
 import { AnimatedFolder } from './AnimatedFolder';
 import { IconHover3D } from './IconHover3D';
+import { useChatContext } from '@/lib/chat-context';
+import type { QuickActionType } from '@/lib/quick-actions';
 
 interface PrePromptGridProps {
   onPromptSubmit: (prompt: string) => void;
 }
+
+// Quick action IDs that trigger forms instead of text prompts
+const QUICK_ACTION_IDS: Record<string, QuickActionType> = {
+  'social-post': 'create-post-copy',
+};
 
 // Quick links to subpages (folder cards)
 const quickLinks = [
@@ -112,10 +119,25 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
   const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX_DESKTOP);
   const [visibleCount, setVisibleCount] = useState(4); // Default to desktop
   
+  // Get chat context for quick actions
+  const { triggerQuickAction } = useChatContext();
+  
   // Touch handling state
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Handle item click - either trigger quick action form or submit prompt
+  const handleItemClick = useCallback((item: typeof prePrompts[0]) => {
+    const quickActionType = QUICK_ACTION_IDS[item.id];
+    if (quickActionType) {
+      // Trigger the form-based quick action
+      triggerQuickAction(quickActionType);
+    } else {
+      // Fall back to regular prompt submission
+      onPromptSubmit(item.prompt);
+    }
+  }, [triggerQuickAction, onPromptSubmit]);
   
   // Adjust visible count and initial index based on screen size (for carousel only)
   useEffect(() => {
@@ -215,7 +237,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
                   icon={item.icon}
                   title={item.title}
                   description={item.description}
-                  onClick={() => onPromptSubmit(item.prompt)}
+                  onClick={() => handleItemClick(item)}
                 />
               )}
             </div>
@@ -292,7 +314,7 @@ export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
                       icon={item.icon}
                       title={item.title}
                       description={item.description}
-                      onClick={() => onPromptSubmit(item.prompt)}
+                      onClick={() => handleItemClick(item)}
                     />
                   )}
                 </div>

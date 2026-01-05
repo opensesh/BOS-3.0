@@ -4,6 +4,18 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { chatService, type ChatSession, type ChatMessage } from '@/lib/supabase/chat-service';
 import { projectsService, type Project } from '@/lib/supabase/projects-service';
 import type { WritingStyle } from '@/components/ui/writing-style-selector';
+import type { QuickActionType, PostCopyFormData } from '@/lib/quick-actions';
+
+// =============================================================================
+// Quick Action Types
+// =============================================================================
+
+export interface ActiveQuickAction {
+  type: QuickActionType;
+  formId: string;
+  data?: Partial<PostCopyFormData>;
+  status: 'active' | 'submitting' | 'submitted' | 'cancelled';
+}
 
 export interface ChatHistoryItem {
   id: string;
@@ -69,6 +81,11 @@ interface ChatContextValue {
   setWebSearchEnabled: (enabled: boolean) => void;
   brandSearchEnabled: boolean;
   setBrandSearchEnabled: (enabled: boolean) => void;
+  // Quick Actions
+  activeQuickAction: ActiveQuickAction | null;
+  triggerQuickAction: (type: QuickActionType) => void;
+  cancelQuickAction: () => void;
+  submitQuickAction: (data: PostCopyFormData) => void;
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined);
@@ -97,6 +114,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // Data connector settings (persist across conversation)
   const [webSearchEnabled, setWebSearchEnabled] = useState(true);
   const [brandSearchEnabled, setBrandSearchEnabled] = useState(true);
+  // Quick action state
+  const [activeQuickAction, setActiveQuickAction] = useState<ActiveQuickAction | null>(null);
 
   // Load chat history from Supabase on mount
   const loadHistory = useCallback(async () => {
@@ -402,6 +421,40 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setShouldScrollToBottom(false);
   }, []);
 
+  // Quick Action callbacks
+  const triggerQuickAction = useCallback((type: QuickActionType) => {
+    const formId = `form-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    setActiveQuickAction({
+      type,
+      formId,
+      data: undefined,
+      status: 'active',
+    });
+  }, []);
+
+  const cancelQuickAction = useCallback(() => {
+    if (activeQuickAction) {
+      setActiveQuickAction({
+        ...activeQuickAction,
+        status: 'cancelled',
+      });
+      // Clear after animation
+      setTimeout(() => setActiveQuickAction(null), 300);
+    }
+  }, [activeQuickAction]);
+
+  const submitQuickAction = useCallback((data: PostCopyFormData) => {
+    if (activeQuickAction) {
+      setActiveQuickAction({
+        ...activeQuickAction,
+        data,
+        status: 'submitting',
+      });
+      // The ChatInterface will handle the actual submission
+      // and update the status to 'submitted' when done
+    }
+  }, [activeQuickAction]);
+
   return (
     <ChatContext.Provider value={{
       chatHistory,
@@ -448,6 +501,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setWebSearchEnabled,
       brandSearchEnabled,
       setBrandSearchEnabled,
+      // Quick Actions
+      activeQuickAction,
+      triggerQuickAction,
+      cancelQuickAction,
+      submitQuickAction,
     }}>
       {children}
     </ChatContext.Provider>

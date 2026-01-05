@@ -36,9 +36,11 @@ import {
   extractResourceCards,
   AddToProjectModal,
   AddToSpaceModal,
+  CreatePostCopyForm,
   type FollowUpAttachment,
 } from './chat';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
+import type { PostCopyFormData } from '@/lib/quick-actions';
 // Article reference context (kept for potential future use)
 interface ArticleContext {
   title: string;
@@ -143,6 +145,10 @@ export function ChatInterface() {
     setWebSearchEnabled,
     brandSearchEnabled,
     setBrandSearchEnabled,
+    // Quick Actions
+    activeQuickAction,
+    cancelQuickAction,
+    submitQuickAction,
   } = useChatContext();
 
   // Canvas context for adjusting layout when canvas is open
@@ -891,6 +897,116 @@ export function ChatInterface() {
     await createProject(name);
   }, [createProject]);
 
+  // Handle quick action form submission
+  const handleQuickActionSubmit = useCallback(async (formData: PostCopyFormData) => {
+    // Mark the quick action as submitting
+    submitQuickAction(formData);
+    
+    // Build a structured prompt using the form data
+    const platformNames = formData.channels.map(ch => {
+      const platformMap: Record<string, string> = {
+        instagram: 'Instagram',
+        linkedin: 'LinkedIn',
+        tiktok: 'TikTok',
+        x: 'X (Twitter)',
+        youtube: 'YouTube',
+        facebook: 'Facebook',
+        pinterest: 'Pinterest',
+        threads: 'Threads',
+      };
+      return platformMap[ch] || ch;
+    });
+    
+    const contentTypeLabels: Record<string, string> = {
+      post: 'Post',
+      carousel: 'Carousel',
+      reel: 'Reel',
+      story: 'Story',
+      article: 'Article',
+      poll: 'Poll',
+      document: 'Document',
+      video: 'Video',
+      tweet: 'Tweet',
+      thread: 'Thread',
+      'video-description': 'Video Description',
+      'community-post': 'Community Post',
+      short: 'Short',
+      pin: 'Pin',
+      'idea-pin': 'Idea Pin',
+      'threads-post': 'Post',
+      'facebook-post': 'Post',
+      'facebook-reel': 'Reel',
+    };
+    
+    const goalLabels: Record<string, string> = {
+      awareness: 'Brand Awareness',
+      engagement: 'Engagement',
+      conversion: 'Conversion',
+      education: 'Education',
+      entertainment: 'Entertainment',
+      community: 'Community Building',
+    };
+    
+    // Build the structured prompt
+    let prompt = `Create social media post copy with the following specifications:
+
+**Channels:** ${platformNames.join(', ')}
+**Content Type:** ${contentTypeLabels[formData.contentType] || formData.contentType}
+**Goal:** ${goalLabels[formData.goal] || formData.goal}
+**Key Message:** ${formData.keyMessage}`;
+
+    if (formData.contentPillar) {
+      prompt += `\n**Content Pillar:** ${formData.contentPillar}`;
+    }
+    
+    if (formData.tone) {
+      const toneLabels: Record<string, string> = {
+        casual: 'Casual and friendly',
+        balanced: 'Balanced',
+        professional: 'Professional and formal',
+      };
+      prompt += `\n**Tone:** ${toneLabels[formData.tone] || formData.tone}`;
+    }
+    
+    if (formData.references?.urls && formData.references.urls.length > 0) {
+      prompt += `\n\n**Reference URLs:**\n${formData.references.urls.map(u => `- ${u.url}`).join('\n')}`;
+    }
+
+    prompt += `
+
+Please create the post copy following my brand guidelines and voice. Provide:
+1. The main copy for each platform (adapting length and style as needed)
+2. Suggested hashtags
+3. Best posting times recommendations
+4. Any platform-specific considerations`;
+
+    // Reset scroll tracking
+    resetScrollTracking();
+    
+    try {
+      const requestBody = {
+        model: selectedModel,
+        connectors: connectorSettings,
+        extendedThinking: extendedThinkingEnabled,
+        writingStyle: currentWritingStyle?.id || null,
+        // Signal this is from a quick action
+        quickAction: {
+          type: 'create-post-copy',
+          formData,
+        },
+      };
+
+      await sendMessage({ text: prompt }, { body: requestBody });
+      
+      // Clear the quick action after successful submission
+      cancelQuickAction();
+    } catch (err) {
+      console.error('Failed to submit quick action:', err);
+      setSubmitError(err instanceof Error ? err.message : 'Failed to generate post copy');
+      cancelQuickAction();
+    }
+  }, [submitQuickAction, cancelQuickAction, selectedModel, connectorSettings, extendedThinkingEnabled, currentWritingStyle, sendMessage, resetScrollTracking]);
+
   // Parse messages into our format
   const parsedMessages: ParsedMessage[] = useMemo(() => {
     return messages.map((message) => {
@@ -1371,14 +1487,37 @@ export function ChatInterface() {
                 )}
               </AnimatePresence>
               
-              {/* Pre-prompt Cards Grid - below input, fades when typing */}
+              {/* Quick Action Form - shown when a quick action is triggered */}
+              <AnimatePresence mode="wait">
+                {activeQuickAction && (activeQuickAction.status === 'active' || activeQuickAction.status === 'submitting') && (
+                  <motion.div
+                    key="quick-action-form"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    className="mt-8 px-4"
+                  >
+                    {activeQuickAction.type === 'create-post-copy' && (
+                      <CreatePostCopyForm
+                        initialData={activeQuickAction.data}
+                        onSubmit={handleQuickActionSubmit}
+                        onCancel={cancelQuickAction}
+                        isSubmitting={activeQuickAction.status === 'submitting'}
+                      />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              {/* Pre-prompt Cards Grid - below input, fades when typing or form is active */}
               {/* Uses opacity animation without unmounting to prevent layout shift */}
               <motion.div
                 className="mt-8"
                 initial={{ opacity: 1 }}
                 animate={{ 
-                  opacity: input.trim() ? 0 : 1,
-                  pointerEvents: input.trim() ? 'none' : 'auto',
+                  opacity: input.trim() || activeQuickAction ? 0 : 1,
+                  pointerEvents: input.trim() || activeQuickAction ? 'none' : 'auto',
                 }}
                 transition={{ 
                   duration: 0.3, 

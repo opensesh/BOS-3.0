@@ -27,6 +27,12 @@ import {
 import { useChatContext } from '@/lib/chat-context';
 import { useSpaces } from '@/hooks/useSpaces';
 import { slideFromLeft, staggerContainerFast, fadeInUp } from '@/lib/motion';
+import type { QuickActionType } from '@/lib/quick-actions';
+
+// Quick action IDs that trigger forms instead of text prompts
+const QUICK_ACTION_FORM_IDS: Record<string, QuickActionType> = {
+  'social-post': 'create-post-copy',
+};
 
 interface NavigationDrawerProps {
   isOpen: boolean;
@@ -83,7 +89,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
   const [position, setPosition] = useState({ top: 0, left: 0, height: 0 });
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const onCloseRef = useRef(onClose);
-  const { chatHistory, loadSession, projects, triggerChatReset } = useChatContext();
+  const { chatHistory, loadSession, projects, triggerChatReset, triggerQuickAction } = useChatContext();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
 
   // Handle clicking on a recent chat - load the session and navigate to home
@@ -95,12 +101,24 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
     onClose();
   }, [loadSession, pathname, router, onClose]);
 
-  // Handle quick action click - trigger chat with prompt
-  const handleQuickAction = useCallback((prompt: string) => {
-    triggerChatReset();
-    router.push(`/?q=${encodeURIComponent(prompt)}`);
+  // Handle quick action click - trigger form or chat prompt
+  const handleQuickAction = useCallback((actionId: string, prompt: string) => {
+    const formType = QUICK_ACTION_FORM_IDS[actionId];
+    
+    if (formType) {
+      // Trigger the form-based quick action
+      triggerQuickAction(formType);
+      // Navigate to home if not already there
+      if (pathname !== '/') {
+        router.push('/');
+      }
+    } else {
+      // Fall back to the traditional prompt approach
+      triggerChatReset();
+      router.push(`/?q=${encodeURIComponent(prompt)}`);
+    }
     onClose();
-  }, [triggerChatReset, router, onClose]);
+  }, [triggerQuickAction, triggerChatReset, router, pathname, onClose]);
 
   // Keep onClose ref up to date without triggering re-renders
   useEffect(() => {
@@ -391,7 +409,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         key={action.id}
                         variants={fadeInUp}
                         custom={index}
-                        onClick={() => handleQuickAction(action.prompt)}
+                        onClick={() => handleQuickAction(action.id, action.prompt)}
                         className="w-full text-left px-3 py-1.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2 group"
                       >
                         <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-shrink-0" />

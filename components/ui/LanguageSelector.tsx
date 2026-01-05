@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useTransition } from 'react';
 import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Check, Globe } from 'lucide-react';
-import { locales, localeNames, type Locale } from '@/i18n';
+import { locales, localeNames, type Locale } from '@/i18n/config';
 import { setLocale } from '@/lib/locale-actions';
 
 interface LanguageSelectorProps {

@@ -168,7 +168,7 @@ ON CONFLICT (category, slug) DO NOTHING;
 INSERT INTO brand_documents (category, slug, title, icon, sort_order, is_system, content)
 VALUES 
   ('writing-styles', 'blog', 'Blog', 'book-open', 1, true, ''),
-  ('writing-styles', 'creative', 'Creative', 'sparkles', 2, true, ''),
+  ('writing-styles', 'creative', 'Creative', 'wand-2', 2, true, ''),
   ('writing-styles', 'long-form', 'Long Form', 'file-text', 3, true, ''),
   ('writing-styles', 'short-form', 'Short Form', 'message-circle', 4, true, ''),
   ('writing-styles', 'strategic', 'Strategic', 'target', 5, true, '')

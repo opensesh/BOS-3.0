@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
   Settings,
-  Sparkles,
+  Bell,
   LogOut,
   User,
   Mail,
@@ -57,7 +57,7 @@ const accountMenuItems = [
     id: 'features', 
     label: 'Release updates', 
     description: 'See what\'s new',
-    icon: Sparkles,
+    icon: Bell,
     tab: null, // Will navigate to external page in future
   },
 ];

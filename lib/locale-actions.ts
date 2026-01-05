@@ -1,7 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { locales, type Locale } from '@/i18n';
+import { locales, type Locale } from '@/i18n/config';
 
 /**
  * Server action to set the user's preferred locale.

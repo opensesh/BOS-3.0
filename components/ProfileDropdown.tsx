@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
   Settings,
-  Sparkles,
+  Bell,
   LogOut,
 } from 'lucide-react';
 import { ThemeCompactToggle } from '@/components/ui/ThemeCompactToggle';
@@ -141,7 +141,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
                   transition-colors
                 "
               >
-                <Sparkles className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                <Bell className="w-4 h-4 text-[var(--fg-tertiary)]" />
                 <span className="text-sm text-[var(--fg-secondary)]">{t('releaseUpdates')}</span>
               </button>
             </div>

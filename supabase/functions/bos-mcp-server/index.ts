@@ -679,10 +679,29 @@ function extractApiKey(req: Request): string | null {
 }
 
 // ============================================
+// OAuth Configuration
+// ============================================
+
+// In-memory store for OAuth codes (in production, use a database or KV store)
+const oauthCodes = new Map<string, { clientId: string; apiKey: string; expiresAt: number }>();
+
+function generateCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 32; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// ============================================
 // Main Handler
 // ============================================
 
 Deno.serve(async (req: Request) => {
+  const url = new URL(req.url);
+  const path = url.pathname;
+  
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -698,6 +717,139 @@ Deno.serve(async (req: Request) => {
     "Access-Control-Allow-Origin": "*",
     "Content-Type": "application/json",
   };
+
+  // ========================================
+  // OAuth Endpoints for Claude Desktop
+  // ========================================
+  
+  // OAuth Metadata Discovery
+  // Claude Desktop looks for this at the MCP server URL
+  if (req.method === "GET" && (path.endsWith("/.well-known/oauth-authorization-server") || path.includes("/.well-known/oauth-authorization-server"))) {
+    const baseUrl = `${url.protocol}//${url.host}${path.replace("/.well-known/oauth-authorization-server", "")}`;
+    return new Response(
+      JSON.stringify({
+        issuer: baseUrl,
+        authorization_endpoint: `${baseUrl}/authorize`,
+        token_endpoint: `${baseUrl}/token`,
+        response_types_supported: ["code"],
+        grant_types_supported: ["authorization_code"],
+        code_challenge_methods_supported: ["S256", "plain"],
+        token_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post"],
+      }),
+      { status: 200, headers: corsHeaders }
+    );
+  }
+
+  // OAuth Authorization Endpoint
+  // For API key auth, we skip user consent and immediately redirect with code
+  if (req.method === "GET" && (path.endsWith("/authorize") || path.includes("/authorize?"))) {
+    const clientId = url.searchParams.get("client_id");
+    const redirectUri = url.searchParams.get("redirect_uri");
+    const state = url.searchParams.get("state");
+    const codeChallenge = url.searchParams.get("code_challenge");
+    
+    if (!clientId || !redirectUri) {
+      return new Response(
+        JSON.stringify({ error: "invalid_request", error_description: "Missing client_id or redirect_uri" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+    
+    // The client_id IS the API key for BOS MCP
+    // Generate authorization code
+    const code = generateCode();
+    
+    // Store the code with expiration (5 minutes)
+    oauthCodes.set(code, {
+      clientId,
+      apiKey: clientId, // client_id is the API key
+      expiresAt: Date.now() + 5 * 60 * 1000,
+    });
+    
+    // Build redirect URL with code
+    const redirect = new URL(redirectUri);
+    redirect.searchParams.set("code", code);
+    if (state) {
+      redirect.searchParams.set("state", state);
+    }
+    
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": redirect.toString(),
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  }
+
+  // OAuth Token Endpoint
+  if (req.method === "POST" && (path.endsWith("/token") || path.includes("/token"))) {
+    let code: string | null = null;
+    let clientId: string | null = null;
+    let clientSecret: string | null = null;
+    
+    // Parse request body (form-urlencoded or JSON)
+    const contentType = req.headers.get("Content-Type") || "";
+    
+    if (contentType.includes("application/x-www-form-urlencoded")) {
+      const formData = await req.text();
+      const params = new URLSearchParams(formData);
+      code = params.get("code");
+      clientId = params.get("client_id");
+      clientSecret = params.get("client_secret");
+    } else if (contentType.includes("application/json")) {
+      const json = await req.json();
+      code = json.code;
+      clientId = json.client_id;
+      clientSecret = json.client_secret;
+    }
+    
+    // Also check Basic Auth for client credentials
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Basic ")) {
+      try {
+        const credentials = atob(authHeader.slice(6));
+        const [id, secret] = credentials.split(":");
+        clientId = clientId || id;
+        clientSecret = clientSecret || secret;
+      } catch {
+        // Invalid base64
+      }
+    }
+    
+    if (!code) {
+      return new Response(
+        JSON.stringify({ error: "invalid_request", error_description: "Missing authorization code" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+    
+    // Validate the code
+    const codeData = oauthCodes.get(code);
+    if (!codeData || codeData.expiresAt < Date.now()) {
+      oauthCodes.delete(code);
+      return new Response(
+        JSON.stringify({ error: "invalid_grant", error_description: "Invalid or expired authorization code" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+    
+    // Delete used code
+    oauthCodes.delete(code);
+    
+    // The API key is used as both client_id and access_token
+    // This allows simple API key auth through OAuth flow
+    const apiKey = clientSecret || codeData.apiKey;
+    
+    return new Response(
+      JSON.stringify({
+        access_token: apiKey,
+        token_type: "Bearer",
+        expires_in: 31536000, // 1 year
+      }),
+      { status: 200, headers: corsHeaders }
+    );
+  }
 
   // Handle GET requests (health check / capability discovery)
   if (req.method === "GET") {

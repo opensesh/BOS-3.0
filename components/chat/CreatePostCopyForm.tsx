@@ -26,11 +26,20 @@ import type {
   ProductType,
   ReferenceFile,
   ReferenceUrl,
+  VariationCount,
+  HashtagPreference,
+  CaptionLength,
+  CtaPreference,
+  OutputPreferences,
 } from '@/lib/quick-actions';
 import {
   CONTENT_FORMATS,
   TONE_PRESETS,
   PRODUCT_TYPES,
+  VARIATION_OPTIONS,
+  HASHTAG_OPTIONS,
+  CAPTION_LENGTH_OPTIONS,
+  CTA_OPTIONS,
   createInitialFormData,
   getAvailableFormatsForChannels,
   filterSubtypesByChannelsAndFormat,
@@ -224,10 +233,18 @@ export function CreatePostCopyForm({
   const [productType, setProductType] = useState<ProductType | undefined>(initialData?.productType);
   const [contentPillarId, setContentPillarId] = useState<string | undefined>(initialData?.contentPillarId);
   const [tone, setTone] = useState<TonePreset>(initialData?.tone || 'balanced');
+  const [customVoiceNotes, setCustomVoiceNotes] = useState<string>(initialData?.customVoiceNotes || '');
   const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>(initialData?.references?.files || []);
   const [referenceUrls, setReferenceUrls] = useState<ReferenceUrl[]>(initialData?.references?.urls || []);
   const [urlInput, setUrlInput] = useState('');
   const [showOptional, setShowOptional] = useState(false);
+  const [showOutputPrefs, setShowOutputPrefs] = useState(false);
+  
+  // Output preferences state
+  const [variations, setVariations] = useState<VariationCount>(initialData?.outputPreferences?.variations || 1);
+  const [hashtags, setHashtags] = useState<HashtagPreference>(initialData?.outputPreferences?.hashtags || 'suggest');
+  const [captionLength, setCaptionLength] = useState<CaptionLength>(initialData?.outputPreferences?.captionLength || 'standard');
+  const [includeCta, setIncludeCta] = useState<CtaPreference>(initialData?.outputPreferences?.includeCta || 'yes');
 
   // Convert channels array to Channel type for helper functions
   const channelObjects = useMemo(() => {
@@ -349,9 +366,16 @@ export function CreatePostCopyForm({
       productType,
       contentPillarId,
       tone,
+      customVoiceNotes: customVoiceNotes.trim() || undefined,
       references: {
         files: referenceFiles,
         urls: referenceUrls,
+      },
+      outputPreferences: {
+        variations,
+        hashtags,
+        captionLength,
+        includeCta,
       },
       formId: initialData?.formId || createInitialFormData().formId,
       createdAt: initialData?.createdAt || new Date().toISOString(),
@@ -367,8 +391,13 @@ export function CreatePostCopyForm({
     productType,
     contentPillarId,
     tone,
+    customVoiceNotes,
     referenceFiles,
     referenceUrls,
+    variations,
+    hashtags,
+    captionLength,
+    includeCta,
     initialData,
     onSubmit,
   ]);
@@ -570,6 +599,18 @@ export function CreatePostCopyForm({
                         />
                       </div>
 
+                      {/* Custom Voice Notes */}
+                      <div>
+                        <SectionHeader label="Custom Voice Notes" />
+                        <textarea
+                          value={customVoiceNotes}
+                          onChange={(e) => setCustomVoiceNotes(e.target.value)}
+                          placeholder="Any specific voice or style notes? (e.g., 'Use more humor', 'Reference our recent launch')"
+                          className="w-full px-3 py-2 bg-[var(--bg-primary)] rounded-lg text-sm text-[var(--fg-primary)] placeholder:text-[var(--fg-quaternary)] ring-1 ring-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-brand-solid)] resize-none transition-shadow"
+                          rows={2}
+                        />
+                      </div>
+
                       {/* References */}
                       <div>
                         <SectionHeader label="Reference Materials" />
@@ -654,6 +695,72 @@ export function CreatePostCopyForm({
                             )}
                           </div>
                         </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Output Preferences Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowOutputPrefs(!showOutputPrefs)}
+                  className="flex items-center gap-1.5 text-xs font-medium text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] transition-colors"
+                >
+                  {showOutputPrefs ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  <span>Output preferences</span>
+                </button>
+
+                {/* Output Preferences Section */}
+                <AnimatePresence>
+                  {showOutputPrefs && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="space-y-4 overflow-hidden"
+                    >
+                      {/* Variations */}
+                      <div>
+                        <SectionHeader label="Variations" />
+                        <SegmentedControl
+                          options={VARIATION_OPTIONS.map(v => ({ id: v.id.toString() as `${typeof v.id}`, label: v.label }))}
+                          value={variations.toString() as `${VariationCount}`}
+                          onChange={(v) => setVariations(Number(v) as VariationCount)}
+                        />
+                        <p className="mt-1.5 text-xs text-[var(--fg-quaternary)]">
+                          Generate one polished option or 2-3 variations to choose from
+                        </p>
+                      </div>
+
+                      {/* Hashtags */}
+                      <div>
+                        <SectionHeader label="Include Hashtags" />
+                        <SegmentedControl
+                          options={HASHTAG_OPTIONS}
+                          value={hashtags}
+                          onChange={setHashtags}
+                        />
+                      </div>
+
+                      {/* Caption Length */}
+                      <div>
+                        <SectionHeader label="Caption Length" />
+                        <SegmentedControl
+                          options={CAPTION_LENGTH_OPTIONS}
+                          value={captionLength}
+                          onChange={setCaptionLength}
+                        />
+                      </div>
+
+                      {/* Include CTA */}
+                      <div>
+                        <SectionHeader label="Include Call-to-Action" />
+                        <SegmentedControl
+                          options={CTA_OPTIONS}
+                          value={includeCta}
+                          onChange={setIncludeCta}
+                        />
                       </div>
                     </motion.div>
                   )}

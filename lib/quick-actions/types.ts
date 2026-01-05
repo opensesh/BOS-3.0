@@ -214,6 +214,47 @@ export const TONE_PRESETS: { id: TonePreset; label: string }[] = [
 ];
 
 // =============================================================================
+// Output Preferences
+// =============================================================================
+
+export type VariationCount = 1 | 3;
+
+export const VARIATION_OPTIONS: { id: VariationCount; label: string }[] = [
+  { id: 1, label: '1' },
+  { id: 3, label: '2-3' },
+];
+
+export type HashtagPreference = 'yes' | 'no' | 'suggest';
+
+export const HASHTAG_OPTIONS: { id: HashtagPreference; label: string }[] = [
+  { id: 'yes', label: 'Yes' },
+  { id: 'no', label: 'No' },
+  { id: 'suggest', label: 'Suggest' },
+];
+
+export type CaptionLength = 'concise' | 'standard' | 'extended';
+
+export const CAPTION_LENGTH_OPTIONS: { id: CaptionLength; label: string }[] = [
+  { id: 'concise', label: 'Concise' },
+  { id: 'standard', label: 'Standard' },
+  { id: 'extended', label: 'Extended' },
+];
+
+export type CtaPreference = 'yes' | 'no';
+
+export const CTA_OPTIONS: { id: CtaPreference; label: string }[] = [
+  { id: 'yes', label: 'Yes' },
+  { id: 'no', label: 'No' },
+];
+
+export interface OutputPreferences {
+  variations: VariationCount;
+  hashtags: HashtagPreference;
+  captionLength: CaptionLength;
+  includeCta: CtaPreference;
+}
+
+// =============================================================================
 // Product (Placeholder for now)
 // =============================================================================
 
@@ -261,10 +302,14 @@ export interface PostCopyFormData {
   productType?: ProductType;
   contentPillarId?: string;
   tone: TonePreset;
+  customVoiceNotes?: string;
   references?: {
     files: ReferenceFile[];
     urls: ReferenceUrl[];
   };
+  
+  // Output preferences
+  outputPreferences: OutputPreferences;
   
   // Metadata
   formId: string;
@@ -353,9 +398,16 @@ export function createInitialFormData(): PostCopyFormData {
     productType: undefined,
     contentPillarId: undefined,
     tone: 'balanced',
+    customVoiceNotes: undefined,
     references: {
       files: [],
       urls: [],
+    },
+    outputPreferences: {
+      variations: 1,
+      hashtags: 'suggest',
+      captionLength: 'standard',
+      includeCta: 'yes',
     },
     formId: generateFormId(),
     createdAt: new Date().toISOString(),

@@ -89,12 +89,19 @@ export interface CanvasContext {
   lastEditedBy?: 'user' | 'assistant';
 }
 
+// Skill context for quick action skill injection
+export interface SkillContext {
+  skillId: string;
+  content: string;
+}
+
 // System prompt options
 export interface SystemPromptOptions {
   includeFullDocs?: boolean;
   focusAreas?: ('identity' | 'messaging' | 'art-direction' | 'writing-styles')[];
   context?: PageContext;
   canvas?: CanvasContext;
+  skill?: SkillContext;
 }
 
 // Page context for contextual chat responses

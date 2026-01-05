@@ -4,7 +4,7 @@
  * Constructs the system prompt with brand knowledge context.
  */
 
-import { SystemPromptOptions, PageContext, CanvasContext } from './types';
+import { SystemPromptOptions, PageContext, CanvasContext, SkillContext } from './types';
 import { BRAND_PAGE_ROUTES } from './page-routes';
 
 /**
@@ -415,12 +415,39 @@ function buildCanvasContextInstructions(canvas: CanvasContext): string {
 }
 
 /**
+ * Build skill context instructions when a quick action skill is active
+ */
+function buildSkillContextInstructions(skill: SkillContext): string {
+  const parts: string[] = [];
+
+  parts.push('## Active Skill');
+  parts.push(`You are currently executing the "${skill.skillId}" skill.`);
+  parts.push('Follow the skill instructions below precisely to generate the requested output.');
+  parts.push('');
+  parts.push('---');
+  parts.push('');
+  parts.push(skill.content);
+  parts.push('');
+  parts.push('---');
+  parts.push('');
+  parts.push('IMPORTANT: Generate output following the skill guidelines above. Apply brand context where the skill references it.');
+  
+  return parts.join('\n');
+}
+
+/**
  * Build the brand system prompt
  */
 export function buildBrandSystemPrompt(options: SystemPromptOptions = {}): string {
   const parts: string[] = [
     BRAND_ASSISTANT_INSTRUCTIONS,
   ];
+
+  // Add skill context FIRST if provided (highest priority - skill defines the task)
+  if (options.skill) {
+    parts.push('');
+    parts.push(buildSkillContextInstructions(options.skill));
+  }
 
   // Add page context if provided (this comes FIRST for priority)
   if (options.context && options.context.type !== 'home') {

@@ -13,8 +13,16 @@ import type {
   ContentPillar,
   ContentFormat,
   TonePreset,
+  OutputPreferences,
 } from './types';
-import { CONTENT_FORMATS, TONE_PRESETS } from './types';
+import { 
+  CONTENT_FORMATS, 
+  TONE_PRESETS,
+  VARIATION_OPTIONS,
+  HASHTAG_OPTIONS,
+  CAPTION_LENGTH_OPTIONS,
+  CTA_OPTIONS,
+} from './types';
 
 // =============================================================================
 // Types
@@ -27,9 +35,16 @@ export interface PromptContext {
   pillars: ContentPillar[];
 }
 
+export interface BrandContext {
+  voiceGuidelines?: string;
+  messagingPillars?: string;
+  contentPillars?: string;
+}
+
 export interface BuildPromptOptions {
   formData: PostCopyFormData;
   context: PromptContext;
+  brandContext?: BrandContext;
 }
 
 // =============================================================================
@@ -74,6 +89,28 @@ function formatReferenceFiles(files: { name: string }[]): string {
   return files.map(f => f.name).join(', ');
 }
 
+function formatOutputPreferences(prefs: OutputPreferences): string {
+  const parts: string[] = [];
+  
+  // Variations
+  const variationLabel = VARIATION_OPTIONS.find(v => v.id === prefs.variations)?.label || '1';
+  parts.push(`- Variations: ${variationLabel}`);
+  
+  // Hashtags
+  const hashtagLabel = HASHTAG_OPTIONS.find(h => h.id === prefs.hashtags)?.label || 'Suggest';
+  parts.push(`- Hashtags: ${hashtagLabel}`);
+  
+  // Caption length
+  const lengthLabel = CAPTION_LENGTH_OPTIONS.find(l => l.id === prefs.captionLength)?.label || 'Standard';
+  parts.push(`- Length: ${lengthLabel}`);
+  
+  // CTA
+  const ctaLabel = CTA_OPTIONS.find(c => c.id === prefs.includeCta)?.label || 'Yes';
+  parts.push(`- Include CTA: ${ctaLabel}`);
+  
+  return parts.join('\n');
+}
+
 // =============================================================================
 // Main Prompt Builder
 // =============================================================================
@@ -82,7 +119,7 @@ function formatReferenceFiles(files: { name: string }[]): string {
  * Build a structured prompt for the Create Post Copy skill
  */
 export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
-  const { formData, context } = options;
+  const { formData, context, brandContext } = options;
   const { channels, contentSubtypes, goals, pillars } = context;
 
   // Get human-readable values
@@ -96,55 +133,76 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
   // Build the prompt sections
   const sections: string[] = [];
 
-  // Main instruction
-  sections.push(`Create social media copy for the following platforms: ${channelNames.join(', ')}.`);
-
-  // Content format and type
-  sections.push(`\nContent Format: ${formatLabel}`);
-  if (subtypeLabel) {
-    sections.push(`Content Type: ${subtypeLabel}`);
+  // Brand context (if available)
+  if (brandContext) {
+    sections.push('## Brand Context');
+    if (brandContext.voiceGuidelines) {
+      sections.push(`**Voice Guidelines:**\n${brandContext.voiceGuidelines}`);
+    }
+    if (brandContext.messagingPillars) {
+      sections.push(`\n**Messaging Pillars:**\n${brandContext.messagingPillars}`);
+    }
+    if (brandContext.contentPillars) {
+      sections.push(`\n**Content Pillars:**\n${brandContext.contentPillars}`);
+    }
+    sections.push('');
   }
 
-  // Goal
-  sections.push(`\nGoal: ${goalLabel}`);
+  // Main request section
+  sections.push('## Request');
+  sections.push(`Create a ${subtypeLabel || formatLabel.toLowerCase()} for ${channelNames.join(', ')}.`);
 
-  // Key message (the main content to work with)
-  sections.push(`\nKey Message:\n${formData.keyMessage}`);
-
-  // Optional: Content pillar
+  // Parameters
+  sections.push('\n**Parameters:**');
+  sections.push(`- Platforms: ${channelNames.join(', ')}`);
+  sections.push(`- Format: ${formatLabel}${subtypeLabel ? ` / Type: ${subtypeLabel}` : ''}`);
+  sections.push(`- Goal: ${goalLabel}`);
+  sections.push(`- Tone: ${toneLabel}`);
+  
   if (pillarLabel) {
-    sections.push(`\nContent Pillar: ${pillarLabel}`);
+    sections.push(`- Content Pillar: ${pillarLabel}`);
   }
-
-  // Optional: Product type
+  
   if (formData.productType) {
     const productLabel = formData.productType === 'product' ? 'Product' 
       : formData.productType === 'service' ? 'Service' 
       : 'Other';
-    sections.push(`\nFocus: ${productLabel}`);
+    sections.push(`- Focus: ${productLabel}`);
   }
 
-  // Tone
-  sections.push(`\nTone: ${toneLabel}`);
+  // Key message (the main content to work with)
+  sections.push(`\n**Brief:**\n${formData.keyMessage}`);
+
+  // Output preferences
+  if (formData.outputPreferences) {
+    sections.push('\n## Preferences');
+    sections.push(formatOutputPreferences(formData.outputPreferences));
+  }
+
+  // Custom voice notes
+  if (formData.customVoiceNotes) {
+    sections.push(`\n**Voice Notes:** ${formData.customVoiceNotes}`);
+  }
 
   // Reference materials
   const hasReferences = formData.references && 
     (formData.references.files.length > 0 || formData.references.urls.length > 0);
   
   if (hasReferences) {
-    sections.push('\nReference Materials:');
+    sections.push('\n## Additional Context');
+    sections.push('Reference Materials:');
     
     if (formData.references!.files.length > 0) {
-      sections.push(`  Files: ${formatReferenceFiles(formData.references!.files)}`);
+      sections.push(`- Files: ${formatReferenceFiles(formData.references!.files)}`);
     }
     
     if (formData.references!.urls.length > 0) {
-      sections.push(`  URLs:\n  - ${formatReferenceUrls(formData.references!.urls)}`);
+      sections.push(`- URLs:\n  - ${formatReferenceUrls(formData.references!.urls)}`);
     }
   }
 
-  // Final instructions
-  sections.push(`\nPlease generate engaging copy for each selected platform, optimized for the ${formatLabel.toLowerCase()} format. Consider platform-specific best practices, character limits, and engagement strategies for ${goalLabel.toLowerCase()}.`);
+  // Final instruction
+  sections.push('\nGenerate on-brand copy following the skill guidelines for this channel and content type.');
 
   return sections.join('\n');
 }
@@ -171,13 +229,14 @@ Provide separate copy for each platform, clearly labeled.`;
  */
 export function formatPromptForChat(
   formData: PostCopyFormData,
-  context: PromptContext
+  context: PromptContext,
+  brandContext?: BrandContext
 ): { userMessage: string; systemContext: string } {
   const channelNames = getChannelNames(formData.channelIds, context.channels);
   const formatLabel = getContentFormatLabel(formData.contentFormat);
   
   return {
-    userMessage: buildCreatePostCopyPrompt({ formData, context }),
+    userMessage: buildCreatePostCopyPrompt({ formData, context, brandContext }),
     systemContext: buildSystemContext(channelNames, formatLabel),
   };
 }

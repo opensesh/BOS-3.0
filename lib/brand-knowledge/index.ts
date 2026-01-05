@@ -21,6 +21,7 @@ export type {
   ArticleContext,
   IdeaContext,
   SpaceContext,
+  SkillContext,
 } from './types';
 
 // Page routes and utilities

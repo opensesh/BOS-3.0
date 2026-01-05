@@ -11,7 +11,8 @@ import {
   DEFAULT_THINKING_BUDGET,
 } from '@/lib/ai/providers';
 import { autoSelectModel } from '@/lib/ai/auto-router';
-import { buildBrandSystemPrompt, shouldIncludeFullDocs, BRAND_SOURCES, type PageContext } from '@/lib/brand-knowledge';
+import { buildBrandSystemPrompt, shouldIncludeFullDocs, BRAND_SOURCES, type PageContext, type SkillContext } from '@/lib/brand-knowledge';
+import { loadSkillContent, getSkillIdForQuickAction } from '@/lib/quick-actions';
 import { getToolsForAnthropic } from '@/lib/ai/tools';
 import { executeTool } from '@/lib/ai/tools/executors';
 import { getAvailableMcpTools, mcpToolsToAnthropic } from '@/lib/ai/tools/mcp-executor';
@@ -1310,6 +1311,8 @@ export async function POST(req: Request) {
       options = {},
       extendedThinking,
       writingStyle,
+      quickActionType,
+      brandId,
     } = body as {
       messages: ClientMessage[];
       model?: string;
@@ -1318,6 +1321,8 @@ export async function POST(req: Request) {
       options?: ChatOptions;
       extendedThinking?: boolean;
       writingStyle?: string | null;
+      quickActionType?: string;
+      brandId?: string;
     };
     
     // Default connector settings
@@ -1431,10 +1436,29 @@ export async function POST(req: Request) {
       );
     }
 
-    // Build system prompt with optional writing style
+    // Load skill content if quick action type is provided
+    let skillContext: SkillContext | undefined;
+    if (quickActionType) {
+      const skillId = getSkillIdForQuickAction(quickActionType);
+      if (skillId) {
+        const skillContent = await loadSkillContent(skillId, brandId);
+        if (skillContent) {
+          skillContext = {
+            skillId,
+            content: skillContent,
+          };
+          console.log(`[Skill] Loaded skill "${skillId}" for quick action "${quickActionType}"`);
+        } else {
+          console.warn(`[Skill] Could not load skill "${skillId}" for quick action "${quickActionType}"`);
+        }
+      }
+    }
+
+    // Build system prompt with optional writing style and skill context
     let systemPrompt = buildBrandSystemPrompt({
       includeFullDocs: shouldIncludeFullDocs(messages),
       context: enrichedContext,
+      skill: skillContext,
     });
 
     // Add writing style instructions if specified

@@ -953,86 +953,57 @@ export function ChatInterface() {
 
   // Handle quick action form submission
   const handleQuickActionSubmit = useCallback(async (formData: PostCopyFormData) => {
-    // Mark the quick action as submitting
-    submitQuickAction(formData);
+    // Hide the form
+    setShowQuickActionForm(false);
     
-    // Build a structured prompt using the form data
-    const platformNames = formData.channels.map(ch => {
-      const platformMap: Record<string, string> = {
-        instagram: 'Instagram',
-        linkedin: 'LinkedIn',
-        tiktok: 'TikTok',
-        x: 'X (Twitter)',
-        youtube: 'YouTube',
-        facebook: 'Facebook',
-        pinterest: 'Pinterest',
-        threads: 'Threads',
-      };
-      return platformMap[ch] || ch;
-    });
-    
-    const contentTypeLabels: Record<string, string> = {
-      post: 'Post',
-      carousel: 'Carousel',
-      reel: 'Reel',
-      story: 'Story',
-      article: 'Article',
-      poll: 'Poll',
-      document: 'Document',
-      video: 'Video',
-      tweet: 'Tweet',
-      thread: 'Thread',
-      'video-description': 'Video Description',
-      'community-post': 'Community Post',
-      short: 'Short',
-      pin: 'Pin',
-      'idea-pin': 'Idea Pin',
-      'threads-post': 'Post',
-      'facebook-post': 'Post',
-      'facebook-reel': 'Reel',
+    // Build the prompt context from the quick action config
+    const promptContext: PromptContext = {
+      channels: quickActionConfig.channels.map(c => ({
+        id: c.id,
+        label: c.label,
+        shortLabel: c.short_label,
+        icon: c.icon,
+        supportedFormats: c.supported_formats as ContentFormat[],
+        isDefault: c.is_default,
+        displayOrder: c.display_order,
+        userId: c.user_id,
+        createdAt: c.created_at,
+        updatedAt: c.updated_at,
+      })),
+      contentSubtypes: quickActionConfig.contentSubtypes.map(s => ({
+        id: s.id,
+        label: s.label,
+        format: s.format as ContentFormat,
+        channelIds: s.channel_ids,
+        isDefault: s.is_default,
+        displayOrder: s.display_order,
+        userId: s.user_id,
+        createdAt: s.created_at,
+        updatedAt: s.updated_at,
+      })),
+      goals: quickActionConfig.goals.map(g => ({
+        id: g.id,
+        label: g.label,
+        description: g.description,
+        isDefault: g.is_default,
+        displayOrder: g.display_order,
+        userId: g.user_id,
+        createdAt: g.created_at,
+        updatedAt: g.updated_at,
+      })),
+      pillars: quickActionConfig.pillars.map(p => ({
+        id: p.id,
+        label: p.label,
+        isDefault: p.is_default,
+        displayOrder: p.display_order,
+        userId: p.user_id,
+        createdAt: p.created_at,
+        updatedAt: p.updated_at,
+      })),
     };
     
-    const goalLabels: Record<string, string> = {
-      awareness: 'Brand Awareness',
-      engagement: 'Engagement',
-      conversion: 'Conversion',
-      education: 'Education',
-      entertainment: 'Entertainment',
-      community: 'Community Building',
-    };
-    
-    // Build the structured prompt
-    let prompt = `Create social media post copy with the following specifications:
-
-**Channels:** ${platformNames.join(', ')}
-**Content Type:** ${contentTypeLabels[formData.contentType] || formData.contentType}
-**Goal:** ${goalLabels[formData.goal] || formData.goal}
-**Key Message:** ${formData.keyMessage}`;
-
-    if (formData.contentPillar) {
-      prompt += `\n**Content Pillar:** ${formData.contentPillar}`;
-    }
-    
-    if (formData.tone) {
-      const toneLabels: Record<string, string> = {
-        casual: 'Casual and friendly',
-        balanced: 'Balanced',
-        professional: 'Professional and formal',
-      };
-      prompt += `\n**Tone:** ${toneLabels[formData.tone] || formData.tone}`;
-    }
-    
-    if (formData.references?.urls && formData.references.urls.length > 0) {
-      prompt += `\n\n**Reference URLs:**\n${formData.references.urls.map(u => `- ${u.url}`).join('\n')}`;
-    }
-
-    prompt += `
-
-Please create the post copy following my brand guidelines and voice. Provide:
-1. The main copy for each platform (adapting length and style as needed)
-2. Suggested hashtags
-3. Best posting times recommendations
-4. Any platform-specific considerations`;
+    // Build the structured prompt using the prompt builder
+    const prompt = buildCreatePostCopyPrompt({ formData, context: promptContext });
 
     // Reset scroll tracking
     resetScrollTracking();
@@ -1052,14 +1023,83 @@ Please create the post copy following my brand guidelines and voice. Provide:
 
       await sendMessage({ text: prompt }, { body: requestBody });
       
-      // Clear the quick action after successful submission
+      // Clear the quick action state
+      setQuickActionType(null);
       cancelQuickAction();
     } catch (err) {
       console.error('Failed to submit quick action:', err);
       setSubmitError(err instanceof Error ? err.message : 'Failed to generate post copy');
+      setQuickActionType(null);
       cancelQuickAction();
     }
-  }, [submitQuickAction, cancelQuickAction, selectedModel, connectorSettings, extendedThinkingEnabled, currentWritingStyle, sendMessage, resetScrollTracking]);
+  }, [quickActionConfig, cancelQuickAction, selectedModel, connectorSettings, extendedThinkingEnabled, currentWritingStyle, sendMessage, resetScrollTracking]);
+
+  // Handle field editor actions
+  const handleEditField = useCallback((fieldType: FieldType, mode: EditorMode, item?: unknown) => {
+    setFieldEditorType(fieldType);
+    setFieldEditorMode(mode);
+    setFieldEditorItem(item);
+    setFieldEditorOpen(true);
+  }, []);
+
+  const handleFieldEditorSave = useCallback(async (data: { label: string; shortLabel?: string; supportedFormats?: ContentFormat[]; description?: string }) => {
+    try {
+      if (fieldEditorType === 'channel') {
+        if (fieldEditorMode === 'add') {
+          await quickActionConfig.addChannel({
+            label: data.label,
+            short_label: data.shortLabel || data.label.substring(0, 4).toUpperCase(),
+            supported_formats: data.supportedFormats || ['written'],
+          });
+        } else if (fieldEditorMode === 'edit' && fieldEditorItem) {
+          const item = fieldEditorItem as { id: string };
+          await quickActionConfig.updateChannel(item.id, {
+            label: data.label,
+            short_label: data.shortLabel,
+            supported_formats: data.supportedFormats,
+          });
+        }
+      } else if (fieldEditorType === 'goal') {
+        if (fieldEditorMode === 'add') {
+          await quickActionConfig.addGoal({
+            label: data.label,
+            description: data.description,
+          });
+        } else if (fieldEditorMode === 'edit' && fieldEditorItem) {
+          const item = fieldEditorItem as { id: string };
+          await quickActionConfig.updateGoal(item.id, {
+            label: data.label,
+            description: data.description,
+          });
+        }
+      } else if (fieldEditorType === 'pillar') {
+        if (fieldEditorMode === 'add') {
+          await quickActionConfig.addPillar({ label: data.label });
+        } else if (fieldEditorMode === 'edit' && fieldEditorItem) {
+          const item = fieldEditorItem as { id: string };
+          await quickActionConfig.updatePillar(item.id, { label: data.label });
+        }
+      }
+    } catch (err) {
+      console.error('Error saving field:', err);
+      throw err;
+    }
+  }, [fieldEditorType, fieldEditorMode, fieldEditorItem, quickActionConfig]);
+
+  const handleFieldEditorDelete = useCallback(async (id: string) => {
+    try {
+      if (fieldEditorType === 'channel') {
+        await quickActionConfig.deleteChannel(id);
+      } else if (fieldEditorType === 'goal') {
+        await quickActionConfig.deleteGoal(id);
+      } else if (fieldEditorType === 'pillar') {
+        await quickActionConfig.deletePillar(id);
+      }
+    } catch (err) {
+      console.error('Error deleting field:', err);
+      throw err;
+    }
+  }, [fieldEditorType, quickActionConfig]);
 
   // Parse messages into our format with deduplication
   // Only deduplicate consecutive messages with identical content to avoid removing legitimate messages
@@ -1582,37 +1622,14 @@ Please create the post copy following my brand guidelines and voice. Provide:
                 )}
               </AnimatePresence>
               
-              {/* Quick Action Form - shown when a quick action is triggered */}
-              <AnimatePresence mode="wait">
-                {activeQuickAction && (activeQuickAction.status === 'active' || activeQuickAction.status === 'submitting') && (
-                  <motion.div
-                    key="quick-action-form"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className="mt-8 px-4"
-                  >
-                    {activeQuickAction.type === 'create-post-copy' && (
-                      <CreatePostCopyForm
-                        initialData={activeQuickAction.data}
-                        onSubmit={handleQuickActionSubmit}
-                        onCancel={cancelQuickAction}
-                        isSubmitting={activeQuickAction.status === 'submitting'}
-                      />
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
               {/* Pre-prompt Cards Grid - below input, fades when typing or form is active */}
               {/* Uses opacity animation without unmounting to prevent layout shift */}
               <motion.div
                 className="mt-8"
                 initial={{ opacity: 1 }}
                 animate={{ 
-                  opacity: input.trim() || activeQuickAction ? 0 : 1,
-                  pointerEvents: input.trim() || activeQuickAction ? 'none' : 'auto',
+                  opacity: input.trim() || showQuickActionForm || activeQuickAction ? 0 : 1,
+                  pointerEvents: input.trim() || showQuickActionForm || activeQuickAction ? 'none' : 'auto',
                 }}
                 transition={{ 
                   duration: 0.3, 
@@ -1625,6 +1642,66 @@ Please create the post copy following my brand guidelines and voice. Provide:
               </motion.div>
             </div>
           </motion.div>
+        )}
+
+        {/* Quick Action Form as AI Response - shown when messages exist and quick action is active */}
+        {hasMessages && showQuickActionForm && quickActionType === 'create-post-copy' && (
+          <div className="w-full max-w-3xl mx-auto px-4 py-4">
+            <CreatePostCopyForm
+              initialData={activeQuickAction?.data}
+              onSubmit={handleQuickActionSubmit}
+              onCancel={() => {
+                setShowQuickActionForm(false);
+                setQuickActionType(null);
+                cancelQuickAction();
+              }}
+              isSubmitting={activeQuickAction?.status === 'submitting'}
+              defaultExpanded={true}
+              channels={quickActionConfig.channels.map(c => ({
+                id: c.id,
+                label: c.label,
+                shortLabel: c.short_label,
+                icon: c.icon,
+                supportedFormats: c.supported_formats as ContentFormat[],
+                isDefault: c.is_default,
+                displayOrder: c.display_order,
+                userId: c.user_id,
+                createdAt: c.created_at,
+                updatedAt: c.updated_at,
+              }))}
+              contentSubtypes={quickActionConfig.contentSubtypes.map(s => ({
+                id: s.id,
+                label: s.label,
+                format: s.format as ContentFormat,
+                channelIds: s.channel_ids,
+                isDefault: s.is_default,
+                displayOrder: s.display_order,
+                userId: s.user_id,
+                createdAt: s.created_at,
+                updatedAt: s.updated_at,
+              }))}
+              goals={quickActionConfig.goals.map(g => ({
+                id: g.id,
+                label: g.label,
+                description: g.description,
+                isDefault: g.is_default,
+                displayOrder: g.display_order,
+                userId: g.user_id,
+                createdAt: g.created_at,
+                updatedAt: g.updated_at,
+              }))}
+              pillars={quickActionConfig.pillars.map(p => ({
+                id: p.id,
+                label: p.label,
+                isDefault: p.is_default,
+                displayOrder: p.display_order,
+                userId: p.user_id,
+                createdAt: p.created_at,
+                updatedAt: p.updated_at,
+              }))}
+              onEditField={handleEditField}
+            />
+          </div>
         )}
       </div>
 
@@ -1651,6 +1728,17 @@ Please create the post copy following my brand guidelines and voice. Provide:
         onClose={() => setIsAddToSpaceModalOpen(false)}
         chatId={currentSessionId || ''}
         chatTitle={generatedTitle || messages[0]?.content?.slice(0, 50) || 'Chat'}
+      />
+
+      {/* Quick Action Field Editor Modal */}
+      <QuickActionFieldEditor
+        isOpen={fieldEditorOpen}
+        onClose={() => setFieldEditorOpen(false)}
+        fieldType={fieldEditorType}
+        mode={fieldEditorMode}
+        item={fieldEditorItem as { id: string; label: string; isDefault: boolean } | undefined}
+        onSave={handleFieldEditorSave}
+        onDelete={handleFieldEditorDelete}
       />
     </>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { 
   ChevronLeft, 
   ChevronRight,
@@ -118,26 +119,28 @@ const SWIPE_THRESHOLD = 50;
 export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
   const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX_DESKTOP);
   const [visibleCount, setVisibleCount] = useState(4); // Default to desktop
+  const router = useRouter();
   
-  // Get chat context for quick actions
-  const { triggerQuickAction } = useChatContext();
+  // Get chat context for quick actions and resetting
+  const { triggerChatReset } = useChatContext();
   
   // Touch handling state
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Handle item click - either trigger quick action form or submit prompt
+  // Handle item click - either navigate to new chat with action param or submit prompt
   const handleItemClick = useCallback((item: typeof prePrompts[0]) => {
     const quickActionType = QUICK_ACTION_IDS[item.id];
     if (quickActionType) {
-      // Trigger the form-based quick action
-      triggerQuickAction(quickActionType);
+      // Navigate to home with action param - this will trigger the form in a new chat
+      triggerChatReset();
+      router.push(`/?action=${quickActionType}`);
     } else {
       // Fall back to regular prompt submission
       onPromptSubmit(item.prompt);
     }
-  }, [triggerQuickAction, onPromptSubmit]);
+  }, [triggerChatReset, router, onPromptSubmit]);
   
   // Adjust visible count and initial index based on screen size (for carousel only)
   useEffect(() => {

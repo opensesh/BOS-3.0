@@ -89,7 +89,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
   const [position, setPosition] = useState({ top: 0, left: 0, height: 0 });
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const onCloseRef = useRef(onClose);
-  const { chatHistory, loadSession, projects, triggerChatReset, triggerQuickAction } = useChatContext();
+  const { chatHistory, loadSession, projects, triggerChatReset } = useChatContext();
   const { spaces: userSpaces, isLoaded: spacesLoaded } = useSpaces();
 
   // Handle clicking on a recent chat - load the session and navigate to home
@@ -101,24 +101,21 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
     onClose();
   }, [loadSession, pathname, router, onClose]);
 
-  // Handle quick action click - trigger form or chat prompt
+  // Handle quick action click - navigate with action param or use prompt
   const handleQuickAction = useCallback((actionId: string, prompt: string) => {
     const formType = QUICK_ACTION_FORM_IDS[actionId];
     
     if (formType) {
-      // Trigger the form-based quick action
-      triggerQuickAction(formType);
-      // Navigate to home if not already there
-      if (pathname !== '/') {
-        router.push('/');
-      }
+      // Navigate to home with action param - this will trigger the form in a new chat
+      triggerChatReset();
+      router.push(`/?action=${formType}`);
     } else {
       // Fall back to the traditional prompt approach
       triggerChatReset();
       router.push(`/?q=${encodeURIComponent(prompt)}`);
     }
     onClose();
-  }, [triggerQuickAction, triggerChatReset, router, pathname, onClose]);
+  }, [triggerChatReset, router, onClose]);
 
   // Keep onClose ref up to date without triggering re-renders
   useEffect(() => {

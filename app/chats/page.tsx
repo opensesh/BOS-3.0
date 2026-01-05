@@ -163,7 +163,7 @@ export default function ChatsPage() {
   useEffect(() => {
     setBreadcrumbs([
       { label: 'Home', href: '/' },
-      { label: 'All Chats' },
+      { label: 'Chats' },
     ]);
   }, [setBreadcrumbs]);
 
@@ -331,7 +331,7 @@ export default function ChatsPage() {
               {/* Page Title */}
               <div className="flex flex-col gap-3 mb-10">
                 <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)]">
-                  All Chats
+                  Chats
                 </h1>
                 <p className="text-base md:text-lg text-[var(--fg-secondary)] max-w-2xl">
                   {filteredChats.length} conversation{filteredChats.length !== 1 ? 's' : ''} • Browse and continue your past conversations.

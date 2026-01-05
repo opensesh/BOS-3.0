@@ -1154,7 +1154,7 @@ export function ChatInterface() {
     
     setBreadcrumbs([
       { label: 'Home', href: '/' },
-      { label: 'All Chats', href: '/chats' },
+      { label: 'Chats', href: '/chats' },
       ...(hasMessages ? [{ label: displayTitle }] : []),
     ]);
   }, [setBreadcrumbs, generatedTitle, parsedMessages, hasMessages]);

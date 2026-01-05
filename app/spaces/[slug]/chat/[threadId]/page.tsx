@@ -106,7 +106,7 @@ export default function SpaceChatPage() {
   const discussion = getDiscussion(threadId);
 
   // Breadcrumb context
-  const { setBreadcrumbs } = useBreadcrumbs();
+  const { setBreadcrumbs, setPageTitle } = useBreadcrumbs();
 
   // Custom useChat hook for native SDK streaming
   const { messages, sendMessage, status, error, setMessages } = useChat({
@@ -152,7 +152,7 @@ export default function SpaceChatPage() {
       { label: space?.title || slug, href: `/spaces/${slug}` },
       { label: displayTitle }, // No href = current page
     ]);
-  }, [space, slug, discussion, initialQuery, setBreadcrumbs]);
+  }, [space, slug, discussion?.title, initialQuery, setBreadcrumbs]);
 
   // Load stored messages on mount
   useEffect(() => {
@@ -429,6 +429,22 @@ export default function SpaceChatPage() {
     router.push(`/spaces/${slug}`);
   };
 
+  // Handle title rename
+  const handleRenameThread = useCallback(async (newTitle: string) => {
+    if (!discussion) return;
+
+    // Update the discussion title in the database
+    const success = await updateDiscussion(discussion.id, { title: newTitle });
+    
+    if (success) {
+      // Update the breadcrumb to reflect the new title
+      const displayTitle = newTitle.length > 40 
+        ? newTitle.slice(0, 40) + '...' 
+        : newTitle;
+      setPageTitle(displayTitle);
+    }
+  }, [discussion, updateDiscussion, setPageTitle]);
+
   // Loading state
   if (!spacesLoaded) {
     return (
@@ -480,6 +496,7 @@ export default function SpaceChatPage() {
           resourcesCount={0}
           threadTitle={threadTitle}
           onBack={handleBack}
+          onRenameThread={handleRenameThread}
         />
 
         {/* Scrollable content */}

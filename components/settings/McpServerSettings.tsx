@@ -12,26 +12,7 @@ import {
   ExternalLink,
   AlertCircle,
   CheckCircle,
-  Link2,
-  FileCode,
-  Monitor,
-  Code2,
-  MessageSquare,
 } from 'lucide-react';
-
-// Claude icon component (Anthropic's Claude logo)
-function ClaudeIcon({ className }: { className?: string }) {
-  return (
-    <svg 
-      viewBox="0 0 24 24" 
-      fill="currentColor" 
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path fillRule="evenodd" clipRule="evenodd" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Zm3.5-13.5a1 1 0 0 0-1.5-.866l-6 3.464a1 1 0 0 0 0 1.732l6 3.464a1 1 0 0 0 1.5-.866V8.5Z"/>
-    </svg>
-  );
-}
 import { useMcpServerConfig } from '@/hooks/useMcpConnections';
 import { mcpService } from '@/lib/supabase/mcp-service';
 import { toast } from 'sonner';
@@ -46,7 +27,6 @@ type ConnectionMethod = 'url' | 'config';
 interface PlatformInfo {
   id: Platform;
   name: string;
-  icon: React.ComponentType<{ className?: string }>;
   supportsUrl: boolean;
   supportsConfig: boolean;
   description: string;
@@ -60,7 +40,6 @@ const PLATFORMS: PlatformInfo[] = [
   {
     id: 'claude',
     name: 'Claude Desktop',
-    icon: ClaudeIcon,
     supportsUrl: true,
     supportsConfig: true,
     description: 'Anthropic\'s desktop app',
@@ -68,7 +47,6 @@ const PLATFORMS: PlatformInfo[] = [
   {
     id: 'cursor',
     name: 'Cursor',
-    icon: Code2,
     supportsUrl: true,
     supportsConfig: true,
     description: 'AI-powered code editor',
@@ -76,7 +54,6 @@ const PLATFORMS: PlatformInfo[] = [
   {
     id: 'vscode',
     name: 'VS Code',
-    icon: Monitor,
     supportsUrl: true,
     supportsConfig: false,
     description: 'Continue or Cline extension',
@@ -84,7 +61,6 @@ const PLATFORMS: PlatformInfo[] = [
   {
     id: 'chatgpt',
     name: 'ChatGPT',
-    icon: MessageSquare,
     supportsUrl: false,
     supportsConfig: false,
     description: 'Via Custom GPT Actions',
@@ -684,87 +660,81 @@ function QuickSetupCard({
               <span className="text-sm font-medium text-[var(--fg-secondary)]">Connect your AI tool</span>
             </div>
             
-            <div className="ml-7 space-y-3" onClick={(e) => e.stopPropagation()}>
-              {/* Platform selector */}
-              <div className="flex flex-wrap gap-1.5">
-                {PLATFORMS.map((platform) => {
-                  const Icon = platform.icon;
-                  return (
-                    <button
-                      key={platform.id}
-                      onClick={() => handlePlatformChange(platform.id)}
-                      className={`
-                        flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
-                        transition-colors border
-                        ${activePlatform === platform.id
-                          ? 'bg-[var(--bg-brand-solid)] text-white border-transparent'
-                          : 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)] border-[var(--border-secondary)] hover:bg-[var(--bg-quaternary)]'
-                        }
-                      `}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      {platform.name}
-                    </button>
-                  );
-                })}
-              </div>
-              
-              {/* Connection method tabs */}
-              {(currentPlatform.supportsUrl || currentPlatform.supportsConfig) && (
-                <div className="flex gap-1 bg-[var(--bg-tertiary)] p-1 rounded-lg w-fit">
-                  {currentPlatform.supportsUrl && (
+            <div className="ml-7" onClick={(e) => e.stopPropagation()}>
+              {/* Instructions container with tabs inside */}
+              <div className="bg-[var(--bg-tertiary)] rounded-lg p-4 space-y-4">
+                {/* Platform selector tabs */}
+                <div className="relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-quaternary)]">
+                  {PLATFORMS.map((platform) => {
+                    const isActive = activePlatform === platform.id;
+                    return (
+                      <button
+                        key={platform.id}
+                        onClick={() => handlePlatformChange(platform.id)}
+                        className={`
+                          relative z-10 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+                          ${isActive
+                            ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
+                            : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+                          }
+                        `}
+                      >
+                        {platform.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                {/* Connection method tabs - only show if platform supports multiple methods */}
+                {currentPlatform.supportsUrl && currentPlatform.supportsConfig && (
+                  <div className="relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-quaternary)]">
                     <button
                       onClick={() => setConnectionMethod('url')}
                       className={`
-                        flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+                        relative z-10 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
                         ${connectionMethod === 'url'
                           ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
                           : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
                         }
                       `}
                     >
-                      <Link2 className="w-3 h-3" />
                       URL Method
-                      <span className="text-[10px] text-green-500 font-semibold ml-1">Recommended</span>
                     </button>
-                  )}
-                  {currentPlatform.supportsConfig && (
                     <button
                       onClick={() => setConnectionMethod('config')}
                       className={`
-                        flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+                        relative z-10 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
                         ${connectionMethod === 'config'
                           ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
                           : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
                         }
                       `}
                     >
-                      <FileCode className="w-3 h-3" />
                       Config File
                     </button>
+                  </div>
+                )}
+                
+                {/* Instructions */}
+                <div className="pt-2">
+                  {connectionMethod === 'url' ? (
+                    <UrlInstructions 
+                      platform={activePlatform} 
+                      serverUrl={serverUrl}
+                      apiKey={apiKey}
+                      onCopy={copyToClipboard}
+                      copied={copied}
+                    />
+                  ) : (
+                    <ConfigInstructions 
+                      platform={activePlatform}
+                      serverUrl={serverUrl}
+                      apiKey={apiKey}
+                      onCopy={copyToClipboard}
+                      copied={copied}
+                    />
                   )}
                 </div>
-              )}
-              
-              {/* Instructions */}
-              <div className="bg-[var(--bg-tertiary)] rounded-lg p-4">
-                {connectionMethod === 'url' ? (
-                  <UrlInstructions 
-                    platform={activePlatform} 
-                    serverUrl={serverUrl}
-                    apiKey={apiKey}
-                    onCopy={copyToClipboard}
-                    copied={copied}
-                  />
-                ) : (
-                  <ConfigInstructions 
-                    platform={activePlatform}
-                    serverUrl={serverUrl}
-                    apiKey={apiKey}
-                    onCopy={copyToClipboard}
-                    copied={copied}
-                  />
-                )}
               </div>
             </div>
           </div>

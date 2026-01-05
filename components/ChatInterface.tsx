@@ -999,18 +999,27 @@ Please create the post copy following my brand guidelines and voice. Provide:
     }
   }, [submitQuickAction, cancelQuickAction, selectedModel, connectorSettings, extendedThinkingEnabled, currentWritingStyle, sendMessage, resetScrollTracking]);
 
-  // Parse messages into our format with deduplication
+  // Parse messages into our format with deduplication by both ID and content
   const parsedMessages: ParsedMessage[] = useMemo(() => {
     const seenIds = new Set<string>();
+    const seenContentHashes = new Set<string>();
     const uniqueMessages: ParsedMessage[] = [];
     
     for (const message of messages) {
-      // Skip duplicate messages by ID
-      if (seenIds.has(message.id)) continue;
+      const content = getMessageContent(message);
+      // Create a hash of role + content for content-based deduplication
+      const contentHash = `${message.role}:${content}`;
+      
+      // Skip if we've seen this ID or this exact content+role combination
+      if (seenIds.has(message.id) || seenContentHashes.has(contentHash)) {
+        continue;
+      }
+      
       seenIds.add(message.id);
+      seenContentHashes.add(contentHash);
       
       // Extract extended data from the message if available
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint:disable-next-line @typescript-eslint/no-explicit-any
       const messageAny = message as any;
       const messageSources = messageAny.sources as SourceInfo[] | undefined;
       const messageThinking = messageAny.thinking as string | undefined;
@@ -1019,7 +1028,7 @@ Please create the post copy following my brand guidelines and voice. Provide:
       uniqueMessages.push({
         id: message.id,
         role: message.role as 'user' | 'assistant',
-        content: getMessageContent(message),
+        content,
         sources: messageSources || [],
         images: [],
         modelUsed,

@@ -163,11 +163,16 @@ function buildMessageMetadata(m: ChatMessage): MessageMetadata | undefined {
 export const chatService = {
   /**
    * Save a new chat session or update existing one
+   * @param title - The chat title
+   * @param messages - Array of chat messages
+   * @param existingId - ID of existing chat to update
+   * @param projectId - Optional project ID to associate this chat with
    */
   async saveSession(
     title: string,
     messages: ChatMessage[],
-    existingId?: string
+    existingId?: string,
+    projectId?: string | null
   ): Promise<ChatSession | null> {
     if (!(await checkTablesAvailable())) {
       return null;
@@ -178,10 +183,18 @@ export const chatService = {
 
     try {
       if (existingId) {
-        // Update existing chat title
+        // Update existing chat title (and project_id if provided)
+        const updateData: { title: string; updated_at: string; project_id?: string | null } = {
+          title,
+          updated_at: new Date().toISOString(),
+        };
+        // Only update project_id if explicitly provided (including null to unassign)
+        if (projectId !== undefined) {
+          updateData.project_id = projectId;
+        }
         const { error: updateError } = await supabase
           .from('chats')
-          .update({ title, updated_at: new Date().toISOString() })
+          .update(updateData)
           .eq('id', existingId);
 
         if (updateError) {
@@ -233,13 +246,14 @@ export const chatService = {
           title,
           preview,
           messages,
+          project_id: projectId,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
       }
 
       // Create new chat (user_id is null for anonymous/demo users)
-      const chatInsert: ChatInsert = { title, user_id: null };
+      const chatInsert: ChatInsert = { title, user_id: null, project_id: projectId ?? null };
 
       const { data: chat, error: chatError } = await supabase
         .from('chats')

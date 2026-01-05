@@ -12,6 +12,7 @@
 export interface DbChat {
   id: string;
   user_id: string | null;
+  project_id: string | null;
   title: string;
   created_at: string;
   updated_at: string;
@@ -86,6 +87,7 @@ export interface ChatSession {
   title: string;
   preview: string | null;
   messages: ChatMessage[];
+  project_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -94,6 +96,7 @@ export interface ChatSession {
 export interface ChatInsert {
   title: string;
   user_id?: string | null;
+  project_id?: string | null;
 }
 
 export interface MessageInsert {

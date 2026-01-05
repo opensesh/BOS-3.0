@@ -634,6 +634,9 @@ export function ChatInterface() {
     }
   }, [input]);
 
+  // Track manual scroll attempts (wheel/touch events)
+  const lastManualScrollTimeRef = useRef<number>(0);
+  
   // Handle scroll events to detect if user has scrolled up
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
@@ -655,6 +658,13 @@ export function ChatInterface() {
       userHasScrolledUpRef.current = false;
     }
   }, []);
+  
+  // Detect manual scroll attempts (wheel/touch) to prevent auto-scroll interference
+  const handleManualScroll = useCallback((e: Event) => {
+    // Mark that user is manually scrolling
+    lastManualScrollTimeRef.current = Date.now();
+    userHasScrolledUpRef.current = true;
+  }, []);
 
   // Attach scroll listener to the scroll container
   useEffect(() => {
@@ -662,14 +672,26 @@ export function ChatInterface() {
     if (!container) return;
     
     container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [handleScroll, hasMessages]);
+    // Listen for manual scroll attempts (wheel and touch events)
+    container.addEventListener('wheel', handleManualScroll, { passive: true });
+    container.addEventListener('touchmove', handleManualScroll, { passive: true });
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('wheel', handleManualScroll);
+      container.removeEventListener('touchmove', handleManualScroll);
+    };
+  }, [handleScroll, handleManualScroll, hasMessages]);
 
   // Smart auto-scroll: only scroll to bottom if user hasn't scrolled up
   // This respects the user's position when they're reviewing earlier content
   useEffect(() => {
     // Skip if user has intentionally scrolled up to review content
     if (userHasScrolledUpRef.current) return;
+    
+    // Skip if user manually scrolled in the last 1 second (prevents interference during streaming)
+    const timeSinceManualScroll = Date.now() - lastManualScrollTimeRef.current;
+    if (timeSinceManualScroll < 1000) return;
     
     // Only auto-scroll if near bottom or this is a new user message
     if (isNearBottomRef.current) {

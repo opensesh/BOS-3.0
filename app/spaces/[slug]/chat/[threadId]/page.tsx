@@ -57,8 +57,13 @@ export default function SpaceChatPage() {
   const [hasSubmittedInitial, setHasSubmittedInitial] = useState(false);
   const [initialAttachments, setInitialAttachments] = useState<MessageAttachment[] | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   // Track saved message IDs to prevent duplicate saves
   const savedMessageIdsRef = useRef<Set<string>>(new Set());
+  // Track user scroll behavior
+  const userHasScrolledUpRef = useRef(false);
+  const isNearBottomRef = useRef(true);
+  const lastManualScrollTimeRef = useRef<number>(0);
 
   // Retrieve attachments from sessionStorage on mount
   useEffect(() => {
@@ -291,9 +296,66 @@ export default function SpaceChatPage() {
     }
   }, [discussion, messages, status, updateDiscussion, getMessageContent]);
 
-  // Scroll to bottom on new messages
+  // Handle scroll events to detect if user has scrolled up
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    // Calculate distance from bottom (threshold: 150px)
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    const nearBottom = distanceFromBottom < 150;
+    
+    isNearBottomRef.current = nearBottom;
+    
+    // If user scrolled up significantly, mark it
+    if (!nearBottom) {
+      userHasScrolledUpRef.current = true;
+    }
+    
+    // If user scrolled back to bottom, clear the flag
+    if (nearBottom && userHasScrolledUpRef.current) {
+      userHasScrolledUpRef.current = false;
+    }
+  }, []);
+  
+  // Detect manual scroll attempts (wheel/touch) to prevent auto-scroll interference
+  const handleManualScroll = useCallback(() => {
+    // Mark that user is manually scrolling
+    lastManualScrollTimeRef.current = Date.now();
+    userHasScrolledUpRef.current = true;
+  }, []);
+  
+  // Attach scroll listeners
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    // Listen for manual scroll attempts (wheel and touch events)
+    container.addEventListener('wheel', handleManualScroll, { passive: true });
+    container.addEventListener('touchmove', handleManualScroll, { passive: true });
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('wheel', handleManualScroll);
+      container.removeEventListener('touchmove', handleManualScroll);
+    };
+  }, [handleScroll, handleManualScroll]);
+
+  // Smart auto-scroll: only scroll to bottom if user hasn't scrolled up
+  // This respects the user's position when they're reviewing earlier content
+  useEffect(() => {
+    // Skip if user has intentionally scrolled up to review content
+    if (userHasScrolledUpRef.current) return;
+    
+    // Skip if user manually scrolled in the last 1 second (prevents interference during streaming)
+    const timeSinceManualScroll = Date.now() - lastManualScrollTimeRef.current;
+    if (timeSinceManualScroll < 1000) return;
+    
+    // Only auto-scroll if near bottom
+    if (isNearBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const isLoading = status === 'submitted' || status === 'streaming';
@@ -411,7 +473,7 @@ export default function SpaceChatPage() {
         />
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-4">
             {activeTab === 'answer' && (
               <>

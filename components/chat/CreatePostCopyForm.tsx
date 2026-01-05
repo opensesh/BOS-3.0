@@ -12,7 +12,7 @@ import {
   Link as LinkIcon,
   Check,
   Loader2,
-  Sparkles,
+  PenLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/base/buttons/button';
 import type {
@@ -415,7 +415,6 @@ export function CreatePostCopyForm({
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[var(--fg-brand-primary)]" />
             <span className="text-sm font-semibold text-[var(--fg-primary)]">Create Post Copy</span>
           </div>
           <motion.div
@@ -782,7 +781,7 @@ export function CreatePostCopyForm({
                     onClick={handleSubmit}
                     isDisabled={!isValid || isSubmitting}
                     isLoading={isSubmitting}
-                    iconTrailing={isSubmitting ? undefined : Sparkles}
+                    iconTrailing={isSubmitting ? undefined : PenLine}
                   >
                     Generate
                   </Button>

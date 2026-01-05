@@ -38,6 +38,7 @@ import {
   AddToSpaceModal,
   CreatePostCopyForm,
   QuickActionFieldEditor,
+  UserMessageBubble,
   type FollowUpAttachment,
   type FieldType,
   type EditorMode,
@@ -1013,21 +1014,20 @@ export function ChatInterface() {
         connectors: connectorSettings,
         extendedThinking: extendedThinkingEnabled,
         writingStyle: currentWritingStyle?.id || null,
-        // Signal this is from a quick action
-        quickAction: {
-          type: 'create-post-copy',
-          formData,
-        },
+        // Pass quickActionType at top level for skill injection
+        quickActionType: 'create-post-copy',
       };
 
       await sendMessage({ text: prompt }, { body: requestBody });
       
       // Clear the quick action state
+      setShowQuickActionForm(false);
       setQuickActionType(null);
       cancelQuickAction();
     } catch (err) {
       console.error('Failed to submit quick action:', err);
       setSubmitError(err instanceof Error ? err.message : 'Failed to generate post copy');
+      setShowQuickActionForm(false);
       setQuickActionType(null);
       cancelQuickAction();
     }
@@ -1280,12 +1280,6 @@ export function ChatInterface() {
                       if (message.role === 'user') {
                         const nextMessage = parsedMessages[idx + 1];
                         if (nextMessage?.role === 'assistant') {
-                          console.log('[ChatInterface] Rendering ChatContent:', {
-                            idx,
-                            userId: message.id,
-                            userContent: message.content.substring(0, 30),
-                            assistantId: nextMessage.id
-                          });
                           return (
                             <ChatContent
                               key={message.id}
@@ -1322,6 +1316,71 @@ export function ChatInterface() {
                               chatId={currentSessionId ?? undefined}
                               attachments={message.attachments}
                             />
+                          );
+                        }
+                        // Quick action form: Show user message bubble + form as AI response
+                        if (!nextMessage && !isLoading && showQuickActionForm && quickActionType === 'create-post-copy') {
+                          return (
+                            <div key={message.id} className="py-6">
+                              {/* User message bubble */}
+                              <UserMessageBubble query={message.content} attachments={message.attachments} />
+                              
+                              {/* Form as AI response */}
+                              <CreatePostCopyForm
+                                initialData={activeQuickAction?.data}
+                                onSubmit={handleQuickActionSubmit}
+                                onCancel={() => {
+                                  setShowQuickActionForm(false);
+                                  setQuickActionType(null);
+                                  cancelQuickAction();
+                                }}
+                                isSubmitting={activeQuickAction?.status === 'submitting'}
+                                defaultExpanded={true}
+                                channels={quickActionConfig.channels.map(c => ({
+                                  id: c.id,
+                                  label: c.label,
+                                  shortLabel: c.short_label,
+                                  icon: c.icon,
+                                  supportedFormats: c.supported_formats as ContentFormat[],
+                                  isDefault: c.is_default,
+                                  displayOrder: c.display_order,
+                                  userId: c.user_id,
+                                  createdAt: c.created_at,
+                                  updatedAt: c.updated_at,
+                                }))}
+                                contentSubtypes={quickActionConfig.contentSubtypes.map(s => ({
+                                  id: s.id,
+                                  label: s.label,
+                                  format: s.format as ContentFormat,
+                                  channelIds: s.channel_ids,
+                                  isDefault: s.is_default,
+                                  displayOrder: s.display_order,
+                                  userId: s.user_id,
+                                  createdAt: s.created_at,
+                                  updatedAt: s.updated_at,
+                                }))}
+                                goals={quickActionConfig.goals.map(g => ({
+                                  id: g.id,
+                                  label: g.label,
+                                  description: g.description,
+                                  isDefault: g.is_default,
+                                  displayOrder: g.display_order,
+                                  userId: g.user_id,
+                                  createdAt: g.created_at,
+                                  updatedAt: g.updated_at,
+                                }))}
+                                pillars={quickActionConfig.pillars.map(p => ({
+                                  id: p.id,
+                                  label: p.label,
+                                  isDefault: p.is_default,
+                                  displayOrder: p.display_order,
+                                  userId: p.user_id,
+                                  createdAt: p.created_at,
+                                  updatedAt: p.updated_at,
+                                }))}
+                                onEditField={handleEditField}
+                              />
+                            </div>
                           );
                         }
                       }
@@ -1670,65 +1729,6 @@ export function ChatInterface() {
           </motion.div>
         )}
 
-        {/* Quick Action Form as AI Response - shown when messages exist and quick action is active */}
-        {hasMessages && showQuickActionForm && quickActionType === 'create-post-copy' && (
-          <div className="w-full max-w-3xl mx-auto px-4 py-4">
-            <CreatePostCopyForm
-              initialData={activeQuickAction?.data}
-              onSubmit={handleQuickActionSubmit}
-              onCancel={() => {
-                setShowQuickActionForm(false);
-                setQuickActionType(null);
-                cancelQuickAction();
-              }}
-              isSubmitting={activeQuickAction?.status === 'submitting'}
-              defaultExpanded={true}
-              channels={quickActionConfig.channels.map(c => ({
-                id: c.id,
-                label: c.label,
-                shortLabel: c.short_label,
-                icon: c.icon,
-                supportedFormats: c.supported_formats as ContentFormat[],
-                isDefault: c.is_default,
-                displayOrder: c.display_order,
-                userId: c.user_id,
-                createdAt: c.created_at,
-                updatedAt: c.updated_at,
-              }))}
-              contentSubtypes={quickActionConfig.contentSubtypes.map(s => ({
-                id: s.id,
-                label: s.label,
-                format: s.format as ContentFormat,
-                channelIds: s.channel_ids,
-                isDefault: s.is_default,
-                displayOrder: s.display_order,
-                userId: s.user_id,
-                createdAt: s.created_at,
-                updatedAt: s.updated_at,
-              }))}
-              goals={quickActionConfig.goals.map(g => ({
-                id: g.id,
-                label: g.label,
-                description: g.description,
-                isDefault: g.is_default,
-                displayOrder: g.display_order,
-                userId: g.user_id,
-                createdAt: g.created_at,
-                updatedAt: g.updated_at,
-              }))}
-              pillars={quickActionConfig.pillars.map(p => ({
-                id: p.id,
-                label: p.label,
-                isDefault: p.is_default,
-                displayOrder: p.display_order,
-                userId: p.user_id,
-                createdAt: p.created_at,
-                updatedAt: p.updated_at,
-              }))}
-              onEditField={handleEditField}
-            />
-          </div>
-        )}
       </div>
 
       {/* Add to Project Modal */}

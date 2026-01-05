@@ -679,19 +679,37 @@ function extractApiKey(req: Request): string | null {
 }
 
 // ============================================
-// OAuth Configuration
+// OAuth Configuration (Stateless)
 // ============================================
 
-// In-memory store for OAuth codes (in production, use a database or KV store)
-const oauthCodes = new Map<string, { clientId: string; apiKey: string; expiresAt: number }>();
+// Since Edge Functions are stateless, we use a self-contained code approach
+// The authorization code is a base64-encoded JSON with the client_id and expiration
+// This is secure enough for API key auth where the client_id IS the API key
 
-function generateCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+function generateCode(clientId: string): string {
+  const payload = {
+    cid: clientId,
+    exp: Date.now() + 5 * 60 * 1000, // 5 minutes
+    rnd: Math.random().toString(36).substring(2), // Add randomness
+  };
+  return btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function parseCode(code: string): { clientId: string; expiresAt: number } | null {
+  try {
+    // Restore base64 padding and characters
+    let base64 = code.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    const payload = JSON.parse(atob(base64));
+    if (!payload.cid || !payload.exp) {
+      return null;
+    }
+    return { clientId: payload.cid, expiresAt: payload.exp };
+  } catch {
+    return null;
   }
-  return result;
 }
 
 // ============================================
@@ -748,7 +766,6 @@ Deno.serve(async (req: Request) => {
     const clientId = url.searchParams.get("client_id");
     const redirectUri = url.searchParams.get("redirect_uri");
     const state = url.searchParams.get("state");
-    const codeChallenge = url.searchParams.get("code_challenge");
     
     if (!clientId || !redirectUri) {
       return new Response(
@@ -757,16 +774,8 @@ Deno.serve(async (req: Request) => {
       );
     }
     
-    // The client_id IS the API key for BOS MCP
-    // Generate authorization code
-    const code = generateCode();
-    
-    // Store the code with expiration (5 minutes)
-    oauthCodes.set(code, {
-      clientId,
-      apiKey: clientId, // client_id is the API key
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    });
+    // Generate self-contained authorization code (stateless)
+    const code = generateCode(clientId);
     
     // Build redirect URL with code
     const redirect = new URL(redirectUri);
@@ -826,22 +835,18 @@ Deno.serve(async (req: Request) => {
       );
     }
     
-    // Validate the code
-    const codeData = oauthCodes.get(code);
+    // Parse the self-contained code (stateless)
+    const codeData = parseCode(code);
     if (!codeData || codeData.expiresAt < Date.now()) {
-      oauthCodes.delete(code);
       return new Response(
         JSON.stringify({ error: "invalid_grant", error_description: "Invalid or expired authorization code" }),
         { status: 400, headers: corsHeaders }
       );
     }
     
-    // Delete used code
-    oauthCodes.delete(code);
-    
     // The API key is used as both client_id and access_token
     // This allows simple API key auth through OAuth flow
-    const apiKey = clientSecret || codeData.apiKey;
+    const apiKey = clientSecret || codeData.clientId;
     
     return new Response(
       JSON.stringify({

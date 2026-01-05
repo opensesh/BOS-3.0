@@ -24,6 +24,8 @@ import { MainContent } from '@/components/MainContent';
 import { useChatContext } from '@/lib/chat-context';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 import { DateFilterDropdown, type DateFilterValue } from '@/components/chat/DateFilterDropdown';
+import { CategoryFilterDropdown, type CategoryFilterValue } from '@/components/chat/CategoryFilterDropdown';
+import { ChatsPagination } from '@/components/chat/ChatsPagination';
 import { AddToSpaceModal } from '@/components/chat/AddToSpaceModal';
 import { AddToProjectModal } from '@/components/chat/AddToProjectModal';
 
@@ -161,7 +163,7 @@ export default function ChatsPage() {
   useEffect(() => {
     setBreadcrumbs([
       { label: 'Home', href: '/' },
-      { label: 'Recent Chats' },
+      { label: 'All Chats' },
     ]);
   }, [setBreadcrumbs]);
 
@@ -169,6 +171,11 @@ export default function ChatsPage() {
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [dateFilter, setDateFilter] = useState<DateFilterValue>({ type: 'preset', preset: 'all' });
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterValue>('all');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
 
   // Helper to safely get timestamp as Date
   const getTimestamp = (timestamp: Date | number | string): Date => {
@@ -186,6 +193,22 @@ export default function ChatsPage() {
       result = result.filter(chat => 
         chat.title.toLowerCase().includes(query)
       );
+    }
+
+    // Apply category filter
+    if (categoryFilter !== 'all') {
+      result = result.filter(chat => {
+        // For now, we'll categorize based on chat metadata
+        // In a real implementation, you'd check chat.spaceId, chat.projectId, etc.
+        if (categoryFilter === 'personal') {
+          return !(chat as any).spaceId && !(chat as any).projectId;
+        } else if (categoryFilter === 'spaces') {
+          return !!(chat as any).spaceId;
+        } else if (categoryFilter === 'projects') {
+          return !!(chat as any).projectId;
+        }
+        return true;
+      });
     }
 
     // Apply date filter
@@ -234,7 +257,7 @@ export default function ChatsPage() {
     });
 
     return result;
-  }, [chatHistory, searchQuery, sortField, sortDirection, dateFilter]);
+  }, [chatHistory, searchQuery, categoryFilter, sortField, sortDirection, dateFilter]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -275,8 +298,24 @@ export default function ChatsPage() {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredChats.length / rowsPerPage);
+  const paginatedChats = useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredChats.slice(startIndex, endIndex);
+  }, [filteredChats, currentPage, rowsPerPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, categoryFilter, dateFilter, rowsPerPage]);
+
   // Check if any filter is active
-  const hasActiveFilter = dateFilter.type === 'custom' || (dateFilter.type === 'preset' && dateFilter.preset !== 'all');
+  const hasActiveFilter = 
+    dateFilter.type === 'custom' || 
+    (dateFilter.type === 'preset' && dateFilter.preset !== 'all') ||
+    categoryFilter !== 'all';
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)]">
@@ -292,14 +331,14 @@ export default function ChatsPage() {
               {/* Page Title */}
               <div className="flex flex-col gap-3 mb-10">
                 <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)]">
-                  Recent Chats
+                  All Chats
                 </h1>
                 <p className="text-base md:text-lg text-[var(--fg-secondary)] max-w-2xl">
-                  {chatHistory.length} conversation{chatHistory.length !== 1 ? 's' : ''} • Browse and continue your past conversations.
+                  {filteredChats.length} conversation{filteredChats.length !== 1 ? 's' : ''} • Browse and continue your past conversations.
                 </p>
               </div>
 
-              {/* Search and Date Filter Row */}
+              {/* Search and Filter Row */}
               <div className="flex items-center gap-4 mb-6">
                 {/* Search - takes most width */}
                 <div className="relative flex-1">
@@ -330,7 +369,13 @@ export default function ChatsPage() {
                   )}
                 </div>
                 
-                {/* Date Filter - right aligned, same height */}
+                {/* Category Filter */}
+                <CategoryFilterDropdown
+                  value={categoryFilter}
+                  onChange={setCategoryFilter}
+                />
+                
+                {/* Date Filter */}
                 <DateFilterDropdown
                   value={dateFilter}
                   onChange={setDateFilter}
@@ -366,7 +411,7 @@ export default function ChatsPage() {
 
                   {/* Table Body */}
                   <div className="divide-y divide-[var(--border-secondary)]">
-                    {filteredChats.map((chat, index) => (
+                    {paginatedChats.map((chat, index) => (
                       <motion.div
                         key={chat.id}
                         initial={{ opacity: 0, y: 4 }}
@@ -423,6 +468,16 @@ export default function ChatsPage() {
                       </motion.div>
                     ))}
                   </div>
+
+                  {/* Pagination Footer */}
+                  <ChatsPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    rowsPerPage={rowsPerPage}
+                    totalItems={filteredChats.length}
+                    onPageChange={setCurrentPage}
+                    onRowsPerPageChange={setRowsPerPage}
+                  />
                 </div>
               ) : (
                 // Empty State
@@ -448,6 +503,7 @@ export default function ChatsPage() {
                         onClick={() => {
                           setSearchQuery('');
                           setDateFilter({ type: 'preset', preset: 'all' });
+                          setCategoryFilter('all');
                         }}
                         className="text-sm text-[var(--fg-brand-primary)] hover:underline"
                       >

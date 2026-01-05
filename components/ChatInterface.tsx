@@ -145,6 +145,7 @@ export function ChatInterface() {
     shouldScrollToBottom,
     acknowledgeShouldScrollToBottom,
     renameChat,
+    chatHistory,
     // Projects
     projects,
     currentProject,
@@ -1152,12 +1153,27 @@ export function ChatInterface() {
     const chatTitle = generatedTitle || (parsedMessages.length > 0 ? parsedMessages[0]?.content.slice(0, 50) : 'New Chat');
     const displayTitle = chatTitle.length > 50 ? chatTitle.slice(0, 50) + '...' : chatTitle;
     
-    setBreadcrumbs([
-      { label: 'Home', href: '/' },
-      { label: 'Chats', href: '/chats' },
-      ...(hasMessages ? [{ label: displayTitle }] : []),
-    ]);
-  }, [setBreadcrumbs, generatedTitle, parsedMessages, hasMessages]);
+    // Check if current chat belongs to a project
+    const currentChat = currentSessionId ? chatHistory.find(chat => chat.id === currentSessionId) : null;
+    const chatProjectId = currentChat?.projectId;
+    const chatProject = chatProjectId ? projects.find(p => p.id === chatProjectId) : null;
+    
+    if (chatProject) {
+      // Chat belongs to a project: Projects / Project Name / Chat Title
+      setBreadcrumbs([
+        { label: 'Projects', href: '/projects' },
+        { label: chatProject.name, href: `/projects/${chatProject.id}` },
+        ...(hasMessages ? [{ label: displayTitle }] : []),
+      ]);
+    } else {
+      // Chat doesn't belong to a project: Home / Chats / Chat Title
+      setBreadcrumbs([
+        { label: 'Home', href: '/' },
+        { label: 'Chats', href: '/chats' },
+        ...(hasMessages ? [{ label: displayTitle }] : []),
+      ]);
+    }
+  }, [setBreadcrumbs, generatedTitle, parsedMessages, hasMessages, currentSessionId, chatHistory, projects]);
 
   // Get all sources and images from messages
   const allSources = useMemo(() => {

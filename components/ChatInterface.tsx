@@ -107,7 +107,7 @@ export function ChatInterface() {
   const userHasScrolledUpRef = useRef(false);
 
   // Breadcrumbs context
-  const { setBreadcrumbs } = useBreadcrumbs();
+  const { setBreadcrumbs, setPageTitle } = useBreadcrumbs();
 
   // Chat context for cross-component communication
   const { 
@@ -168,14 +168,6 @@ export function ChatInterface() {
 
   // Derive hasMessages early so it can be used in effects
   const hasMessages = messages.length > 0;
-
-  // Set breadcrumbs on mount - show "Home / Recent Chats" as navigation hint
-  useEffect(() => {
-    setBreadcrumbs([
-      { label: 'Home', href: '/' },
-      { label: 'Recent Chats', href: '/chats' },
-    ]);
-  }, [setBreadcrumbs]);
 
   // Helper to get message content (must be defined before callbacks that use it)
   const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
@@ -1007,9 +999,16 @@ Please create the post copy following my brand guidelines and voice. Provide:
     }
   }, [submitQuickAction, cancelQuickAction, selectedModel, connectorSettings, extendedThinkingEnabled, currentWritingStyle, sendMessage, resetScrollTracking]);
 
-  // Parse messages into our format
+  // Parse messages into our format with deduplication
   const parsedMessages: ParsedMessage[] = useMemo(() => {
-    return messages.map((message) => {
+    const seenIds = new Set<string>();
+    const uniqueMessages: ParsedMessage[] = [];
+    
+    for (const message of messages) {
+      // Skip duplicate messages by ID
+      if (seenIds.has(message.id)) continue;
+      seenIds.add(message.id);
+      
       // Extract extended data from the message if available
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const messageAny = message as any;
@@ -1017,7 +1016,7 @@ Please create the post copy following my brand guidelines and voice. Provide:
       const messageThinking = messageAny.thinking as string | undefined;
       const messageAttachments = messageAny.attachments as MessageAttachment[] | undefined;
       
-      return {
+      uniqueMessages.push({
         id: message.id,
         role: message.role as 'user' | 'assistant',
         content: getMessageContent(message),
@@ -1026,9 +1025,23 @@ Please create the post copy following my brand guidelines and voice. Provide:
         modelUsed,
         thinking: messageThinking,
         attachments: messageAttachments,
-      };
-    });
+      });
+    }
+    
+    return uniqueMessages;
   }, [messages, modelUsed, getMessageContent]);
+
+  // Set breadcrumbs on mount and update when title changes
+  useEffect(() => {
+    const chatTitle = generatedTitle || (parsedMessages.length > 0 ? parsedMessages[0]?.content.slice(0, 50) : 'New Chat');
+    const displayTitle = chatTitle.length > 50 ? chatTitle.slice(0, 50) + '...' : chatTitle;
+    
+    setBreadcrumbs([
+      { label: 'Home', href: '/' },
+      { label: 'All Chats', href: '/chats' },
+      ...(hasMessages ? [{ label: displayTitle }] : []),
+    ]);
+  }, [setBreadcrumbs, generatedTitle, parsedMessages, hasMessages]);
 
   // Get all sources and images from messages
   const allSources = useMemo(() => {
@@ -1095,6 +1108,10 @@ Please create the post copy following my brand guidelines and voice. Provide:
               onRenameThread={async (newTitle) => {
                 // Update the local generated title immediately for UI responsiveness
                 setGeneratedTitle(newTitle);
+                
+                // Update the breadcrumb to reflect the new title
+                const displayTitle = newTitle.length > 50 ? newTitle.slice(0, 50) + '...' : newTitle;
+                setPageTitle(displayTitle);
                 
                 // Update in database if we have a session ID
                 if (currentSessionId) {

@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Search, ArrowUpDown, X, ArrowLeft } from 'lucide-react';
+import { Search, ArrowUpDown, X } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
@@ -12,25 +11,6 @@ import { ProjectCard, NewProjectModal } from '@/components/projects';
 
 type SortField = 'name' | 'updated_at' | 'created_at';
 type SortDirection = 'asc' | 'desc';
-
-// Header component - "Back to Home" navigation
-function ProjectsPageHeader() {
-  return (
-    <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
-      <div className="w-full max-w-6xl mx-auto px-6 md:px-12">
-        <div className="flex items-center h-12">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Home</span>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -141,9 +121,6 @@ export default function ProjectsPage() {
       <Sidebar />
       <MainContent className="overflow-hidden">
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <ProjectsPageHeader />
-
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">

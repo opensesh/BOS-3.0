@@ -13,7 +13,6 @@ import {
   ArrowDown,
   X,
   Plus,
-  ArrowLeft,
   MoreHorizontal,
   Trash2,
   Layers,
@@ -31,25 +30,6 @@ import { AddToProjectModal } from '@/components/chat/AddToProjectModal';
 
 type SortField = 'title' | 'date';
 type SortDirection = 'asc' | 'desc';
-
-// Header component - "Back to Home" navigation
-function ChatsPageHeader() {
-  return (
-    <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
-      <div className="w-full max-w-6xl mx-auto px-6 md:px-12">
-        <div className="flex items-center h-12">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Home</span>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Chat row menu component
 function ChatRowMenu({
@@ -322,9 +302,6 @@ export default function ChatsPage() {
       <Sidebar />
       <MainContent className="overflow-hidden">
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <ChatsPageHeader />
-
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">

@@ -1162,22 +1162,26 @@ export function ChatInterface() {
     // Only show title in breadcrumbs after there's a real AI response (not just quick action pre-prompt)
     const showTitle = hasAssistantResponse;
     
+    // Determine quick action label for breadcrumbs
+    const quickActionLabel = showQuickActionForm && quickActionType === 'create-post-copy' 
+      ? 'Create Post Copy' 
+      : null;
+    
     if (chatProject) {
       // Chat belongs to a project: Projects / Project Name / Chat Title
       setBreadcrumbs([
         { label: 'Projects', href: '/projects' },
         { label: chatProject.name, href: `/projects/${chatProject.id}` },
-        ...(showTitle ? [{ label: displayTitle }] : []),
+        ...(showTitle ? [{ label: displayTitle }] : quickActionLabel ? [{ label: quickActionLabel }] : []),
       ]);
     } else {
-      // Chat doesn't belong to a project: Home / Chats / Chat Title
+      // Chat doesn't belong to a project: Chats / Chat Title (or Quick Action Label)
       setBreadcrumbs([
-        { label: 'Home', href: '/' },
         { label: 'Chats', href: '/chats' },
-        ...(showTitle ? [{ label: displayTitle }] : []),
+        ...(showTitle ? [{ label: displayTitle }] : quickActionLabel ? [{ label: quickActionLabel }] : []),
       ]);
     }
-  }, [setBreadcrumbs, generatedTitle, parsedMessages, hasAssistantResponse, currentSessionId, chatHistory, projects]);
+  }, [setBreadcrumbs, generatedTitle, parsedMessages, hasAssistantResponse, currentSessionId, chatHistory, projects, showQuickActionForm, quickActionType]);
 
   // Get all sources and images from messages
   const allSources = useMemo(() => {

@@ -353,7 +353,7 @@ function GoalTabSelector({ goals, activeGoalId, onChange, onAdd, onEdit, showEdi
   );
 }
 
-// Channel chip with icon and full name
+// Channel chip with icon and full name (compact)
 interface ChannelChipProps {
   channel: Channel;
   selected: boolean;
@@ -366,8 +366,8 @@ function ChannelChip({ channel, selected, onClick }: ChannelChipProps) {
       type="button"
       onClick={onClick}
       className={`
-        inline-flex items-center gap-2 px-3 py-2
-        rounded-lg text-sm font-medium transition-all duration-150
+        inline-flex items-center gap-1.5 px-2.5 py-1.5
+        rounded-md text-xs font-medium transition-all duration-150
         ${selected
           ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] ring-1 ring-[var(--border-brand-solid)]'
           : 'bg-[var(--bg-primary)] text-[var(--fg-secondary)] ring-1 ring-[var(--border-primary)] hover:ring-[var(--border-brand-solid)] hover:text-[var(--fg-primary)]'
@@ -375,9 +375,9 @@ function ChannelChip({ channel, selected, onClick }: ChannelChipProps) {
         cursor-pointer
       `}
     >
-      <PlatformIcon platform={channel.icon || ''} className="w-4 h-4 shrink-0" />
+      <PlatformIcon platform={channel.icon || ''} className="w-3.5 h-3.5 shrink-0" />
       <span>{channel.label}</span>
-      {selected && <Check className="w-3 h-3 shrink-0 ml-0.5" />}
+      {selected && <Check className="w-3 h-3 shrink-0" />}
     </button>
   );
 }

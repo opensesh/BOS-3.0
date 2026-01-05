@@ -56,12 +56,12 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
     <>
       {/* Backdrop - top-12 aligns with bottom of chat header */}
       <div
-        className="fixed inset-0 top-12 bg-black/30 z-40 backdrop-blur-[2px]"
+        className="fixed inset-0 top-12 bg-black/30 z-[100] backdrop-blur-[2px]"
         onClick={onClose}
       />
 
       {/* Drawer - top-12 aligns with bottom of chat header */}
-      <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-50 flex flex-col animate-slide-in-right shadow-2xl">
+      <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col animate-slide-in-right shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-[var(--bg-secondary)]/30">
           <h2 className="text-[15px] font-semibold text-[var(--fg-primary)]">

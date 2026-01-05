@@ -37,10 +37,24 @@ import {
   AddToProjectModal,
   AddToSpaceModal,
   CreatePostCopyForm,
+  QuickActionFieldEditor,
   type FollowUpAttachment,
+  type FieldType,
+  type EditorMode,
 } from './chat';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
-import type { PostCopyFormData } from '@/lib/quick-actions';
+import type { 
+  PostCopyFormData, 
+  QuickActionType, 
+  Channel, 
+  ContentSubtype, 
+  Goal, 
+  ContentPillar,
+  ContentFormat,
+} from '@/lib/quick-actions';
+import { getQuickActionConfig, QUICK_ACTIONS } from '@/lib/quick-actions';
+import { useQuickActionConfig } from '@/hooks/useQuickActionConfig';
+import { buildCreatePostCopyPrompt, type PromptContext } from '@/lib/quick-actions/prompt-builder';
 // Article reference context (kept for potential future use)
 interface ArticleContext {
   title: string;
@@ -97,6 +111,15 @@ export function ChatInterface() {
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const [isAddToProjectModalOpen, setIsAddToProjectModalOpen] = useState(false);
   const [isAddToSpaceModalOpen, setIsAddToSpaceModalOpen] = useState(false);
+  // Quick action form state
+  const [showQuickActionForm, setShowQuickActionForm] = useState(false);
+  const [quickActionType, setQuickActionType] = useState<QuickActionType | null>(null);
+  const [hasProcessedActionParam, setHasProcessedActionParam] = useState(false);
+  // Field editor modal state
+  const [fieldEditorOpen, setFieldEditorOpen] = useState(false);
+  const [fieldEditorType, setFieldEditorType] = useState<FieldType>('channel');
+  const [fieldEditorMode, setFieldEditorMode] = useState<EditorMode>('add');
+  const [fieldEditorItem, setFieldEditorItem] = useState<unknown>(undefined);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -156,6 +179,9 @@ export function ChatInterface() {
   const isCanvasOpen = canvasContext?.isCanvasOpen ?? false;
   const canvasPanelMode = canvasContext?.panelMode ?? 'half';
   const canvasWidthPercent = canvasContext?.canvasWidthPercent ?? 50;
+
+  // Quick action config from Supabase
+  const quickActionConfig = useQuickActionConfig();
 
   // Custom useChat hook for native SDK streaming
   const { messages, sendMessage, status, error, setMessages } = useChat({
@@ -554,6 +580,41 @@ export function ChatInterface() {
       });
     }
   }, [searchParams, router, sendMessage, setMessages, hasProcessedUrlParams, selectedModel, setSubmitError, webSearchEnabled, brandSearchEnabled, extendedThinkingEnabled, currentWritingStyle]);
+
+  // Handle quick action URL parameter (e.g., ?action=create-post-copy)
+  useEffect(() => {
+    if (hasProcessedActionParam) return;
+    
+    const action = searchParams.get('action') as QuickActionType | null;
+    
+    if (action && QUICK_ACTIONS.find(a => a.id === action)) {
+      setHasProcessedActionParam(true);
+      
+      // Get the quick action config
+      const actionConfig = getQuickActionConfig(action);
+      if (!actionConfig) return;
+      
+      // Reset existing state
+      setMessages([]);
+      setArticleContext(null);
+      setIdeaContext(null);
+      
+      // Add the pre-prompt as a user message
+      const userMessage = {
+        id: `user-${Date.now()}`,
+        role: 'user' as const,
+        content: actionConfig.prePrompt,
+      };
+      setMessages([userMessage]);
+      
+      // Show the quick action form
+      setQuickActionType(action);
+      setShowQuickActionForm(true);
+      
+      // Clear URL params
+      router.replace('/', { scroll: false });
+    }
+  }, [searchParams, router, setMessages, hasProcessedActionParam]);
 
   // status can be: 'submitted' | 'streaming' | 'ready' | 'error'
   const isLoading = status === 'submitted' || status === 'streaming';
@@ -1000,27 +1061,34 @@ Please create the post copy following my brand guidelines and voice. Provide:
     }
   }, [submitQuickAction, cancelQuickAction, selectedModel, connectorSettings, extendedThinkingEnabled, currentWritingStyle, sendMessage, resetScrollTracking]);
 
-  // Parse messages into our format with deduplication by both ID and content
+  // Parse messages into our format with deduplication
+  // Only deduplicate consecutive messages with identical content to avoid removing legitimate messages
   const parsedMessages: ParsedMessage[] = useMemo(() => {
     const seenIds = new Set<string>();
-    const seenContentHashes = new Set<string>();
     const uniqueMessages: ParsedMessage[] = [];
+    let lastContentHash: string | null = null;
     
     for (const message of messages) {
+      // Skip duplicate IDs
+      if (seenIds.has(message.id)) {
+        continue;
+      }
+      
       const content = getMessageContent(message);
-      // Create a hash of role + content for content-based deduplication
+      // Create a hash of role + content for consecutive duplicate detection
       const contentHash = `${message.role}:${content}`;
       
-      // Skip if we've seen this ID or this exact content+role combination
-      if (seenIds.has(message.id) || seenContentHashes.has(contentHash)) {
+      // Only skip if this is a consecutive duplicate (same as previous message)
+      // This prevents removing legitimate messages while catching rendering bugs
+      if (contentHash === lastContentHash) {
         continue;
       }
       
       seenIds.add(message.id);
-      seenContentHashes.add(contentHash);
+      lastContentHash = contentHash;
       
       // Extract extended data from the message if available
-      // eslint:disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const messageAny = message as any;
       const messageSources = messageAny.sources as SourceInfo[] | undefined;
       const messageThinking = messageAny.thinking as string | undefined;

@@ -165,7 +165,7 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
       {/* Backdrop - blurs content behind (rendered at root level via portal-like fixed positioning) */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in duration-150"
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm animate-in fade-in duration-150"
           onClick={() => {
             setIsOpen(false);
             setSelectionStart(null);
@@ -221,7 +221,7 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
               overflow-hidden
               animate-in fade-in slide-in-from-top-2 duration-150
               w-[320px]
-              z-50
+              z-40
             "
             role="dialog"
             aria-label="Date filter"

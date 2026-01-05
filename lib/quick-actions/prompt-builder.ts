@@ -10,14 +10,11 @@ import type {
   Channel,
   ContentSubtype,
   Goal,
-  ContentPillar,
   ContentFormat,
-  TonePreset,
   OutputPreferences,
 } from './types';
 import { 
   CONTENT_FORMATS, 
-  TONE_PRESETS,
   VARIATION_OPTIONS,
   HASHTAG_OPTIONS,
   CAPTION_LENGTH_OPTIONS,
@@ -32,7 +29,6 @@ export interface PromptContext {
   channels: Channel[];
   contentSubtypes: ContentSubtype[];
   goals: Goal[];
-  pillars: ContentPillar[];
 }
 
 export interface BrandContext {
@@ -68,15 +64,6 @@ function getContentSubtypeLabel(subtypeId: string | null, subtypes: ContentSubty
 
 function getGoalLabel(goalId: string, goals: Goal[]): string {
   return goals.find(g => g.id === goalId)?.label || 'engagement';
-}
-
-function getPillarLabel(pillarId: string | undefined, pillars: ContentPillar[]): string | null {
-  if (!pillarId) return null;
-  return pillars.find(p => p.id === pillarId)?.label || null;
-}
-
-function getToneLabel(tone: TonePreset): string {
-  return TONE_PRESETS.find(t => t.id === tone)?.label || 'Balanced';
 }
 
 function formatReferenceUrls(urls: { url: string; title?: string }[]): string {
@@ -120,15 +107,13 @@ function formatOutputPreferences(prefs: OutputPreferences): string {
  */
 export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
   const { formData, context, brandContext } = options;
-  const { channels, contentSubtypes, goals, pillars } = context;
+  const { channels, contentSubtypes, goals } = context;
 
   // Get human-readable values
   const channelNames = getChannelNames(formData.channelIds, channels);
   const formatLabel = getContentFormatLabel(formData.contentFormat);
   const subtypeLabel = getContentSubtypeLabel(formData.contentSubtypeId, contentSubtypes);
   const goalLabel = getGoalLabel(formData.goalId, goals);
-  const pillarLabel = getPillarLabel(formData.contentPillarId, pillars);
-  const toneLabel = getToneLabel(formData.tone);
 
   // Build the prompt sections
   const sections: string[] = [];
@@ -157,17 +142,10 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
   sections.push(`- Platforms: ${channelNames.join(', ')}`);
   sections.push(`- Format: ${formatLabel}${subtypeLabel ? ` / Type: ${subtypeLabel}` : ''}`);
   sections.push(`- Goal: ${goalLabel}`);
-  sections.push(`- Tone: ${toneLabel}`);
   
-  if (pillarLabel) {
-    sections.push(`- Content Pillar: ${pillarLabel}`);
-  }
-  
-  if (formData.productType) {
-    const productLabel = formData.productType === 'product' ? 'Product' 
-      : formData.productType === 'service' ? 'Service' 
-      : 'Other';
-    sections.push(`- Focus: ${productLabel}`);
+  // Writing style note (the actual style content is injected via chat API system prompt)
+  if (formData.writingStyleId) {
+    sections.push(`- Writing Style: Using "${formData.writingStyleId}" style guide`);
   }
 
   // Key message (the main content to work with)
@@ -177,11 +155,6 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
   if (formData.outputPreferences) {
     sections.push('\n## Preferences');
     sections.push(formatOutputPreferences(formData.outputPreferences));
-  }
-
-  // Custom voice notes
-  if (formData.customVoiceNotes) {
-    sections.push(`\n**Voice Notes:** ${formData.customVoiceNotes}`);
   }
 
   // Reference materials

@@ -299,10 +299,7 @@ export interface PostCopyFormData {
   keyMessage: string;
   
   // Optional fields
-  productType?: ProductType;
-  contentPillarId?: string;
-  tone: TonePreset;
-  customVoiceNotes?: string;
+  writingStyleId?: string | null;
   references?: {
     files: ReferenceFile[];
     urls: ReferenceUrl[];
@@ -395,10 +392,7 @@ export function createInitialFormData(): PostCopyFormData {
     contentSubtypeId: null,
     goalId: '',
     keyMessage: '',
-    productType: undefined,
-    contentPillarId: undefined,
-    tone: 'balanced',
-    customVoiceNotes: undefined,
+    writingStyleId: null,
     references: {
       files: [],
       urls: [],

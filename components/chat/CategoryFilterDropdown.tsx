@@ -75,7 +75,7 @@ export function CategoryFilterDropdown({ value, onChange }: CategoryFilterDropdo
       {/* Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in duration-150"
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm animate-in fade-in duration-150"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
@@ -128,7 +128,7 @@ export function CategoryFilterDropdown({ value, onChange }: CategoryFilterDropdo
               overflow-hidden
               animate-in fade-in slide-in-from-top-2 duration-150
               min-w-[200px]
-              z-50
+              z-40
             "
             role="dialog"
             aria-label="Category filter"

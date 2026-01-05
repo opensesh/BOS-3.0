@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import {
   ChevronDown,
   ChevronUp,
@@ -13,17 +14,16 @@ import {
   Check,
   Loader2,
   PenLine,
+  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/base/buttons/button';
+import { WRITING_STYLES, type WritingStyle } from '@/components/ui/writing-style-selector';
 import type {
   PostCopyFormData,
   Channel,
   ContentSubtype,
   Goal,
-  ContentPillar,
   ContentFormat,
-  TonePreset,
-  ProductType,
   ReferenceFile,
   ReferenceUrl,
   VariationCount,
@@ -34,8 +34,6 @@ import type {
 } from '@/lib/quick-actions';
 import {
   CONTENT_FORMATS,
-  TONE_PRESETS,
-  PRODUCT_TYPES,
   VARIATION_OPTIONS,
   HASHTAG_OPTIONS,
   CAPTION_LENGTH_OPTIONS,
@@ -64,9 +62,8 @@ interface CreatePostCopyFormProps {
   channels: Channel[];
   contentSubtypes: ContentSubtype[];
   goals: Goal[];
-  pillars: ContentPillar[];
   /** Called when user wants to add/edit a field */
-  onEditField?: (fieldType: 'channel' | 'goal' | 'pillar', mode: 'add' | 'edit', item?: unknown) => void;
+  onEditField?: (fieldType: 'channel' | 'goal', mode: 'add' | 'edit', item?: unknown) => void;
 }
 
 // =============================================================================
@@ -218,22 +215,23 @@ export function CreatePostCopyForm({
   channels,
   contentSubtypes,
   goals,
-  pillars,
   onEditField,
 }: CreatePostCopyFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>(initialData?.channelIds || []);
   const [contentFormat, setContentFormat] = useState<ContentFormat>(initialData?.contentFormat || 'written');
   const [contentSubtypeId, setContentSubtypeId] = useState<string | null>(initialData?.contentSubtypeId || null);
   const [goalId, setGoalId] = useState<string>(initialData?.goalId || '');
   const [keyMessage, setKeyMessage] = useState(initialData?.keyMessage || '');
-  const [productType, setProductType] = useState<ProductType | undefined>(initialData?.productType);
-  const [contentPillarId, setContentPillarId] = useState<string | undefined>(initialData?.contentPillarId);
-  const [tone, setTone] = useState<TonePreset>(initialData?.tone || 'balanced');
-  const [customVoiceNotes, setCustomVoiceNotes] = useState<string>(initialData?.customVoiceNotes || '');
+  const [selectedWritingStyle, setSelectedWritingStyle] = useState<WritingStyle | null>(
+    initialData?.writingStyleId 
+      ? WRITING_STYLES.find(s => s.id === initialData.writingStyleId) || null 
+      : null
+  );
   const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>(initialData?.references?.files || []);
   const [referenceUrls, setReferenceUrls] = useState<ReferenceUrl[]>(initialData?.references?.urls || []);
   const [urlInput, setUrlInput] = useState('');
@@ -354,6 +352,11 @@ export function CreatePostCopyForm({
     setUrlInput('');
   }, [urlInput]);
 
+  // Track first interaction with form
+  const handleFirstInteraction = useCallback(() => {
+    if (!hasInteracted) setHasInteracted(true);
+  }, [hasInteracted]);
+
   const handleSubmit = useCallback(() => {
     if (selectedChannelIds.length === 0 || !keyMessage.trim() || !goalId) return;
 
@@ -363,10 +366,7 @@ export function CreatePostCopyForm({
       contentSubtypeId,
       goalId,
       keyMessage: keyMessage.trim(),
-      productType,
-      contentPillarId,
-      tone,
-      customVoiceNotes: customVoiceNotes.trim() || undefined,
+      writingStyleId: selectedWritingStyle?.id || null,
       references: {
         files: referenceFiles,
         urls: referenceUrls,
@@ -388,10 +388,7 @@ export function CreatePostCopyForm({
     contentSubtypeId,
     goalId,
     keyMessage,
-    productType,
-    contentPillarId,
-    tone,
-    customVoiceNotes,
+    selectedWritingStyle,
     referenceFiles,
     referenceUrls,
     variations,
@@ -408,22 +405,30 @@ export function CreatePostCopyForm({
     <div className="w-full">
       {/* Collapsible Container */}
       <div className="rounded-xl bg-[var(--bg-secondary)] ring-1 ring-[var(--border-secondary)] shadow-sm overflow-hidden">
-        {/* Header - Always visible */}
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[var(--fg-primary)]">Create Post Copy</span>
-          </div>
-          <motion.div
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown className="w-4 h-4 text-[var(--fg-tertiary)]" />
-          </motion.div>
-        </button>
+        {/* Header - Only visible after user interacts with form */}
+        <AnimatePresence>
+          {hasInteracted && (
+            <motion.button
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-[var(--fg-primary)]">Create Post Copy</span>
+              </div>
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-4 h-4 text-[var(--fg-tertiary)]" />
+              </motion.div>
+            </motion.button>
+          )}
+        </AnimatePresence>
 
         {/* Expandable Content */}
         <AnimatePresence initial={false}>
@@ -435,9 +440,9 @@ export function CreatePostCopyForm({
               transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               className="overflow-hidden"
             >
-              <div className="px-4 pb-4 space-y-5 border-t border-[var(--border-secondary)]">
+              <div className={`px-4 pb-4 space-y-5 ${hasInteracted ? 'border-t border-[var(--border-secondary)]' : ''}`}>
                 {/* Channels Section */}
-                <div className="pt-4">
+                <div className={hasInteracted ? 'pt-4' : 'pt-2'}>
                   <SectionHeader
                     label="Channels"
                     onAdd={() => onEditField?.('channel', 'add')}
@@ -449,7 +454,10 @@ export function CreatePostCopyForm({
                       <Chip
                         key={channel.id}
                         selected={selectedChannelIds.includes(channel.id)}
-                        onClick={() => toggleChannel(channel.id)}
+                        onClick={() => {
+                          handleFirstInteraction();
+                          toggleChannel(channel.id);
+                        }}
                       >
                         {channel.shortLabel}
                       </Chip>
@@ -551,63 +559,34 @@ export function CreatePostCopyForm({
                       transition={{ duration: 0.2 }}
                       className="space-y-4 overflow-hidden"
                     >
-                      {/* Products (Placeholder) */}
+                      {/* Writing Style */}
                       <div>
-                        <SectionHeader label="Product" />
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
+                            Writing Style
+                          </label>
+                          <Link 
+                            href="/brain/writing-styles"
+                            target="_blank"
+                            className="flex items-center gap-1 text-xs text-[var(--fg-brand-primary)] hover:underline"
+                          >
+                            <span>View all styles</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
                         <div className="flex flex-wrap gap-2">
-                          {PRODUCT_TYPES.map((product) => (
+                          {WRITING_STYLES.filter(s => s.id !== 'normal').map((style) => (
                             <Chip
-                              key={product.id}
-                              selected={productType === product.id}
-                              onClick={() => setProductType(productType === product.id ? undefined : product.id)}
+                              key={style.id}
+                              selected={selectedWritingStyle?.id === style.id}
+                              onClick={() => setSelectedWritingStyle(
+                                selectedWritingStyle?.id === style.id ? null : style
+                              )}
                             >
-                              {product.label}
+                              {style.name.replace('.md', '')}
                             </Chip>
                           ))}
                         </div>
-                      </div>
-
-                      {/* Content Pillar */}
-                      <div>
-                        <SectionHeader
-                          label="Content Pillar"
-                          onAdd={() => onEditField?.('pillar', 'add')}
-                          onEdit={() => onEditField?.('pillar', 'edit')}
-                          showEdit={pillars.some(p => !p.isDefault)}
-                        />
-                        <div className="flex flex-wrap gap-2">
-                          {pillars.map((pillar) => (
-                            <Chip
-                              key={pillar.id}
-                              selected={contentPillarId === pillar.id}
-                              onClick={() => setContentPillarId(contentPillarId === pillar.id ? undefined : pillar.id)}
-                            >
-                              {pillar.label}
-                            </Chip>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Tone */}
-                      <div>
-                        <SectionHeader label="Tone" />
-                        <SegmentedControl
-                          options={TONE_PRESETS}
-                          value={tone}
-                          onChange={setTone}
-                        />
-                      </div>
-
-                      {/* Custom Voice Notes */}
-                      <div>
-                        <SectionHeader label="Custom Voice Notes" />
-                        <textarea
-                          value={customVoiceNotes}
-                          onChange={(e) => setCustomVoiceNotes(e.target.value)}
-                          placeholder="Any specific voice or style notes? (e.g., 'Use more humor', 'Reference our recent launch')"
-                          className="w-full px-3 py-2 bg-[var(--bg-primary)] rounded-lg text-sm text-[var(--fg-primary)] placeholder:text-[var(--fg-quaternary)] ring-1 ring-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-brand-solid)] resize-none transition-shadow"
-                          rows={2}
-                        />
                       </div>
 
                       {/* References */}

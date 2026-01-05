@@ -991,15 +991,6 @@ export function ChatInterface() {
         createdAt: g.created_at,
         updatedAt: g.updated_at,
       })),
-      pillars: quickActionConfig.pillars.map(p => ({
-        id: p.id,
-        label: p.label,
-        isDefault: p.is_default,
-        displayOrder: p.display_order,
-        userId: p.user_id,
-        createdAt: p.created_at,
-        updatedAt: p.updated_at,
-      })),
     };
     
     // Build the structured prompt using the prompt builder
@@ -1368,15 +1359,6 @@ export function ChatInterface() {
                                   userId: g.user_id,
                                   createdAt: g.created_at,
                                   updatedAt: g.updated_at,
-                                }))}
-                                pillars={quickActionConfig.pillars.map(p => ({
-                                  id: p.id,
-                                  label: p.label,
-                                  isDefault: p.is_default,
-                                  displayOrder: p.display_order,
-                                  userId: p.user_id,
-                                  createdAt: p.created_at,
-                                  updatedAt: p.updated_at,
                                 }))}
                                 onEditField={handleEditField}
                               />

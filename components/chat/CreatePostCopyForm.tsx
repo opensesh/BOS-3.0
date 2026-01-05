@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
 import {
   ChevronDown,
   ChevronUp,
@@ -12,12 +11,9 @@ import {
   Upload,
   Link as LinkIcon,
   Check,
-  Loader2,
   PenLine,
-  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/base/buttons/button';
-import { WRITING_STYLES, type WritingStyle } from '@/components/ui/writing-style-selector';
 import type {
   PostCopyFormData,
   Channel,
@@ -227,15 +223,9 @@ export function CreatePostCopyForm({
   const [contentSubtypeId, setContentSubtypeId] = useState<string | null>(initialData?.contentSubtypeId || null);
   const [goalId, setGoalId] = useState<string>(initialData?.goalId || '');
   const [keyMessage, setKeyMessage] = useState(initialData?.keyMessage || '');
-  const [selectedWritingStyle, setSelectedWritingStyle] = useState<WritingStyle | null>(
-    initialData?.writingStyleId 
-      ? WRITING_STYLES.find(s => s.id === initialData.writingStyleId) || null 
-      : null
-  );
   const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>(initialData?.references?.files || []);
   const [referenceUrls, setReferenceUrls] = useState<ReferenceUrl[]>(initialData?.references?.urls || []);
   const [urlInput, setUrlInput] = useState('');
-  const [showOptional, setShowOptional] = useState(false);
   const [showOutputPrefs, setShowOutputPrefs] = useState(false);
   
   // Output preferences state
@@ -366,7 +356,7 @@ export function CreatePostCopyForm({
       contentSubtypeId,
       goalId,
       keyMessage: keyMessage.trim(),
-      writingStyleId: selectedWritingStyle?.id || null,
+      writingStyleId: null, // Writing style is managed at chat level, not form level
       references: {
         files: referenceFiles,
         urls: referenceUrls,
@@ -388,7 +378,6 @@ export function CreatePostCopyForm({
     contentSubtypeId,
     goalId,
     keyMessage,
-    selectedWritingStyle,
     referenceFiles,
     referenceUrls,
     variations,
@@ -539,144 +528,91 @@ export function CreatePostCopyForm({
                   />
                 </div>
 
-                {/* Optional Section Toggle */}
-                <button
-                  type="button"
-                  onClick={() => setShowOptional(!showOptional)}
-                  className="flex items-center gap-1.5 text-xs font-medium text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] transition-colors"
-                >
-                  {showOptional ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                  <span>Optional settings</span>
-                </button>
+                {/* Reference Materials - Always visible (optional) */}
+                <div>
+                  <SectionHeader label="Reference Materials (Optional)" />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf,.doc,.docx,.txt"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
 
-                {/* Optional Section */}
-                <AnimatePresence>
-                  {showOptional && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="space-y-4 overflow-hidden"
-                    >
-                      {/* Writing Style */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <label className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
-                            Writing Style
-                          </label>
-                          <Link 
-                            href="/brain/writing-styles"
-                            target="_blank"
-                            className="flex items-center gap-1 text-xs text-[var(--fg-brand-primary)] hover:underline"
-                          >
-                            <span>View all styles</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </Link>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {WRITING_STYLES.filter(s => s.id !== 'normal').map((style) => (
-                            <Chip
-                              key={style.id}
-                              selected={selectedWritingStyle?.id === style.id}
-                              onClick={() => setSelectedWritingStyle(
-                                selectedWritingStyle?.id === style.id ? null : style
-                              )}
-                            >
-                              {style.name.replace('.md', '')}
-                            </Chip>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* References */}
-                      <div>
-                        <SectionHeader label="Reference Materials" />
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          multiple
-                          accept="image/*,.pdf,.doc,.docx,.txt"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-
-                        {/* Uploaded items preview */}
-                        {(referenceFiles.length > 0 || referenceUrls.length > 0) && (
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {referenceFiles.map(file => (
-                              <div
-                                key={file.id}
-                                className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-tertiary)] rounded-md text-xs text-[var(--fg-secondary)]"
-                              >
-                                <span className="truncate max-w-[100px]">{file.name}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setReferenceFiles(prev => prev.filter(f => f.id !== file.id))}
-                                  className="text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              </div>
-                            ))}
-                            {referenceUrls.map(url => (
-                              <div
-                                key={url.id}
-                                className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-tertiary)] rounded-md text-xs text-[var(--fg-secondary)]"
-                              >
-                                <LinkIcon className="w-3 h-3" />
-                                <span className="truncate max-w-[100px]">{new URL(url.url).hostname}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setReferenceUrls(prev => prev.filter(u => u.id !== url.id))}
-                                  className="text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Upload/URL input row */}
-                        <div className="flex items-center gap-2">
+                  {/* Uploaded items preview */}
+                  {(referenceFiles.length > 0 || referenceUrls.length > 0) && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {referenceFiles.map(file => (
+                        <div
+                          key={file.id}
+                          className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-tertiary)] rounded-md text-xs text-[var(--fg-secondary)]"
+                        >
+                          <span className="truncate max-w-[100px]">{file.name}</span>
                           <button
                             type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] bg-[var(--bg-tertiary)] rounded-md ring-1 ring-[var(--border-secondary)] transition-colors"
+                            onClick={() => setReferenceFiles(prev => prev.filter(f => f.id !== file.id))}
+                            className="text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
                           >
-                            <Upload className="w-3 h-3" />
-                            <span>Upload</span>
+                            <X className="w-3 h-3" />
                           </button>
-                          <div className="flex-1 flex items-center gap-2">
-                            <input
-                              type="url"
-                              value={urlInput}
-                              onChange={(e) => setUrlInput(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleAddUrl();
-                                }
-                              }}
-                              placeholder="Paste URL..."
-                              className="flex-1 px-3 py-1.5 bg-[var(--bg-primary)] rounded-md text-xs text-[var(--fg-primary)] placeholder:text-[var(--fg-quaternary)] ring-1 ring-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-brand-solid)]"
-                            />
-                            {urlInput && (
-                              <button
-                                type="button"
-                                onClick={handleAddUrl}
-                                className="p-1.5 text-[var(--fg-brand-primary)] hover:bg-[var(--bg-brand-primary)] rounded-md transition-colors"
-                              >
-                                <Check className="w-3 h-3" />
-                              </button>
-                            )}
-                          </div>
                         </div>
-                      </div>
-                    </motion.div>
+                      ))}
+                      {referenceUrls.map(url => (
+                        <div
+                          key={url.id}
+                          className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-tertiary)] rounded-md text-xs text-[var(--fg-secondary)]"
+                        >
+                          <LinkIcon className="w-3 h-3" />
+                          <span className="truncate max-w-[100px]">{new URL(url.url).hostname}</span>
+                          <button
+                            type="button"
+                            onClick={() => setReferenceUrls(prev => prev.filter(u => u.id !== url.id))}
+                            className="text-[var(--fg-quaternary)] hover:text-[var(--fg-primary)]"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                </AnimatePresence>
+
+                  {/* Upload/URL input row */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] bg-[var(--bg-tertiary)] rounded-md ring-1 ring-[var(--border-secondary)] transition-colors"
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>Upload</span>
+                    </button>
+                    <div className="flex-1 flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddUrl();
+                          }
+                        }}
+                        placeholder="Paste URL..."
+                        className="flex-1 px-3 py-1.5 bg-[var(--bg-primary)] rounded-md text-xs text-[var(--fg-primary)] placeholder:text-[var(--fg-quaternary)] ring-1 ring-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-brand-solid)]"
+                      />
+                      {urlInput && (
+                        <button
+                          type="button"
+                          onClick={handleAddUrl}
+                          className="p-1.5 text-[var(--fg-brand-primary)] hover:bg-[var(--bg-brand-primary)] rounded-md transition-colors"
+                        >
+                          <Check className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
                 {/* Output Preferences Toggle */}
                 <button
@@ -688,7 +624,7 @@ export function CreatePostCopyForm({
                   <span>Output preferences</span>
                 </button>
 
-                {/* Output Preferences Section */}
+                {/* Output Preferences Section - 2-row compact grid */}
                 <AnimatePresence>
                   {showOutputPrefs && (
                     <motion.div
@@ -696,49 +632,44 @@ export function CreatePostCopyForm({
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="space-y-4 overflow-hidden"
+                      className="overflow-hidden"
                     >
-                      {/* Variations */}
-                      <div>
-                        <SectionHeader label="Variations" />
-                        <SegmentedControl
-                          options={VARIATION_OPTIONS.map(v => ({ id: v.id.toString() as `${typeof v.id}`, label: v.label }))}
-                          value={variations.toString() as `${VariationCount}`}
-                          onChange={(v) => setVariations(Number(v) as VariationCount)}
-                        />
-                        <p className="mt-1.5 text-xs text-[var(--fg-quaternary)]">
-                          Generate one polished option or 2-3 variations to choose from
-                        </p>
-                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Row 1: Variations + Hashtags */}
+                        <div>
+                          <SectionHeader label="Variations" />
+                          <SegmentedControl
+                            options={VARIATION_OPTIONS.map(v => ({ id: v.id.toString() as `${typeof v.id}`, label: v.label }))}
+                            value={variations.toString() as `${VariationCount}`}
+                            onChange={(v) => setVariations(Number(v) as VariationCount)}
+                          />
+                        </div>
+                        <div>
+                          <SectionHeader label="Hashtags" />
+                          <SegmentedControl
+                            options={HASHTAG_OPTIONS}
+                            value={hashtags}
+                            onChange={setHashtags}
+                          />
+                        </div>
 
-                      {/* Hashtags */}
-                      <div>
-                        <SectionHeader label="Include Hashtags" />
-                        <SegmentedControl
-                          options={HASHTAG_OPTIONS}
-                          value={hashtags}
-                          onChange={setHashtags}
-                        />
-                      </div>
-
-                      {/* Caption Length */}
-                      <div>
-                        <SectionHeader label="Caption Length" />
-                        <SegmentedControl
-                          options={CAPTION_LENGTH_OPTIONS}
-                          value={captionLength}
-                          onChange={setCaptionLength}
-                        />
-                      </div>
-
-                      {/* Include CTA */}
-                      <div>
-                        <SectionHeader label="Include Call-to-Action" />
-                        <SegmentedControl
-                          options={CTA_OPTIONS}
-                          value={includeCta}
-                          onChange={setIncludeCta}
-                        />
+                        {/* Row 2: Caption Length + CTA */}
+                        <div>
+                          <SectionHeader label="Length" />
+                          <SegmentedControl
+                            options={CAPTION_LENGTH_OPTIONS}
+                            value={captionLength}
+                            onChange={setCaptionLength}
+                          />
+                        </div>
+                        <div>
+                          <SectionHeader label="Call-to-Action" />
+                          <SegmentedControl
+                            options={CTA_OPTIONS}
+                            value={includeCta}
+                            onChange={setIncludeCta}
+                          />
+                        </div>
                       </div>
                     </motion.div>
                   )}

@@ -24,6 +24,8 @@ interface ChatHeaderProps {
   isStreaming?: boolean;
   /** Hide share button (e.g., when canvas is open) */
   hideShare?: boolean;
+  /** Hide title dropdown (e.g., quick action pre-submission state) */
+  hideTitle?: boolean;
 }
 
 export function ChatHeader({
@@ -41,6 +43,7 @@ export function ChatHeader({
   content = '',
   isStreaming = false,
   hideShare = false,
+  hideTitle = false,
 }: ChatHeaderProps) {
   const tabs = [
     {
@@ -114,17 +117,19 @@ export function ChatHeader({
 
           {/* Right side - Title dropdown and Share */}
           <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-            <div className="min-w-0 max-w-[240px] w-full">
-              <ChatTitleDropdown
-                title={threadTitle}
-                createdAt={threadCreatedAt}
-                onRename={onRenameThread}
-                onAddToProject={onAddToProject}
-                onAddToSpace={onAddToSpace}
-                onDelete={onDeleteThread}
-                content={content}
-              />
-            </div>
+            {!hideTitle && (
+              <div className="min-w-0 max-w-[240px] w-full">
+                <ChatTitleDropdown
+                  title={threadTitle}
+                  createdAt={threadCreatedAt}
+                  onRename={onRenameThread}
+                  onAddToProject={onAddToProject}
+                  onAddToSpace={onAddToSpace}
+                  onDelete={onDeleteThread}
+                  content={content}
+                />
+              </div>
+            )}
             {!hideShare && <ShareButton />}
           </div>
         </div>

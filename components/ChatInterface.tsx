@@ -38,7 +38,6 @@ import {
   AddToSpaceModal,
   CreatePostCopyForm,
   QuickActionFieldEditor,
-  UserMessageBubble,
   type FollowUpAttachment,
   type FieldType,
   type EditorMode,
@@ -196,6 +195,11 @@ export function ChatInterface() {
 
   // Derive hasMessages early so it can be used in effects
   const hasMessages = messages.length > 0;
+  
+  // Check if there's a real AI response (not just a quick action pre-prompt)
+  const hasAssistantResponse = useMemo(() => {
+    return messages.some(m => m.role === 'assistant');
+  }, [messages]);
 
   // Helper to get message content (must be defined before callbacks that use it)
   const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
@@ -1155,22 +1159,25 @@ export function ChatInterface() {
     const chatProjectId = currentChat?.projectId;
     const chatProject = chatProjectId ? projects.find(p => p.id === chatProjectId) : null;
     
+    // Only show title in breadcrumbs after there's a real AI response (not just quick action pre-prompt)
+    const showTitle = hasAssistantResponse;
+    
     if (chatProject) {
       // Chat belongs to a project: Projects / Project Name / Chat Title
       setBreadcrumbs([
         { label: 'Projects', href: '/projects' },
         { label: chatProject.name, href: `/projects/${chatProject.id}` },
-        ...(hasMessages ? [{ label: displayTitle }] : []),
+        ...(showTitle ? [{ label: displayTitle }] : []),
       ]);
     } else {
       // Chat doesn't belong to a project: Home / Chats / Chat Title
       setBreadcrumbs([
         { label: 'Home', href: '/' },
         { label: 'Chats', href: '/chats' },
-        ...(hasMessages ? [{ label: displayTitle }] : []),
+        ...(showTitle ? [{ label: displayTitle }] : []),
       ]);
     }
-  }, [setBreadcrumbs, generatedTitle, parsedMessages, hasMessages, currentSessionId, chatHistory, projects]);
+  }, [setBreadcrumbs, generatedTitle, parsedMessages, hasAssistantResponse, currentSessionId, chatHistory, projects]);
 
   // Get all sources and images from messages
   const allSources = useMemo(() => {
@@ -1258,6 +1265,7 @@ export function ChatInterface() {
               }}
               isStreaming={isLoading}
               hideShare={isCanvasOpen}
+              hideTitle={showQuickActionForm && !hasAssistantResponse}
             />
 
             {/* Scrollable content */}
@@ -1309,14 +1317,11 @@ export function ChatInterface() {
                             />
                           );
                         }
-                        // Quick action form: Show user message bubble + form as AI response
+                        // Quick action form: Show form only (no user bubble for cleaner UX)
                         if (!nextMessage && !isLoading && showQuickActionForm && quickActionType === 'create-post-copy') {
                           return (
                             <div key={message.id} className="py-6">
-                              {/* User message bubble */}
-                              <UserMessageBubble query={message.content} attachments={message.attachments} />
-                              
-                              {/* Form as AI response */}
+                              {/* Form rendered directly - no user bubble */}
                               <CreatePostCopyForm
                                 initialData={activeQuickAction?.data}
                                 onSubmit={handleQuickActionSubmit}

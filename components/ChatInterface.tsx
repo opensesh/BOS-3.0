@@ -1100,31 +1100,35 @@ export function ChatInterface() {
     }
   }, [fieldEditorType, quickActionConfig]);
 
-  // Parse messages into our format with deduplication
-  // Only deduplicate consecutive messages with identical content to avoid removing legitimate messages
+  // Parse messages into our format with smart deduplication
+  // Removes duplicate user messages that appear in the conversation (by content + role)
   const parsedMessages: ParsedMessage[] = useMemo(() => {
     const seenIds = new Set<string>();
+    const seenUserQueries = new Set<string>();
     const uniqueMessages: ParsedMessage[] = [];
-    let lastContentHash: string | null = null;
     
-    for (const message of messages) {
+    for (let i = 0; i < messages.length; i++) {
+      const message = messages[i];
+      
       // Skip duplicate IDs
       if (seenIds.has(message.id)) {
+        console.log('[ChatInterface] Skipping duplicate ID:', message.id);
         continue;
       }
       
       const content = getMessageContent(message);
-      // Create a hash of role + content for consecutive duplicate detection
-      const contentHash = `${message.role}:${content}`;
       
-      // Only skip if this is a consecutive duplicate (same as previous message)
-      // This prevents removing legitimate messages while catching rendering bugs
-      if (contentHash === lastContentHash) {
-        continue;
+      // For user messages, check if we've seen this exact query before
+      // This prevents duplicate user prompts from appearing multiple times
+      if (message.role === 'user') {
+        if (seenUserQueries.has(content)) {
+          console.log('[ChatInterface] Skipping duplicate user query:', content.substring(0, 50));
+          continue;
+        }
+        seenUserQueries.add(content);
       }
       
       seenIds.add(message.id);
-      lastContentHash = contentHash;
       
       // Extract extended data from the message if available
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1145,6 +1149,8 @@ export function ChatInterface() {
       });
     }
     
+    console.log('[ChatInterface] Messages:', messages.length, '→ Unique:', uniqueMessages.length, 
+                '| User queries deduplicated:', seenUserQueries.size);
     return uniqueMessages;
   }, [messages, modelUsed, getMessageContent]);
 
@@ -1274,6 +1280,12 @@ export function ChatInterface() {
                       if (message.role === 'user') {
                         const nextMessage = parsedMessages[idx + 1];
                         if (nextMessage?.role === 'assistant') {
+                          console.log('[ChatInterface] Rendering ChatContent:', {
+                            idx,
+                            userId: message.id,
+                            userContent: message.content.substring(0, 30),
+                            assistantId: nextMessage.id
+                          });
                           return (
                             <ChatContent
                               key={message.id}

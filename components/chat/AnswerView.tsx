@@ -118,7 +118,8 @@ export function AnswerView({
   return (
     <div>
       {/* User Query Display - Right aligned bubble with show more */}
-      <UserMessageBubble query={query} attachments={attachments} />
+      {/* NOTE: UserMessageBubble is commented out because ChatContent already displays the query in its wrapper */}
+      {/* <UserMessageBubble query={query} attachments={attachments} /> */}
 
       {/* 
         IMPORTANT: Response Layout Structure

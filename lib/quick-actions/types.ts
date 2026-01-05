@@ -217,19 +217,21 @@ export const TONE_PRESETS: { id: TonePreset; label: string }[] = [
 // Output Preferences
 // =============================================================================
 
-export type VariationCount = 1 | 3;
+export type VariationCount = 1 | 2 | 3 | 4;
 
 export const VARIATION_OPTIONS: { id: VariationCount; label: string }[] = [
   { id: 1, label: '1' },
-  { id: 3, label: '2-3' },
+  { id: 2, label: '2' },
+  { id: 3, label: '3' },
+  { id: 4, label: '4' },
 ];
 
-export type HashtagPreference = 'yes' | 'no' | 'suggest';
+export type HashtagPreference = 'generated' | 'manual' | 'none';
 
 export const HASHTAG_OPTIONS: { id: HashtagPreference; label: string }[] = [
-  { id: 'yes', label: 'Yes' },
-  { id: 'no', label: 'No' },
-  { id: 'suggest', label: 'Suggest' },
+  { id: 'generated', label: 'Generated' },
+  { id: 'manual', label: 'Manual' },
+  { id: 'none', label: 'None' },
 ];
 
 export type CaptionLength = 'concise' | 'standard' | 'extended';
@@ -294,7 +296,7 @@ export interface PostCopyFormData {
   // Required fields
   channelIds: string[];
   contentFormat: ContentFormat;
-  contentSubtypeId: string | null;
+  contentSubtypeIds: string[];  // Multi-select content types
   goalId: string;
   keyMessage: string;
   
@@ -388,8 +390,8 @@ export function generateFormId(): string {
 export function createInitialFormData(): PostCopyFormData {
   return {
     channelIds: [],
-    contentFormat: 'written',
-    contentSubtypeId: null,
+    contentFormat: 'short_form',  // Default to short-form as the master filter
+    contentSubtypeIds: [],  // Multi-select content types
     goalId: '',
     keyMessage: '',
     writingStyleId: null,
@@ -399,9 +401,9 @@ export function createInitialFormData(): PostCopyFormData {
     },
     outputPreferences: {
       variations: 1,
-      hashtags: 'suggest',
-      captionLength: 'standard',
-      includeCta: 'yes',
+      hashtags: 'generated',  // Default: Generated
+      captionLength: 'standard',  // Default: Standard
+      includeCta: 'no',  // Default: No
     },
     formId: generateFormId(),
     createdAt: new Date().toISOString(),
@@ -427,6 +429,17 @@ export function getAvailableFormatsForChannels(
   });
   
   return Array.from(intersection) as ContentFormat[];
+}
+
+/**
+ * Filter channels by selected content format
+ * Returns only channels that support the given format
+ */
+export function getChannelsForFormat(
+  channels: Channel[],
+  format: ContentFormat
+): Channel[] {
+  return channels.filter(c => c.supportedFormats.includes(format));
 }
 
 /**

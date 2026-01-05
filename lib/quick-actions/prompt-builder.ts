@@ -57,9 +57,10 @@ function getContentFormatLabel(format: ContentFormat): string {
   return CONTENT_FORMATS.find(f => f.id === format)?.label || format;
 }
 
-function getContentSubtypeLabel(subtypeId: string | null, subtypes: ContentSubtype[]): string | null {
-  if (!subtypeId) return null;
-  return subtypes.find(s => s.id === subtypeId)?.label || null;
+function getContentSubtypeLabels(subtypeIds: string[], subtypes: ContentSubtype[]): string[] {
+  return subtypeIds
+    .map(id => subtypes.find(s => s.id === id)?.label)
+    .filter((label): label is string => !!label);
 }
 
 function getGoalLabel(goalId: string, goals: Goal[]): string {
@@ -112,7 +113,7 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
   // Get human-readable values
   const channelNames = getChannelNames(formData.channelIds, channels);
   const formatLabel = getContentFormatLabel(formData.contentFormat);
-  const subtypeLabel = getContentSubtypeLabel(formData.contentSubtypeId, contentSubtypes);
+  const subtypeLabels = getContentSubtypeLabels(formData.contentSubtypeIds, contentSubtypes);
   const goalLabel = getGoalLabel(formData.goalId, goals);
 
   // Build the prompt sections
@@ -135,12 +136,19 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
 
   // Main request section
   sections.push('## Request');
-  sections.push(`Create a ${subtypeLabel || formatLabel.toLowerCase()} for ${channelNames.join(', ')}.`);
+  if (subtypeLabels.length > 0) {
+    sections.push(`Create ${subtypeLabels.join(', ')} content for ${channelNames.join(', ')}.`);
+  } else {
+    sections.push(`Create ${formatLabel.toLowerCase()} content for ${channelNames.join(', ')}.`);
+  }
 
   // Parameters
   sections.push('\n**Parameters:**');
   sections.push(`- Platforms: ${channelNames.join(', ')}`);
-  sections.push(`- Format: ${formatLabel}${subtypeLabel ? ` / Type: ${subtypeLabel}` : ''}`);
+  sections.push(`- Format: ${formatLabel}`);
+  if (subtypeLabels.length > 0) {
+    sections.push(`- Content Types: ${subtypeLabels.join(', ')}`);
+  }
   sections.push(`- Goal: ${goalLabel}`);
   
   // Writing style note (the actual style content is injected via chat API system prompt)
@@ -174,8 +182,12 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
     }
   }
 
-  // Final instruction
-  sections.push('\nGenerate on-brand copy following the skill guidelines for this channel and content type.');
+  // Final instruction - specific for multiple content types
+  if (subtypeLabels.length > 1) {
+    sections.push(`\nGenerate separate, optimized copy for EACH content type: ${subtypeLabels.join(', ')}. Clearly label each section.`);
+  } else {
+    sections.push('\nGenerate on-brand copy following the skill guidelines for this channel and content type.');
+  }
 
   return sections.join('\n');
 }

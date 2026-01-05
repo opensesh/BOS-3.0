@@ -35,7 +35,7 @@ import {
   CAPTION_LENGTH_OPTIONS,
   CTA_OPTIONS,
   createInitialFormData,
-  getAvailableFormatsForChannels,
+  getChannelsForFormat,
   filterSubtypesByChannelsAndFormat,
 } from '@/lib/quick-actions';
 
@@ -218,9 +218,9 @@ export function CreatePostCopyForm({
   // Form state
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [contentFormat, setContentFormat] = useState<ContentFormat>(initialData?.contentFormat || 'short_form');
   const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>(initialData?.channelIds || []);
-  const [contentFormat, setContentFormat] = useState<ContentFormat>(initialData?.contentFormat || 'written');
-  const [contentSubtypeId, setContentSubtypeId] = useState<string | null>(initialData?.contentSubtypeId || null);
+  const [contentSubtypeIds, setContentSubtypeIds] = useState<string[]>(initialData?.contentSubtypeIds || []);
   const [goalId, setGoalId] = useState<string>(initialData?.goalId || '');
   const [keyMessage, setKeyMessage] = useState(initialData?.keyMessage || '');
   const [referenceFiles, setReferenceFiles] = useState<ReferenceFile[]>(initialData?.references?.files || []);
@@ -230,9 +230,9 @@ export function CreatePostCopyForm({
   
   // Output preferences state
   const [variations, setVariations] = useState<VariationCount>(initialData?.outputPreferences?.variations || 1);
-  const [hashtags, setHashtags] = useState<HashtagPreference>(initialData?.outputPreferences?.hashtags || 'suggest');
+  const [hashtags, setHashtags] = useState<HashtagPreference>(initialData?.outputPreferences?.hashtags || 'generated');
   const [captionLength, setCaptionLength] = useState<CaptionLength>(initialData?.outputPreferences?.captionLength || 'standard');
-  const [includeCta, setIncludeCta] = useState<CtaPreference>(initialData?.outputPreferences?.includeCta || 'yes');
+  const [includeCta, setIncludeCta] = useState<CtaPreference>(initialData?.outputPreferences?.includeCta || 'no');
 
   // Convert channels array to Channel type for helper functions
   const channelObjects = useMemo(() => {
@@ -248,10 +248,10 @@ export function CreatePostCopyForm({
     }));
   }, [channels]);
 
-  // Available formats based on selected channels
-  const availableFormats = useMemo(() => {
-    return getAvailableFormatsForChannels(channelObjects, selectedChannelIds);
-  }, [channelObjects, selectedChannelIds]);
+  // Filter channels by selected content format (format is the master filter)
+  const availableChannels = useMemo(() => {
+    return getChannelsForFormat(channelObjects, contentFormat);
+  }, [channelObjects, contentFormat]);
 
   // Convert contentSubtypes to ContentSubtype type for helper functions
   const subtypeObjects = useMemo(() => {
@@ -271,19 +271,23 @@ export function CreatePostCopyForm({
     return filterSubtypesByChannelsAndFormat(subtypeObjects, selectedChannelIds, contentFormat);
   }, [subtypeObjects, selectedChannelIds, contentFormat]);
 
-  // Reset content format if not available for selected channels
+  // Reset channel selection when format changes (only keep channels that support the new format)
   useEffect(() => {
-    if (selectedChannelIds.length > 0 && !availableFormats.includes(contentFormat)) {
-      setContentFormat(availableFormats[0] || 'written');
+    const availableChannelIds = new Set(availableChannels.map(c => c.id));
+    const validSelectedIds = selectedChannelIds.filter(id => availableChannelIds.has(id));
+    if (validSelectedIds.length !== selectedChannelIds.length) {
+      setSelectedChannelIds(validSelectedIds);
     }
-  }, [selectedChannelIds, availableFormats, contentFormat]);
+  }, [availableChannels, selectedChannelIds]);
 
-  // Reset content subtype if not available
+  // Reset content subtypes if not available
   useEffect(() => {
-    if (contentSubtypeId && !availableSubtypes.find(s => s.id === contentSubtypeId)) {
-      setContentSubtypeId(availableSubtypes[0]?.id || null);
+    const availableSubtypeIds = new Set(availableSubtypes.map(s => s.id));
+    const validSubtypeIds = contentSubtypeIds.filter(id => availableSubtypeIds.has(id));
+    if (validSubtypeIds.length !== contentSubtypeIds.length) {
+      setContentSubtypeIds(validSubtypeIds);
     }
-  }, [availableSubtypes, contentSubtypeId]);
+  }, [availableSubtypes, contentSubtypeIds]);
 
   // Set default goal if none selected
   useEffect(() => {
@@ -298,6 +302,14 @@ export function CreatePostCopyForm({
       prev.includes(channelId)
         ? prev.filter(id => id !== channelId)
         : [...prev, channelId]
+    );
+  }, []);
+
+  const toggleContentSubtype = useCallback((subtypeId: string) => {
+    setContentSubtypeIds(prev =>
+      prev.includes(subtypeId)
+        ? prev.filter(id => id !== subtypeId)
+        : [...prev, subtypeId]
     );
   }, []);
 
@@ -353,7 +365,7 @@ export function CreatePostCopyForm({
     const formData: PostCopyFormData = {
       channelIds: selectedChannelIds,
       contentFormat,
-      contentSubtypeId,
+      contentSubtypeIds,
       goalId,
       keyMessage: keyMessage.trim(),
       writingStyleId: null, // Writing style is managed at chat level, not form level
@@ -375,7 +387,7 @@ export function CreatePostCopyForm({
   }, [
     selectedChannelIds,
     contentFormat,
-    contentSubtypeId,
+    contentSubtypeIds,
     goalId,
     keyMessage,
     referenceFiles,
@@ -430,8 +442,24 @@ export function CreatePostCopyForm({
               className="overflow-hidden"
             >
               <div className={`px-4 pb-4 space-y-5 ${hasInteracted ? 'border-t border-[var(--border-secondary)]' : ''}`}>
-                {/* Channels Section */}
+                {/* Content Format Section - Master Filter (always visible) */}
                 <div className={hasInteracted ? 'pt-4' : 'pt-2'}>
+                  <SectionHeader label="Content Format" />
+                  <SegmentedControl
+                    options={CONTENT_FORMATS.map(f => ({
+                      id: f.id,
+                      label: f.label,
+                    }))}
+                    value={contentFormat}
+                    onChange={(format) => {
+                      handleFirstInteraction();
+                      setContentFormat(format);
+                    }}
+                  />
+                </div>
+
+                {/* Channels Section - Filtered by Content Format */}
+                <div>
                   <SectionHeader
                     label="Channels"
                     onAdd={() => onEditField?.('channel', 'add')}
@@ -439,7 +467,7 @@ export function CreatePostCopyForm({
                     showEdit={channels.some(c => !c.isDefault)}
                   />
                   <div className="flex flex-wrap gap-2">
-                    {channels.map((channel) => (
+                    {availableChannels.map((channel) => (
                       <Chip
                         key={channel.id}
                         selected={selectedChannelIds.includes(channel.id)}
@@ -451,29 +479,15 @@ export function CreatePostCopyForm({
                         {channel.shortLabel}
                       </Chip>
                     ))}
+                    {availableChannels.length === 0 && (
+                      <p className="text-xs text-[var(--fg-quaternary)] italic">
+                        No channels available for this format
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                {/* Content Format Section */}
-                {selectedChannelIds.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <SectionHeader label="Content Format" />
-                    <SegmentedControl
-                      options={CONTENT_FORMATS.filter(f => availableFormats.includes(f.id)).map(f => ({
-                        id: f.id,
-                        label: f.label,
-                      }))}
-                      value={contentFormat}
-                      onChange={setContentFormat}
-                    />
-                  </motion.div>
-                )}
-
-                {/* Content Sub-type Section */}
+                {/* Content Type Section - Multi-select */}
                 {selectedChannelIds.length > 0 && availableSubtypes.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -485,8 +499,8 @@ export function CreatePostCopyForm({
                       {availableSubtypes.map((subtype) => (
                         <Chip
                           key={subtype.id}
-                          selected={contentSubtypeId === subtype.id}
-                          onClick={() => setContentSubtypeId(subtype.id)}
+                          selected={contentSubtypeIds.includes(subtype.id)}
+                          onClick={() => toggleContentSubtype(subtype.id)}
                         >
                           {subtype.label}
                         </Chip>
@@ -624,7 +638,7 @@ export function CreatePostCopyForm({
                   <span>Output preferences</span>
                 </button>
 
-                {/* Output Preferences Section - 2-row compact grid */}
+                {/* Output Preferences Section - Single row with compact dropdowns */}
                 <AnimatePresence>
                   {showOutputPrefs && (
                     <motion.div
@@ -634,41 +648,61 @@ export function CreatePostCopyForm({
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="grid grid-cols-2 gap-4">
-                        {/* Row 1: Variations + Hashtags */}
-                        <div>
-                          <SectionHeader label="Variations" />
-                          <SegmentedControl
-                            options={VARIATION_OPTIONS.map(v => ({ id: v.id.toString() as `${typeof v.id}`, label: v.label }))}
-                            value={variations.toString() as `${VariationCount}`}
-                            onChange={(v) => setVariations(Number(v) as VariationCount)}
-                          />
-                        </div>
-                        <div>
-                          <SectionHeader label="Hashtags" />
-                          <SegmentedControl
-                            options={HASHTAG_OPTIONS}
-                            value={hashtags}
-                            onChange={setHashtags}
-                          />
+                      <div className="flex flex-wrap items-center gap-4">
+                        {/* Variations */}
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-[var(--fg-tertiary)]">Variations</label>
+                          <select
+                            value={variations}
+                            onChange={(e) => setVariations(Number(e.target.value) as VariationCount)}
+                            className="px-2 py-1 text-xs bg-[var(--bg-primary)] text-[var(--fg-primary)] rounded-md ring-1 ring-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-brand-solid)] cursor-pointer"
+                          >
+                            {VARIATION_OPTIONS.map(v => (
+                              <option key={v.id} value={v.id}>{v.label}</option>
+                            ))}
+                          </select>
                         </div>
 
-                        {/* Row 2: Caption Length + CTA */}
-                        <div>
-                          <SectionHeader label="Length" />
-                          <SegmentedControl
-                            options={CAPTION_LENGTH_OPTIONS}
+                        {/* Length */}
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-[var(--fg-tertiary)]">Length</label>
+                          <select
                             value={captionLength}
-                            onChange={setCaptionLength}
-                          />
+                            onChange={(e) => setCaptionLength(e.target.value as CaptionLength)}
+                            className="px-2 py-1 text-xs bg-[var(--bg-primary)] text-[var(--fg-primary)] rounded-md ring-1 ring-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-brand-solid)] cursor-pointer"
+                          >
+                            {CAPTION_LENGTH_OPTIONS.map(l => (
+                              <option key={l.id} value={l.id}>{l.label}</option>
+                            ))}
+                          </select>
                         </div>
-                        <div>
-                          <SectionHeader label="Call-to-Action" />
-                          <SegmentedControl
-                            options={CTA_OPTIONS}
+
+                        {/* Hashtags */}
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-[var(--fg-tertiary)]">Hashtags</label>
+                          <select
+                            value={hashtags}
+                            onChange={(e) => setHashtags(e.target.value as HashtagPreference)}
+                            className="px-2 py-1 text-xs bg-[var(--bg-primary)] text-[var(--fg-primary)] rounded-md ring-1 ring-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-brand-solid)] cursor-pointer"
+                          >
+                            {HASHTAG_OPTIONS.map(h => (
+                              <option key={h.id} value={h.id}>{h.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* CTA */}
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-[var(--fg-tertiary)]">CTA</label>
+                          <select
                             value={includeCta}
-                            onChange={setIncludeCta}
-                          />
+                            onChange={(e) => setIncludeCta(e.target.value as CtaPreference)}
+                            className="px-2 py-1 text-xs bg-[var(--bg-primary)] text-[var(--fg-primary)] rounded-md ring-1 ring-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-brand-solid)] cursor-pointer"
+                          >
+                            {CTA_OPTIONS.map(c => (
+                              <option key={c.id} value={c.id}>{c.label}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     </motion.div>

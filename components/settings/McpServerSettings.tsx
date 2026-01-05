@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 import { 
   Copy, 
   Check, 
@@ -15,9 +16,22 @@ import {
   FileCode,
   Monitor,
   Code2,
-  Sparkles,
   MessageSquare,
 } from 'lucide-react';
+
+// Claude icon component (Anthropic's Claude logo)
+function ClaudeIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      fill="currentColor" 
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path fillRule="evenodd" clipRule="evenodd" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Zm3.5-13.5a1 1 0 0 0-1.5-.866l-6 3.464a1 1 0 0 0 0 1.732l6 3.464a1 1 0 0 0 1.5-.866V8.5Z"/>
+    </svg>
+  );
+}
 import { useMcpServerConfig } from '@/hooks/useMcpConnections';
 import { mcpService } from '@/lib/supabase/mcp-service';
 import { toast } from 'sonner';
@@ -46,7 +60,7 @@ const PLATFORMS: PlatformInfo[] = [
   {
     id: 'claude',
     name: 'Claude Desktop',
-    icon: Sparkles,
+    icon: ClaudeIcon,
     supportsUrl: true,
     supportsConfig: true,
     description: 'Anthropic\'s desktop app',
@@ -212,6 +226,74 @@ function NewKeyModal({
 // Platform Instructions Components
 // ============================================
 
+function AdvancedSettingsDropdown({
+  apiKey,
+  onCopy,
+  copied,
+}: {
+  apiKey?: string;
+  onCopy: (text: string, type: string) => void;
+  copied: string | null;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // For OAuth, we use the API key as the client secret
+  const oauthClientId = 'bos-mcp-connector';
+  const oauthClientSecret = apiKey || 'YOUR_API_KEY';
+
+  return (
+    <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-3 text-left"
+      >
+        <span className="text-xs font-medium text-[var(--fg-secondary)]">
+          Advanced Settings (Optional)
+        </span>
+        {isOpen ? (
+          <ChevronUp className="w-4 h-4 text-amber-500" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-amber-500" />
+        )}
+      </button>
+      
+      {isOpen && (
+        <div className="px-3 pb-3 space-y-2">
+          <p className="text-xs text-[var(--fg-tertiary)] mb-2">
+            If authentication is required, expand Advanced Settings in Claude and add:
+          </p>
+          
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">OAuth Client ID (optional)</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)]">{oauthClientId}</code>
+            </div>
+            <button
+              onClick={() => onCopy(oauthClientId, 'clientId')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'clientId' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">OAuth Client Secret (optional)</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{oauthClientSecret}</code>
+            </div>
+            <button
+              onClick={() => onCopy(oauthClientSecret, 'clientSecret')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'clientSecret' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function UrlInstructions({ 
   platform, 
   serverUrl, 
@@ -262,22 +344,11 @@ function UrlInstructions({
           </div>
         </div>
         
-        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-          <p className="text-xs text-[var(--fg-secondary)]">
-            <strong>Advanced Settings:</strong> Expand and add an Authorization header with value:
-          </p>
-          <div className="flex items-center justify-between gap-2 mt-2 p-2 bg-[var(--bg-primary)] rounded border border-[var(--border-secondary)]">
-            <code className="text-xs font-mono text-[var(--fg-primary)] break-all">
-              Bearer {apiKey || 'YOUR_API_KEY'}
-            </code>
-            <button
-              onClick={() => onCopy(`Bearer ${apiKey || 'YOUR_API_KEY'}`, 'auth')}
-              className="p-1 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
-            >
-              {copied === 'auth' ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
-            </button>
-          </div>
-        </div>
+        <AdvancedSettingsDropdown 
+          apiKey={apiKey}
+          onCopy={onCopy}
+          copied={copied}
+        />
       </div>
     ),
     cursor: (
@@ -558,11 +629,19 @@ function QuickSetupCard({
             
             {apiKey ? (
               <div className="flex items-center gap-2 ml-7">
-                <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <code className="text-xs font-mono text-green-600 dark:text-green-400 truncate">
-                    {apiKey.slice(0, 20)}...
-                  </code>
+                <div className="flex-1 flex items-center justify-between gap-2 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <code className="text-xs font-mono text-green-600 dark:text-green-400 truncate">
+                      {apiKey.slice(0, 20)}...
+                    </code>
+                  </div>
+                  <Link 
+                    href="/settings?tab=api"
+                    className="text-xs text-green-600 dark:text-green-400 hover:underline flex-shrink-0"
+                  >
+                    View
+                  </Link>
                 </div>
                 <button
                   onClick={onGenerateKey}

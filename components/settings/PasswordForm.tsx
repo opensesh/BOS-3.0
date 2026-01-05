@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   SettingsSectionHeader,
   SettingsField,
@@ -134,6 +135,7 @@ function Toggle({
 }
 
 export function PasswordForm() {
+  const t = useTranslations('settings.password');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -182,28 +184,28 @@ export function PasswordForm() {
   return (
     <div className="max-w-3xl">
       <SettingsSectionHeader
-        title="Password"
-        description="Please enter your current password to change your password."
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       {/* Current Password */}
-      <SettingsField label="Current password" required>
+      <SettingsField label={t('currentPassword')} required>
         <PasswordInput
           value={currentPassword}
           onChange={setCurrentPassword}
-          placeholder="Enter current password"
-          label="Current password"
+          placeholder={t('currentPassword')}
+          label={t('currentPassword')}
         />
       </SettingsField>
 
       {/* New Password */}
-      <SettingsField label="New password" required>
+      <SettingsField label={t('newPassword')} required>
         <div className="space-y-3">
           <PasswordInput
             value={newPassword}
             onChange={setNewPassword}
-            placeholder="Enter new password"
-            label="New password"
+            placeholder={t('newPassword')}
+            label={t('newPassword')}
           />
 
           {/* Password Requirements */}
@@ -235,13 +237,13 @@ export function PasswordForm() {
       </SettingsField>
 
       {/* Confirm Password */}
-      <SettingsField label="Confirm new password" required>
+      <SettingsField label={t('confirmPassword')} required>
         <div className="space-y-2">
           <PasswordInput
             value={confirmPassword}
             onChange={setConfirmPassword}
-            placeholder="Confirm new password"
-            label="Confirm new password"
+            placeholder={t('confirmPassword')}
+            label={t('confirmPassword')}
           />
           
           {confirmPassword && !passwordsMatch && (
@@ -267,6 +269,7 @@ export function PasswordForm() {
         onSave={handleSave}
         isSaving={isSaving}
         isDisabled={!isValid || !currentPassword}
+        saveLabel={t('updatePassword')}
       />
 
       {/* Two-Factor Authentication Section */}
@@ -432,4 +435,3 @@ export function PasswordForm() {
     </div>
   );
 }
-

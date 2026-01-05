@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { User } from 'lucide-react';
 import { Avatar } from '@/components/ui/base/avatar/avatar';
 
@@ -10,6 +11,8 @@ interface AvatarUploadProps {
   onUpload: (file: File) => Promise<void>;
   onDelete: () => Promise<void>;
   isUploading?: boolean;
+  deleteLabel?: string;
+  updateLabel?: string;
 }
 
 export function AvatarUpload({
@@ -18,7 +21,10 @@ export function AvatarUpload({
   onUpload,
   onDelete,
   isUploading = false,
+  deleteLabel,
+  updateLabel,
 }: AvatarUploadProps) {
+  const t = useTranslations('common');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -68,6 +74,9 @@ export function AvatarUpload({
     .join('')
     .slice(0, 2)
     .toUpperCase();
+
+  const deleteBtnLabel = deleteLabel ?? t('delete');
+  const updateBtnLabel = updateLabel ?? 'Update';
 
   return (
     <div className="flex items-start justify-between gap-4">
@@ -121,7 +130,7 @@ export function AvatarUpload({
             transition-colors
           "
         >
-          {isDeleting ? 'Deleting...' : 'Delete'}
+          {isDeleting ? t('loading') : deleteBtnLabel}
         </button>
         <button
           type="button"
@@ -135,7 +144,7 @@ export function AvatarUpload({
             transition-colors
           "
         >
-          {isUploading ? 'Uploading...' : 'Update'}
+          {isUploading ? t('loading') : updateBtnLabel}
         </button>
       </div>
 
@@ -151,4 +160,3 @@ export function AvatarUpload({
     </div>
   );
 }
-

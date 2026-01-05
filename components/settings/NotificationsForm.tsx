@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   SettingsSectionHeader,
   SettingsSectionFooter,
@@ -87,6 +88,7 @@ function Toggle({
 }
 
 export function NotificationsForm() {
+  const t = useTranslations('settings.notifications');
   const [notifications, setNotifications] = useState<NotificationCategory[]>(INITIAL_NOTIFICATIONS);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -111,8 +113,8 @@ export function NotificationsForm() {
   return (
     <div className="max-w-3xl">
       <SettingsSectionHeader
-        title="Notification settings"
-        description="We may still send you important notifications about your account outside of your notification settings."
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       <div className="divide-y divide-[var(--border-secondary)]">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SettingsSectionHeader } from './SettingsSection';
 import { Check, Zap, Building2, Rocket } from 'lucide-react';
 
@@ -67,14 +68,15 @@ const PLANS: Plan[] = [
 ];
 
 export function PlanForm() {
+  const t = useTranslations('settings.plan');
   const [currentPlan, setCurrentPlan] = useState('pro');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   return (
     <div className="max-w-5xl">
       <SettingsSectionHeader
-        title="Subscription plan"
-        description="Choose the plan that best fits your needs."
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       {/* Current Plan Banner */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   SettingsSectionHeader,
   SettingsField,
@@ -20,6 +21,7 @@ const TIMEZONES = [
 ];
 
 export function MyDetailsForm() {
+  const t = useTranslations('settings.myDetails');
   const [firstName, setFirstName] = useState('Olivia');
   const [lastName, setLastName] = useState('Rhye');
   const [email, setEmail] = useState('olivia@opensession.co');
@@ -37,17 +39,17 @@ export function MyDetailsForm() {
   return (
     <div className="max-w-3xl">
       <SettingsSectionHeader
-        title="Personal info"
-        description="Update your personal details here."
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       {/* First Name */}
-      <SettingsField label="First name" required>
+      <SettingsField label={t('firstName')} required>
         <input
           type="text"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
-          placeholder="Enter your first name"
+          placeholder={t('firstName')}
           className="
             w-full
             px-3.5 py-2.5
@@ -63,12 +65,12 @@ export function MyDetailsForm() {
       </SettingsField>
 
       {/* Last Name */}
-      <SettingsField label="Last name" required>
+      <SettingsField label={t('lastName')} required>
         <input
           type="text"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
-          placeholder="Enter your last name"
+          placeholder={t('lastName')}
           className="
             w-full
             px-3.5 py-2.5
@@ -85,15 +87,14 @@ export function MyDetailsForm() {
 
       {/* Email */}
       <SettingsField
-        label="Email address"
-        description="This is the email address associated with your account."
+        label={t('email')}
         required
       >
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
+          placeholder={t('email')}
           className="
             w-full
             px-3.5 py-2.5
@@ -109,7 +110,7 @@ export function MyDetailsForm() {
       </SettingsField>
 
       {/* Phone */}
-      <SettingsField label="Phone number">
+      <SettingsField label={t('phone')}>
         <div className="flex">
           <button className="
             inline-flex items-center gap-1.5
@@ -143,7 +144,7 @@ export function MyDetailsForm() {
       </SettingsField>
 
       {/* Timezone */}
-      <SettingsField label="Timezone">
+      <SettingsField label={t('timezone')}>
         <div className="relative">
           <select
             value={timezone}
@@ -209,8 +210,8 @@ export function MyDetailsForm() {
         onCancel={() => {}}
         onSave={handleSave}
         isSaving={isSaving}
+        saveLabel={t('saveChanges')}
       />
     </div>
   );
 }
-

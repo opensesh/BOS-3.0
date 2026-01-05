@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   SettingsSectionHeader,
   SettingsField,
@@ -113,6 +114,7 @@ function CardIcon({ type }: { type: string }) {
 }
 
 export function BillingForm() {
+  const t = useTranslations('settings.billing');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('1');
   const [billingEmail, setBillingEmail] = useState('billing@opensession.co');
   const [streetAddress, setStreetAddress] = useState('100 Smith Street');
@@ -134,8 +136,8 @@ export function BillingForm() {
       {/* Payment Method Section */}
       <section>
         <SettingsSectionHeader
-          title="Payment method"
-          description="Update your billing details and address."
+          title={t('title')}
+          description={t('subtitle')}
         />
 
         {/* Card Details */}

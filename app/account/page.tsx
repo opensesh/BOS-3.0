@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { SettingsHeader } from '@/components/settings/SettingsHeader';
 import { SettingsTabs } from '@/components/settings/SettingsTabs';
 import { ProfileForm } from '@/components/settings/ProfileForm';
@@ -15,26 +16,41 @@ import { IntegrationsForm } from '@/components/settings/IntegrationsForm';
 import { APIForm } from '@/components/settings/APIForm';
 import type { UserProfile } from '@/lib/supabase/types';
 
-// Tab configuration
-const SETTINGS_TABS = [
-  { id: 'my-details', label: 'My details' },
-  { id: 'profile', label: 'Profile' },
-  { id: 'password', label: 'Password' },
-  { id: 'team', label: 'Team' },
-  { id: 'plan', label: 'Plan' },
-  { id: 'billing', label: 'Billing' },
-  { id: 'email', label: 'Email' },
-  { id: 'notifications', label: 'Notifications', badge: '2' },
-  { id: 'integrations', label: 'Integrations' },
-  { id: 'api', label: 'API' },
+// Tab IDs - used for routing and state
+const TAB_IDS = [
+  'my-details',
+  'profile',
+  'password',
+  'team',
+  'plan',
+  'billing',
+  'email',
+  'notifications',
+  'integrations',
+  'api',
 ] as const;
 
-type TabId = typeof SETTINGS_TABS[number]['id'];
+type TabId = typeof TAB_IDS[number];
 
 export default function AccountPage() {
+  const t = useTranslations('settings.tabs');
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Build translated tabs array
+  const settingsTabs = useMemo(() => [
+    { id: 'my-details' as const, label: t('myDetails') },
+    { id: 'profile' as const, label: t('profile') },
+    { id: 'password' as const, label: t('password') },
+    { id: 'team' as const, label: t('team') },
+    { id: 'plan' as const, label: t('plan') },
+    { id: 'billing' as const, label: t('billing') },
+    { id: 'email' as const, label: t('email') },
+    { id: 'notifications' as const, label: t('notifications'), badge: '2' },
+    { id: 'integrations' as const, label: t('integrations') },
+    { id: 'api' as const, label: t('api') },
+  ], [t]);
 
   // Mock user data for now (will be replaced with Supabase auth)
   useEffect(() => {
@@ -116,7 +132,7 @@ export default function AccountPage() {
         
         <div className="mt-5">
           <SettingsTabs
-            tabs={SETTINGS_TABS}
+            tabs={settingsTabs}
             activeTab={activeTab}
             onTabChange={(tabId) => setActiveTab(tabId as TabId)}
           />

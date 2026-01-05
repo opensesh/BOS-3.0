@@ -1,10 +1,11 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
   Settings,
-  Flag,
+  Sparkles,
   LogOut,
   User,
   Mail,
@@ -22,43 +23,58 @@ const user = {
   initials: 'A',
 };
 
+// Tab mappings for navigating to specific settings tabs
 const accountMenuItems = [
   { 
     id: 'profile', 
     label: 'Profile', 
     description: 'Manage your personal info',
     icon: User,
+    tab: 'profile',
   },
   { 
     id: 'preferences', 
     label: 'Account preferences', 
     description: 'Language, notifications, privacy',
     icon: Settings,
+    tab: 'my-details',
   },
   { 
     id: 'security', 
     label: 'Security', 
     description: 'Password, 2FA, sessions',
     icon: Shield,
+    tab: 'password',
   },
   { 
     id: 'billing', 
     label: 'Billing', 
     description: 'Plans, payment methods',
     icon: CreditCard,
+    tab: 'billing',
   },
   { 
     id: 'features', 
-    label: 'Feature previews', 
-    description: 'Try experimental features',
-    icon: Flag,
+    label: 'Release updates', 
+    description: 'See what\'s new',
+    icon: Sparkles,
+    tab: null, // Will navigate to external page in future
   },
 ];
 
 export function MobileAccountPanel() {
+  const router = useRouter();
   const { activePanel, closePanel, closeAll } = useMobileMenu();
   
   const isOpen = activePanel === 'account';
+
+  const handleMenuItemClick = (tab: string | null) => {
+    closeAll();
+    if (tab) {
+      // Navigate to settings page - tab can be handled via URL params or state
+      router.push('/account');
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -128,10 +144,7 @@ export function MobileAccountPanel() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    // Handle navigation - in real app, this would navigate
-                    closeAll();
-                  }}
+                  onClick={() => handleMenuItemClick(item.tab)}
                   className={`
                     w-full flex items-center gap-3
                     px-4 py-3.5
@@ -193,4 +206,3 @@ export function MobileAccountPanel() {
     </motion.div>
   );
 }
-

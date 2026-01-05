@@ -1,18 +1,16 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { 
   Settings,
-  Flag,
+  Sparkles,
   LogOut,
-  Moon,
-  Sun,
-  Monitor,
-  Check,
 } from 'lucide-react';
+import { ThemeCompactToggle } from '@/components/ui/ThemeCompactToggle';
+import { LanguageSelector } from '@/components/ui/LanguageSelector';
 
 interface ProfileDropdownProps {
   isOpen: boolean;
@@ -20,24 +18,10 @@ interface ProfileDropdownProps {
   triggerRef: React.RefObject<HTMLButtonElement | null>;
 }
 
-type ThemeOption = 'dark' | 'light' | 'system';
-
-const themeOptions: { id: ThemeOption; label: string; icon: typeof Moon }[] = [
-  { id: 'dark', label: 'Dark', icon: Moon },
-  { id: 'light', label: 'Light', icon: Sun },
-  { id: 'system', label: 'System', icon: Monitor },
-];
-
 export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // Avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const t = useTranslations('profileDropdown');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -118,110 +102,85 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
           >
             {/* User Info */}
             <div className="px-4 min-h-[52px] flex flex-col justify-center border-b border-[var(--border-secondary)]">
-            <p className="text-sm font-medium text-[var(--fg-primary)]">
-              {user.name}
-            </p>
-            <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">
-              {user.email}
-            </p>
-          </div>
-
-          {/* Menu Items */}
-          <div className="py-1 border-b border-[var(--border-secondary)]">
-            <button
-              onClick={() => {
-                router.push('/account');
-                onClose();
-              }}
-              className="
-                w-full flex items-center gap-3
-                px-4 py-2
-                text-left
-                hover:bg-[var(--bg-tertiary)]
-                transition-colors
-              "
-            >
-              <Settings className="w-4 h-4 text-[var(--fg-tertiary)]" />
-              <span className="text-sm text-[var(--fg-secondary)]">Settings</span>
-            </button>
-            <button
-              onClick={() => {
-                // Navigate to feature previews
-                onClose();
-              }}
-              className="
-                w-full flex items-center gap-3
-                px-4 py-2
-                text-left
-                hover:bg-[var(--bg-tertiary)]
-                transition-colors
-              "
-            >
-              <Flag className="w-4 h-4 text-[var(--fg-tertiary)]" />
-              <span className="text-sm text-[var(--fg-secondary)]">Feature previews</span>
-            </button>
-          </div>
-
-          {/* Theme Section */}
-          <div className="py-2 border-b border-[var(--border-secondary)]">
-            <div className="px-4 py-1.5">
-              <span className="text-xs text-[var(--fg-tertiary)]">Theme</span>
+              <p className="text-sm font-medium text-[var(--fg-primary)]">
+                {user.name}
+              </p>
+              <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">
+                {user.email}
+              </p>
             </div>
-            {themeOptions.map((option) => {
-              const Icon = option.icon;
-              const isSelected = mounted && theme === option.id;
-              
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => setTheme(option.id)}
-                  className={`
-                    w-full flex items-center gap-3
-                    px-4 py-1.5
-                    text-left
-                    hover:bg-[var(--bg-tertiary)]
-                    transition-colors
-                    ${isSelected ? 'bg-[var(--bg-tertiary)]' : ''}
-                  `}
-                >
-                  {isSelected ? (
-                    <span className="w-4 h-4 flex items-center justify-center">
-                      <span className="w-2 h-2 rounded-full bg-[var(--fg-brand-primary)]" />
-                    </span>
-                  ) : (
-                    <span className="w-4 h-4" />
-                  )}
-                  <span className={`text-sm ${isSelected ? 'text-[var(--fg-primary)]' : 'text-[var(--fg-secondary)]'}`}>
-                    {option.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
 
-          {/* Log Out */}
-          <div className="py-1">
-            <button
-              onClick={() => {
-                // Handle logout - in real app, call auth signOut
-                onClose();
-              }}
-              className="
-                w-full flex items-center gap-3
-                px-4 py-2
-                text-left
-                hover:bg-[var(--bg-tertiary)]
-                transition-colors
-              "
-            >
-              <LogOut className="w-4 h-4 text-[var(--fg-tertiary)]" />
-              <span className="text-sm text-[var(--fg-secondary)]">Log out</span>
-            </button>
-          </div>
+            {/* Menu Items */}
+            <div className="py-1 border-b border-[var(--border-secondary)]">
+              <button
+                onClick={() => {
+                  router.push('/account');
+                  onClose();
+                }}
+                className="
+                  w-full flex items-center gap-3
+                  px-4 py-2
+                  text-left
+                  hover:bg-[var(--bg-tertiary)]
+                  transition-colors
+                "
+              >
+                <Settings className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                <span className="text-sm text-[var(--fg-secondary)]">{t('settings')}</span>
+              </button>
+              <button
+                onClick={() => {
+                  // Navigate to release updates page
+                  onClose();
+                }}
+                className="
+                  w-full flex items-center gap-3
+                  px-4 py-2
+                  text-left
+                  hover:bg-[var(--bg-tertiary)]
+                  transition-colors
+                "
+              >
+                <Sparkles className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                <span className="text-sm text-[var(--fg-secondary)]">{t('releaseUpdates')}</span>
+              </button>
+            </div>
+
+            {/* Language Section */}
+            <div className="border-b border-[var(--border-secondary)]">
+              <LanguageSelector variant="dropdown" />
+            </div>
+
+            {/* Theme Section - Compact single row */}
+            <div className="px-4 py-2.5 border-b border-[var(--border-secondary)]">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[var(--fg-tertiary)]">{t('theme')}</span>
+                <ThemeCompactToggle />
+              </div>
+            </div>
+
+            {/* Log Out */}
+            <div className="py-1">
+              <button
+                onClick={() => {
+                  // Handle logout - in real app, call auth signOut
+                  onClose();
+                }}
+                className="
+                  w-full flex items-center gap-3
+                  px-4 py-2
+                  text-left
+                  hover:bg-[var(--bg-tertiary)]
+                  transition-colors
+                "
+              >
+                <LogOut className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                <span className="text-sm text-[var(--fg-secondary)]">{t('logOut')}</span>
+              </button>
+            </div>
           </motion.div>
         </>
       )}
     </AnimatePresence>
   );
 }
-

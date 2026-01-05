@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { HelpCircle, MoreVertical } from 'lucide-react';
 
 interface SettingsSectionHeaderProps {
@@ -129,6 +130,9 @@ interface SettingsSectionFooterProps {
   onSave?: () => void;
   isSaving?: boolean;
   isDisabled?: boolean;
+  cancelLabel?: string;
+  saveLabel?: string;
+  savingLabel?: string;
 }
 
 export function SettingsSectionFooter({
@@ -136,7 +140,16 @@ export function SettingsSectionFooter({
   onSave,
   isSaving = false,
   isDisabled = false,
+  cancelLabel,
+  saveLabel,
+  savingLabel,
 }: SettingsSectionFooterProps) {
+  const t = useTranslations('common');
+  
+  const cancel = cancelLabel ?? t('cancel');
+  const save = saveLabel ?? t('save');
+  const saving = savingLabel ?? t('loading');
+
   return (
     <div className="flex items-center justify-end gap-3 pt-5 border-t border-[var(--border-secondary)]">
       <button
@@ -156,7 +169,7 @@ export function SettingsSectionFooter({
           transition-all duration-150
         "
       >
-        Cancel
+        {cancel}
       </button>
       <button
         type="submit"
@@ -173,7 +186,7 @@ export function SettingsSectionFooter({
           transition-all duration-150
         "
       >
-        {isSaving ? 'Saving...' : 'Save'}
+        {isSaving ? saving : save}
       </button>
     </div>
   );
@@ -188,4 +201,3 @@ export function SettingsDivider({ className = '' }: SettingsDividerProps) {
     <div className={`h-px bg-[var(--border-secondary)] ${className}`} />
   );
 }
-

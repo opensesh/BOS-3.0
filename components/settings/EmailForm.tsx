@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   SettingsSectionHeader,
   SettingsField,
@@ -99,6 +100,7 @@ const AppleIcon = () => (
 );
 
 export function EmailForm() {
+  const t = useTranslations('settings.email');
   const [emails, setEmails] = useState<EmailAddress[]>(INITIAL_EMAILS);
   const [newEmail, setNewEmail] = useState('');
   const [showAddEmail, setShowAddEmail] = useState(false);
@@ -174,8 +176,8 @@ export function EmailForm() {
   return (
     <div className="max-w-3xl">
       <SettingsSectionHeader
-        title="Email settings"
-        description="Manage your email addresses, connected accounts, and preferences."
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       {/* Single Sign-On */}

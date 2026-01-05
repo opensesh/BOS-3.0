@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { SettingsSectionHeader } from './SettingsSection';
 import {
   Plus,
@@ -426,6 +427,7 @@ function ApiKeyRow({
 const BRAND_ID = 'f64b8b02-4a32-4f1a-9c5d-5e9a3b2c1d0e';
 
 export function APIForm() {
+  const t = useTranslations('settings.api');
   const [brandId, setBrandId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<{ key: string; name: string } | null>(null);
@@ -511,8 +513,8 @@ export function APIForm() {
   return (
     <div className="max-w-4xl">
       <SettingsSectionHeader
-        title="API Keys"
-        description="Create and manage API keys for external access to your brand data via MCP."
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       {/* Warning Banner */}

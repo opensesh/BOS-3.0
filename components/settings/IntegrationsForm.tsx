@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { 
   Plus, 
   Server, 
@@ -251,6 +252,7 @@ function McpConnectionRow({
 // ============================================
 
 export function IntegrationsForm() {
+  const t = useTranslations('settings.integrations');
   const [activeTab, setActiveTab] = useState<TabId>('mcp-server');
   const [brandId, setBrandId] = useState<string | null>(null);
   

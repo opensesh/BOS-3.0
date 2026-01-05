@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { ChatProvider } from '@/lib/chat-context';
@@ -37,33 +39,38 @@ export const metadata: Metadata = {
   description: 'Your AI-powered brand management platform built with Next.js and BRAND-OS styling',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${neueHaas.variable} font-sans antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-        >
-          <ChatProvider>
-            <CanvasProvider>
-              <MobileMenuProvider>
-                <BreadcrumbProvider>
-                  <SidebarProvider>
-                    {children}
-                    {/* Canvas Panel - Global overlay for collaborative editing */}
-                    <CanvasPanel />
-                  </SidebarProvider>
-                </BreadcrumbProvider>
-              </MobileMenuProvider>
-            </CanvasProvider>
-          </ChatProvider>
-        </ThemeProvider>
+        <NextIntlClientProvider messages={messages}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+          >
+            <ChatProvider>
+              <CanvasProvider>
+                <MobileMenuProvider>
+                  <BreadcrumbProvider>
+                    <SidebarProvider>
+                      {children}
+                      {/* Canvas Panel - Global overlay for collaborative editing */}
+                      <CanvasPanel />
+                    </SidebarProvider>
+                  </BreadcrumbProvider>
+                </MobileMenuProvider>
+              </CanvasProvider>
+            </ChatProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
         <VercelAnalytics />
         <Toaster 
           position="bottom-right"

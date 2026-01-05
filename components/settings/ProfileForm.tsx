@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   SettingsSectionHeader,
   SettingsField,
@@ -8,7 +9,6 @@ import {
 } from './SettingsSection';
 import { AvatarUpload } from './AvatarUpload';
 import { RichTextEditor } from './RichTextEditor';
-import { Input } from '@/components/ui/base/input/input';
 import type { UserProfile } from '@/lib/supabase/types';
 
 interface ProfileFormProps {
@@ -32,6 +32,7 @@ export function ProfileForm({
   isLoading,
   onUpdate,
 }: ProfileFormProps) {
+  const t = useTranslations('settings.profile');
   const [formData, setFormData] = useState<FormData>({
     username: '',
     website: '',
@@ -155,12 +156,12 @@ export function ProfileForm({
       }}
     >
       <SettingsSectionHeader
-        title="Profile"
-        description="Update your photo and personal details here."
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       {/* Username Field */}
-      <SettingsField label="Username" tooltip="Your unique username">
+      <SettingsField label={t('username')} tooltip={t('username')}>
         <div className="flex">
           <span className="
             inline-flex items-center
@@ -193,7 +194,7 @@ export function ProfileForm({
       </SettingsField>
 
       {/* Website Field */}
-      <SettingsField label="Website">
+      <SettingsField label={t('website')}>
         <div className="flex">
           <span className="
             inline-flex items-center
@@ -227,8 +228,8 @@ export function ProfileForm({
 
       {/* Photo Field */}
       <SettingsField
-        label="Your photo"
-        description="This will be displayed on your profile."
+        label={t('yourPhoto')}
+        description={t('photoDescription')}
       >
         <AvatarUpload
           avatarUrl={formData.avatarUrl}
@@ -236,23 +237,26 @@ export function ProfileForm({
           onUpload={handleAvatarUpload}
           onDelete={handleAvatarDelete}
           isUploading={isUploading}
+          deleteLabel={t('deletePhoto')}
+          updateLabel={t('updatePhoto')}
         />
       </SettingsField>
 
       {/* Bio Field */}
       <SettingsField
-        label="Your bio"
-        description="Write a short introduction."
+        label={t('bio')}
+        description={t('bioHint')}
       >
         <RichTextEditor
           value={formData.bio}
           onChange={(value) => handleInputChange('bio', value)}
           maxLength={275}
+          placeholder={t('bioPlaceholder')}
         />
       </SettingsField>
 
       {/* Job Title Field */}
-      <SettingsField label="Job title">
+      <SettingsField label={t('jobTitle')}>
         <div className="space-y-3">
           <input
             type="text"
@@ -286,7 +290,7 @@ export function ProfileForm({
               "
             />
             <span className="text-sm font-medium text-[var(--fg-secondary)]">
-              Show my job title in my profile
+              {t('showJobTitle')}
             </span>
           </label>
         </div>
@@ -294,8 +298,8 @@ export function ProfileForm({
 
       {/* Alternative Email Field */}
       <SettingsField
-        label="Alternative contact email"
-        description="Enter an alternative email if you'd like to be contacted via a different email."
+        label={t('altEmail')}
+        description={t('altEmailHint')}
       >
         <input
           type="email"
@@ -322,8 +326,8 @@ export function ProfileForm({
         onSave={handleSave}
         isSaving={isSaving}
         isDisabled={!isDirty}
+        saveLabel={t('saveChanges')}
       />
     </form>
   );
 }
-

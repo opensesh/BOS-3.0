@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SettingsSectionHeader } from './SettingsSection';
 import {
   Plus,
@@ -71,6 +72,7 @@ const ROLE_COLORS = {
 };
 
 export function TeamForm() {
+  const t = useTranslations('settings.team');
   const [members, setMembers] = useState<TeamMember[]>(MOCK_TEAM_MEMBERS);
   const [searchQuery, setSearchQuery] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -87,8 +89,8 @@ export function TeamForm() {
   return (
     <div className="max-w-4xl">
       <SettingsSectionHeader
-        title="Team members"
-        description="Manage your team members and their account permissions here."
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       {/* Actions Bar */}

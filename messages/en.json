@@ -18,7 +18,7 @@
   },
   "profileDropdown": {
     "settings": "Settings",
-    "releaseUpdates": "Release updates",
+    "updates": "Updates",
     "theme": "Theme",
     "themeDark": "Dark",
     "themeLight": "Light",
@@ -209,9 +209,27 @@
       "securityDesc": "Password, 2FA, sessions",
       "billing": "Billing",
       "billingDesc": "Plans, payment methods",
-      "releaseUpdates": "Release updates",
-      "releaseUpdatesDesc": "See what's new",
-      "signOut": "Sign out"
+      "updates": "Updates",
+      "updatesDesc": "See what's new",
+      "signOut": "Sign out",
+      "language": "Language",
+      "languageDesc": "Change app language"
+    },
+    "menu": {
+      "navigate": "Navigate",
+      "settings": "Settings",
+      "newChat": "New Chat",
+      "recentChats": "Recent Chats",
+      "projects": "Projects",
+      "notifications": "Notifications",
+      "help": "Help",
+      "account": "Account",
+      "manageSettings": "Manage settings"
+    },
+    "footer": {
+      "privacyPolicy": "Privacy Policy",
+      "termsAndConditions": "Terms & Conditions",
+      "website": "opensession.co"
     }
   }
 }

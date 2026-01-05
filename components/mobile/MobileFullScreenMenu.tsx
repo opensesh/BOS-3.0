@@ -10,14 +10,15 @@ import {
   LayoutGrid,
   ScanFace,
   BrainCog,
-  Bell,
   HelpCircle,
   History,
   ChevronRight,
   Folder,
+  ExternalLink,
 } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { useChatContext } from '@/lib/chat-context';
+import { LanguageSelector } from '@/components/ui/LanguageSelector';
 
 // Simple navigation items - no sub-items for mobile
 const navItems = [
@@ -215,31 +216,7 @@ export function MobileFullScreenMenu() {
                 Settings
               </p>
               <div className="space-y-1">
-                {/* Notifications */}
-                <button 
-                  onClick={() => openPanel('notifications')}
-                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5" />
-                    <span className="font-medium">Notifications</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
-                </button>
-
-                {/* Help */}
-                <button 
-                  onClick={() => openPanel('help')}
-                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <HelpCircle className="w-5 h-5" />
-                    <span className="font-medium">Help</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
-                </button>
-
-                {/* Account */}
+                {/* Account - First */}
                 <button 
                   onClick={() => openPanel('account')}
                   className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
@@ -255,6 +232,54 @@ export function MobileFullScreenMenu() {
                   </div>
                   <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
                 </button>
+
+                {/* Help - Second */}
+                <button 
+                  onClick={() => openPanel('help')}
+                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <HelpCircle className="w-5 h-5" />
+                    <span className="font-medium">Help</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
+                </button>
+
+                {/* Language Selector */}
+                <LanguageSelector variant="mobile" />
+              </div>
+            </motion.div>
+
+            {/* Footer Links */}
+            <motion.div variants={itemVariants} className="px-4 py-4 border-t border-[var(--border-secondary)] mt-auto">
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                <a 
+                  href="https://opensession.co/privacy" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] transition-colors"
+                >
+                  Privacy Policy
+                </a>
+                <span className="text-[var(--fg-quaternary)]">·</span>
+                <a 
+                  href="https://opensession.co/terms" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] transition-colors"
+                >
+                  Terms & Conditions
+                </a>
+                <span className="text-[var(--fg-quaternary)]">·</span>
+                <a 
+                  href="https://opensession.co" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] transition-colors inline-flex items-center gap-1"
+                >
+                  opensession.co
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             </motion.div>
           </motion.div>

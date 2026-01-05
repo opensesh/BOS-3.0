@@ -8,13 +8,13 @@ import { locales, localeNames, type Locale } from '@/i18n/config';
 import { setLocale } from '@/lib/locale-actions';
 
 interface LanguageSelectorProps {
-  /** Variant style - 'dropdown' for profile dropdown, 'standalone' for settings */
-  variant?: 'dropdown' | 'standalone';
+  /** Variant style - 'dropdown' for profile dropdown, 'standalone' for settings, 'mobile' for mobile menu */
+  variant?: 'dropdown' | 'standalone' | 'mobile';
 }
 
 /**
  * Language selector component for changing the application locale.
- * Uses a popover design with smooth animations.
+ * Uses an expandable accordion design with smooth animations and scrollable list.
  */
 export function LanguageSelector({ variant = 'dropdown' }: LanguageSelectorProps) {
   const currentLocale = useLocale() as Locale;
@@ -22,23 +22,9 @@ export function LanguageSelector({ variant = 'dropdown' }: LanguageSelectorProps
   const [isPending, startTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close when clicking outside
+  // Close on escape (only for standalone/mobile variants that don't have parent dropdowns)
   useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
-
-  // Close on escape
-  useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || variant === 'dropdown') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -48,7 +34,7 @@ export function LanguageSelector({ variant = 'dropdown' }: LanguageSelectorProps
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, variant]);
 
   const handleLocaleChange = (locale: Locale) => {
     startTransition(async () => {
@@ -59,79 +45,164 @@ export function LanguageSelector({ variant = 'dropdown' }: LanguageSelectorProps
     });
   };
 
+  // Dropdown variant - expandable accordion style like "Add to Space"
   if (variant === 'dropdown') {
     return (
-      <div ref={containerRef} className="relative">
+      <div ref={containerRef}>
+        {/* Trigger button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           disabled={isPending}
-          className="
+          className={`
             w-full flex items-center justify-between
             px-4 py-2
             text-left
-            hover:bg-[var(--bg-tertiary)]
-            transition-colors
+            transition-colors duration-150
             disabled:opacity-50
-          "
+            ${isOpen
+              ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]'
+              : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+            }
+          `}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
         >
           <div className="flex items-center gap-3">
             <Globe className="w-4 h-4 text-[var(--fg-tertiary)]" />
-            <span className="text-sm text-[var(--fg-secondary)]">
+            <span className="text-sm">
               {localeNames[currentLocale]}
             </span>
           </div>
           <ChevronDown 
-            className={`w-4 h-4 text-[var(--fg-tertiary)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+            className={`w-4 h-4 text-[var(--fg-tertiary)] transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} 
           />
         </button>
 
+        {/* Expandable list */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="
-                absolute left-0 right-0 mt-1
-                bg-[var(--bg-tertiary)]
-                rounded-md
-                border border-[var(--border-secondary)]
-                shadow-lg
-                z-50
-                overflow-hidden
-              "
-              role="listbox"
-              aria-label="Select language"
+              className="overflow-hidden border-t border-[var(--border-secondary)]"
             >
-              {locales.map((locale) => {
-                const isSelected = locale === currentLocale;
-                return (
-                  <button
-                    key={locale}
-                    onClick={() => handleLocaleChange(locale)}
-                    disabled={isPending}
-                    className={`
-                      w-full flex items-center gap-2
-                      px-3 py-2
-                      text-left text-sm
-                      transition-colors
-                      ${isSelected 
-                        ? 'bg-[var(--bg-quaternary)] text-[var(--fg-primary)]' 
-                        : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-quaternary)] hover:text-[var(--fg-primary)]'
-                      }
-                    `}
-                    role="option"
-                    aria-selected={isSelected}
-                  >
-                    {isSelected && <Check className="w-3.5 h-3.5 text-[var(--fg-brand-primary)]" />}
-                    {!isSelected && <span className="w-3.5" />}
-                    <span>{localeNames[locale]}</span>
-                  </button>
-                );
-              })}
+              <div 
+                className="max-h-[120px] overflow-y-auto py-1"
+                role="listbox"
+                aria-label="Select language"
+              >
+                {locales.map((locale) => {
+                  const isSelected = locale === currentLocale;
+                  return (
+                    <button
+                      key={locale}
+                      onClick={() => handleLocaleChange(locale)}
+                      disabled={isPending}
+                      className={`
+                        w-full flex items-center justify-between
+                        px-4 py-2
+                        text-left text-sm
+                        transition-colors duration-150
+                        ${isSelected 
+                          ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
+                          : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                        }
+                      `}
+                      role="option"
+                      aria-selected={isSelected}
+                    >
+                      <span>{localeNames[locale]}</span>
+                      {isSelected && <Check className="w-4 h-4 text-[var(--fg-brand-primary)]" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // Mobile variant - larger touch targets for mobile/tablet
+  if (variant === 'mobile') {
+    return (
+      <div ref={containerRef}>
+        {/* Trigger button */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          disabled={isPending}
+          className={`
+            w-full flex items-center justify-between
+            px-4 py-3.5
+            rounded-xl
+            text-left
+            transition-colors duration-150
+            disabled:opacity-50
+            ${isOpen
+              ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]'
+              : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+            }
+          `}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+        >
+          <div className="flex items-center gap-3">
+            <Globe className="w-5 h-5" />
+            <div className="text-left">
+              <p className="font-medium text-sm">Language</p>
+              <p className="text-xs text-[var(--fg-tertiary)]">{localeNames[currentLocale]}</p>
+            </div>
+          </div>
+          <ChevronDown 
+            className={`w-4 h-4 text-[var(--fg-quaternary)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          />
+        </button>
+
+        {/* Expandable list */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="overflow-hidden"
+            >
+              <div 
+                className="max-h-[180px] overflow-y-auto bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-secondary)] mt-2"
+                role="listbox"
+                aria-label="Select language"
+              >
+                {locales.map((locale) => {
+                  const isSelected = locale === currentLocale;
+                  return (
+                    <button
+                      key={locale}
+                      onClick={() => handleLocaleChange(locale)}
+                      disabled={isPending}
+                      className={`
+                        w-full flex items-center justify-between
+                        px-4 py-3
+                        text-left text-sm
+                        transition-colors duration-150
+                        border-b border-[var(--border-secondary)] last:border-b-0
+                        ${isSelected 
+                          ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
+                          : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                        }
+                      `}
+                      role="option"
+                      aria-selected={isSelected}
+                    >
+                      <span className="font-medium">{localeNames[locale]}</span>
+                      {isSelected && <Check className="w-4 h-4 text-[var(--fg-brand-primary)]" />}
+                    </button>
+                  );
+                })}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -187,32 +258,34 @@ export function LanguageSelector({ variant = 'dropdown' }: LanguageSelectorProps
             role="listbox"
             aria-label="Select language"
           >
-            {locales.map((locale) => {
-              const isSelected = locale === currentLocale;
-              return (
-                <button
-                  key={locale}
-                  onClick={() => handleLocaleChange(locale)}
-                  disabled={isPending}
-                  className={`
-                    w-full flex items-center gap-2
-                    px-3 py-2.5
-                    text-left text-sm
-                    transition-colors
-                    ${isSelected 
-                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
-                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                    }
-                  `}
-                  role="option"
-                  aria-selected={isSelected}
-                >
-                  {isSelected && <Check className="w-4 h-4 text-[var(--fg-brand-primary)]" />}
-                  {!isSelected && <span className="w-4" />}
-                  <span>{localeNames[locale]}</span>
-                </button>
-              );
-            })}
+            <div className="max-h-[160px] overflow-y-auto">
+              {locales.map((locale) => {
+                const isSelected = locale === currentLocale;
+                return (
+                  <button
+                    key={locale}
+                    onClick={() => handleLocaleChange(locale)}
+                    disabled={isPending}
+                    className={`
+                      w-full flex items-center gap-2
+                      px-3 py-2.5
+                      text-left text-sm
+                      transition-colors
+                      ${isSelected 
+                        ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]' 
+                        : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                      }
+                    `}
+                    role="option"
+                    aria-selected={isSelected}
+                  >
+                    {isSelected && <Check className="w-4 h-4 text-[var(--fg-brand-primary)]" />}
+                    {!isSelected && <span className="w-4" />}
+                    <span>{localeNames[locale]}</span>
+                  </button>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

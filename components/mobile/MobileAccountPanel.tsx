@@ -5,16 +5,18 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
   Settings,
-  Bell,
+  Sparkles,
   LogOut,
   User,
   Mail,
   Shield,
   CreditCard,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { ThemeSegmentedControl } from './ThemeSegmentedControl';
+import { LanguageSelector } from '@/components/ui/LanguageSelector';
 
 // Mock user data - in real app, this would come from auth context
 const user = {
@@ -35,7 +37,7 @@ const accountMenuItems = [
   { 
     id: 'preferences', 
     label: 'Account preferences', 
-    description: 'Language, notifications, privacy',
+    description: 'Notifications, privacy settings',
     icon: Settings,
     tab: 'my-details',
   },
@@ -52,13 +54,6 @@ const accountMenuItems = [
     description: 'Plans, payment methods',
     icon: CreditCard,
     tab: 'billing',
-  },
-  { 
-    id: 'features', 
-    label: 'Release updates', 
-    description: 'See what\'s new',
-    icon: Bell,
-    tab: null, // Will navigate to external page in future
   },
 ];
 
@@ -133,6 +128,16 @@ export function MobileAccountPanel() {
           <ThemeSegmentedControl />
         </div>
 
+        {/* Language Section */}
+        <div className="px-4 pb-4">
+          <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
+            Language
+          </p>
+          <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-secondary)] overflow-hidden">
+            <LanguageSelector variant="mobile" />
+          </div>
+        </div>
+
         {/* Menu Items */}
         <div className="px-4 pb-4">
           <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
@@ -176,6 +181,44 @@ export function MobileAccountPanel() {
               );
             })}
           </div>
+        </div>
+
+        {/* Updates Link */}
+        <div className="px-4 pb-4">
+          <a
+            href="https://opensession.co/updates"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="
+              w-full flex items-center gap-3
+              px-4 py-3.5
+              bg-[var(--bg-secondary)]
+              hover:bg-[var(--bg-tertiary)]
+              active:bg-[var(--bg-quaternary)]
+              border border-[var(--border-secondary)]
+              rounded-xl
+              text-left
+              transition-colors
+            "
+          >
+            <div className="
+              w-9 h-9 rounded-lg
+              bg-[var(--bg-tertiary)]
+              flex items-center justify-center
+              flex-shrink-0
+            ">
+              <Sparkles className="w-4.5 h-4.5 text-[var(--fg-tertiary)]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-[var(--fg-primary)]">
+                Updates
+              </p>
+              <p className="text-xs text-[var(--fg-tertiary)] truncate">
+                See what's new
+              </p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-[var(--fg-quaternary)] flex-shrink-0" />
+          </a>
         </div>
 
         {/* Sign Out */}

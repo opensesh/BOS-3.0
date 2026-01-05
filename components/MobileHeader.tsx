@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { Brandmark } from './Brandmark';
 import { SearchModal } from './SearchModal';
@@ -13,7 +13,7 @@ interface MobileHeaderProps {
 }
 
 export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
-  const { isMobileMenuOpen, toggleMobileMenu } = useMobileMenu();
+  const { isMobileMenuOpen, toggleMobileMenu, openPanel } = useMobileMenu();
   const [isHovered, setIsHovered] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -33,6 +33,24 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
 
           {/* Right: Utility Actions */}
           <div className="flex items-center gap-1">
+            {/* Notifications */}
+            <button
+              onClick={() => openPanel('notifications')}
+              className="
+                flex items-center justify-center
+                p-2.5
+                rounded-md
+                text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+                hover:bg-[var(--bg-tertiary)]
+                transition-all duration-150
+                min-w-[44px] min-h-[44px]
+              "
+              title="Notifications"
+              aria-label="Notifications"
+            >
+              <Bell className="w-5 h-5" />
+            </button>
+
             {/* Search */}
             <button
               onClick={() => setIsSearchOpen(true)}

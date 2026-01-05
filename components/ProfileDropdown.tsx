@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
   Settings,
-  Bell,
+  Sparkles,
   LogOut,
 } from 'lucide-react';
 import { ThemeCompactToggle } from '@/components/ui/ThemeCompactToggle';
@@ -130,7 +130,8 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
               </button>
               <button
                 onClick={() => {
-                  // Navigate to release updates page
+                  // Navigate to updates page (external documentation)
+                  window.open('https://opensession.co/updates', '_blank');
                   onClose();
                 }}
                 className="
@@ -141,8 +142,8 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
                   transition-colors
                 "
               >
-                <Bell className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                <span className="text-sm text-[var(--fg-secondary)]">{t('releaseUpdates')}</span>
+                <Sparkles className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                <span className="text-sm text-[var(--fg-secondary)]">{t('updates')}</span>
               </button>
             </div>
 

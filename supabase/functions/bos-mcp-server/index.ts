@@ -725,7 +725,9 @@ Deno.serve(async (req: Request) => {
   // OAuth Metadata Discovery
   // Claude Desktop looks for this at the MCP server URL
   if (req.method === "GET" && (path.endsWith("/.well-known/oauth-authorization-server") || path.includes("/.well-known/oauth-authorization-server"))) {
-    const baseUrl = `${url.protocol}//${url.host}${path.replace("/.well-known/oauth-authorization-server", "")}`;
+    // Build the correct base URL for the MCP server
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || `https://${url.host}`;
+    const baseUrl = `${supabaseUrl}/functions/v1/bos-mcp-server`;
     return new Response(
       JSON.stringify({
         issuer: baseUrl,

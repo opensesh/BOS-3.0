@@ -19,6 +19,7 @@ import {
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { useChatContext } from '@/lib/chat-context';
 import { LanguageSelector } from '@/components/ui/LanguageSelector';
+import { ThemeSegmentedControl } from './ThemeSegmentedControl';
 
 // Simple navigation items - no sub-items for mobile
 const navItems = [
@@ -222,11 +223,11 @@ export function MobileFullScreenMenu() {
                   className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-mono">A</span>
+                    <div className="w-5 h-5 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[8px] font-mono">A</span>
                     </div>
                     <div className="text-left">
-                      <p className="text-[var(--fg-primary)] font-medium text-sm">Account</p>
+                      <p className="font-medium">Account</p>
                       <p className="text-[var(--fg-tertiary)] text-xs">Manage settings</p>
                     </div>
                   </div>
@@ -240,13 +241,22 @@ export function MobileFullScreenMenu() {
                 >
                   <div className="flex items-center gap-3">
                     <HelpCircle className="w-5 h-5" />
-                    <span className="font-medium">Help</span>
+                    <div className="text-left">
+                      <p className="font-medium">Help</p>
+                      <p className="text-[var(--fg-tertiary)] text-xs">Get support & resources</p>
+                    </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
                 </button>
 
                 {/* Language Selector */}
                 <LanguageSelector variant="mobile" />
+
+                {/* Appearance / Theme */}
+                <div className="pt-2">
+                  <p className="text-xs text-[var(--fg-tertiary)] mb-2 px-4">Appearance</p>
+                  <ThemeSegmentedControl />
+                </div>
               </div>
             </motion.div>
 

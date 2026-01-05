@@ -18,7 +18,6 @@ interface SettingsTabsProps {
 
 export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -30,8 +29,8 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
     if (!container) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = container;
-    setShowLeftArrow(scrollLeft > 0);
-    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
+    setShowLeftArrow(scrollLeft > 5);
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
   }, []);
 
   // Update sliding indicator position
@@ -71,7 +70,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    const scrollAmount = 200;
+    const scrollAmount = 150;
     container.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth',
@@ -79,96 +78,33 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
   };
 
   return (
-    <div className="relative">
-      {/* Left gradient fade + arrow */}
-      <div 
+    <div className="relative flex items-center gap-2">
+      {/* Left arrow button - outside the scroll container */}
+      <button
+        onClick={() => scroll('left')}
         className={`
-          absolute left-0 top-0 bottom-0 z-10
-          flex items-center
-          pointer-events-none
-          transition-opacity duration-200
-          ${showLeftArrow ? 'opacity-100' : 'opacity-0'}
+          flex-shrink-0
+          w-8 h-8
+          flex items-center justify-center
+          bg-[var(--bg-primary)]
+          border border-[var(--border-secondary)]
+          rounded-md
+          text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+          hover:bg-[var(--bg-secondary)]
+          shadow-sm
+          transition-all duration-150
+          ${showLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}
         `}
+        aria-label="Scroll tabs left"
       >
-        {/* Gradient fade */}
-        <div 
-          className="
-            absolute left-0 top-0 bottom-0 w-16
-            bg-gradient-to-r from-[var(--bg-tertiary)] via-[var(--bg-tertiary)]/80 to-transparent
-            rounded-l-lg
-          "
-        />
-        {/* Arrow button */}
-        <button
-          onClick={() => scroll('left')}
-          disabled={!showLeftArrow}
-          className="
-            relative z-10
-            ml-1
-            w-8 h-8
-            flex items-center justify-center
-            bg-[var(--bg-primary)]
-            border border-[var(--border-secondary)]
-            rounded-md
-            text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-            hover:bg-primary_hover
-            shadow-sm
-            transition-all duration-150
-            pointer-events-auto
-          "
-          aria-label="Scroll tabs left"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Right gradient fade + arrow */}
-      <div 
-        className={`
-          absolute right-0 top-0 bottom-0 z-10
-          flex items-center justify-end
-          pointer-events-none
-          transition-opacity duration-200
-          ${showRightArrow ? 'opacity-100' : 'opacity-0'}
-        `}
-      >
-        {/* Gradient fade */}
-        <div 
-          className="
-            absolute right-0 top-0 bottom-0 w-16
-            bg-gradient-to-l from-[var(--bg-tertiary)] via-[var(--bg-tertiary)]/80 to-transparent
-            rounded-r-lg
-          "
-        />
-        {/* Arrow button */}
-        <button
-          onClick={() => scroll('right')}
-          disabled={!showRightArrow}
-          className="
-            relative z-10
-            mr-1
-            w-8 h-8
-            flex items-center justify-center
-            bg-[var(--bg-primary)]
-            border border-[var(--border-secondary)]
-            rounded-md
-            text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-            hover:bg-primary_hover
-            shadow-sm
-            transition-all duration-150
-            pointer-events-auto
-          "
-          aria-label="Scroll tabs right"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
+        <ChevronLeft className="w-4 h-4" />
+      </button>
 
       {/* Tabs container */}
       <div
         ref={scrollContainerRef}
         className="
-          relative
+          relative flex-1 min-w-0
           flex items-center gap-0.5
           p-1
           bg-[var(--bg-tertiary)]
@@ -177,12 +113,12 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
           scrollbar-hide
           scroll-smooth
           touch-pan-x
+          overscroll-x-contain
         "
         role="tablist"
         aria-label="Settings tabs"
         style={{
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
         }}
       >
@@ -225,6 +161,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
                 text-xs font-medium
                 whitespace-nowrap
                 cursor-pointer
+                select-none
               "
               animate={{
                 color: isActive ? 'var(--fg-primary)' : 'var(--fg-tertiary)',
@@ -260,7 +197,27 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
           );
         })}
       </div>
+
+      {/* Right arrow button - outside the scroll container */}
+      <button
+        onClick={() => scroll('right')}
+        className={`
+          flex-shrink-0
+          w-8 h-8
+          flex items-center justify-center
+          bg-[var(--bg-primary)]
+          border border-[var(--border-secondary)]
+          rounded-md
+          text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+          hover:bg-[var(--bg-secondary)]
+          shadow-sm
+          transition-all duration-150
+          ${showRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+        `}
+        aria-label="Scroll tabs right"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
     </div>
   );
 }
-

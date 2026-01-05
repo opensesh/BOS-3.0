@@ -40,8 +40,8 @@ export function LanguageSelector({ variant = 'dropdown' }: LanguageSelectorProps
     startTransition(async () => {
       await setLocale(locale);
       setIsOpen(false);
-      // Reload the page to apply new locale
-      window.location.reload();
+      // Don't reload immediately - let the user continue browsing
+      // The new locale will take effect on next navigation
     });
   };
 

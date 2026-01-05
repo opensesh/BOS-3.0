@@ -4,19 +4,12 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
-  Settings,
-  Sparkles,
   LogOut,
-  User,
   Mail,
-  Shield,
-  CreditCard,
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
-import { ThemeSegmentedControl } from './ThemeSegmentedControl';
-import { LanguageSelector } from '@/components/ui/LanguageSelector';
 
 // Mock user data - in real app, this would come from auth context
 const user = {
@@ -25,36 +18,16 @@ const user = {
   initials: 'A',
 };
 
-// Tab mappings for navigating to specific settings tabs
+// Simplified menu items - just labels and tabs
 const accountMenuItems = [
-  { 
-    id: 'profile', 
-    label: 'Profile', 
-    description: 'Manage your personal info',
-    icon: User,
-    tab: 'profile',
-  },
-  { 
-    id: 'preferences', 
-    label: 'Account preferences', 
-    description: 'Notifications, privacy settings',
-    icon: Settings,
-    tab: 'my-details',
-  },
-  { 
-    id: 'security', 
-    label: 'Security', 
-    description: 'Password, 2FA, sessions',
-    icon: Shield,
-    tab: 'password',
-  },
-  { 
-    id: 'billing', 
-    label: 'Billing', 
-    description: 'Plans, payment methods',
-    icon: CreditCard,
-    tab: 'billing',
-  },
+  { id: 'profile', label: 'Profile', tab: 'profile' },
+  { id: 'my-details', label: 'My details', tab: 'my-details' },
+  { id: 'password', label: 'Password', tab: 'password' },
+  { id: 'team', label: 'Team', tab: 'team' },
+  { id: 'plan', label: 'Plan', tab: 'plan' },
+  { id: 'billing', label: 'Billing', tab: 'billing' },
+  { id: 'notifications', label: 'Notifications', tab: 'notifications' },
+  { id: 'integrations', label: 'Integrations', tab: 'integrations' },
 ];
 
 export function MobileAccountPanel() {
@@ -63,12 +36,9 @@ export function MobileAccountPanel() {
   
   const isOpen = activePanel === 'account';
 
-  const handleMenuItemClick = (tab: string | null) => {
+  const handleMenuItemClick = (tab: string) => {
     closeAll();
-    if (tab) {
-      // Navigate to settings page - tab can be handled via URL params or state
-      router.push('/account');
-    }
+    router.push('/account');
   };
 
   if (!isOpen) return null;
@@ -105,8 +75,8 @@ export function MobileAccountPanel() {
         {/* User Info Card */}
         <div className="p-4">
           <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-secondary)]">
-            <div className="w-14 h-14 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-lg font-mono">{user.initials}</span>
+            <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-[var(--border-secondary)] rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-base font-mono">{user.initials}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-base font-semibold text-[var(--fg-primary)] truncate">
@@ -120,66 +90,30 @@ export function MobileAccountPanel() {
           </div>
         </div>
 
-        {/* Theme Section */}
-        <div className="px-4 pb-4">
-          <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
-            Appearance
-          </p>
-          <ThemeSegmentedControl />
-        </div>
-
-        {/* Language Section */}
-        <div className="px-4 pb-4">
-          <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
-            Language
-          </p>
-          <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-secondary)] overflow-hidden">
-            <LanguageSelector variant="mobile" />
-          </div>
-        </div>
-
-        {/* Menu Items */}
+        {/* Settings Links */}
         <div className="px-4 pb-4">
           <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
             Settings
           </p>
           <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-secondary)] overflow-hidden">
-            {accountMenuItems.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleMenuItemClick(item.tab)}
-                  className={`
-                    w-full flex items-center gap-3
-                    px-4 py-3.5
-                    text-left
-                    hover:bg-[var(--bg-tertiary)]
-                    active:bg-[var(--bg-quaternary)]
-                    transition-colors
-                    ${index !== accountMenuItems.length - 1 ? 'border-b border-[var(--border-secondary)]' : ''}
-                  `}
-                >
-                  <div className="
-                    w-9 h-9 rounded-lg
-                    bg-[var(--bg-tertiary)]
-                    flex items-center justify-center
-                    flex-shrink-0
-                  ">
-                    <Icon className="w-4.5 h-4.5 text-[var(--fg-tertiary)]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--fg-primary)]">
-                      {item.label}
-                    </p>
-                    <p className="text-xs text-[var(--fg-tertiary)] truncate">
-                      {item.description}
-                    </p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)] flex-shrink-0" />
-                </button>
-              );
-            })}
+            {accountMenuItems.map((item, index) => (
+              <button
+                key={item.id}
+                onClick={() => handleMenuItemClick(item.tab)}
+                className={`
+                  w-full flex items-center justify-between
+                  px-4 py-3
+                  text-left text-sm font-medium text-[var(--fg-primary)]
+                  hover:bg-[var(--bg-tertiary)]
+                  active:bg-[var(--bg-quaternary)]
+                  transition-colors
+                  ${index !== accountMenuItems.length - 1 ? 'border-b border-[var(--border-secondary)]' : ''}
+                `}
+              >
+                <span>{item.label}</span>
+                <ChevronRight className="w-4 h-4 text-[var(--fg-quaternary)]" />
+              </button>
+            ))}
           </div>
         </div>
 
@@ -190,34 +124,19 @@ export function MobileAccountPanel() {
             target="_blank"
             rel="noopener noreferrer"
             className="
-              w-full flex items-center gap-3
-              px-4 py-3.5
+              w-full flex items-center justify-between
+              px-4 py-3
               bg-[var(--bg-secondary)]
               hover:bg-[var(--bg-tertiary)]
               active:bg-[var(--bg-quaternary)]
               border border-[var(--border-secondary)]
               rounded-xl
-              text-left
+              text-left text-sm font-medium text-[var(--fg-primary)]
               transition-colors
             "
           >
-            <div className="
-              w-9 h-9 rounded-lg
-              bg-[var(--bg-tertiary)]
-              flex items-center justify-center
-              flex-shrink-0
-            ">
-              <Sparkles className="w-4.5 h-4.5 text-[var(--fg-tertiary)]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[var(--fg-primary)]">
-                Updates
-              </p>
-              <p className="text-xs text-[var(--fg-tertiary)] truncate">
-                See what's new
-              </p>
-            </div>
-            <ExternalLink className="w-4 h-4 text-[var(--fg-quaternary)] flex-shrink-0" />
+            <span>Updates</span>
+            <ExternalLink className="w-4 h-4 text-[var(--fg-quaternary)]" />
           </a>
         </div>
 
@@ -230,14 +149,14 @@ export function MobileAccountPanel() {
             }}
             className="
               w-full flex items-center justify-center gap-2
-              py-3.5 px-4
+              py-3 px-4
               bg-[var(--bg-secondary)]
               hover:bg-[var(--bg-tertiary)]
               active:bg-[var(--bg-quaternary)]
               border border-[var(--border-secondary)]
               rounded-xl
               text-[var(--fg-secondary)]
-              font-medium
+              text-sm font-medium
               transition-colors
             "
           >

@@ -26,7 +26,6 @@ import {
   FolderPlus,
   Folder,
   ArrowRight,
-  History,
 } from 'lucide-react';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
@@ -264,8 +263,8 @@ function RecentChatsFlyout({
             className="px-3 py-2.5 border-b border-[var(--border-secondary)] flex items-center justify-between group hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-[var(--fg-tertiary)]" />
-              <span className="text-sm font-medium text-[var(--fg-primary)]">Recent Chats</span>
+              <MessageSquare className="w-4 h-4 text-[var(--fg-tertiary)]" />
+              <span className="text-sm font-medium text-[var(--fg-primary)]">Chats</span>
             </div>
             <ArrowRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
           </Link>
@@ -284,7 +283,6 @@ function RecentChatsFlyout({
                   className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-left"
                   role="menuitem"
                 >
-                  <MessageSquare className="w-3.5 h-3.5 flex-shrink-0 text-[var(--fg-quaternary)]" />
                   <span className="truncate">{chat.title}</span>
                 </button>
               ))
@@ -497,7 +495,6 @@ function CollapsedFlyout({
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-left"
                     role="menuitem"
                   >
-                    <MessageSquare className="w-3.5 h-3.5 flex-shrink-0 text-[var(--fg-quaternary)]" />
                     <span className="truncate">{chat.title}</span>
                   </button>
                 ))
@@ -924,8 +921,8 @@ export function Sidebar() {
                         href="/chats"
                         className="flex-1 flex items-center gap-2 px-2 py-2"
                       >
-                        <History className="w-4 h-4" />
-                        <span className="text-sm flex-1">Recent Chats</span>
+                        <MessageSquare className="w-4 h-4" />
+                        <span className="text-sm flex-1">Chats</span>
                         {chatHistory.length > 0 && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
                             {chatHistory.length}
@@ -967,7 +964,6 @@ export function Sidebar() {
                                 }}
                                 className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
                               >
-                                <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
                                 <span className="truncate">{chat.title}</span>
                               </button>
                             ))}
@@ -993,10 +989,10 @@ export function Sidebar() {
                 <Link
                   href="/chats"
                   className={`p-2 ${isRecentChatsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
-                  title="Recent Chats"
+                  title="Chats"
                 >
                   <div className={`flex items-center justify-center rounded-md transition-all duration-150 w-8 h-8 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
-                    <History className="w-[18px] h-[18px]" />
+                    <MessageSquare className="w-[18px] h-[18px]" />
                   </div>
                 </Link>
               );
@@ -1218,7 +1214,6 @@ export function Sidebar() {
                                       }}
                                       className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
                                     >
-                                      <MessageSquare className="w-3.5 h-3.5 flex-shrink-0" />
                                       <span className="truncate">{chat.title}</span>
                                     </button>
                                   ))}

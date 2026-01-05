@@ -13,7 +13,6 @@ import {
   Palette,
   Type,
   ImageIcon,
-  History,
   Code,
   PenTool,
   MessageSquare,
@@ -202,7 +201,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
                 <div className="flex items-center justify-between px-2 pt-[14px] pb-2">
-                  <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Recent Chats</h3>
+                  <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Chats</h3>
                   <Link 
                     href="/chats" 
                     onClick={onClose}
@@ -224,7 +223,6 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       onClick={() => handleChatClick(chat.id)}
                       className="w-full text-left px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
                     >
-                      <MessageSquare className="w-4 h-4 flex-shrink-0" />
                       <span className="truncate">{chat.title}</span>
                     </motion.button>
                   ))
@@ -458,7 +456,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
               {/* Recent chats section */}
               <motion.div variants={fadeInUp} className="pt-3 border-t border-[var(--border-secondary)]">
                 <div className="flex items-center justify-between mb-2 px-2">
-                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Recent Chats</h4>
+                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Chats</h4>
                   <Link 
                     href="/chats" 
                     onClick={onClose}
@@ -478,7 +476,6 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         onClick={() => handleChatClick(chat.id)}
                         className="w-full text-left px-3 py-2 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
                       >
-                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
                         <span className="truncate">{chat.title}</span>
                       </motion.button>
                     ))

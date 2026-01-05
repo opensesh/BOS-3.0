@@ -63,35 +63,115 @@ interface CreatePostCopyFormProps {
 }
 
 // =============================================================================
-// Channel Icons (inline SVG for custom platforms)
+// Platform Icons (SVG)
 // =============================================================================
 
-const ChannelIcon: React.FC<{ icon: string | null; className?: string }> = ({ icon, className }) => {
-  // Map icon names to simple representations
-  const iconMap: Record<string, React.ReactNode> = {
-    instagram: <span className={className}>IG</span>,
-    linkedin: <span className={className}>LI</span>,
-    tiktok: <span className={className}>TT</span>,
-    youtube: <span className={className}>YT</span>,
-    twitter: <span className={className}>X</span>,
-    facebook: <span className={className}>FB</span>,
-    pinterest: <span className={className}>PIN</span>,
-    threads: <span className={className}>THR</span>,
-    snapchat: <span className={className}>SNAP</span>,
-    reddit: <span className={className}>RED</span>,
-    discord: <span className={className}>DISC</span>,
-    tumblr: <span className={className}>TUMB</span>,
-    medium: <span className={className}>MED</span>,
-    substack: <span className={className}>SUB</span>,
-    spotify: <span className={className}>SPOT</span>,
-    'apple-podcasts': <span className={className}>APOD</span>,
-    twitch: <span className={className}>TWCH</span>,
-    bereal: <span className={className}>BREAL</span>,
-    mastodon: <span className={className}>MAST</span>,
-    bluesky: <span className={className}>BSKY</span>,
+const PlatformIcon: React.FC<{ platform: string; className?: string }> = ({ platform, className = 'w-4 h-4' }) => {
+  const icons: Record<string, React.ReactNode> = {
+    instagram: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+      </svg>
+    ),
+    tiktok: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+      </svg>
+    ),
+    youtube: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+      </svg>
+    ),
+    twitter: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+    ),
+    facebook: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+      </svg>
+    ),
+    linkedin: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+      </svg>
+    ),
+    pinterest: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/>
+      </svg>
+    ),
+    threads: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.182.408-2.256 1.33-3.022.88-.73 2.112-1.145 3.474-1.17.977-.018 1.91.096 2.788.337l-.001-.327c-.027-1.552-.327-2.675-1.131-3.37-.805-.694-1.978-.989-3.564-.886l-.182-2.005c1.971-.127 3.576.27 4.772 1.18 1.253.954 1.933 2.42 2.02 4.36.014.306.02.62.02.942 0 .06 0 .124-.002.188.666.312 1.233.702 1.702 1.17.888.887 1.407 2.022 1.543 3.377.147 1.463-.222 2.939-1.1 4.397C20.626 22.06 17.552 24 12.186 24zM8.969 15.01c.04.724.397 1.303.971 1.658.6.372 1.378.543 2.187.5 1.027-.06 1.81-.424 2.395-1.115.436-.514.733-1.194.895-2.037-1.92-.492-3.904-.495-5.178.49-.578.45-.82.94-.793 1.404.005.033.014.067.023.1z"/>
+      </svg>
+    ),
+    snapchat: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z"/>
+      </svg>
+    ),
+    twitch: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+      </svg>
+    ),
+    bereal: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M10.877 11.128H7.174V7.692a3.703 3.703 0 1 1 3.703 3.436zm1.246 5.18a3.703 3.703 0 1 1-3.703-3.435h3.703v3.436zM12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm4.949 16.308a4.948 4.948 0 0 1-4.826 4.945v-4.945h4.826zm0-5.18h-4.826V6.748a4.948 4.948 0 0 1 4.826 4.38z"/>
+      </svg>
+    ),
+    reddit: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+      </svg>
+    ),
+    discord: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+      </svg>
+    ),
+    medium: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+      </svg>
+    ),
+    substack: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
+      </svg>
+    ),
+    spotify: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+      </svg>
+    ),
+    mastodon: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M23.268 5.313c-.35-2.578-2.617-4.61-5.304-5.004C17.51.242 15.792 0 11.813 0h-.03c-3.98 0-4.835.242-5.288.309C3.882.692 1.496 2.518.917 5.127.64 6.412.61 7.837.661 9.143c.074 1.874.088 3.745.26 5.611.118 1.24.325 2.47.62 3.68.55 2.237 2.777 4.098 4.96 4.857 2.336.792 4.849.923 7.256.38.265-.061.527-.132.786-.213.585-.184 1.27-.39 1.774-.753a.057.057 0 0 0 .023-.043v-1.809a.052.052 0 0 0-.02-.041.053.053 0 0 0-.046-.01 20.282 20.282 0 0 1-4.709.545c-2.73 0-3.463-1.284-3.674-1.818a5.593 5.593 0 0 1-.319-1.433.053.053 0 0 1 .066-.054c1.517.363 3.072.546 4.632.546.376 0 .75 0 1.125-.01 1.57-.044 3.224-.124 4.768-.422.038-.008.077-.015.11-.024 2.435-.464 4.753-1.92 4.989-5.604.008-.145.03-1.52.03-1.67.002-.512.167-3.63-.024-5.545zm-3.748 9.195h-2.561V8.29c0-1.309-.55-1.976-1.67-1.976-1.23 0-1.846.79-1.846 2.35v3.403h-2.546V8.663c0-1.56-.617-2.35-1.848-2.35-1.112 0-1.668.668-1.67 1.977v6.218H4.822V8.102c0-1.31.337-2.35 1.011-3.12.696-.77 1.608-1.164 2.74-1.164 1.311 0 2.302.5 2.962 1.498l.638 1.06.638-1.06c.66-.999 1.65-1.498 2.96-1.498 1.13 0 2.043.395 2.74 1.164.675.77 1.012 1.81 1.012 3.12z"/>
+      </svg>
+    ),
+    bluesky: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8z"/>
+      </svg>
+    ),
+    tumblr: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M14.563 24c-5.093 0-7.031-3.756-7.031-6.411V9.747H5.116V6.648c3.63-1.313 4.512-4.596 4.71-6.469C9.84.051 9.941 0 9.999 0h3.517v6.114h4.801v3.633h-4.82v7.47c.016 1.001.375 2.371 2.207 2.371h.09c.631-.02 1.486-.205 1.936-.419l1.156 3.425c-.436.636-2.4 1.374-4.156 1.404h-.166z"/>
+      </svg>
+    ),
+    'apple-podcasts': (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M5.34 0A5.328 5.328 0 0 0 0 5.34v13.32A5.328 5.328 0 0 0 5.34 24h13.32A5.328 5.328 0 0 0 24 18.66V5.34A5.328 5.328 0 0 0 18.66 0zm6.525 2.568c4.988 0 9.054 4.066 9.054 9.054 0 1.955-.616 3.773-1.666 5.253-.376.528-.392.634-.792.634-.27 0-.544-.18-.544-.544 0-.18.06-.42.18-.634.96-1.32 1.53-2.932 1.53-4.709 0-4.314-3.507-7.82-7.762-7.82-4.254 0-7.762 3.506-7.762 7.82 0 1.778.57 3.39 1.53 4.71.12.213.18.453.18.633 0 .365-.274.544-.544.544-.4 0-.416-.106-.792-.634a9.04 9.04 0 0 1-1.666-5.253c0-4.988 4.066-9.054 9.054-9.054zM12 7.08a4.503 4.503 0 0 0-4.496 4.496c0 .78.197 1.512.543 2.153.246.453.502.632.843.632.404 0 .662-.346.662-.77 0-.18-.062-.358-.15-.533a2.975 2.975 0 0 1-.318-1.32 2.932 2.932 0 0 1 2.916-2.915A2.932 2.932 0 0 1 14.916 11.738c0 .469-.105.909-.318 1.319-.088.175-.15.354-.15.532 0 .425.258.771.662.771.34 0 .597-.179.843-.632a4.503 4.503 0 0 0-4.953-6.648zM12 10.5a1.06 1.06 0 0 0-.748.31 1.054 1.054 0 0 0-.312.748c0 .167.032.343.08.517l.754 4.085c.059.31.312.456.528.456h.007c.215 0 .47-.146.528-.456l.754-4.085c.047-.175.08-.35.08-.517a1.063 1.063 0 0 0-1.06-1.058c-.218 0-.37.06-.611.06z"/>
+      </svg>
+    ),
   };
 
-  return <>{iconMap[icon || ''] || <span className={className}>•</span>}</>;
+  const normalizedPlatform = platform?.toLowerCase().replace(/\s+/g, '-') || '';
+  return <>{icons[normalizedPlatform] || <span className={`${className} inline-flex items-center justify-center text-[10px] font-semibold`}>?</span>}</>;
 };
 
 // =============================================================================
@@ -156,6 +236,149 @@ function SegmentedControl<T extends string>({ options, value, onChange, disabled
         </button>
       ))}
     </div>
+  );
+}
+
+// Tab Selector for Goals (similar to Brain's Writing Styles page)
+interface GoalTabSelectorProps {
+  goals: Goal[];
+  activeGoalId: string;
+  onChange: (goalId: string) => void;
+  onAdd?: () => void;
+  onEdit?: () => void;
+  showEdit?: boolean;
+}
+
+function GoalTabSelector({ goals, activeGoalId, onChange, onAdd, onEdit, showEdit }: GoalTabSelectorProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Measure active tab position for sliding indicator
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const activeButton = container.querySelector(`[data-goal-id="${activeGoalId}"]`) as HTMLButtonElement;
+    if (activeButton) {
+      setIndicatorStyle({
+        left: activeButton.offsetLeft,
+        width: activeButton.offsetWidth,
+      });
+      if (!isInitialized) {
+        requestAnimationFrame(() => setIsInitialized(true));
+      }
+    }
+  }, [activeGoalId, goals, isInitialized]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
+          Goal
+        </label>
+        <div className="flex items-center gap-1">
+          {showEdit && onEdit && (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="p-1 text-[var(--fg-quaternary)] hover:text-[var(--fg-secondary)] transition-colors"
+              title="Edit goals"
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+          )}
+          {onAdd && (
+            <button
+              type="button"
+              onClick={onAdd}
+              className="p-1 text-[var(--fg-quaternary)] hover:text-[var(--fg-brand-primary)] transition-colors"
+              title="Add new goal"
+            >
+              <Plus className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+      </div>
+      <div 
+        ref={containerRef}
+        className="relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-tertiary)] ring-1 ring-[var(--border-secondary)]"
+      >
+        {/* Sliding indicator */}
+        <motion.div
+          className="absolute top-1 bottom-1 rounded-md bg-[var(--bg-primary)] shadow-sm"
+          initial={false}
+          animate={{
+            left: indicatorStyle.left,
+            width: indicatorStyle.width,
+          }}
+          transition={{
+            type: 'spring',
+            stiffness: 500,
+            damping: 35,
+            mass: 1,
+          }}
+          style={{ opacity: isInitialized ? 1 : 0 }}
+          aria-hidden="true"
+        />
+        
+        {/* Goal tabs */}
+        {goals.map((goal) => {
+          const isActive = activeGoalId === goal.id;
+          return (
+            <motion.button
+              key={goal.id}
+              data-goal-id={goal.id}
+              type="button"
+              onClick={() => onChange(goal.id)}
+              className="relative z-10 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer"
+              animate={{
+                color: isActive 
+                  ? 'var(--fg-primary)' 
+                  : 'var(--fg-tertiary)',
+              }}
+              whileHover={!isActive ? { color: 'var(--fg-secondary)' } : {}}
+              whileTap={{ scale: 0.98 }}
+              transition={{
+                color: { duration: 0.15, ease: 'easeOut' },
+                scale: { type: 'spring', stiffness: 400, damping: 25 },
+              }}
+            >
+              {goal.label}
+            </motion.button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Channel chip with icon and full name
+interface ChannelChipProps {
+  channel: Channel;
+  selected: boolean;
+  onClick: () => void;
+}
+
+function ChannelChip({ channel, selected, onClick }: ChannelChipProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        inline-flex items-center gap-2 px-3 py-2
+        rounded-lg text-sm font-medium transition-all duration-150
+        ${selected
+          ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] ring-1 ring-[var(--border-brand-solid)]'
+          : 'bg-[var(--bg-primary)] text-[var(--fg-secondary)] ring-1 ring-[var(--border-primary)] hover:ring-[var(--border-brand-solid)] hover:text-[var(--fg-primary)]'
+        }
+        cursor-pointer
+      `}
+    >
+      <PlatformIcon platform={channel.icon || ''} className="w-4 h-4 shrink-0" />
+      <span>{channel.label}</span>
+      {selected && <Check className="w-3 h-3 shrink-0 ml-0.5" />}
+    </button>
   );
 }
 
@@ -468,16 +691,15 @@ export function CreatePostCopyForm({
                   />
                   <div className="flex flex-wrap gap-2">
                     {availableChannels.map((channel) => (
-                      <Chip
+                      <ChannelChip
                         key={channel.id}
+                        channel={channel}
                         selected={selectedChannelIds.includes(channel.id)}
                         onClick={() => {
                           handleFirstInteraction();
                           toggleChannel(channel.id);
                         }}
-                      >
-                        {channel.shortLabel}
-                      </Chip>
+                      />
                     ))}
                     {availableChannels.length === 0 && (
                       <p className="text-xs text-[var(--fg-quaternary)] italic">
@@ -509,26 +731,15 @@ export function CreatePostCopyForm({
                   </motion.div>
                 )}
 
-                {/* Goal Section */}
-                <div>
-                  <SectionHeader
-                    label="Goal"
-                    onAdd={() => onEditField?.('goal', 'add')}
-                    onEdit={() => onEditField?.('goal', 'edit')}
-                    showEdit={goals.some(g => !g.isDefault)}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {goals.map((goal) => (
-                      <Chip
-                        key={goal.id}
-                        selected={goalId === goal.id}
-                        onClick={() => setGoalId(goal.id)}
-                      >
-                        {goal.label}
-                      </Chip>
-                    ))}
-                  </div>
-                </div>
+                {/* Goal Section - Tab Selector */}
+                <GoalTabSelector
+                  goals={goals}
+                  activeGoalId={goalId}
+                  onChange={setGoalId}
+                  onAdd={() => onEditField?.('goal', 'add')}
+                  onEdit={() => onEditField?.('goal', 'edit')}
+                  showEdit={goals.some(g => !g.isDefault)}
+                />
 
                 {/* Key Message */}
                 <div>

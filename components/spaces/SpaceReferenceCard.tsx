@@ -107,8 +107,14 @@ export function DiscussionCard({
     if (onClick) {
       onClick();
     } else {
-      router.push(`/spaces/${spaceSlug}/chat/${id}`);
+      // Use scroll: false to prevent navigation flash
+      router.push(`/spaces/${spaceSlug}/chat/${id}`, { scroll: false });
     }
+  };
+  
+  // Prefetch on hover for faster navigation
+  const handleMouseEnter = () => {
+    router.prefetch(`/spaces/${spaceSlug}/chat/${id}`);
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
@@ -152,6 +158,7 @@ export function DiscussionCard({
     <div className="relative group">
       <button
         onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
         className="w-full p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-secondary)] hover:border-[var(--border-brand)] transition-all text-left"
       >
         <div className="flex items-start justify-between gap-4">

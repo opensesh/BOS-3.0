@@ -360,13 +360,20 @@ export default function SpaceChatPage() {
 
   const isLoading = status === 'submitted' || status === 'streaming';
 
-  // Parse messages
+  // Parse messages with deduplication
   const parsedMessages: ParsedMessage[] = useMemo(() => {
-    return messages.map((message) => {
+    const seenIds = new Set<string>();
+    const uniqueMessages: ParsedMessage[] = [];
+    
+    for (const message of messages) {
+      // Skip duplicate messages by ID
+      if (seenIds.has(message.id)) continue;
+      seenIds.add(message.id);
+      
       // Extract attachments from the message
       const msgAttachments = (message as { attachments?: MessageAttachment[] }).attachments;
       
-      return {
+      uniqueMessages.push({
         id: message.id,
         role: message.role as 'user' | 'assistant',
         content: getMessageContent(message),
@@ -378,8 +385,10 @@ export default function SpaceChatPage() {
           mimeType: a.mimeType,
           name: a.name,
         })),
-      };
-    });
+      });
+    }
+    
+    return uniqueMessages;
   }, [messages, modelUsed, getMessageContent]);
 
   // Thread title

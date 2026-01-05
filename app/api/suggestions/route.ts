@@ -74,7 +74,7 @@ Rules:
     const { getAnthropicClient, getAnthropicModelId } = await import('@/lib/ai/providers');
     
     const client = await getAnthropicClient();
-    const modelId = getAnthropicModelId('claude-haiku'); // Fast model for autocomplete
+    const modelId = getAnthropicModelId('claude-sonnet'); // Fast model for autocomplete
     
     const response = await client.messages.create({
       model: modelId,
@@ -84,8 +84,8 @@ Rules:
     
     // Extract text from response
     const text = response.content
-      .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
-      .map(block => block.text)
+      .filter(block => block.type === 'text')
+      .map(block => (block as { type: 'text'; text: string }).text)
       .join('');
     
     // Parse suggestions from response

@@ -19,6 +19,7 @@ import {
   generateSlug,
   isSlugAvailable,
 } from '@/lib/supabase/brand-documents-service';
+import { getDefaultBrandId } from '@/lib/supabase/brand-assets-service';
 import type { BrandDocumentCategory, BrandDocumentInsert, BrandDocumentUpdate } from '@/lib/supabase/types';
 
 // ============================================
@@ -84,6 +85,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the default brand ID
+    const brandId = await getDefaultBrandId();
+
     // Generate slug from title
     let slug = generateSlug(title);
 
@@ -97,6 +101,7 @@ export async function POST(request: NextRequest) {
 
     // Create document
     const documentData: BrandDocumentInsert = {
+      brand_id: brandId,
       category,
       slug,
       title,

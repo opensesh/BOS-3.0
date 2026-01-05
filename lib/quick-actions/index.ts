@@ -8,4 +8,6 @@
 
 export * from './types';
 export * from './prompt-builder';
-export * from './skill-loader';
+// Only export client-safe functions from skill-loader
+// Server-only functions should be imported directly from './skill-loader' in API routes
+export { loadSkillContentClient, getSkillIdForQuickAction } from './skill-loader';

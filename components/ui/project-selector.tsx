@@ -2,14 +2,10 @@
 
 import { useState } from 'react';
 import { FolderPlus, Check, Plus, X, Loader2 } from 'lucide-react';
+import type { Project } from '@/lib/supabase/projects-service';
 
-export interface Project {
-  id: string;
-  name: string;
-  description?: string | null;
-  color: string;
-  icon?: string;
-}
+// Re-export Project type for consumers of this module
+export type { Project };
 
 interface ProjectSelectorProps {
   projects: Project[];

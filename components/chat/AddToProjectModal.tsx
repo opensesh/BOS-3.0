@@ -4,13 +4,10 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FolderPlus, Check, Plus, Loader2 } from 'lucide-react';
+import type { Project } from '@/lib/supabase/projects-service';
 
-export interface Project {
-  id: string;
-  name: string;
-  description?: string | null;
-  color: string;
-}
+// Re-export Project type for consumers of this module
+export type { Project };
 
 interface AddToProjectModalProps {
   isOpen: boolean;

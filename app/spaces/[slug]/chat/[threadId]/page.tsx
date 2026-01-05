@@ -219,7 +219,7 @@ export default function SpaceChatPage() {
           await sendMessage(
             { 
               text: initialQuery || 'What do you see in this image?', 
-              files: files as unknown as FileList 
+              files
             },
             { body: { model: selectedModel, context: spaceContext } }
           );
@@ -406,13 +406,13 @@ export default function SpaceChatPage() {
     try {
       if (followUpAttachments && followUpAttachments.length > 0) {
         const files = followUpAttachments.map((att) => ({
-          type: 'file' as const,
+          type: 'image' as const,
           data: att.data,
           mimeType: att.mimeType,
         }));
 
         await sendMessage(
-          { text: query.trim() || 'What do you see in this image?', files: files as unknown as FileList },
+          { text: query.trim() || 'What do you see in this image?', files },
           { body: { model: selectedModel, context: spaceContext } }
         );
       } else {

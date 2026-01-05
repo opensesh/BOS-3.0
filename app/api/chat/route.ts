@@ -12,7 +12,8 @@ import {
 } from '@/lib/ai/providers';
 import { autoSelectModel } from '@/lib/ai/auto-router';
 import { buildBrandSystemPrompt, shouldIncludeFullDocs, BRAND_SOURCES, type PageContext, type SkillContext } from '@/lib/brand-knowledge';
-import { loadSkillContent, getSkillIdForQuickAction } from '@/lib/quick-actions';
+import { getSkillIdForQuickAction } from '@/lib/quick-actions/skill-loader';
+import { loadSkillContent } from '@/lib/quick-actions/skill-loader-server';
 import { getToolsForAnthropic } from '@/lib/ai/tools';
 import { executeTool } from '@/lib/ai/tools/executors';
 import { getAvailableMcpTools, mcpToolsToAnthropic } from '@/lib/ai/tools/mcp-executor';

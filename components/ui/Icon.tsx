@@ -67,7 +67,7 @@ export function Icon({ name, className = 'w-5 h-5', 'aria-label': ariaLabel }: I
   }
   
   // Lucide icons
-  const LucideIcon = (LucideIcons as Record<string, React.ComponentType<{ className?: string; 'aria-label'?: string }>>)[name];
+  const LucideIcon = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string; 'aria-label'?: string }>>)[name];
   
   if (LucideIcon) {
     return <LucideIcon className={className} aria-label={ariaLabel} />;

@@ -136,13 +136,15 @@ export function SpaceChatInput({
     const discussionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Convert attachments to serializable format
-    const attachmentData: AttachmentData[] = attachments.map(att => ({
-      id: att.id,
-      type: 'image' as const,
-      data: att.data,
-      mimeType: att.mimeType,
-      name: att.name,
-    }));
+    const attachmentData: AttachmentData[] = attachments
+      .filter(att => att.type === 'image')
+      .map(att => ({
+        id: att.id,
+        type: 'image' as const,
+        data: att.preview, // preview contains the base64 data URL
+        mimeType: att.file.type,
+        name: att.file.name,
+      }));
 
     // Store attachments in sessionStorage for the chat page to retrieve
     // (base64 data is too large for URL params)
@@ -277,7 +279,7 @@ export function SpaceChatInput({
                   currentProject={currentProject}
                   currentStyle={currentWritingStyle}
                   projects={projects}
-                  onCreateProject={createProject}
+                  onCreateProject={async (name) => { await createProject(name); }}
                   disabled={false}
                 />
 

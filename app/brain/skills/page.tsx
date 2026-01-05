@@ -51,7 +51,7 @@ function SkillsContent() {
   } = useBrainDocuments({ category: 'skills' });
 
   // Determine if we should use fallback (derived state, not effect-based)
-  const shouldUseFallback = !isLoading && (error || documents.length === 0 || documents.every(d => !d.content));
+  const shouldUseFallback = !isLoading && (!!error || documents.length === 0 || documents.every(d => !d.content));
   const isUsingFallback = hasInitialized && shouldUseFallback;
 
   // Initialize active tab once loading completes

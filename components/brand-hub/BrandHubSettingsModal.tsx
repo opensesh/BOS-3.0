@@ -91,7 +91,7 @@ export function BrandHubSettingsModal({
 
 interface SettingsItemProps {
   id: string;
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   preview?: React.ReactNode;
   onEdit?: () => void;

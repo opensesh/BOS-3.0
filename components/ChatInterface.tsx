@@ -862,16 +862,15 @@ export function ChatInterface() {
       };
 
       if (currentAttachments.length > 0) {
-        // Convert attachments to FileUIPart format
+        // Convert attachments to expected format
         const files = currentAttachments.map(att => ({
-          type: 'file' as const,
+          type: 'image' as const,
           data: att.preview, // Base64 data URL
           mimeType: att.file.type,
         }));
 
-        // Use type assertion to satisfy AI SDK types
         await sendMessage(
-          { text: userMessage || 'What do you see in this image?', files: files as unknown as FileList },
+          { text: userMessage || 'What do you see in this image?', files },
           { body: requestBody }
         );
       } else {
@@ -901,18 +900,17 @@ export function ChatInterface() {
         writingStyle: currentWritingStyle?.id || null,
       };
 
-      // Build message with attachments using FileUIPart format for AI SDK compatibility
+      // Build message with attachments
       if (followUpAttachments && followUpAttachments.length > 0) {
-        // Convert attachments to FileUIPart format
+        // Convert attachments to expected format
         const files = followUpAttachments.map(att => ({
-          type: 'file' as const,
+          type: 'image' as const,
           data: att.data, // Base64 data URL
           mimeType: att.mimeType,
         }));
 
-        // Use type assertion to satisfy AI SDK types
         await sendMessage(
-          { text: query.trim() || 'What do you see in this image?', files: files as unknown as FileList },
+          { text: query.trim() || 'What do you see in this image?', files },
           { body: requestBody }
         );
       } else {
@@ -1273,7 +1271,7 @@ export function ChatInterface() {
                               isLastResponse={idx === parsedMessages.length - 2}
                               thinking={nextMessage.thinking}
                               messageId={nextMessage.id}
-                              chatId={currentSessionId}
+                              chatId={currentSessionId ?? undefined}
                               attachments={message.attachments}
                             />
                           );
@@ -1293,7 +1291,7 @@ export function ChatInterface() {
                               onFollowUpClick={handleFollowUpSubmit}
                               isLastResponse={true}
                               thinking={streamingThinking}
-                              chatId={currentSessionId}
+                              chatId={currentSessionId ?? undefined}
                               attachments={message.attachments}
                             />
                           );

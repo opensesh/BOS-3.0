@@ -127,6 +127,7 @@ function ResourceCard({
 }
 
 // Add Resource Card - Accessible with all states
+// Fixed 64x64 square on tablet/desktop, full-width on mobile
 function AddResourceCard({ 
   onClick, 
   isDisabled = false 
@@ -141,9 +142,9 @@ function AddResourceCard({
       aria-label="Add new resource"
       aria-disabled={isDisabled}
       className={`
-        group flex items-center justify-center p-3 rounded-xl 
+        group flex items-center justify-center rounded-xl 
         border-2 border-dashed transition-all duration-200
-        min-h-[60px]
+        w-full h-[60px] sm:w-16 sm:h-16 sm:flex-shrink-0
         focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)]
         ${isDisabled 
           ? 'border-[var(--border-disabled)] bg-[var(--bg-disabled)] cursor-not-allowed opacity-50' 
@@ -274,13 +275,18 @@ export default function BrainPage() {
                   Resources
                 </h2>
                 <motion.div 
-                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
+                  className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3"
                   variants={staggerContainer}
                   initial="hidden"
                   animate="visible"
                 >
                   {isLoaded && resources.map((resource, index) => (
-                    <motion.div key={resource.id} variants={fadeInUp} custom={index}>
+                    <motion.div 
+                      key={resource.id} 
+                      variants={fadeInUp} 
+                      custom={index}
+                      className="w-full sm:w-auto sm:min-w-[180px] sm:max-w-[220px]"
+                    >
                       <ResourceCard 
                         resource={resource} 
                         onDelete={deleteResource}
@@ -288,7 +294,7 @@ export default function BrainPage() {
                       />
                     </motion.div>
                   ))}
-                  <motion.div variants={fadeInUp}>
+                  <motion.div variants={fadeInUp} className="w-full sm:w-auto">
                     <AddResourceCard onClick={() => setIsAddResourceOpen(true)} />
                   </motion.div>
                 </motion.div>

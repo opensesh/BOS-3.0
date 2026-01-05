@@ -151,7 +151,7 @@ export function Breadcrumbs() {
               absolute top-full left-0 mt-1
               w-52 bg-bg-secondary
               rounded-md border border-border-secondary
-              shadow-lg z-[100]
+              shadow-lg z-[200]
               overflow-hidden
             "
           >

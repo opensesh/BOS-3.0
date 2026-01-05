@@ -93,7 +93,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
               top-12 left-12
               backdrop-blur-sm
               bg-black/5
-              z-[99]
+              z-[150]
               pointer-events-none
             "
             aria-hidden="true"
@@ -112,7 +112,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
               rounded-lg
               border border-[var(--border-secondary)]
               shadow-lg
-              z-[100]
+              z-[200]
               overflow-hidden
             "
           >

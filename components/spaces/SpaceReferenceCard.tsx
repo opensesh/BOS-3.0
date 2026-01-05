@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowUpRight, Layers, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Icon } from '@/components/ui/Icon';
+import { stripMarkdown } from '@/lib/text-utils';
 
 // Helper to check if a string is an emoji (vs an icon name)
 function isEmoji(str: string): boolean {
@@ -168,7 +169,7 @@ export function DiscussionCard({
             </h3>
             {preview && (
               <p className="text-sm text-[var(--fg-tertiary)] line-clamp-2 mb-2">
-                {preview}
+                {stripMarkdown(preview)}
               </p>
             )}
             <div className="flex items-center gap-4 text-xs text-[var(--fg-tertiary)]">

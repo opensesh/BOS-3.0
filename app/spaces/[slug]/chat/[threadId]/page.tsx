@@ -19,6 +19,7 @@ import {
   ChatContent,
   type FollowUpAttachment,
 } from '@/components/chat';
+import { createPreview } from '@/lib/text-utils';
 
 // Message attachment interface
 interface MessageAttachment {
@@ -289,7 +290,7 @@ export default function SpaceChatPage() {
       const content = getMessageContent(lastAssistantMessage);
       if (content) {
         updateDiscussion(discussion.id, {
-          preview: content.slice(0, 100),
+          preview: createPreview(content, 100),
           messageCount: messages.length,
         });
       }

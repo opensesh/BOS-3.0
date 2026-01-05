@@ -632,6 +632,53 @@ async function validateApiKey(
 }
 
 // ============================================
+// Auth Helper
+// ============================================
+
+/**
+ * Extract API key from various auth methods:
+ * 1. X-API-Key header
+ * 2. Bearer token: Authorization: Bearer <api_key>
+ * 3. Basic Auth: Authorization: Basic base64(client_id:api_key) - used by Claude Desktop OAuth
+ */
+function extractApiKey(req: Request): string | null {
+  // Method 1: X-API-Key header
+  const xApiKey = req.headers.get("X-API-Key");
+  if (xApiKey) {
+    return xApiKey;
+  }
+
+  // Method 2 & 3: Authorization header
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return null;
+  }
+
+  // Bearer token
+  if (authHeader.startsWith("Bearer ")) {
+    return authHeader.slice(7);
+  }
+
+  // Basic Auth (used by Claude Desktop for OAuth Client ID/Secret)
+  // Format: Basic base64(client_id:client_secret)
+  // We use the client_secret (password) as the API key
+  if (authHeader.startsWith("Basic ")) {
+    try {
+      const base64Credentials = authHeader.slice(6);
+      const credentials = atob(base64Credentials);
+      const [_clientId, clientSecret] = credentials.split(":");
+      if (clientSecret) {
+        return clientSecret;
+      }
+    } catch {
+      // Invalid base64, ignore
+    }
+  }
+
+  return null;
+}
+
+// ============================================
 // Main Handler
 // ============================================
 
@@ -641,7 +688,7 @@ Deno.serve(async (req: Request) => {
     return new Response(null, {
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
       },
     });
@@ -651,6 +698,20 @@ Deno.serve(async (req: Request) => {
     "Access-Control-Allow-Origin": "*",
     "Content-Type": "application/json",
   };
+
+  // Handle GET requests (health check / capability discovery)
+  if (req.method === "GET") {
+    return new Response(
+      JSON.stringify({
+        name: SERVER_INFO.name,
+        version: SERVER_INFO.version,
+        protocol: "MCP",
+        protocolVersion: SERVER_INFO.protocolVersion,
+        message: "BOS MCP Server is running. Use POST for JSON-RPC requests.",
+      }),
+      { status: 200, headers: corsHeaders }
+    );
+  }
 
   try {
     // Get environment variables
@@ -664,8 +725,8 @@ Deno.serve(async (req: Request) => {
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Extract API key from header
-    const apiKey = req.headers.get("X-API-Key") || req.headers.get("Authorization")?.replace("Bearer ", "");
+    // Extract API key from various auth methods
+    const apiKey = extractApiKey(req);
 
     if (!apiKey) {
       return new Response(
@@ -674,7 +735,7 @@ Deno.serve(async (req: Request) => {
           id: null,
           error: {
             code: -32001,
-            message: "Authentication required. Provide API key via X-API-Key header or Bearer token.",
+            message: "Authentication required. Provide API key via X-API-Key header, Bearer token, or Basic Auth (OAuth Client Secret).",
           },
         }),
         { status: 401, headers: corsHeaders }

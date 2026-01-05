@@ -319,9 +319,9 @@ export interface PostCopyFormData {
 
 export type QuickActionType = 
   | 'create-post-copy'
-  | 'plan-campaign'
-  | 'brainstorm-ideas'
-  | 'get-feedback';
+  | 'brand-review'
+  | 'reverse-engineer'
+  | 'product-copy';
 
 export interface QuickActionConfig {
   id: QuickActionType;
@@ -334,28 +334,28 @@ export interface QuickActionConfig {
 export const QUICK_ACTIONS: QuickActionConfig[] = [
   {
     id: 'create-post-copy',
-    title: 'Create Post Copy',
+    title: 'Create a Post',
     description: 'Generate engaging social media copy for your posts',
     prePrompt: 'Create a post',
     skillId: 'create-post-copy',
   },
   {
-    id: 'plan-campaign',
-    title: 'Plan Campaign',
-    description: 'Plan a comprehensive marketing campaign',
-    prePrompt: 'Help me plan a campaign',
+    id: 'brand-review',
+    title: 'Brand Review',
+    description: 'Get feedback on your content',
+    prePrompt: 'Give me feedback on this',
   },
   {
-    id: 'brainstorm-ideas',
-    title: 'Brainstorm Ideas',
+    id: 'reverse-engineer',
+    title: 'Reverse Engineer',
     description: 'Generate creative content ideas',
     prePrompt: 'Brainstorm content ideas',
   },
   {
-    id: 'get-feedback',
-    title: 'Get Feedback',
-    description: 'Get feedback on your content',
-    prePrompt: 'Give me feedback on this',
+    id: 'product-copy',
+    title: 'Product Copy',
+    description: 'Plan a comprehensive marketing campaign',
+    prePrompt: 'Help me plan a campaign',
   },
 ];
 

@@ -66,30 +66,30 @@ const prePrompts = [
   {
     id: 'social-post',
     icon: Megaphone,
-    title: 'Create a post',
+    title: 'Create a Post',
     description: 'Generate copy for social media',
     prompt: 'Help me create a social media post. I want to announce [topic/product] and need engaging copy that fits my brand voice.',
   },
   {
-    id: 'campaign',
-    icon: Target,
-    title: 'Plan a campaign',
-    description: 'Map out a content strategy',
-    prompt: 'Help me plan a content campaign for [goal/product]. I need ideas for posts, timing, and messaging that align with my brand.',
+    id: 'brand-review',
+    icon: MessageSquare,
+    title: 'Brand Review',
+    description: 'Review work for brand fit',
+    prompt: 'Review this and tell me if it matches my brand guidelines. Suggest improvements to make it more on-brand: [paste your content]',
   },
   {
-    id: 'brainstorm',
+    id: 'reverse-engineer',
     icon: Lightbulb,
-    title: 'Brainstorm ideas',
+    title: 'Reverse Engineer',
     description: 'Get creative concepts',
     prompt: 'Help me brainstorm creative ideas for [campaign/project]. I want fresh concepts that align with my brand values.',
   },
   {
-    id: 'get-feedback',
-    icon: MessageSquare,
-    title: 'Get feedback',
-    description: 'Review work for brand fit',
-    prompt: 'Review this and tell me if it matches my brand guidelines. Suggest improvements to make it more on-brand: [paste your content]',
+    id: 'product-copy',
+    icon: Target,
+    title: 'Product Copy',
+    description: 'Map out a content strategy',
+    prompt: 'Help me plan a content campaign for [goal/product]. I need ideas for posts, timing, and messaging that align with my brand.',
   },
 ];
 
@@ -99,17 +99,17 @@ const allItems = [
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
-// Mobile grid items: 2 folders + 2 icons (Colors, Spaces, Create a post, Plan a campaign)
+// Mobile grid items: 2 folders + 2 icons (Colors, Spaces, Create a Post, Brand Review)
 const mobileGridItems = [
   { ...quickLinks[2], type: 'link' as const }, // Colors
   { ...quickLinks[3], type: 'link' as const }, // Spaces
-  { ...prePrompts[0], type: 'prompt' as const }, // Create a post
-  { ...prePrompts[1], type: 'prompt' as const }, // Plan a campaign
+  { ...prePrompts[0], type: 'prompt' as const }, // Create a Post
+  { ...prePrompts[1], type: 'prompt' as const }, // Brand Review
 ];
 
 // Initial indices per breakpoint to center on 2 folders + 2 icons:
-// - Desktop (4 visible): index 2 → Colors, Spaces, Create a post, Plan a campaign
-// - Tablet (3 visible): index 2 → Colors, Spaces, Create a post  
+// - Desktop (4 visible): index 2 → Colors, Spaces, Create a Post, Brand Review
+// - Tablet (3 visible): index 2 → Colors, Spaces, Create a Post  
 const INITIAL_INDEX_DESKTOP = 2;
 const INITIAL_INDEX_TABLET = 2;
 

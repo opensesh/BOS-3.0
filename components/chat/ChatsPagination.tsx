@@ -11,7 +11,7 @@ interface ChatsPaginationProps {
   onRowsPerPageChange: (rows: number) => void;
 }
 
-const rowOptions = [50, 100, 150];
+const rowOptions = [25, 50, 100, 150];
 
 export function ChatsPagination({
   currentPage,

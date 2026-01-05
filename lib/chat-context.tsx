@@ -121,7 +121,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const loadHistory = useCallback(async () => {
     setIsLoadingHistory(true);
     try {
-      const sessions = await chatService.getSessions(20);
+      const sessions = await chatService.getSessions(1000);
       const historyItems: ChatHistoryItem[] = sessions.map((session: ChatSession) => ({
         id: session.id,
         title: session.title,
@@ -328,7 +328,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             timestamp: new Date(session.updated_at),
             messages: session.messages,
             projectId: session.project_id,
-          }, ...prev.slice(0, 19)]; // Keep max 20 items
+          }, ...prev];
         });
         
         // Update current session ID for future updates
@@ -346,7 +346,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         messages,
         projectId: effectiveProjectId,
       };
-      setChatHistory(prev => [newItem, ...prev.slice(0, 19)]);
+      setChatHistory(prev => [newItem, ...prev]);
     }
   }, [currentSessionId, currentProject]);
 

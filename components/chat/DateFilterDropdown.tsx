@@ -174,7 +174,7 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
         />
       )}
 
-      <div className="relative z-50">
+      <div className="relative z-30">
         {/* Trigger Button - stays above backdrop */}
         <div className="flex items-center gap-1">
           <button
@@ -221,6 +221,7 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
               overflow-hidden
               animate-in fade-in slide-in-from-top-2 duration-150
               w-[320px]
+              z-50
             "
             role="dialog"
             aria-label="Date filter"

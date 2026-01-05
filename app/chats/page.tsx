@@ -155,7 +155,7 @@ export default function ChatsPage() {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // Helper to safely get timestamp as Date
   const getTimestamp = (timestamp: Date | number | string): Date => {

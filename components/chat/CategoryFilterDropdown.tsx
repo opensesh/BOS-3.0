@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Filter, X, MessageSquare, Layers, FolderOpen } from 'lucide-react';
+import { Filter, X, MessageSquare, Layers, FolderOpen, User } from 'lucide-react';
 
 export type CategoryFilterValue = 'all' | 'personal' | 'spaces' | 'projects';
 
@@ -11,15 +11,15 @@ interface CategoryFilterDropdownProps {
 }
 
 const categories = [
-  { id: 'all' as const, label: 'All Chats', icon: MessageSquare },
-  { id: 'personal' as const, label: 'Personal', icon: MessageSquare },
+  { id: 'all' as const, label: 'All', icon: MessageSquare },
+  { id: 'personal' as const, label: 'Personal', icon: User },
   { id: 'spaces' as const, label: 'Spaces', icon: Layers },
   { id: 'projects' as const, label: 'Projects', icon: FolderOpen },
 ];
 
 function formatCategory(value: CategoryFilterValue): string {
   const category = categories.find(c => c.id === value);
-  return category?.label || 'All Chats';
+  return category?.label || 'All';
 }
 
 export function CategoryFilterDropdown({ value, onChange }: CategoryFilterDropdownProps) {
@@ -81,7 +81,7 @@ export function CategoryFilterDropdown({ value, onChange }: CategoryFilterDropdo
         />
       )}
 
-      <div className="relative z-50">
+      <div className="relative z-30">
         {/* Trigger Button */}
         <div className="flex items-center gap-1">
           <button
@@ -128,6 +128,7 @@ export function CategoryFilterDropdown({ value, onChange }: CategoryFilterDropdo
               overflow-hidden
               animate-in fade-in slide-in-from-top-2 duration-150
               min-w-[200px]
+              z-50
             "
             role="dialog"
             aria-label="Category filter"

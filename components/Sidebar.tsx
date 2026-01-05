@@ -9,7 +9,7 @@ import {
   LayoutGrid,
   ScanFace,
   BrainCog,
-  MessageSquare,
+  History,
   Plus,
   ChevronDown,
   ChevronRight,
@@ -263,7 +263,7 @@ function RecentChatsFlyout({
             className="px-3 py-2.5 border-b border-[var(--border-secondary)] flex items-center justify-between group hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[var(--fg-tertiary)]" />
+              <History className="w-4 h-4 text-[var(--fg-tertiary)]" />
               <span className="text-sm font-medium text-[var(--fg-primary)]">Chats</span>
             </div>
             <ArrowRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
@@ -921,7 +921,7 @@ export function Sidebar() {
                         href="/chats"
                         className="flex-1 flex items-center gap-2 px-2 py-2"
                       >
-                        <MessageSquare className="w-4 h-4" />
+                        <History className="w-4 h-4" />
                         <span className="text-sm flex-1">Chats</span>
                         {chatHistory.length > 0 && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
@@ -992,7 +992,7 @@ export function Sidebar() {
                   title="Chats"
                 >
                   <div className={`flex items-center justify-center rounded-md transition-all duration-150 w-8 h-8 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
-                    <MessageSquare className="w-[18px] h-[18px]" />
+                    <History className="w-[18px] h-[18px]" />
                   </div>
                 </Link>
               );

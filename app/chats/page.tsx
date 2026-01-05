@@ -142,7 +142,6 @@ export default function ChatsPage() {
   // Set breadcrumbs on mount
   useEffect(() => {
     setBreadcrumbs([
-      { label: 'Home', href: '/' },
       { label: 'Chats' },
     ]);
   }, [setBreadcrumbs]);

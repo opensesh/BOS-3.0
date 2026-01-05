@@ -21,8 +21,7 @@ import { toast } from 'sonner';
 // Types
 // ============================================
 
-type Platform = 'claude' | 'cursor' | 'vscode' | 'chatgpt';
-type ConnectionMethod = 'url' | 'config';
+type Platform = 'claude' | 'cursor' | 'vscode' | 'chatgpt' | 'gemini';
 
 interface PlatformInfo {
   id: Platform;
@@ -55,13 +54,20 @@ const PLATFORMS: PlatformInfo[] = [
     id: 'vscode',
     name: 'VS Code',
     supportsUrl: true,
-    supportsConfig: false,
+    supportsConfig: true,
     description: 'Continue or Cline extension',
+  },
+  {
+    id: 'gemini',
+    name: 'Gemini',
+    supportsUrl: true,
+    supportsConfig: false,
+    description: 'Google AI Studio',
   },
   {
     id: 'chatgpt',
     name: 'ChatGPT',
-    supportsUrl: false,
+    supportsUrl: true,
     supportsConfig: false,
     description: 'Via Custom GPT Actions',
   },
@@ -371,8 +377,10 @@ function UrlInstructions({
           For <strong>Continue</strong> or <strong>Cline</strong> extensions:
         </p>
         <ol className="text-sm text-[var(--fg-secondary)] space-y-2 list-decimal list-inside">
-          <li>Open the extension settings</li>
-          <li>Add a new MCP server with these details:</li>
+          <li>Open <strong>VS Code Settings</strong> (Cmd/Ctrl + ,)</li>
+          <li>Search for <strong>&quot;Continue&quot;</strong> or <strong>&quot;Cline&quot;</strong> extension settings</li>
+          <li>Find the <strong>MCP Servers</strong> section</li>
+          <li>Click <strong>&quot;Add Server&quot;</strong> and enter these details:</li>
         </ol>
         
         <div className="space-y-2">
@@ -404,6 +412,44 @@ function UrlInstructions({
         </div>
       </div>
     ),
+    gemini: (
+      <div className="space-y-3">
+        <ol className="text-sm text-[var(--fg-secondary)] space-y-2 list-decimal list-inside">
+          <li>Open <strong>Google AI Studio</strong> at <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" className="text-[var(--fg-brand)] hover:underline">aistudio.google.com</a></li>
+          <li>Navigate to <strong>Extensions</strong> or <strong>Tools</strong></li>
+          <li>Click <strong>&quot;Add MCP Server&quot;</strong></li>
+          <li>Enter the details below:</li>
+        </ol>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Server URL</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{serverUrl}</code>
+            </div>
+            <button
+              onClick={() => onCopy(serverUrl, 'url')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'url' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+          
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">API Key</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{apiKey || 'YOUR_API_KEY'}</code>
+            </div>
+            <button
+              onClick={() => onCopy(apiKey || 'YOUR_API_KEY', 'token')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'token' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    ),
     chatgpt: (
       <div className="space-y-3">
         <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
@@ -412,24 +458,39 @@ function UrlInstructions({
           </p>
         </div>
         <ol className="text-sm text-[var(--fg-secondary)] space-y-2 list-decimal list-inside">
-          <li>Create a <strong>Custom GPT</strong> in ChatGPT</li>
-          <li>Go to <strong>Configure</strong> → <strong>Actions</strong></li>
+          <li>Go to <strong>ChatGPT</strong> and create a <strong>Custom GPT</strong></li>
+          <li>Click <strong>Configure</strong> → <strong>Actions</strong></li>
           <li>Click <strong>&quot;Create new action&quot;</strong></li>
           <li>Set Authentication to <strong>API Key</strong> (Bearer)</li>
-          <li>Use the server URL as your API endpoint</li>
+          <li>Use the details below:</li>
         </ol>
         
-        <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">API Endpoint</p>
-            <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{serverUrl}</code>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">API Endpoint</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{serverUrl}</code>
+            </div>
+            <button
+              onClick={() => onCopy(serverUrl, 'url')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'url' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
           </div>
-          <button
-            onClick={() => onCopy(serverUrl, 'url')}
-            className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
-          >
-            {copied === 'url' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-          </button>
+          
+          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Bearer Token</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{apiKey || 'YOUR_API_KEY'}</code>
+            </div>
+            <button
+              onClick={() => onCopy(apiKey || 'YOUR_API_KEY', 'token')}
+              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
+            >
+              {copied === 'token' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
       </div>
     ),
@@ -474,18 +535,35 @@ function ConfigInstructions({
   }
 }`;
 
+  const vscodeConfig = `{
+  "mcpServers": {
+    "bos": {
+      "url": "${serverUrl}",
+      "auth": {
+        "type": "bearer",
+        "token": "${apiKey || 'YOUR_API_KEY'}"
+      }
+    }
+  }
+}`;
+
   const configs: Record<Platform, { config: string; path: string; instructions: string }> = {
     claude: {
       config: claudeConfig,
-      path: 'claude_desktop_config.json',
+      path: '~/Library/Application Support/Claude/claude_desktop_config.json',
       instructions: 'Add this to your Claude Desktop config file:',
     },
     cursor: {
       config: cursorConfig,
-      path: '.cursor/mcp.json',
+      path: '~/.cursor/mcp.json',
       instructions: 'Add this to your Cursor MCP config:',
     },
     vscode: {
+      config: vscodeConfig,
+      path: '~/.continue/config.json or ~/.cline/config.json',
+      instructions: 'Add this to your Continue or Cline config file:',
+    },
+    gemini: {
       config: '',
       path: '',
       instructions: '',
@@ -553,7 +631,6 @@ function QuickSetupCard({
 }) {
   const [showConfig, setShowConfig] = useState(true);
   const [activePlatform, setActivePlatform] = useState<Platform>('claude');
-  const [connectionMethod, setConnectionMethod] = useState<ConnectionMethod>('url');
   const [copied, setCopied] = useState<string | null>(null);
 
   const currentPlatform = PLATFORMS.find(p => p.id === activePlatform)!;
@@ -563,17 +640,6 @@ function QuickSetupCard({
     setCopied(type);
     toast.success('Copied to clipboard!');
     setTimeout(() => setCopied(null), 2000);
-  };
-
-  // Auto-select appropriate method when platform changes
-  const handlePlatformChange = (platform: Platform) => {
-    setActivePlatform(platform);
-    const platformInfo = PLATFORMS.find(p => p.id === platform)!;
-    if (!platformInfo.supportsUrl && platformInfo.supportsConfig) {
-      setConnectionMethod('config');
-    } else if (platformInfo.supportsUrl && !platformInfo.supportsConfig) {
-      setConnectionMethod('url');
-    }
   };
 
   return (
@@ -660,64 +726,36 @@ function QuickSetupCard({
               <span className="text-sm font-medium text-[var(--fg-secondary)]">Connect your AI tool</span>
             </div>
             
-            <div className="ml-7" onClick={(e) => e.stopPropagation()}>
-              {/* Instructions container with tabs inside */}
+            <div className="ml-7 space-y-3" onClick={(e) => e.stopPropagation()}>
+              {/* Platform selector tabs - outside container */}
+              <div className="relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-tertiary)]">
+                {PLATFORMS.map((platform) => {
+                  const isActive = activePlatform === platform.id;
+                  return (
+                    <button
+                      key={platform.id}
+                      onClick={() => setActivePlatform(platform.id)}
+                      className={`
+                        relative z-10 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
+                        ${isActive
+                          ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
+                          : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
+                        }
+                      `}
+                    >
+                      {platform.name}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* Instructions container */}
               <div className="bg-[var(--bg-tertiary)] rounded-lg p-4 space-y-4">
-                {/* Platform selector tabs */}
-                <div className="relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-quaternary)]">
-                  {PLATFORMS.map((platform) => {
-                    const isActive = activePlatform === platform.id;
-                    return (
-                      <button
-                        key={platform.id}
-                        onClick={() => handlePlatformChange(platform.id)}
-                        className={`
-                          relative z-10 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
-                          ${isActive
-                            ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
-                            : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                          }
-                        `}
-                      >
-                        {platform.name}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                {/* Connection method tabs - only show if platform supports multiple methods */}
-                {currentPlatform.supportsUrl && currentPlatform.supportsConfig && (
-                  <div className="relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-quaternary)]">
-                    <button
-                      onClick={() => setConnectionMethod('url')}
-                      className={`
-                        relative z-10 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
-                        ${connectionMethod === 'url'
-                          ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
-                          : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                        }
-                      `}
-                    >
-                      URL Method
-                    </button>
-                    <button
-                      onClick={() => setConnectionMethod('config')}
-                      className={`
-                        relative z-10 px-3 py-1.5 text-xs font-medium rounded-md transition-colors
-                        ${connectionMethod === 'config'
-                          ? 'bg-[var(--bg-primary)] text-[var(--fg-primary)] shadow-sm'
-                          : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)]'
-                        }
-                      `}
-                    >
-                      Config File
-                    </button>
-                  </div>
-                )}
-                
-                {/* Instructions */}
-                <div className="pt-2">
-                  {connectionMethod === 'url' ? (
+                {currentPlatform.supportsUrl && (
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-semibold text-[var(--fg-primary)] uppercase tracking-wide">
+                      URL Method {currentPlatform.supportsConfig && '(Recommended)'}
+                    </h5>
                     <UrlInstructions 
                       platform={activePlatform} 
                       serverUrl={serverUrl}
@@ -725,7 +763,14 @@ function QuickSetupCard({
                       onCopy={copyToClipboard}
                       copied={copied}
                     />
-                  ) : (
+                  </div>
+                )}
+                
+                {currentPlatform.supportsConfig && (
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-semibold text-[var(--fg-primary)] uppercase tracking-wide">
+                      Config File Method
+                    </h5>
                     <ConfigInstructions 
                       platform={activePlatform}
                       serverUrl={serverUrl}
@@ -733,8 +778,8 @@ function QuickSetupCard({
                       onCopy={copyToClipboard}
                       copied={copied}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

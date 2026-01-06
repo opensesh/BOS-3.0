@@ -136,29 +136,45 @@ opacity-0 group-hover:opacity-100 transition-opacity duration-150
 
 ## Icon Guidelines
 
+### Philosophy: Don't Overuse Icons
+Icons should be **functional, not decorative**. They work best when they aid recognition or provide affordances for interaction. Overusing icons creates visual noise and dilutes their communicative power.
+
+### Where Icons ARE Appropriate
+- ✅ **Buttons** - Action buttons with icons (e.g., `<Plus /> Add Item`)
+- ✅ **Icon buttons** - Standalone icon-only buttons with clear actions
+- ✅ **Navigation items** - Sidebar/menu items where icons aid recognition
+- ✅ **Cards** - In the icon area of selection cards (upper-left)
+- ✅ **Tab navigation** - Tab buttons can have icons
+- ✅ **Status indicators** - Success/error/warning states
+
+### Where Icons are NOT Appropriate
+- ❌ **Section headers** - `<h3>` titles should NOT have icons next to them
+- ❌ **Modal headers** - Title + description only, no decorative icons
+- ❌ **Form labels** - Text-only labels
+- ❌ **Page headers** - Main `<h1>` titles should NOT have icons
+- ❌ **Duplicated contexts** - If a card has an icon, don't repeat it in subtitles
+
 ### Banned Icons (NEVER USE)
-- ❌ `Sparkles` - The 4-point star/galaxy icon looks like generic AI tooling. Use `Wand2`, `Target`, `Lightbulb`, or `Zap` instead.
+- ❌ **`Sparkles`** - The 4-point star/galaxy icon from Lucide Icons is corny and doesn't match the app's vibe or brand language. **NEVER use this icon anywhere in the codebase.** 
 
-### Preferred Alternatives
-| Instead of | Use |
-|------------|-----|
-| Sparkles | Wand2, Target, Lightbulb, Zap |
+**Alternatives by context:**
+- For release updates/announcements: Use `Bell` or `Megaphone`
+- For creative/artistic contexts: Use `Wand2`, `Palette`, or `PenTool`
+- For AI/automation features: Use `Wand2`, `Target`, `Lightbulb`, or `Zap`
+- For empty states: Use text-only or more purposeful iconography
 
-### Modal Header Pattern
-**Do NOT place icons in modal headers.** The header should contain only:
-- Title (h2) - left-aligned
-- Subtitle/description text (optional) - left-aligned  
-- Close button (X) - right-aligned
+### Section Header Pattern (IMPORTANT)
+**Do NOT place icons before section headers.** Headers should be text-only.
 
 ❌ NEVER:
 ```tsx
 <div className="flex items-center gap-3">
-  <div className="p-2 rounded-lg bg-[var(--bg-secondary)]">
+  <div className="p-2 bg-[var(--bg-tertiary)] rounded-lg">
     <SomeIcon className="w-5 h-5" />
   </div>
   <div>
-    <h2>Modal Title</h2>
-    <p>Subtitle</p>
+    <h3>Section Title</h3>
+    <p>Description text</p>
   </div>
 </div>
 ```
@@ -166,10 +182,16 @@ opacity-0 group-hover:opacity-100 transition-opacity duration-150
 ✅ INSTEAD:
 ```tsx
 <div>
-  <h2>Modal Title</h2>
-  <p>Subtitle</p>
+  <h3>Section Title</h3>
+  <p>Description text</p>
 </div>
 ```
+
+### Modal Header Pattern
+**Do NOT place icons in modal headers.** The header should contain only:
+- Title (h2) - left-aligned
+- Subtitle/description text (optional) - left-aligned  
+- Close button (X) - right-aligned
 
 Icons belong in the modal body (e.g., selection cards), not duplicated in the header.
 

@@ -32,6 +32,15 @@ const nextConfig: NextConfig = {
     // Temporarily ignore build errors to work around next/types.js issue
     ignoreBuildErrors: true,
   },
+  // Rewrites for OAuth discovery (Claude Desktop looks for this)
+  async rewrites() {
+    return [
+      {
+        source: '/.well-known/oauth-authorization-server',
+        destination: '/api/well-known/oauth-authorization-server',
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

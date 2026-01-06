@@ -1,11 +1,22 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Lazy-initialize Supabase client to avoid build-time errors
+let supabase: SupabaseClient | null = null;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+function getSupabase(): SupabaseClient {
+  if (!supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Supabase environment variables are not configured');
+    }
+    
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  return supabase;
+}
 
 // Bucket name for chat attachments
 const BUCKET_NAME = 'chat-attachments';
@@ -137,12 +148,15 @@ export async function POST(req: Request): Promise<NextResponse<UploadResponse>> 
       );
     }
 
+    // Get Supabase client (lazy init)
+    const supabaseClient = getSupabase();
+
     // Ensure bucket exists (create if not)
-    const { data: buckets } = await supabase.storage.listBuckets();
+    const { data: buckets } = await supabaseClient.storage.listBuckets();
     const bucketExists = buckets?.some(b => b.name === BUCKET_NAME);
     
     if (!bucketExists) {
-      await supabase.storage.createBucket(BUCKET_NAME, {
+      await supabaseClient.storage.createBucket(BUCKET_NAME, {
         public: true,
         fileSizeLimit: maxSize,
         allowedMimeTypes: allowedTypes,
@@ -150,7 +164,7 @@ export async function POST(req: Request): Promise<NextResponse<UploadResponse>> 
     }
 
     // Upload to Supabase Storage
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseClient.storage
       .from(BUCKET_NAME)
       .upload(storagePath, buffer, {
         contentType: mimeType,
@@ -166,14 +180,14 @@ export async function POST(req: Request): Promise<NextResponse<UploadResponse>> 
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = supabaseClient.storage
       .from(BUCKET_NAME)
       .getPublicUrl(storagePath);
 
     // Insert record into message_attachments table
     const attachmentType = getAttachmentType(mimeType);
     
-    const { data: attachment, error: dbError } = await supabase
+    const { data: attachment, error: dbError } = await supabaseClient
       .from('message_attachments')
       .insert({
         message_id: messageId || null,

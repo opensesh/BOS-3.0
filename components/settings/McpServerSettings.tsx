@@ -218,56 +218,53 @@ function AdvancedSettingsDropdown({
   copied: string | null;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  
-  // For OAuth, we use the API key as the client secret
-  const oauthClientId = 'bos-mcp-connector';
-  const oauthClientSecret = apiKey || 'YOUR_API_KEY';
+  const bearerToken = `Bearer ${apiKey || 'YOUR_API_KEY'}`;
 
   return (
-    <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg overflow-hidden">
+    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-3 text-left"
       >
         <span className="text-xs font-medium text-[var(--fg-secondary)]">
-          Advanced Settings (Optional)
+          Authentication Details
         </span>
         {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-amber-500" />
+          <ChevronUp className="w-4 h-4 text-blue-500" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-amber-500" />
+          <ChevronDown className="w-4 h-4 text-blue-500" />
         )}
       </button>
       
       {isOpen && (
         <div className="px-3 pb-3 space-y-2">
           <p className="text-xs text-[var(--fg-tertiary)] mb-2">
-            If authentication is required, expand Advanced Settings in Claude and add:
+            If your client requires manual authentication setup, use these values:
           </p>
           
           <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded border border-[var(--border-secondary)]">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">OAuth Client ID (optional)</p>
-              <code className="text-xs font-mono text-[var(--fg-primary)]">{oauthClientId}</code>
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Authorization Header</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{bearerToken}</code>
             </div>
             <button
-              onClick={() => onCopy(oauthClientId, 'clientId')}
+              onClick={() => onCopy(bearerToken, 'bearerToken')}
               className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
             >
-              {copied === 'clientId' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied === 'bearerToken' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
           </div>
           
           <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded border border-[var(--border-secondary)]">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">OAuth Client Secret (optional)</p>
-              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{oauthClientSecret}</code>
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">API Key (raw)</p>
+              <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{apiKey || 'YOUR_API_KEY'}</code>
             </div>
             <button
-              onClick={() => onCopy(oauthClientSecret, 'clientSecret')}
+              onClick={() => onCopy(apiKey || 'YOUR_API_KEY', 'apiKey')}
               className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors flex-shrink-0"
             >
-              {copied === 'clientSecret' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied === 'apiKey' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
           </div>
         </div>
@@ -292,29 +289,22 @@ function UrlInstructions({
   const instructions: Record<Platform, React.ReactNode> = {
     claude: (
       <div className="space-y-3">
+        <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+          <p className="text-xs text-[var(--fg-secondary)]">
+            <strong>Recommended:</strong> Use the Config File method below for best compatibility.
+          </p>
+        </div>
         <ol className="text-sm text-[var(--fg-secondary)] space-y-2 list-decimal list-inside">
-          <li>Open <strong>Claude Desktop</strong> → <strong>Settings</strong> → <strong>Connectors</strong></li>
-          <li>Click <strong>&quot;Add custom connector&quot;</strong></li>
-          <li>Enter the details below:</li>
+          <li>Open <strong>Claude Desktop</strong> → <strong>Settings</strong> → <strong>Developer</strong></li>
+          <li>Click <strong>&quot;Edit Config&quot;</strong> to open your config file</li>
+          <li>Add the server configuration (see Config File method below)</li>
+          <li>Save and restart Claude Desktop</li>
         </ol>
         
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Name</p>
-              <code className="text-xs font-mono text-[var(--fg-primary)]">BOS MCP Server</code>
-            </div>
-            <button
-              onClick={() => onCopy('BOS MCP Server', 'name')}
-              className="p-1.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors"
-            >
-              {copied === 'name' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-            </button>
-          </div>
-          
-          <div className="flex items-center justify-between gap-2 p-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-secondary)]">
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Remote MCP Server URL</p>
+              <p className="text-xs text-[var(--fg-tertiary)] mb-0.5">Server URL</p>
               <code className="text-xs font-mono text-[var(--fg-primary)] break-all">{serverUrl}</code>
             </div>
             <button
@@ -512,7 +502,21 @@ function ConfigInstructions({
   onCopy: (text: string, type: string) => void;
   copied: string | null;
 }) {
+  // Claude Desktop uses mcp-remote to bridge stdio to HTTP
   const claudeConfig = `{
+  "mcpServers": {
+    "bos": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "${serverUrl}"],
+      "env": {
+        "MCP_HEADERS": "Authorization: Bearer ${apiKey || 'YOUR_API_KEY'}"
+      }
+    }
+  }
+}`;
+
+  // Cursor supports direct URL connection
+  const cursorConfig = `{
   "mcpServers": {
     "bos": {
       "url": "${serverUrl}",
@@ -523,25 +527,14 @@ function ConfigInstructions({
   }
 }`;
 
-  const cursorConfig = `{
-  "mcpServers": {
-    "bos": {
-      "serverUrl": "${serverUrl}",
-      "auth": {
-        "type": "bearer",
-        "token": "${apiKey || 'YOUR_API_KEY'}"
-      }
-    }
-  }
-}`;
-
+  // VS Code extensions (Continue/Cline) use mcp-remote
   const vscodeConfig = `{
   "mcpServers": {
     "bos": {
-      "url": "${serverUrl}",
-      "auth": {
-        "type": "bearer",
-        "token": "${apiKey || 'YOUR_API_KEY'}"
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "${serverUrl}"],
+      "env": {
+        "MCP_HEADERS": "Authorization: Bearer ${apiKey || 'YOUR_API_KEY'}"
       }
     }
   }
@@ -551,7 +544,7 @@ function ConfigInstructions({
     claude: {
       config: claudeConfig,
       path: '~/Library/Application Support/Claude/claude_desktop_config.json',
-      instructions: 'Add this to your Claude Desktop config file:',
+      instructions: 'Add this to your Claude Desktop config file (uses mcp-remote bridge):',
     },
     cursor: {
       config: cursorConfig,

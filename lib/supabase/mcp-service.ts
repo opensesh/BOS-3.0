@@ -766,9 +766,18 @@ export const mcpService = {
    * Get MCP server endpoint URL
    */
   getMcpServerUrl(): string {
-    // This would be your Supabase Edge Function URL
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    return `${supabaseUrl}/functions/v1/bos-mcp-server`;
+    // Use the Vercel deployment URL for the MCP server
+    // In development, fallback to localhost
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/api/mcp`;
+    }
+    // Server-side or build time
+    const vercelUrl = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL;
+    if (vercelUrl) {
+      return `https://${vercelUrl}/api/mcp`;
+    }
+    // Production fallback
+    return 'https://bos-3-0.vercel.app/api/mcp';
   },
 };
 

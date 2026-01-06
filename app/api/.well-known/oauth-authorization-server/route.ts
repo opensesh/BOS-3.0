@@ -1,14 +1,16 @@
 /**
- * OAuth 2.0 Authorization Server Metadata
- * https://datatracker.ietf.org/doc/html/rfc8414
+ * OAuth 2.0 Authorization Server Metadata Discovery
  * 
- * Claude Desktop discovers OAuth endpoints from this URL
+ * Claude Desktop looks for this at /.well-known/oauth-authorization-server
+ * relative to the MCP server URL. Since our MCP URL is /api/mcp,
+ * we also need this at the root /.well-known/ path.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
-  // Get the base URL for the MCP server
   const url = new URL(request.url);
   const baseUrl = `${url.protocol}//${url.host}/api/mcp`;
 
@@ -27,6 +29,7 @@ export async function GET(request: NextRequest) {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Cache-Control': 'public, max-age=3600',
     },
   });
 }

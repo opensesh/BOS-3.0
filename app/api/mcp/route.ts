@@ -63,10 +63,30 @@ export async function OPTIONS() {
 // Health check / capability discovery for GET requests
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
+  const baseUrl = `${url.protocol}//${url.host}/api/mcp`;
   
   // Check for SSE accept header (for future streaming support)
   const acceptHeader = request.headers.get('Accept') || '';
   const wantsSSE = acceptHeader.includes('text/event-stream');
+
+  // Check if this is an OAuth discovery request
+  // Claude Desktop will request /.well-known/oauth-authorization-server relative to the MCP URL
+  // But since we're using query params approach, check for oauth_discovery query
+  const oauthDiscovery = url.searchParams.get('oauth');
+  if (oauthDiscovery === 'discovery') {
+    return NextResponse.json(
+      {
+        issuer: baseUrl,
+        authorization_endpoint: `${baseUrl}/authorize`,
+        token_endpoint: `${baseUrl}/token`,
+        response_types_supported: ['code'],
+        grant_types_supported: ['authorization_code'],
+        code_challenge_methods_supported: ['S256', 'plain'],
+        token_endpoint_auth_methods_supported: ['client_secret_basic', 'client_secret_post'],
+      },
+      { headers: corsHeaders() }
+    );
+  }
 
   // Return server info as JSON
   return NextResponse.json(
@@ -82,11 +102,15 @@ export async function GET(request: NextRequest) {
         resources: false,
         prompts: false,
       },
+      oauth: {
+        issuer: baseUrl,
+        authorization_endpoint: `${baseUrl}/authorize`,
+        token_endpoint: `${baseUrl}/token`,
+      },
       endpoints: {
-        oauth_discovery: `${url.protocol}//${url.host}/api/mcp/.well-known/oauth-authorization-server`,
-        authorize: `${url.protocol}//${url.host}/api/mcp/authorize`,
-        token: `${url.protocol}//${url.host}/api/mcp/token`,
-        mcp: `${url.protocol}//${url.host}/api/mcp`,
+        authorize: `${baseUrl}/authorize`,
+        token: `${baseUrl}/token`,
+        mcp: baseUrl,
       },
     },
     { headers: corsHeaders() }

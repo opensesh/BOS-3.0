@@ -19,7 +19,6 @@ import {
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 import { useChatContext } from '@/lib/chat-context';
 import { LanguageSelector } from '@/components/ui/LanguageSelector';
-import { ThemeSegmentedControl } from './ThemeSegmentedControl';
 
 // Simple navigation items - no sub-items for mobile
 const navItems = [
@@ -251,12 +250,6 @@ export function MobileFullScreenMenu() {
 
                 {/* Language Selector */}
                 <LanguageSelector variant="mobile" />
-
-                {/* Appearance / Theme */}
-                <div className="pt-2">
-                  <p className="text-xs text-[var(--fg-tertiary)] mb-2 px-4">Appearance</p>
-                  <ThemeSegmentedControl />
-                </div>
               </div>
             </motion.div>
 

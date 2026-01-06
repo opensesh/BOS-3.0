@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { AnswerView, parseContentToSections, extractResourceCards, parseCanvasResponse, SourceInfo } from './AnswerView';
+import { AnswerView, parseContentToSections, extractResourceCards, parseCanvasResponse, parseAssetTags, SourceInfo } from './AnswerView';
+import { AssetCarousel } from './AssetCarousel';
 import { StreamingSourcesCounter } from './InlineStreamingDisplay';
 import { ResponseActions } from './ResponseActions';
 import { RelatedQuestions } from './RelatedQuestions';
@@ -146,8 +147,16 @@ export function ChatContent({
     }
   }, [canvasContext, canvasResponse?.content, isStreaming, isCanvasStreaming]);
 
+  // Parse asset tags from content (before canvas parsing removes them)
+  // This extracts <asset type="logos" /> tags and returns the types + clean content
+  const { assetTypes, cleanContent: contentWithoutAssets } = React.useMemo(() => {
+    // Use cleanContent (canvas already extracted) as the base
+    return parseAssetTags(cleanContent);
+  }, [cleanContent]);
+
   // Parse content into sections
   // For canvas responses, only show the preamble (acknowledgment text before canvas)
+  // For asset responses, use content with asset tags removed
   const sections = React.useMemo(() => {
     if (canvasResponse) {
       // Show preamble as acknowledgment text, if any
@@ -156,16 +165,18 @@ export function ChatContent({
       }
       return [];
     }
-    return parseContentToSections(cleanContent, sources);
-  }, [cleanContent, preamble, sources, canvasResponse]);
+    // Use content without asset tags for clean display
+    return parseContentToSections(contentWithoutAssets, sources);
+  }, [contentWithoutAssets, preamble, sources, canvasResponse]);
 
-  // Extract resource cards from content
+  // Extract resource cards from content (without asset tags)
   const resourceCards = React.useMemo(() => {
-    return extractResourceCards(cleanContent);
-  }, [cleanContent]);
+    return extractResourceCards(contentWithoutAssets);
+  }, [contentWithoutAssets]);
 
   const hasLinks = sources.length > 0;
   const hasCanvas = !!canvasResponse;
+  const hasAssets = assetTypes.length > 0;
 
   return (
     <div className="py-6">
@@ -173,7 +184,7 @@ export function ChatContent({
         query={query}
         sections={sections}
         sources={sources}
-        isStreaming={isStreaming && !hasCanvas}
+        isStreaming={isStreaming && !hasCanvas && !hasAssets}
         showCitations={showCitations}
         resourceCards={resourceCards}
         thinking={thinking}
@@ -181,6 +192,16 @@ export function ChatContent({
         // Don't show sources in AnswerView when we have a canvas - we show them below
         hideSourcesCounter={hasCanvas}
       />
+
+      {/* Asset Carousels - Render after text, one carousel per asset type */}
+      {/* Multiple carousels can co-exist (e.g., logos and fonts) */}
+      {hasAssets && !isStreaming && (
+        <div className="mt-4 space-y-4">
+          {assetTypes.map((type) => (
+            <AssetCarousel key={type} type={type} />
+          ))}
+        </div>
+      )}
 
       {/* Canvas Preview Bubble - Shows immediately when canvas tag is detected */}
       {/* Displays during streaming with a delightful open animation */}
@@ -204,11 +225,11 @@ export function ChatContent({
       )}
 
       {/* Response actions - shown for all completed responses */}
-      {!isStreaming && (cleanContent || hasCanvas) && (
+      {!isStreaming && (contentWithoutAssets || hasCanvas) && (
         <ResponseActions
           sources={sources}
           resourceCards={resourceCards}
-          content={cleanContent}
+          content={contentWithoutAssets}
           query={query}
           messageId={messageId}
           chatId={chatId}
@@ -219,9 +240,9 @@ export function ChatContent({
       )}
 
       {/* Related questions - only on last response, not for canvas responses */}
-      {!isStreaming && cleanContent && isLastResponse && !hasCanvas && (
+      {!isStreaming && contentWithoutAssets && isLastResponse && !hasCanvas && (
         <RelatedQuestions
-          responseContent={cleanContent}
+          responseContent={contentWithoutAssets}
           originalQuery={query}
           onQuestionClick={onFollowUpClick}
           modelUsed={modelUsed}

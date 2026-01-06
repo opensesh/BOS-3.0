@@ -1,6 +1,7 @@
 // Chat components barrel export
 export { ChatTabNav, type ChatTab } from './ChatTabNav';
-export { AnswerView, parseContentToSections, extractResourceCards, cleanResourceMarkers, type SourceInfo, type ContentSection } from './AnswerView';
+export { AnswerView, parseContentToSections, extractResourceCards, cleanResourceMarkers, parseAssetTags, hasAssetTags, type SourceInfo, type ContentSection, type ParsedAssetType } from './AnswerView';
+export { AssetCarousel } from './AssetCarousel';
 export { LinksView } from './LinksView';
 export { ImagesView, type ImageResult } from './ImagesView';
 export { ChatTitleDropdown } from './ChatTitleDropdown';

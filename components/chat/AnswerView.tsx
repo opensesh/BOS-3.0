@@ -468,6 +468,53 @@ export function cleanResourceMarkers(content: string): string {
 }
 
 /**
+ * Valid asset types for carousels
+ */
+export type ParsedAssetType = 'logos' | 'fonts' | 'art-direction' | 'textures' | 'illustrations';
+
+/**
+ * Parse asset tags from AI response content
+ * Looks for <asset type="..." /> tags and extracts the types
+ * Returns array of asset types found (supports multiple)
+ */
+export function parseAssetTags(content: string): {
+  assetTypes: ParsedAssetType[];
+  cleanContent: string;
+} {
+  const validTypes: ParsedAssetType[] = ['logos', 'fonts', 'art-direction', 'textures', 'illustrations'];
+  const assetTypes: ParsedAssetType[] = [];
+  
+  // Match both self-closing and regular tags
+  // <asset type="logos" /> or <asset type="logos"></asset>
+  const assetRegex = /<asset\s+type="([^"]+)"\s*\/?>/gi;
+  let match;
+
+  while ((match = assetRegex.exec(content)) !== null) {
+    const type = match[1].toLowerCase() as ParsedAssetType;
+    if (validTypes.includes(type) && !assetTypes.includes(type)) {
+      assetTypes.push(type);
+    }
+  }
+
+  // Clean content by removing asset tags
+  // This preserves the text before/between/after tags
+  const cleanContent = content
+    .replace(/<asset\s+type="[^"]+"\s*\/?>/gi, '')
+    .replace(/<\/asset>/gi, '')
+    .replace(/\n{3,}/g, '\n\n') // Collapse multiple newlines
+    .trim();
+
+  return { assetTypes, cleanContent };
+}
+
+/**
+ * Check if content contains asset tags
+ */
+export function hasAssetTags(content: string): boolean {
+  return /<asset\s+type="[^"]+"\s*\/?>/i.test(content);
+}
+
+/**
  * Canvas response format from AI
  */
 export interface CanvasResponse {

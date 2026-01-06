@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ChatTabNav, ChatTab } from './ChatTabNav';
-import { AnswerView, parseContentToSections, extractResourceCards, parseCanvasResponse, SourceInfo } from './AnswerView';
+import { AnswerView, parseContentToSections, extractResourceCards, parseCanvasResponse, parseAssetTags, SourceInfo } from './AnswerView';
 import { LinksView } from './LinksView';
 import { ImagesView, ImageResult } from './ImagesView';
 import { ResponseActions } from './ResponseActions';
@@ -137,8 +137,13 @@ export function ChatResponse({
     return extractResourceCards(cleanContent);
   }, [cleanContent]);
 
-  const hasResources = sources.length > 0 || images.length > 0;
-  const resourcesCount = sources.length + images.length;
+  // Parse asset tags from content for LinksView
+  const { assetTypes } = useMemo(() => {
+    return parseAssetTags(cleanContent);
+  }, [cleanContent]);
+
+  const hasResources = sources.length > 0 || images.length > 0 || assetTypes.length > 0;
+  const resourcesCount = sources.length + images.length + assetTypes.length;
 
   return (
     <div className="flex flex-col h-full">
@@ -204,13 +209,13 @@ export function ChatResponse({
 
           {activeTab === 'resources' && (
             <div className="space-y-8">
-              {sources.length > 0 && (
-                <LinksView query={query} sources={sources} />
+              {(sources.length > 0 || assetTypes.length > 0) && (
+                <LinksView query={query} sources={sources} assetTypes={assetTypes} />
               )}
               {images.length > 0 && (
                 <ImagesView query={query} images={images} />
               )}
-              {sources.length === 0 && images.length === 0 && (
+              {sources.length === 0 && images.length === 0 && assetTypes.length === 0 && (
                 <p className="text-[var(--fg-tertiary)] text-sm">No resources available</p>
               )}
             </div>

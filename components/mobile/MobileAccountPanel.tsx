@@ -10,6 +10,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
+import { ThemeSegmentedControl } from './ThemeSegmentedControl';
 
 // Mock user data - in real app, this would come from auth context
 const user = {
@@ -138,6 +139,14 @@ export function MobileAccountPanel() {
             <span>Updates</span>
             <ExternalLink className="w-4 h-4 text-[var(--fg-quaternary)]" />
           </a>
+        </div>
+
+        {/* Appearance / Theme */}
+        <div className="px-4 pb-4">
+          <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider mb-2 px-1">
+            Appearance
+          </p>
+          <ThemeSegmentedControl />
         </div>
 
         {/* Sign Out */}

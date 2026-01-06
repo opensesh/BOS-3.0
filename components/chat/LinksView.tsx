@@ -12,20 +12,31 @@ import {
   ChevronDown,
   X,
   ArrowUpAZ,
-  ArrowDownZA
+  ArrowDownZA,
+  Package
 } from 'lucide-react';
-import { SourceInfo } from './AnswerView';
+import { SourceInfo, ParsedAssetType } from './AnswerView';
 import { BrandResourceCardProps } from './BrandResourceCard';
+import { getAssetTypeLabel, getAssetPagePath } from '@/lib/brand-knowledge/asset-data';
 
 interface LinksViewProps {
   query: string;
   sources: SourceInfo[];
   resourceCards?: BrandResourceCardProps[];
+  /** Asset types from parsed asset tags in the response */
+  assetTypes?: ParsedAssetType[];
 }
 
-// Filter types
-type FilterType = 'all' | 'brand' | 'web' | 'news';
+// Filter types - now includes assets
+type FilterType = 'all' | 'brand' | 'web' | 'news' | 'assets';
 type SortOrder = 'asc' | 'desc';
+
+// Asset link data for unified links
+interface AssetLinkData {
+  type: ParsedAssetType;
+  label: string;
+  href: string;
+}
 
 // Unified link item for filtering/sorting
 interface UnifiedLink {
@@ -36,7 +47,7 @@ interface UnifiedLink {
   favicon?: string;
   type: FilterType;
   isInternal: boolean;
-  originalData: SourceInfo | BrandResourceCardProps;
+  originalData: SourceInfo | BrandResourceCardProps | AssetLinkData;
 }
 
 // Category display names and colors
@@ -49,12 +60,13 @@ const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
   'startup-business': { label: 'Business', color: 'text-amber-400' },
 };
 
-// Filter pill configuration
+// Filter pill configuration - now includes assets
 const FILTER_CONFIG: { id: FilterType; label: string; icon: React.ElementType }[] = [
   { id: 'all', label: 'All', icon: LinkIcon },
   { id: 'brand', label: 'Brand', icon: Hexagon },
   { id: 'web', label: 'Web', icon: Globe },
   { id: 'news', label: 'News', icon: Rss },
+  { id: 'assets', label: 'Assets', icon: Package },
 ];
 
 // Extract domain from URL
@@ -69,8 +81,14 @@ function getDomain(url: string): string {
 
 // Compact Link Card Component
 function LinkCard({ link }: { link: UnifiedLink }) {
-  const Icon = link.type === 'brand' ? Hexagon : link.type === 'news' ? Rss : Globe;
-  const iconColor = link.type === 'brand' 
+  const Icon = link.type === 'brand' 
+    ? Hexagon 
+    : link.type === 'news' 
+    ? Rss 
+    : link.type === 'assets'
+    ? Package
+    : Globe;
+  const iconColor = link.type === 'brand' || link.type === 'assets'
     ? 'text-[var(--fg-brand-primary)]' 
     : 'text-[var(--fg-quaternary)]';
 
@@ -289,7 +307,7 @@ function EmptyState({
   );
 }
 
-export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps) {
+export function LinksView({ query, sources, resourceCards = [], assetTypes = [] }: LinksViewProps) {
   // State for filters
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
@@ -328,8 +346,28 @@ export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps
       });
     });
 
+    // Add asset types as links to their BrandHub pages
+    assetTypes.forEach((assetType) => {
+      const label = getAssetTypeLabel(assetType);
+      const href = getAssetPagePath(assetType);
+      links.push({
+        id: `asset-${assetType}`,
+        title: label,
+        domain: 'Brand Hub',
+        url: href,
+        favicon: undefined,
+        type: 'assets',
+        isInternal: true,
+        originalData: {
+          type: assetType,
+          label,
+          href,
+        } as AssetLinkData,
+      });
+    });
+
     return links;
-  }, [sources, resourceCards]);
+  }, [sources, resourceCards, assetTypes]);
 
   // Calculate counts for each filter type
   const counts = useMemo(() => {
@@ -338,6 +376,7 @@ export function LinksView({ query, sources, resourceCards = [] }: LinksViewProps
       brand: 0,
       web: 0,
       news: 0,
+      assets: 0,
     };
 
     unifiedLinks.forEach((link) => {

@@ -78,37 +78,32 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
   };
 
   return (
-    <div className="relative flex items-center gap-2">
-      {/* Left arrow button - outside the scroll container */}
+    <div className="relative flex items-center bg-[var(--bg-tertiary)] rounded-lg p-1">
+      {/* Left arrow - inside container */}
       <button
         onClick={() => scroll('left')}
         className={`
           flex-shrink-0
-          w-8 h-8
+          w-7 h-7
           flex items-center justify-center
-          bg-[var(--bg-primary)]
-          border border-[var(--border-secondary)]
           rounded-md
           text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-          hover:bg-[var(--bg-secondary)]
-          shadow-sm
+          hover:bg-[var(--bg-quaternary)]
           transition-all duration-150
-          ${showLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+          ${showLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none w-0 p-0'}
         `}
         aria-label="Scroll tabs left"
+        tabIndex={showLeftArrow ? 0 : -1}
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
 
-      {/* Tabs container */}
+      {/* Tabs scroll container */}
       <div
         ref={scrollContainerRef}
         className="
           relative flex-1 min-w-0
           flex items-center gap-0.5
-          p-1
-          bg-[var(--bg-tertiary)]
-          rounded-lg
           overflow-x-auto
           scrollbar-hide
           scroll-smooth
@@ -124,7 +119,7 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
       >
         {/* Sliding indicator with spring animation */}
         <motion.div
-          className="absolute top-1 bottom-1 rounded-md bg-[var(--bg-primary)] shadow-sm"
+          className="absolute top-0 bottom-0 rounded-md bg-[var(--bg-primary)] shadow-sm"
           initial={false}
           animate={{
             left: indicatorStyle.left,
@@ -198,23 +193,21 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
         })}
       </div>
 
-      {/* Right arrow button - outside the scroll container */}
+      {/* Right arrow - inside container */}
       <button
         onClick={() => scroll('right')}
         className={`
           flex-shrink-0
-          w-8 h-8
+          w-7 h-7
           flex items-center justify-center
-          bg-[var(--bg-primary)]
-          border border-[var(--border-secondary)]
           rounded-md
           text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-          hover:bg-[var(--bg-secondary)]
-          shadow-sm
+          hover:bg-[var(--bg-quaternary)]
           transition-all duration-150
-          ${showRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+          ${showRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none w-0 p-0'}
         `}
         aria-label="Scroll tabs right"
+        tabIndex={showRightArrow ? 0 : -1}
       >
         <ChevronRight className="w-4 h-4" />
       </button>

@@ -864,9 +864,8 @@ export function Sidebar() {
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Chat Actions Group - New Chat + Recent Chats + Projects */}
+        {/* New Chat Button */}
         <div className={`flex flex-col ${isExpandedMode ? 'px-3 pt-3 pb-2 gap-1' : 'items-center pt-3 pb-1 gap-0.5'}`}>
-          {/* New Chat Button */}
           <Link
             href="/"
             onClick={handleNewChat}
@@ -896,219 +895,11 @@ export function Sidebar() {
               <span className="text-sm font-medium">New Chat</span>
             )}
           </Link>
-
-          {/* Recent Chats Link */}
-          <div 
-            className={`flex flex-col ${isExpandedMode ? '' : 'justify-center'}`}
-            onMouseEnter={(e) => !isExpandedMode && openFlyout('recentChats', e)}
-            onMouseLeave={() => !isExpandedMode && handleFlyoutItemMouseLeave()}
-          >
-            {(() => {
-              const isRecentChatsActive = pathname === '/chats';
-              const isRecentChatsExpanded = expandedSections.includes('RecentChats');
-              
-              if (isExpandedMode) {
-                return (
-                  <div className="flex flex-col">
-                    <div className={`
-                      flex items-center rounded-md transition-colors duration-150
-                      ${isRecentChatsActive
-                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
-                        : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                      }
-                    `}>
-                      <Link
-                        href="/chats"
-                        className="flex-1 flex items-center gap-2 px-2 py-2"
-                      >
-                        <History className="w-4 h-4" />
-                        <span className="text-sm flex-1">Chats</span>
-                        {chatHistory.length > 0 && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
-                            {chatHistory.length}
-                          </span>
-                        )}
-                      </Link>
-                      {chatHistory.length > 0 && (
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            toggleSection('RecentChats');
-                          }}
-                          className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
-                        >
-                          <motion.div animate={{ rotate: isRecentChatsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                            <ChevronDown className="w-3 h-3" />
-                          </motion.div>
-                        </button>
-                      )}
-                    </div>
-                    
-                    {/* Expandable recent chats list */}
-                    <AnimatePresence>
-                      {isRecentChatsExpanded && chatHistory.length > 0 && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="pl-4 py-1 space-y-0.5">
-                            {chatHistory.slice(0, 5).map((chat) => (
-                              <button
-                                key={chat.id}
-                                onClick={() => {
-                                  loadSession(chat.id);
-                                  if (pathname !== '/') router.push('/');
-                                }}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
-                              >
-                                <span className="truncate">{chat.title}</span>
-                              </button>
-                            ))}
-                            {chatHistory.length > 5 && (
-                              <Link
-                                href="/chats"
-                                className="w-full flex items-center gap-1 px-2 py-1.5 rounded text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
-                              >
-                                View all {chatHistory.length}
-                                <ArrowRight className="w-3 h-3" />
-                              </Link>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              }
-              
-              // Collapsed mode
-              return (
-                <Link
-                  href="/chats"
-                  className={`p-2 ${isRecentChatsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
-                  title="Chats"
-                >
-                  <div className={`flex items-center justify-center rounded-md transition-all duration-150 w-8 h-8 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
-                    <History className="w-[18px] h-[18px]" />
-                  </div>
-                </Link>
-              );
-            })()}
-          </div>
-
-          {/* Projects Link */}
-          <div 
-            className={`flex flex-col ${isExpandedMode ? '' : 'justify-center'}`}
-            onMouseEnter={(e) => !isExpandedMode && openFlyout('projects', e)}
-            onMouseLeave={() => !isExpandedMode && handleFlyoutItemMouseLeave()}
-          >
-            {(() => {
-              const isProjectsActive = pathname.startsWith('/projects');
-              const isProjectsExpanded = expandedSections.includes('Projects');
-              
-              if (isExpandedMode) {
-                return (
-                  <div className="flex flex-col">
-                    <div className={`
-                      flex items-center rounded-md transition-colors duration-150
-                      ${isProjectsActive
-                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
-                        : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                      }
-                    `}>
-                      <Link
-                        href="/projects"
-                        className="flex-1 flex items-center gap-2 px-2 py-2"
-                      >
-                        <Folder className="w-4 h-4" />
-                        <span className="text-sm flex-1">Projects</span>
-                        {projects.length > 0 && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
-                            {projects.length}
-                          </span>
-                        )}
-                      </Link>
-                      {projects.length > 0 && (
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            toggleSection('Projects');
-                          }}
-                          className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
-                        >
-                          <motion.div animate={{ rotate: isProjectsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                            <ChevronDown className="w-3 h-3" />
-                          </motion.div>
-                        </button>
-                      )}
-                    </div>
-                    
-                    {/* Expandable projects list */}
-                    <AnimatePresence>
-                      {isProjectsExpanded && projects.length > 0 && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="pl-4 py-1 space-y-0.5">
-                            {projects.slice(0, 5).map((project) => (
-                              <Link
-                                key={project.id}
-                                href={`/projects/${project.id}`}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
-                              >
-                                <div
-                                  className="w-3 h-3 rounded-sm flex-shrink-0"
-                                  style={{ backgroundColor: project.color }}
-                                />
-                                <span className="truncate">{project.name}</span>
-                              </Link>
-                            ))}
-                            {projects.length > 5 && (
-                              <Link
-                                href="/projects"
-                                className="w-full flex items-center gap-1 px-2 py-1.5 rounded text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
-                              >
-                                View all {projects.length}
-                                <ArrowRight className="w-3 h-3" />
-                              </Link>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              }
-              
-              // Collapsed mode
-              return (
-                <Link
-                  href="/projects"
-                  className={`p-2 ${isProjectsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
-                  title="Projects"
-                >
-                  <div className={`flex items-center justify-center rounded-md transition-all duration-150 w-8 h-8 ${isProjectsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
-                    <Folder className="w-[18px] h-[18px]" />
-                  </div>
-                </Link>
-              );
-            })()}
-          </div>
         </div>
-
-        {/* Separator between Chat Actions and Navigation */}
-        <div className={`${isExpandedMode ? 'mx-3 my-2' : 'mx-2 my-1.5'} border-t border-[var(--border-secondary)]`} />
 
         {/* Navigation Items */}
         <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-1 items-center px-1'}`}>
-          {navItems.map((item) => {
+          {navItems.filter(item => item.label !== 'Home').map((item) => {
             const Icon = item.icon;
             const isActive = isItemActive(item);
             const hasSubItems = item.subItems && item.subItems.length > 0;
@@ -1313,6 +1104,217 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Separator before Projects and Chats */}
+        <div className={`${isExpandedMode ? 'mx-3 my-2' : 'mx-2 my-1.5'} border-t border-[var(--border-secondary)]`} />
+
+        {/* Projects and Recent Chats Group */}
+        <div className={`flex flex-col ${isExpandedMode ? 'px-3 pb-2 gap-1' : 'items-center pb-1 gap-0.5'}`}>
+          {/* Projects Link */}
+          <div 
+            className={`flex flex-col ${isExpandedMode ? '' : 'justify-center'}`}
+            onMouseEnter={(e) => !isExpandedMode && openFlyout('projects', e)}
+            onMouseLeave={() => !isExpandedMode && handleFlyoutItemMouseLeave()}
+          >
+            {(() => {
+              const isProjectsActive = pathname.startsWith('/projects');
+              const isProjectsExpanded = expandedSections.includes('Projects');
+              
+              if (isExpandedMode) {
+                return (
+                  <div className="flex flex-col">
+                    <div className={`
+                      flex items-center rounded-md transition-colors duration-150
+                      ${isProjectsActive
+                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                        : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                      }
+                    `}>
+                      <Link
+                        href="/projects"
+                        className="flex-1 flex items-center gap-2 px-2 py-2"
+                      >
+                        <Folder className="w-4 h-4" />
+                        <span className="text-sm flex-1">Projects</span>
+                        {projects.length > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
+                            {projects.length}
+                          </span>
+                        )}
+                      </Link>
+                      {projects.length > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleSection('Projects');
+                          }}
+                          className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
+                        >
+                          <motion.div animate={{ rotate: isProjectsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                            <ChevronDown className="w-3 h-3" />
+                          </motion.div>
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Expandable projects list */}
+                    <AnimatePresence>
+                      {isProjectsExpanded && projects.length > 0 && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 py-1 space-y-0.5">
+                            {projects.slice(0, 5).map((project) => (
+                              <Link
+                                key={project.id}
+                                href={`/projects/${project.id}`}
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                              >
+                                <div
+                                  className="w-3 h-3 rounded-sm flex-shrink-0"
+                                  style={{ backgroundColor: project.color }}
+                                />
+                                <span className="truncate">{project.name}</span>
+                              </Link>
+                            ))}
+                            {projects.length > 5 && (
+                              <Link
+                                href="/projects"
+                                className="w-full flex items-center gap-1 px-2 py-1.5 rounded text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                              >
+                                View all {projects.length}
+                                <ArrowRight className="w-3 h-3" />
+                              </Link>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
+              
+              // Collapsed mode
+              return (
+                <Link
+                  href="/projects"
+                  className={`p-2 ${isProjectsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
+                  title="Projects"
+                >
+                  <div className={`flex items-center justify-center rounded-md transition-all duration-150 w-8 h-8 ${isProjectsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
+                    <Folder className="w-[18px] h-[18px]" />
+                  </div>
+                </Link>
+              );
+            })()}
+          </div>
+
+          {/* Recent Chats Link */}
+          <div 
+            className={`flex flex-col ${isExpandedMode ? '' : 'justify-center'}`}
+            onMouseEnter={(e) => !isExpandedMode && openFlyout('recentChats', e)}
+            onMouseLeave={() => !isExpandedMode && handleFlyoutItemMouseLeave()}
+          >
+            {(() => {
+              const isRecentChatsActive = pathname === '/chats';
+              const isRecentChatsExpanded = expandedSections.includes('RecentChats');
+              
+              if (isExpandedMode) {
+                return (
+                  <div className="flex flex-col">
+                    <div className={`
+                      flex items-center rounded-md transition-colors duration-150
+                      ${isRecentChatsActive
+                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                        : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                      }
+                    `}>
+                      <Link
+                        href="/chats"
+                        className="flex-1 flex items-center gap-2 px-2 py-2"
+                      >
+                        <History className="w-4 h-4" />
+                        <span className="text-sm flex-1">Chats</span>
+                        {chatHistory.length > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
+                            {chatHistory.length}
+                          </span>
+                        )}
+                      </Link>
+                      {chatHistory.length > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleSection('RecentChats');
+                          }}
+                          className="p-2 rounded-md transition-colors duration-150 hover:bg-[var(--bg-quaternary)]"
+                        >
+                          <motion.div animate={{ rotate: isRecentChatsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                            <ChevronDown className="w-3 h-3" />
+                          </motion.div>
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Expandable recent chats list */}
+                    <AnimatePresence>
+                      {isRecentChatsExpanded && chatHistory.length > 0 && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-4 py-1 space-y-0.5">
+                            {chatHistory.slice(0, 5).map((chat) => (
+                              <button
+                                key={chat.id}
+                                onClick={() => {
+                                  loadSession(chat.id);
+                                  if (pathname !== '/') router.push('/');
+                                }}
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                              >
+                                <span className="truncate">{chat.title}</span>
+                              </button>
+                            ))}
+                            {chatHistory.length > 5 && (
+                              <Link
+                                href="/chats"
+                                className="w-full flex items-center gap-1 px-2 py-1.5 rounded text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                              >
+                                View all {chatHistory.length}
+                                <ArrowRight className="w-3 h-3" />
+                              </Link>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              }
+              
+              // Collapsed mode
+              return (
+                <Link
+                  href="/chats"
+                  className={`p-2 ${isRecentChatsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
+                  title="Chats"
+                >
+                  <div className={`flex items-center justify-center rounded-md transition-all duration-150 w-8 h-8 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
+                    <History className="w-[18px] h-[18px]" />
+                  </div>
+                </Link>
+              );
+            })()}
+          </div>
+        </div>
 
         <div className="flex-1" />
 

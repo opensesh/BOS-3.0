@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
-  Home,
   LayoutGrid,
   ScanFace,
   BrainCog,
@@ -22,7 +21,6 @@ import { LanguageSelector } from '@/components/ui/LanguageSelector';
 
 // Simple navigation items - no sub-items for mobile
 const navItems = [
-  { label: 'Home', href: '/', icon: Home },
   { label: 'Brand', href: '/brand-hub', icon: ScanFace },
   { label: 'Brain', href: '/brain', icon: BrainCog },
   { label: 'Spaces', href: '/spaces', icon: LayoutGrid },
@@ -140,49 +138,6 @@ export function MobileFullScreenMenu() {
                   <span>New Chat</span>
                 </button>
 
-                {/* Recent Chats */}
-                <Link
-                  href="/chats"
-                  onClick={handleNavClick}
-                  className={`
-                    flex items-center gap-3 px-4 py-3.5 rounded-xl
-                    transition-colors
-                    ${isItemActive('/chats')
-                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]' 
-                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                    }
-                  `}
-                >
-                  <History className={`w-5 h-5 flex-shrink-0 ${isItemActive('/chats') ? 'text-[var(--fg-brand-primary)]' : ''}`} />
-                  <span className="font-medium">Recent Chats</span>
-                  {chatHistory.length > 0 && (
-                    <span className="text-[var(--fg-quaternary)] text-sm">({chatHistory.length})</span>
-                  )}
-                </Link>
-
-                {/* Projects */}
-                <Link
-                  href="/projects"
-                  onClick={handleNavClick}
-                  className={`
-                    flex items-center gap-3 px-4 py-3.5 rounded-xl
-                    transition-colors
-                    ${isItemActive('/projects')
-                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]' 
-                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                    }
-                  `}
-                >
-                  <Folder className={`w-5 h-5 flex-shrink-0 ${isItemActive('/projects') ? 'text-[var(--fg-brand-primary)]' : ''}`} />
-                  <span className="font-medium">Projects</span>
-                  {projects.length > 0 && (
-                    <span className="text-[var(--fg-quaternary)] text-sm">({projects.length})</span>
-                  )}
-                </Link>
-
-                {/* Divider */}
-                <div className="my-2 border-t border-[var(--border-secondary)]" />
-
                 {/* Main Nav Items */}
                 {navItems.map((item) => {
                   const Icon = item.icon;
@@ -207,6 +162,49 @@ export function MobileFullScreenMenu() {
                     </Link>
                   );
                 })}
+
+                {/* Divider */}
+                <div className="my-2 border-t border-[var(--border-secondary)]" />
+
+                {/* Projects */}
+                <Link
+                  href="/projects"
+                  onClick={handleNavClick}
+                  className={`
+                    flex items-center gap-3 px-4 py-3.5 rounded-xl
+                    transition-colors
+                    ${isItemActive('/projects')
+                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]' 
+                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                    }
+                  `}
+                >
+                  <Folder className={`w-5 h-5 flex-shrink-0 ${isItemActive('/projects') ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                  <span className="font-medium">Projects</span>
+                  {projects.length > 0 && (
+                    <span className="text-[var(--fg-quaternary)] text-sm">({projects.length})</span>
+                  )}
+                </Link>
+
+                {/* Recent Chats */}
+                <Link
+                  href="/chats"
+                  onClick={handleNavClick}
+                  className={`
+                    flex items-center gap-3 px-4 py-3.5 rounded-xl
+                    transition-colors
+                    ${isItemActive('/chats')
+                      ? 'bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)]' 
+                      : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                    }
+                  `}
+                >
+                  <History className={`w-5 h-5 flex-shrink-0 ${isItemActive('/chats') ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                  <span className="font-medium">Recent Chats</span>
+                  {chatHistory.length > 0 && (
+                    <span className="text-[var(--fg-quaternary)] text-sm">({chatHistory.length})</span>
+                  )}
+                </Link>
               </nav>
             </motion.div>
 

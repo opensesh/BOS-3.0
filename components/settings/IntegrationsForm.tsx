@@ -29,8 +29,9 @@ type TabId = 'mcp-server' | 'mcp-client';
 // Constants
 // ============================================
 
-// Mock brand ID - in production this would come from auth context
-const BRAND_ID = 'f64b8b02-4a32-4f1a-9c5d-5e9a3b2c1d0e';
+// Default brand ID for Open Session
+const OPEN_SESSION_BRAND_ID = '16aa5681-c792-45cf-bf65-9f9cbc3197af';
+const DEFAULT_BRAND_ID = process.env.NEXT_PUBLIC_DEFAULT_BRAND_ID || OPEN_SESSION_BRAND_ID;
 
 // ============================================
 // Sub-components
@@ -282,10 +283,10 @@ export function IntegrationsForm() {
           setBrandId(data.id);
         } else {
           // Fallback to hardcoded brand ID
-          setBrandId(BRAND_ID);
+          setBrandId(DEFAULT_BRAND_ID);
         }
       } catch {
-        setBrandId(BRAND_ID);
+        setBrandId(DEFAULT_BRAND_ID);
       }
     }
     fetchBrandId();

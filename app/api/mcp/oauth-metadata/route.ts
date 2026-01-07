@@ -8,13 +8,15 @@ import { NextResponse } from 'next/server';
  * that indicates clients should use client_credentials grant with their API key.
  * 
  * Served at: /.well-known/oauth-authorization-server (via rewrite)
+ * 
+ * IMPORTANT: We always use the production URL to avoid Vercel's Deployment Protection
+ * on preview deployments, which returns HTML instead of JSON and breaks mcp-remote.
  */
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL 
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'https://bos-3-0.vercel.app';
+  // Always use production URL to avoid preview deployment protection issues
+  // Preview deployments have Vercel Authentication enabled which intercepts
+  // requests and returns HTML, breaking mcp-remote's JSON parser
+  const baseUrl = 'https://bos-3-0.vercel.app';
 
   // Return OAuth metadata that indicates Bearer token auth is supported
   return NextResponse.json({

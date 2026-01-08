@@ -1037,14 +1037,16 @@ export function ChatInterface() {
 
       await sendMessage({ text: prompt }, { body: requestBody });
       
-      // Clear the quick action state
+      // Clear the quick action form but KEEP the quickActionType
+      // The quickActionType should persist for the entire chat session
+      // so the badge continues to show in breadcrumbs
       setShowQuickActionForm(false);
-      setQuickActionType(null);
       cancelQuickAction();
     } catch (err) {
       console.error('Failed to submit quick action:', err);
       setSubmitError(err instanceof Error ? err.message : 'Failed to generate post copy');
       setShowQuickActionForm(false);
+      // Only clear quickActionType on error since the chat didn't start successfully
       setQuickActionType(null);
       cancelQuickAction();
     }

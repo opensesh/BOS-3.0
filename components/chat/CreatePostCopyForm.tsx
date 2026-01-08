@@ -678,9 +678,50 @@ export function CreatePostCopyForm({
   goals,
 }: CreatePostCopyFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Form state
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined);
+  
+  // Calculate max height to fit above the fold
+  useEffect(() => {
+    if (!isExpanded || !containerRef.current) return;
+    
+    const calculateMaxHeight = () => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      // Get viewport height
+      const viewportHeight = window.innerHeight;
+      // Get current top position (where the form starts)
+      const topPosition = rect.top;
+      // Reserve space for bottom padding and input area
+      const bottomPadding = 120; // Space for chat input and padding
+      
+      // Calculate available height (from form top to bottom of viewport minus padding)
+      const availableHeight = viewportHeight - topPosition - bottomPadding;
+      
+      // Set max height (ensure minimum of 400px, maximum of 600px for readability)
+      setMaxHeight(Math.min(Math.max(400, availableHeight), 600));
+    };
+    
+    // Calculate immediately
+    calculateMaxHeight();
+    
+    // Recalculate on resize and scroll
+    window.addEventListener('resize', calculateMaxHeight);
+    window.addEventListener('scroll', calculateMaxHeight, true);
+    
+    // Small delay to ensure layout is settled
+    const timeoutId = setTimeout(calculateMaxHeight, 100);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', calculateMaxHeight);
+      window.removeEventListener('scroll', calculateMaxHeight, true);
+    };
+  }, [isExpanded]);
   const [contentFormat, setContentFormat] = useState<ContentFormat>(initialData?.contentFormat || 'short_form');
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(initialData?.channelId || null);
   const [contentSubtypeIds, setContentSubtypeIds] = useState<string[]>(initialData?.contentSubtypeIds || []);
@@ -858,9 +899,9 @@ export function CreatePostCopyForm({
   const isValid = selectedChannelId && keyMessage.trim().length > 0 && goalId;
 
   return (
-    <div className="w-full min-w-0">
+    <div className="w-full min-w-0" ref={containerRef} style={{ scrollbarGutter: 'stable' }}>
       {/* Collapsible Container */}
-      <div className="rounded-xl bg-[var(--bg-secondary)] ring-1 ring-[var(--border-secondary)] shadow-sm overflow-hidden w-full min-w-0">
+      <div className="rounded-xl bg-[var(--bg-secondary)] ring-1 ring-[var(--border-secondary)] shadow-sm overflow-hidden w-full min-w-0" style={{ scrollbarGutter: 'stable' }}>
         {/* Header - Always visible for better UX */}
         <button
           type="button"
@@ -888,9 +929,9 @@ export function CreatePostCopyForm({
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               className="overflow-hidden w-full min-w-0"
-              style={{ willChange: 'height' }}
+              style={{ willChange: 'height', maxHeight: maxHeight ? `${maxHeight}px` : undefined }}
             >
-              <div className="px-4 pb-4 space-y-5 border-t border-[var(--border-secondary)] w-full min-w-0">
+              <div className="px-4 pb-4 space-y-4 border-t border-[var(--border-secondary)] w-full min-w-0 overflow-y-auto custom-scrollbar" style={{ maxHeight: maxHeight ? `${maxHeight}px` : undefined }}>
                 {/* Content Format Section - Master Filter (always visible) */}
                 <div className="pt-4">
                   <SectionHeader label="Content Format" />

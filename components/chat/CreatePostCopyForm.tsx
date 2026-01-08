@@ -1,19 +1,17 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef, useMemo, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
   ChevronUp,
   ChevronLeft,
   ChevronRight,
-  Plus,
-  Pencil,
   X,
   Upload,
   Link as LinkIcon,
   Check,
-  PenLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/base/buttons/button';
 import type {
@@ -499,7 +497,7 @@ function SectionHeader({ label }: SectionHeaderProps) {
   );
 }
 
-// Compact dropdown for output preferences (lighter weight, more accessible)
+// Compact dropdown for output preferences (uses portal for proper z-index stacking)
 interface CompactSelectProps<T extends string | number> {
   value: T;
   onChange: (value: T) => void;
@@ -509,13 +507,31 @@ interface CompactSelectProps<T extends string | number> {
 
 function CompactSelect<T extends string | number>({ value, onChange, options, label }: CompactSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const selectedOption = options.find(o => o.id === value);
+
+  // Calculate dropdown position when opening
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4, // 4px gap below button
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        buttonRef.current && !buttonRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     }
@@ -536,11 +552,35 @@ function CompactSelect<T extends string | number>({ value, onChange, options, la
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen]);
 
+  // Recalculate position on scroll/resize
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    function updatePosition() {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + 4,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    }
+    
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isOpen]);
+
   return (
     <div className="flex items-center gap-2">
       <label className="text-xs text-[var(--fg-tertiary)] whitespace-nowrap">{label}</label>
-      <div ref={containerRef} className="relative">
+      <div className="relative">
         <button
+          ref={buttonRef}
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={`
@@ -560,53 +600,64 @@ function CompactSelect<T extends string | number>({ value, onChange, options, la
           <ChevronDown className={`w-3 h-3 text-[var(--fg-quaternary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.15 }}
-              className="
-                absolute z-50 top-full left-0 mt-1
-                min-w-full w-max
-                bg-[var(--bg-primary)] 
-                rounded-md shadow-lg
-                ring-1 ring-[var(--border-secondary)]
-                py-1 overflow-hidden
-              "
-              role="listbox"
-            >
-              {options.map((option) => {
-                const isSelected = option.id === value;
-                return (
-                  <button
-                    key={String(option.id)}
-                    type="button"
-                    onClick={() => {
-                      onChange(option.id);
-                      setIsOpen(false);
-                    }}
-                    role="option"
-                    aria-selected={isSelected}
-                    className={`
-                      w-full flex items-center justify-between gap-3
-                      px-2.5 py-1.5 text-xs font-medium
-                      transition-colors cursor-pointer
-                      ${isSelected 
-                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
-                        : 'text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
-                      }
-                    `}
-                  >
-                    <span>{option.label}</span>
-                    {isSelected && <Check className="w-3 h-3 shrink-0" />}
-                  </button>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Portal dropdown to body for highest z-index */}
+        {typeof document !== 'undefined' && createPortal(
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                ref={dropdownRef}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className="
+                  fixed
+                  min-w-max
+                  bg-[var(--bg-primary)] 
+                  rounded-md shadow-lg
+                  ring-1 ring-[var(--border-secondary)]
+                  py-1 overflow-hidden
+                "
+                style={{
+                  top: dropdownPosition.top,
+                  left: dropdownPosition.left,
+                  minWidth: dropdownPosition.width,
+                  zIndex: 99999, // Highest possible z-index
+                }}
+                role="listbox"
+              >
+                {options.map((option) => {
+                  const isSelected = option.id === value;
+                  return (
+                    <button
+                      key={String(option.id)}
+                      type="button"
+                      onClick={() => {
+                        onChange(option.id);
+                        setIsOpen(false);
+                      }}
+                      role="option"
+                      aria-selected={isSelected}
+                      className={`
+                        w-full flex items-center justify-between gap-3
+                        px-2.5 py-1.5 text-xs font-medium
+                        transition-colors cursor-pointer
+                        ${isSelected 
+                          ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                          : 'text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                        }
+                      `}
+                    >
+                      <span>{option.label}</span>
+                      {isSelected && <Check className="w-3 h-3 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
       </div>
     </div>
   );
@@ -1091,7 +1142,6 @@ export function CreatePostCopyForm({
                     onClick={handleSubmit}
                     isDisabled={!isValid || isSubmitting}
                     isLoading={isSubmitting}
-                    iconTrailing={isSubmitting ? undefined : PenLine}
                   >
                     Generate
                   </Button>

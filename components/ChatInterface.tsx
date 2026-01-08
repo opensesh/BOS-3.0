@@ -227,7 +227,9 @@ export function ChatInterface() {
       const firstAssistantMessage = messages.find(m => m.role === 'assistant');
       // Only save if there's both a user message AND an assistant response
       if (firstUserMessage && firstAssistantMessage) {
-        const title = generatedTitle || getMessageContent(firstUserMessage).slice(0, 50) || 'Untitled Chat';
+        // For quick action chats, use a neutral placeholder until the real title is generated
+        // This prevents "Create a post for..." from showing as the title
+        const title = generatedTitle || (quickActionType ? 'New conversation' : getMessageContent(firstUserMessage).slice(0, 50)) || 'Untitled Chat';
         const preview = getMessageContent(firstAssistantMessage).slice(0, 100);
         const chatMessages = messages.map(m => {
           const msgSources = (m as { sources?: SourceInfo[] }).sources;
@@ -286,6 +288,12 @@ export function ChatInterface() {
         const { title } = await response.json();
         if (title) {
           setGeneratedTitle(title);
+          
+          // Immediately update the database with the generated title
+          // This fixes the issue where chats are saved with fallback titles
+          if (currentSessionId) {
+            renameChat(currentSessionId, title);
+          }
         }
       }
     } catch (error) {
@@ -293,7 +301,7 @@ export function ChatInterface() {
     } finally {
       setIsGeneratingTitle(false);
     }
-  }, [isGeneratingTitle, generatedTitle, getMessageContent]);
+  }, [isGeneratingTitle, generatedTitle, getMessageContent, currentSessionId, renameChat]);
 
 
   // Listen for reset signals from context (e.g., sidebar navigation)
@@ -306,8 +314,9 @@ export function ChatInterface() {
         const firstAssistantMessage = messages.find(m => m.role === 'assistant');
         // Only save if there's both a user message AND an assistant response
         if (firstUserMessage && firstAssistantMessage) {
-          // Use generated title if available, otherwise fall back to first message
-          const title = generatedTitle || getMessageContent(firstUserMessage).slice(0, 50) || 'Untitled Chat';
+          // For quick action chats, use a neutral placeholder until the real title is generated
+          // This prevents "Create a post for..." from showing as the title
+          const title = generatedTitle || (quickActionType ? 'New conversation' : getMessageContent(firstUserMessage).slice(0, 50)) || 'Untitled Chat';
           const preview = getMessageContent(firstAssistantMessage).slice(0, 100);
           // Convert messages to the format expected by chat history
           // Include sources and attachments so they persist when reloading chat sessions
@@ -423,8 +432,9 @@ export function ChatInterface() {
           generateTitle(messages);
         }
         
-        // Use generated title if available, otherwise fall back to first message
-        const title = generatedTitle || getMessageContent(firstUserMessage).slice(0, 100) || 'Untitled Chat';
+        // For quick action chats, use a neutral placeholder until the real title is generated
+        // This prevents "Create a post for..." from showing as the title
+        const title = generatedTitle || (quickActionType ? 'New conversation' : getMessageContent(firstUserMessage).slice(0, 100)) || 'Untitled Chat';
         const preview = getMessageContent(lastAssistantMessage).slice(0, 150);
         
         // Convert messages to chat history format
@@ -1241,16 +1251,22 @@ export function ChatInterface() {
 
   // Set breadcrumbs on mount and update when title changes
   useEffect(() => {
-    const chatTitle = generatedTitle || (parsedMessages.length > 0 ? parsedMessages[0]?.content.slice(0, 50) : 'New Chat');
-    const displayTitle = chatTitle.length > 50 ? chatTitle.slice(0, 50) + '...' : chatTitle;
+    // For quick action chats, only use generated title (never show prompt as title)
+    // For regular chats, can fallback to first message
+    const chatTitle = quickActionType 
+      ? generatedTitle 
+      : (generatedTitle || (parsedMessages.length > 0 ? parsedMessages[0]?.content.slice(0, 50) : null));
+    const displayTitle = chatTitle ? (chatTitle.length > 50 ? chatTitle.slice(0, 50) + '...' : chatTitle) : null;
     
     // Check if current chat belongs to a project
     const currentChat = currentSessionId ? chatHistory.find(chat => chat.id === currentSessionId) : null;
     const chatProjectId = currentChat?.projectId;
     const chatProject = chatProjectId ? projects.find(p => p.id === chatProjectId) : null;
     
-    // Only show title in breadcrumbs after there's a real AI response (not just quick action pre-prompt)
-    const showTitle = hasAssistantResponse;
+    // Only show title in breadcrumbs when we have an actual title to display
+    // For quick action chats: require generatedTitle (don't show prompt)
+    // For regular chats: show after assistant response with fallback to first message
+    const showTitle = hasAssistantResponse && !!displayTitle;
     
     // Set quick action badge in breadcrumbs (shows as Aperol chip)
     // This persists for the entire chat if it was initiated via quick action

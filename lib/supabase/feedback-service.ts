@@ -93,13 +93,13 @@ export async function submitFeedback(feedback: FeedbackInsert): Promise<MessageF
   const sessionId = feedback.sessionId || getSessionId();
   
   try {
-    // First, check if feedback already exists
+    // First, check if feedback already exists (use maybeSingle to avoid 406 errors)
     const { data: existing } = await supabase
       .from('message_feedback')
       .select('id')
       .eq('message_id', feedback.messageId)
       .eq('session_id', sessionId)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       // Update existing feedback
@@ -172,27 +172,18 @@ export async function getFeedback(messageId: string): Promise<FeedbackType | nul
   const sessionId = getSessionId();
   
   try {
+    // Use maybeSingle() instead of single() to avoid 406 errors when no rows exist
     const { data, error } = await supabase
       .from('message_feedback')
       .select('feedback_type')
       .eq('message_id', messageId)
       .eq('session_id', sessionId)
-      .single();
+      .maybeSingle();
 
-    // PGRST116 = no rows returned - this is normal, not an error
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error) throw error;
     return data ? (data.feedback_type as FeedbackType) : null;
   } catch (err) {
-    // Only log actual errors, not missing feedback (which is expected)
-    // Check for Supabase error structure: must have 'code' property that isn't empty
-    const isSupabaseError = err && typeof err === 'object' && 'code' in err;
-    const errorCode = isSupabaseError ? (err as { code?: string }).code : null;
-    
-    // PGRST116 = "no rows returned" - this is expected when no feedback exists
-    // Empty error objects ({}) or errors without codes should be silently ignored
-    if (errorCode && errorCode !== 'PGRST116') {
-      console.error('Failed to get feedback:', err);
-    }
+    console.error('Failed to get feedback:', err);
     return null;
   }
 }

@@ -79,24 +79,28 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
 
   return (
     <div className="relative flex items-center bg-[var(--bg-tertiary)] rounded-lg p-1">
-      {/* Left arrow - inside container */}
-      <button
-        onClick={() => scroll('left')}
-        className={`
-          flex-shrink-0
-          w-7 h-7
-          flex items-center justify-center
-          rounded-md
-          text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-          hover:bg-[var(--bg-quaternary)]
-          transition-all duration-150
-          ${showLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none w-0 p-0'}
-        `}
-        aria-label="Scroll tabs left"
-        tabIndex={showLeftArrow ? 0 : -1}
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
+      {/* Left arrow - only render when needed */}
+      {showLeftArrow && (
+        <motion.button
+          onClick={() => scroll('left')}
+          className="
+            flex-shrink-0
+            w-7 h-7
+            flex items-center justify-center
+            rounded-md
+            text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+            hover:bg-[var(--bg-quaternary)]
+            transition-colors duration-150
+          "
+          aria-label="Scroll tabs left"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ duration: 0.15 }}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </motion.button>
+      )}
 
       {/* Tabs scroll container */}
       <div
@@ -193,24 +197,28 @@ export function SettingsTabs({ tabs, activeTab, onTabChange }: SettingsTabsProps
         })}
       </div>
 
-      {/* Right arrow - inside container */}
-      <button
-        onClick={() => scroll('right')}
-        className={`
-          flex-shrink-0
-          w-7 h-7
-          flex items-center justify-center
-          rounded-md
-          text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
-          hover:bg-[var(--bg-quaternary)]
-          transition-all duration-150
-          ${showRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none w-0 p-0'}
-        `}
-        aria-label="Scroll tabs right"
-        tabIndex={showRightArrow ? 0 : -1}
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
+      {/* Right arrow - only render when needed */}
+      {showRightArrow && (
+        <motion.button
+          onClick={() => scroll('right')}
+          className="
+            flex-shrink-0
+            w-7 h-7
+            flex items-center justify-center
+            rounded-md
+            text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+            hover:bg-[var(--bg-quaternary)]
+            transition-colors duration-150
+          "
+          aria-label="Scroll tabs right"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ duration: 0.15 }}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </motion.button>
+      )}
     </div>
   );
 }

@@ -66,7 +66,7 @@ const prePrompts = [
   {
     id: 'social-post',
     icon: Megaphone,
-    title: 'Create a Post',
+    title: 'Create post',
     description: 'Generate copy for social media',
     prompt: 'Help me create a social media post. I want to announce [topic/product] and need engaging copy that fits my brand voice.',
   },
@@ -99,17 +99,17 @@ const allItems = [
   ...prePrompts.map(prompt => ({ ...prompt, type: 'prompt' as const })),
 ];
 
-// Mobile grid items: 2 folders + 2 icons (Colors, Spaces, Create a Post, Brand Review)
+// Mobile grid items: 2 folders + 2 icons (Colors, Spaces, Create post, Brand Review)
 const mobileGridItems = [
   { ...quickLinks[2], type: 'link' as const }, // Colors
   { ...quickLinks[3], type: 'link' as const }, // Spaces
-  { ...prePrompts[0], type: 'prompt' as const }, // Create a Post
+  { ...prePrompts[0], type: 'prompt' as const }, // Create post
   { ...prePrompts[1], type: 'prompt' as const }, // Brand Review
 ];
 
 // Initial indices per breakpoint to center on 2 folders + 2 icons:
-// - Desktop (4 visible): index 2 → Colors, Spaces, Create a Post, Brand Review
-// - Tablet (3 visible): index 2 → Colors, Spaces, Create a Post  
+// - Desktop (4 visible): index 2 → Colors, Spaces, Create post, Brand Review
+// - Tablet (3 visible): index 2 → Colors, Spaces, Create post  
 const INITIAL_INDEX_DESKTOP = 2;
 const INITIAL_INDEX_TABLET = 2;
 

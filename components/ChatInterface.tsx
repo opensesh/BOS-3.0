@@ -98,6 +98,9 @@ interface ParsedMessage {
 export function ChatInterface() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:mount',message:'ChatInterface rendered with searchParams',data:{actionParam:searchParams?.get('action'),qParam:searchParams?.get('q'),allParams:searchParams?.toString()},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
   const [selectedModel, setSelectedModel] = useState<ModelId>('auto');
   const [localInput, setLocalInput] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -341,11 +344,17 @@ export function ChatInterface() {
 
   // Listen for session load signals from context (e.g., clicking chat history)
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:sessionLoadEffect',message:'Session load effect triggered',data:{sessionToLoad,chatHistoryLength:chatHistory.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     if (sessionToLoad) {
       const loadSessionMessages = async () => {
         try {
           // Look up the session in chat history to restore title and quickActionType
           const loadedSession = chatHistory.find(chat => chat.id === sessionToLoad);
+          // #region agent log
+          fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:sessionLoadEffect:found',message:'Session found in history',data:{sessionToLoad,foundSession:!!loadedSession,title:loadedSession?.title,quickActionType:loadedSession?.quickActionType},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+          // #endregion
           
           // Restore the session's title (prevents re-generating title for existing chats)
           if (loadedSession?.title) {
@@ -604,9 +613,15 @@ export function ChatInterface() {
 
   // Handle quick action URL parameter (e.g., ?action=create-post-copy)
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:actionParamEffect',message:'Quick action effect triggered',data:{hasProcessedActionParam,action:searchParams.get('action'),hasMessages:messages.length>0},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     if (hasProcessedActionParam) return;
     
     const action = searchParams.get('action') as QuickActionType | null;
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:actionParamEffect:check',message:'Checking action param',data:{action,foundInQuickActions:!!QUICK_ACTIONS.find(a=>a.id===action)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     
     if (action && QUICK_ACTIONS.find(a => a.id === action)) {
       setHasProcessedActionParam(true);
@@ -703,9 +718,6 @@ export function ChatInterface() {
         }
         // Append the NEW transcript
         const result = base + (base ? ' ' : '') + transcript;
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:transcriptEffect',message:'Processing transcript',data:{prev,prevTranscript,transcript,endsWithPrev,base,result,prevLength:prev.length,transcriptLength:transcript.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'voice-loop-fix'})}).catch(()=>{});
-        // #endregion
         return result;
       });
     } else if (!isListening) {

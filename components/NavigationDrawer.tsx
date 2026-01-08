@@ -54,7 +54,7 @@ const quickActions = [
   {
     id: 'social-post',
     icon: Megaphone,
-    title: 'Create a Post',
+    title: 'Create post',
     description: 'Social media copy',
     prompt: 'Help me create a social media post. I want to announce [topic/product] and need engaging copy that fits my brand voice.',
   },

@@ -336,9 +336,9 @@ export interface QuickActionConfig {
 export const QUICK_ACTIONS: QuickActionConfig[] = [
   {
     id: 'create-post-copy',
-    title: 'Create a Post',
+    title: 'Create post',
     description: 'Generate engaging social media copy for your posts',
-    prePrompt: 'Create a post',
+    prePrompt: 'Create post',
     skillId: 'create-post-copy',
   },
   {

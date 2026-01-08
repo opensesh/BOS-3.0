@@ -868,7 +868,7 @@ export function CreatePostCopyForm({
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors"
         >
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[var(--fg-primary)]">Create Post Copy</span>
+            <span className="text-sm font-semibold text-[var(--fg-primary)]">Create Post</span>
           </div>
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}

@@ -42,6 +42,9 @@ export default function SpaceChatPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SpaceChatPage:mount',message:'SpaceChatPage rendered',data:{paramsSlug:params?.slug,paramsThreadId:params?.threadId,qParam:searchParams?.get('q'),isNew:searchParams?.get('isNew')},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
 
   const slug = params.slug as string;
   const threadId = params.threadId as string;

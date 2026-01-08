@@ -133,7 +133,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         quickActionType: session.quick_action_type,
       }));
       // #region agent log
-      historyItems.forEach((item, i) => { if (!item.id || item.id === '') fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-context.tsx:loadHistory',message:'Empty chat history ID detected',data:{index:i,id:item.id,title:item.title},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{}); });
+      fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-context.tsx:loadHistory',message:'Chat history loaded',data:{count:historyItems.length,hasEmptyIds:historyItems.some(item=>!item.id||item.id===''),sampleIds:historyItems.slice(0,3).map(item=>({id:item.id,title:item.title}))},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
       // #endregion
       setChatHistory(historyItems);
     } catch (error) {
@@ -157,7 +157,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     try {
       const loadedProjects = await projectsService.getProjects();
       // #region agent log
-      loadedProjects.forEach((p, i) => { if (!p.id || p.id === '') fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-context.tsx:loadProjects',message:'Empty project ID detected',data:{index:i,id:p.id,name:p.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{}); });
+      fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-context.tsx:loadProjects',message:'Projects loaded',data:{count:loadedProjects.length,sampleIds:loadedProjects.slice(0,3).map(p=>({id:p.id,name:p.name}))},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
       // #endregion
       setProjects(loadedProjects);
     } catch (error) {

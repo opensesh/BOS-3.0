@@ -21,7 +21,7 @@ const FALLBACK_SKILLS = [
   { id: 'artifacts-builder', slug: 'artifacts-builder', label: 'Artifacts Builder', file: 'SKILL.md' },
   { id: 'brand-guidelines', slug: 'brand-guidelines', label: 'Brand Guidelines', file: 'SKILL.md' },
   { id: 'canvas-design', slug: 'canvas-design', label: 'Canvas Design', file: 'SKILL.md' },
-  { id: 'create-post-copy', slug: 'create-post-copy', label: 'Create Post Copy', file: 'SKILL.md' },
+  { id: 'create-post-copy', slug: 'create-post-copy', label: 'Create Post', file: 'SKILL.md' },
   { id: 'mcp-builder', slug: 'mcp-builder', label: 'MCP Builder', file: 'SKILL.md' },
   { id: 'skill-creator', slug: 'skill-creator', label: 'Skill Creator', file: 'SKILL.md' },
 ];

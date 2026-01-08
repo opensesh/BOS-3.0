@@ -2,7 +2,7 @@
  * Prompt Builder for Quick Actions
  * 
  * Converts form data into structured prompts for AI processing.
- * The prompts are designed to work with the "Create Post Copy" skill.
+ * The prompts are designed to work with the "Create Post" skill.
  */
 
 import type {
@@ -102,7 +102,7 @@ function formatOutputPreferences(prefs: OutputPreferences): string {
 // =============================================================================
 
 /**
- * Build a structured prompt for the Create Post Copy skill
+ * Build a structured prompt for the Create Post skill
  */
 export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
   const { formData, context, brandContext } = options;

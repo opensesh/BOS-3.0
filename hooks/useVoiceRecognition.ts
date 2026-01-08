@@ -90,9 +90,6 @@ export function useVoiceRecognition(
       }
 
       const fullTranscript = finalTranscript || interimTranscript;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useVoiceRecognition.ts:onresult',message:'Speech result',data:{interimTranscript,finalTranscript,fullTranscript,isFinal:!!finalTranscript,resultIndex:event.resultIndex},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'voice-loop'})}).catch(()=>{});
-      // #endregion
       setTranscript(fullTranscript.trim());
 
       if (finalTranscript && onResultRef.current) {

@@ -167,12 +167,14 @@ export const chatService = {
    * @param messages - Array of chat messages
    * @param existingId - ID of existing chat to update
    * @param projectId - Optional project ID to associate this chat with
+   * @param quickActionType - Optional quick action type that initiated this chat
    */
   async saveSession(
     title: string,
     messages: ChatMessage[],
     existingId?: string,
-    projectId?: string | null
+    projectId?: string | null,
+    quickActionType?: string | null
   ): Promise<ChatSession | null> {
     if (!(await checkTablesAvailable())) {
       return null;
@@ -247,13 +249,19 @@ export const chatService = {
           preview,
           messages,
           project_id: projectId,
+          quick_action_type: quickActionType,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
       }
 
       // Create new chat (user_id is null for anonymous/demo users)
-      const chatInsert: ChatInsert = { title, user_id: null, project_id: projectId ?? null };
+      const chatInsert: ChatInsert = { 
+        title, 
+        user_id: null, 
+        project_id: projectId ?? null,
+        quick_action_type: quickActionType ?? null,
+      };
 
       const { data: chat, error: chatError } = await supabase
         .from('chats')
@@ -301,6 +309,7 @@ export const chatService = {
         preview,
         messages,
         project_id: chat.project_id,
+        quick_action_type: chat.quick_action_type,
         created_at: chat.created_at,
         updated_at: chat.updated_at,
       };
@@ -369,6 +378,7 @@ export const chatService = {
           preview,
           messages: chatMessages,
           project_id: chat.project_id,
+          quick_action_type: chat.quick_action_type,
           created_at: chat.created_at,
           updated_at: chat.updated_at,
         };
@@ -422,6 +432,7 @@ export const chatService = {
         preview,
         messages: chatMessages,
         project_id: chat.project_id,
+        quick_action_type: chat.quick_action_type,
         created_at: chat.created_at,
         updated_at: chat.updated_at,
       };

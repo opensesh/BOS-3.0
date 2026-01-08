@@ -3,7 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Plus, Check, Search } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
+import { getQuickActionConfig } from '@/lib/quick-actions';
 import { Brand } from '@/types';
 
 // Default brands
@@ -64,8 +66,35 @@ function saveSelectedBrand(brandId: string): void {
   }
 }
 
+/**
+ * Quick Action Badge - Aperol-styled chip for guided chat mode
+ */
+function QuickActionBadge({ type }: { type: string }) {
+  const config = getQuickActionConfig(type as any);
+  if (!config) return null;
+
+  return (
+    <motion.span
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="
+        inline-flex items-center
+        px-2.5 py-0.5
+        rounded-full
+        text-[11px] font-medium
+        bg-[var(--brand-aperol)] text-white
+        shadow-sm
+      "
+    >
+      {config.title}
+    </motion.span>
+  );
+}
+
 export function Breadcrumbs() {
-  const { breadcrumbs } = useBreadcrumbs();
+  const { breadcrumbs, quickActionType } = useBreadcrumbs();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [brands, setBrands] = useState<Brand[]>(DEFAULT_BRANDS);
   const [selectedBrandId, setSelectedBrandId] = useState<string>(DEFAULT_BRANDS[0].id);
@@ -118,6 +147,10 @@ export function Breadcrumbs() {
     setIsDropdownOpen(false);
     setSearchQuery('');
   }, []);
+
+  // Separate breadcrumbs into path items and the final title
+  const pathBreadcrumbs = breadcrumbs.slice(0, -1);
+  const titleBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
 
   return (
     <nav className="flex items-center text-xs" aria-label="Breadcrumb">
@@ -240,8 +273,8 @@ export function Breadcrumbs() {
         )}
       </div>
 
-      {/* Page breadcrumbs */}
-      {breadcrumbs.map((crumb, index) => (
+      {/* Path breadcrumbs (everything except the final title) */}
+      {pathBreadcrumbs.map((crumb, index) => (
         <div key={index} className="flex items-center">
           <span className="mx-1.5 text-fg-quaternary">/</span>
           {crumb.href ? (
@@ -264,6 +297,35 @@ export function Breadcrumbs() {
           )}
         </div>
       ))}
+
+      {/* Quick Action Badge - appears after path breadcrumbs, before title */}
+      <AnimatePresence mode="wait">
+        {quickActionType && (
+          <div className="flex items-center">
+            <span className="mx-1.5 text-fg-quaternary">/</span>
+            <QuickActionBadge type={quickActionType} />
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Title breadcrumb (final item) - animated when it appears */}
+      {titleBreadcrumb && (
+        <div className="flex items-center">
+          <span className="mx-1.5 text-fg-quaternary">/</span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={titleBreadcrumb.label}
+              initial={{ opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 4 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="px-1.5 py-0.5 text-fg-primary"
+            >
+              {titleBreadcrumb.label}
+            </motion.span>
+          </AnimatePresence>
+        </div>
+      )}
     </nav>
   );
 }

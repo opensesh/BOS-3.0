@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
+import type { QuickActionType } from '@/lib/quick-actions';
 
 interface BreadcrumbItem {
   label: string;
@@ -12,6 +13,9 @@ interface BreadcrumbContextType {
   breadcrumbs: BreadcrumbItem[];
   setBreadcrumbs: (items: BreadcrumbItem[]) => void;
   setPageTitle: (title: string) => void;
+  // Quick action support
+  quickActionType: QuickActionType | null;
+  setQuickAction: (type: QuickActionType | null) => void;
 }
 
 const BreadcrumbContext = createContext<BreadcrumbContextType | undefined>(undefined);
@@ -43,6 +47,7 @@ const routeLabels: Record<string, string> = {
 export function BreadcrumbProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [customBreadcrumbs, setCustomBreadcrumbs] = useState<BreadcrumbItem[] | null>(null);
+  const [quickActionType, setQuickActionType] = useState<QuickActionType | null>(null);
 
   // Auto-generate breadcrumbs from pathname
   const generateBreadcrumbs = useCallback((path: string): BreadcrumbItem[] => {
@@ -86,13 +91,24 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
     });
   }, [pathname, generateBreadcrumbs]);
 
-  // Reset custom breadcrumbs when pathname changes
+  const setQuickAction = useCallback((type: QuickActionType | null) => {
+    setQuickActionType(type);
+  }, []);
+
+  // Reset custom breadcrumbs and quick action when pathname changes
   useEffect(() => {
     setCustomBreadcrumbs(null);
+    setQuickActionType(null);
   }, [pathname]);
 
   return (
-    <BreadcrumbContext.Provider value={{ breadcrumbs, setBreadcrumbs, setPageTitle }}>
+    <BreadcrumbContext.Provider value={{ 
+      breadcrumbs, 
+      setBreadcrumbs, 
+      setPageTitle,
+      quickActionType,
+      setQuickAction,
+    }}>
       {children}
     </BreadcrumbContext.Provider>
   );
@@ -105,6 +121,3 @@ export function useBreadcrumbs() {
   }
   return context;
 }
-
-
-

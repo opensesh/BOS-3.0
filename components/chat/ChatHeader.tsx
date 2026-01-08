@@ -26,6 +26,8 @@ interface ChatHeaderProps {
   hideShare?: boolean;
   /** Hide title dropdown (e.g., quick action pre-submission state) */
   hideTitle?: boolean;
+  /** Whether the title is being generated (shows loading animation) */
+  isTitleLoading?: boolean;
 }
 
 export function ChatHeader({
@@ -44,6 +46,7 @@ export function ChatHeader({
   isStreaming = false,
   hideShare = false,
   hideTitle = false,
+  isTitleLoading = false,
 }: ChatHeaderProps) {
   const tabs = [
     {
@@ -122,6 +125,7 @@ export function ChatHeader({
                 <ChatTitleDropdown
                   title={threadTitle}
                   createdAt={threadCreatedAt}
+                  isLoading={isTitleLoading}
                   onRename={onRenameThread}
                   onAddToProject={onAddToProject}
                   onAddToSpace={onAddToSpace}
@@ -137,4 +141,3 @@ export function ChatHeader({
     </div>
   );
 }
-

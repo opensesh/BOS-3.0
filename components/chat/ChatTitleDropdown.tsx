@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
   FolderPlus,
@@ -11,10 +12,12 @@ import {
   Check,
   X,
 } from 'lucide-react';
+import { Loader } from '@/components/ui/loader';
 
 interface ChatTitleDropdownProps {
   title: string;
   createdAt?: Date;
+  isLoading?: boolean;
   onRename?: (newTitle: string) => void;
   onAddToProject?: () => void;
   onAddToSpace?: () => void;
@@ -27,6 +30,7 @@ interface ChatTitleDropdownProps {
 export function ChatTitleDropdown({
   title,
   createdAt,
+  isLoading = false,
   onRename,
   onAddToProject,
   onAddToSpace,
@@ -85,6 +89,7 @@ export function ChatTitleDropdown({
 
   // Handle double-click to start editing
   const handleDoubleClick = useCallback(() => {
+    if (isLoading) return; // Don't allow editing while loading
     // Lock the width before entering edit mode
     if (triggerRef.current) {
       setLockedWidth(triggerRef.current.offsetWidth);
@@ -92,7 +97,7 @@ export function ChatTitleDropdown({
     setEditValue(title);
     setIsEditing(true);
     setIsOpen(false);
-  }, [title]);
+  }, [title, isLoading]);
 
   // Handle save rename
   const handleSave = useCallback(() => {
@@ -217,80 +222,147 @@ export function ChatTitleDropdown({
 
   return (
     <div className="relative" ref={containerRef}>
-      {/* Title container - Claude-style */}
+      {/* Title container with pulsing gradient background when loading */}
       <div
         ref={triggerRef}
         className={`
-          flex items-center gap-1.5 px-2.5 h-7 rounded-lg border transition-all cursor-pointer
+          relative flex items-center gap-1.5 px-2.5 h-7 rounded-lg border transition-all
           min-w-0 w-full overflow-hidden
-          ${isOpen || isEditing
-            ? 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'
-            : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50'
+          ${isLoading 
+            ? 'border-[var(--brand-aperol)]/30 cursor-default' 
+            : isOpen || isEditing
+              ? 'border-[var(--border-primary)] bg-[var(--bg-secondary)] cursor-pointer'
+              : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50 cursor-pointer'
           }
         `}
         style={lockedWidth ? { width: lockedWidth } : undefined}
-        onClick={() => !isEditing && setIsOpen(!isOpen)}
+        onClick={() => !isEditing && !isLoading && setIsOpen(!isOpen)}
       >
-        {isEditing ? (
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
-            <input
-              ref={inputRef}
-              type="text"
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={(e) => {
-                // Don't save on blur if clicking one of the buttons
-                const relatedTarget = e.relatedTarget as HTMLElement;
-                if (relatedTarget?.closest('button')) return;
-                handleSave();
-              }}
-              className="flex-1 min-w-0 bg-transparent text-xs font-medium text-[var(--fg-secondary)] outline-none"
-              onClick={(e) => e.stopPropagation()}
-            />
-            <div className="flex items-center gap-0.5 flex-shrink-0">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
+        {/* Pulsing Aperol gradient background when loading */}
+        <AnimatePresence>
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none"
+            >
+              <div 
+                className="absolute inset-0 aperol-pulse-gradient"
+                style={{
+                  background: `linear-gradient(90deg, 
+                    transparent 0%, 
+                    rgba(254, 81, 2, 0.15) 30%, 
+                    rgba(254, 81, 2, 0.2) 50%, 
+                    rgba(254, 81, 2, 0.15) 70%, 
+                    transparent 100%
+                  )`,
+                  animation: 'aperolPulse 2.5s ease-in-out infinite, aperolShimmer 2s ease-in-out infinite',
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Content - either loading, editing, or title display */}
+        <div className="relative flex items-center gap-1.5 flex-1 min-w-0 z-10">
+          {isEditing ? (
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <input
+                ref={inputRef}
+                type="text"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={(e) => {
+                  // Don't save on blur if clicking one of the buttons
+                  const relatedTarget = e.relatedTarget as HTMLElement;
+                  if (relatedTarget?.closest('button')) return;
                   handleSave();
                 }}
-                className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] transition-colors"
-                title="Save (Enter)"
-              >
-                <Check className="w-3 h-3" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCancel();
-                }}
-                className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] transition-colors"
-                title="Cancel (Escape)"
-              >
-                <X className="w-3 h-3" />
-              </button>
+                className="flex-1 min-w-0 bg-transparent text-xs font-medium text-[var(--fg-secondary)] outline-none"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSave();
+                  }}
+                  className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-brand-primary)] transition-colors"
+                  title="Save (Enter)"
+                >
+                  <Check className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCancel();
+                  }}
+                  className="p-1 rounded hover:bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] transition-colors"
+                  title="Cancel (Escape)"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <>
-            <span
-              className="text-xs font-medium text-[var(--fg-secondary)] truncate flex-1 min-w-0"
-              onDoubleClick={handleDoubleClick}
-              title={`${title} (double-click to rename)`}
-            >
-              {title}
-            </span>
-            <ChevronDown
-              className={`w-3.5 h-3.5 text-[var(--fg-tertiary)] flex-shrink-0 transition-transform ${
-                isOpen ? 'rotate-180' : ''
-              }`}
-            />
-          </>
-        )}
+          ) : (
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 min-w-0"
+                >
+                  <Loader 
+                    variant="loading-dots" 
+                    text="Thinking"
+                    className="text-xs font-medium text-[var(--fg-tertiary)]"
+                  />
+                </motion.div>
+              ) : (
+                <motion.span
+                  key="title"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  className="text-xs font-medium text-[var(--fg-secondary)] truncate flex-1 min-w-0"
+                  onDoubleClick={handleDoubleClick}
+                  title={`${title} (double-click to rename)`}
+                >
+                  {title}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          )}
+
+          {/* Chevron - hidden when loading */}
+          <AnimatePresence>
+            {!isLoading && !isEditing && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[var(--fg-tertiary)] flex-shrink-0 transition-transform ${
+                    isOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Dropdown menu */}
-      {isOpen && !isEditing && (
+      {isOpen && !isEditing && !isLoading && (
         <div className="absolute right-0 top-full mt-1.5 w-56 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] shadow-xl z-50 overflow-hidden">
           {/* Date header */}
           <div className="px-3.5 py-2.5 border-b border-[var(--border-primary)]">
@@ -335,7 +407,26 @@ export function ChatTitleDropdown({
           </div>
         </div>
       )}
+
+      {/* CSS Keyframes for pulsing animation */}
+      <style jsx>{`
+        @keyframes aperolPulse {
+          0%, 100% { 
+            opacity: 0.6;
+          }
+          50% { 
+            opacity: 1;
+          }
+        }
+        @keyframes aperolShimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+      `}</style>
     </div>
   );
 }
-

@@ -26,6 +26,8 @@ export { ArtifactRenderer, ArtifactList, ArtifactPreview } from './ArtifactRende
 export { InlineStreamingDisplay, InlineStreamingIndicator, StreamingTrailIndicator } from './InlineStreamingDisplay';
 export { UserMessageBubble } from './UserMessageBubble';
 export { DateFilterDropdown, type DateFilterValue } from './DateFilterDropdown';
+export { CategoryFilterDropdown, type CategoryFilterValue } from './CategoryFilterDropdown';
+export { QuickActionFilterDropdown, type QuickActionFilterValue } from './QuickActionFilterDropdown';
 export { AddToProjectModal } from './AddToProjectModal';
 export { AddToSpaceModal } from './AddToSpaceModal';
 

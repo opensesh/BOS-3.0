@@ -14,6 +14,7 @@ export interface DbChat {
   user_id: string | null;
   project_id: string | null;
   title: string;
+  quick_action_type: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -88,6 +89,7 @@ export interface ChatSession {
   preview: string | null;
   messages: ChatMessage[];
   project_id?: string | null;
+  quick_action_type?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -97,6 +99,7 @@ export interface ChatInsert {
   title: string;
   user_id?: string | null;
   project_id?: string | null;
+  quick_action_type?: string | null;
 }
 
 export interface MessageInsert {

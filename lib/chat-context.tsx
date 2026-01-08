@@ -25,6 +25,7 @@ export interface ChatHistoryItem {
   messages?: ChatMessage[];
   projectId?: string | null;
   spaceSlug?: string | null;
+  quickActionType?: string | null;
 }
 
 export interface SpaceOption {
@@ -36,7 +37,7 @@ export interface SpaceOption {
 
 interface ChatContextValue {
   chatHistory: ChatHistoryItem[];
-  addToHistory: (title: string, preview: string, messages?: ChatMessage[], projectId?: string | null) => Promise<void>;
+  addToHistory: (title: string, preview: string, messages?: ChatMessage[], projectId?: string | null, quickActionType?: string | null) => Promise<void>;
   clearHistory: () => void;
   loadHistory: () => Promise<void>;
   deleteFromHistory: (id: string) => Promise<void>;
@@ -129,6 +130,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         timestamp: new Date(session.updated_at),
         messages: session.messages,
         projectId: session.project_id,
+        quickActionType: session.quick_action_type,
       }));
       // #region agent log
       historyItems.forEach((item, i) => { if (!item.id || item.id === '') fetch('http://127.0.0.1:7242/ingest/3e9d966b-9057-4dd8-8a82-1447a767070c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'chat-context.tsx:loadHistory',message:'Empty chat history ID detected',data:{index:i,id:item.id,title:item.title},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{}); });
@@ -289,7 +291,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const addToHistory = useCallback(async (title: string, preview: string, messages?: ChatMessage[], projectId?: string | null) => {
+  const addToHistory = useCallback(async (title: string, preview: string, messages?: ChatMessage[], projectId?: string | null, quickActionType?: string | null) => {
     // Save to Supabase
     try {
       const formattedMessages: ChatMessage[] = messages || [];
@@ -299,7 +301,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         title.slice(0, 100),
         formattedMessages,
         currentSessionId || undefined,
-        effectiveProjectId
+        effectiveProjectId,
+        quickActionType
       );
       
       if (session) {
@@ -316,6 +319,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                     timestamp: new Date(session.updated_at),
                     messages: session.messages,
                     projectId: session.project_id,
+                    quickActionType: session.quick_action_type,
                   }
                 : item
             );
@@ -328,6 +332,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             timestamp: new Date(session.updated_at),
             messages: session.messages,
             projectId: session.project_id,
+            quickActionType: session.quick_action_type,
           }, ...prev];
         });
         
@@ -345,6 +350,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         timestamp: new Date(),
         messages,
         projectId: effectiveProjectId,
+        quickActionType,
       };
       setChatHistory(prev => [newItem, ...prev]);
     }

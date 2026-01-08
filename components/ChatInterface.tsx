@@ -130,7 +130,7 @@ export function ChatInterface() {
   const userHasScrolledUpRef = useRef(false);
 
   // Breadcrumbs context
-  const { setBreadcrumbs, setPageTitle } = useBreadcrumbs();
+  const { setBreadcrumbs, setPageTitle, setQuickAction } = useBreadcrumbs();
 
   // Chat context for cross-component communication
   const { 
@@ -244,12 +244,12 @@ export function ChatInterface() {
             })),
           };
         });
-        addToHistory(title, preview, chatMessages, currentProject?.id);
+        addToHistory(title, preview, chatMessages, currentProject?.id, quickActionType);
       }
     }
     // Navigate to Recent Chats
     router.push('/chats');
-  }, [messages, generatedTitle, getMessageContent, addToHistory, router, currentProject]);
+  }, [messages, generatedTitle, getMessageContent, addToHistory, router, currentProject, quickActionType]);
 
   // Reset chat function
   const resetChat = useCallback(() => {
@@ -328,7 +328,7 @@ export function ChatInterface() {
               })),
             };
           });
-          addToHistory(title, preview, chatMessages, currentProject?.id);
+          addToHistory(title, preview, chatMessages, currentProject?.id, quickActionType);
         }
       }
       resetChat();
@@ -337,7 +337,7 @@ export function ChatInterface() {
       setCurrentSessionId(null);
       acknowledgeChatReset();
     }
-  }, [shouldResetChat, acknowledgeChatReset, resetChat, messages, addToHistory, getMessageContent, setCurrentSessionId, generatedTitle, currentProject]);
+  }, [shouldResetChat, acknowledgeChatReset, resetChat, messages, addToHistory, getMessageContent, setCurrentSessionId, generatedTitle, currentProject, quickActionType]);
 
   // Listen for session load signals from context (e.g., clicking chat history)
   useEffect(() => {
@@ -428,11 +428,11 @@ export function ChatInterface() {
         
         // Save to history (this also updates Supabase)
         // Pass the current project ID so chats are associated with projects
-        addToHistory(title, preview, chatMessages, currentProject?.id);
+        addToHistory(title, preview, chatMessages, currentProject?.id, quickActionType);
       }
     }
     prevStatusRef.current = status;
-  }, [status, messages, addToHistory, getMessageContent, generatedTitle, generateTitle, currentProject]);
+  }, [status, messages, addToHistory, getMessageContent, generatedTitle, generateTitle, currentProject, quickActionType]);
 
   // Process URL search params for article follow-up queries or prompt pre-fill
   useEffect(() => {
@@ -1162,26 +1162,29 @@ export function ChatInterface() {
     // Only show title in breadcrumbs after there's a real AI response (not just quick action pre-prompt)
     const showTitle = hasAssistantResponse;
     
-    // Determine quick action label for breadcrumbs
-    const quickActionLabel = showQuickActionForm && quickActionType === 'create-post-copy' 
-      ? 'Create Post Copy' 
-      : null;
+    // Set quick action badge in breadcrumbs (shows as Aperol chip)
+    // This persists for the entire chat if it was initiated via quick action
+    if (quickActionType) {
+      setQuickAction(quickActionType);
+    } else {
+      setQuickAction(null);
+    }
     
     if (chatProject) {
       // Chat belongs to a project: Projects / Project Name / Chat Title
       setBreadcrumbs([
         { label: 'Projects', href: '/projects' },
         { label: chatProject.name, href: `/projects/${chatProject.id}` },
-        ...(showTitle ? [{ label: displayTitle }] : quickActionLabel ? [{ label: quickActionLabel }] : []),
+        ...(showTitle ? [{ label: displayTitle }] : []),
       ]);
     } else {
-      // Chat doesn't belong to a project: Chats / Chat Title (or Quick Action Label)
+      // Chat doesn't belong to a project: Chats / Chat Title
       setBreadcrumbs([
         { label: 'Chats', href: '/chats' },
-        ...(showTitle ? [{ label: displayTitle }] : quickActionLabel ? [{ label: quickActionLabel }] : []),
+        ...(showTitle ? [{ label: displayTitle }] : []),
       ]);
     }
-  }, [setBreadcrumbs, generatedTitle, parsedMessages, hasAssistantResponse, currentSessionId, chatHistory, projects, showQuickActionForm, quickActionType]);
+  }, [setBreadcrumbs, setQuickAction, generatedTitle, parsedMessages, hasAssistantResponse, currentSessionId, chatHistory, projects, showQuickActionForm, quickActionType]);
 
   // Get all sources and images from messages
   const allSources = useMemo(() => {
@@ -1244,6 +1247,7 @@ export function ChatInterface() {
               hasResources={allSources.length > 0 || allResourceCards.length > 0 || allImages.length > 0}
               resourcesCount={allSources.length + allResourceCards.length + allImages.length}
               threadTitle={threadTitle}
+              isTitleLoading={isGeneratingTitle}
               onBack={handleBackToChats}
               onRenameThread={async (newTitle) => {
                 // Update the local generated title immediately for UI responsiveness

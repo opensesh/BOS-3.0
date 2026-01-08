@@ -24,6 +24,7 @@ import { useChatContext } from '@/lib/chat-context';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 import { DateFilterDropdown, type DateFilterValue } from '@/components/chat/DateFilterDropdown';
 import { CategoryFilterDropdown, type CategoryFilterValue } from '@/components/chat/CategoryFilterDropdown';
+import { QuickActionFilterDropdown, type QuickActionFilterValue } from '@/components/chat/QuickActionFilterDropdown';
 import { ChatsPagination } from '@/components/chat/ChatsPagination';
 import { AddToSpaceModal } from '@/components/chat/AddToSpaceModal';
 import { AddToProjectModal } from '@/components/chat/AddToProjectModal';
@@ -151,6 +152,7 @@ export default function ChatsPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [dateFilter, setDateFilter] = useState<DateFilterValue>({ type: 'preset', preset: 'all' });
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilterValue>('all');
+  const [quickActionFilter, setQuickActionFilter] = useState<QuickActionFilterValue>('all');
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -188,6 +190,11 @@ export default function ChatsPage() {
         }
         return true;
       });
+    }
+
+    // Apply quick action filter
+    if (quickActionFilter !== 'all') {
+      result = result.filter(chat => chat.quickActionType === quickActionFilter);
     }
 
     // Apply date filter
@@ -236,7 +243,7 @@ export default function ChatsPage() {
     });
 
     return result;
-  }, [chatHistory, searchQuery, categoryFilter, sortField, sortDirection, dateFilter]);
+  }, [chatHistory, searchQuery, categoryFilter, quickActionFilter, sortField, sortDirection, dateFilter]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -288,13 +295,14 @@ export default function ChatsPage() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, categoryFilter, dateFilter, rowsPerPage]);
+  }, [searchQuery, categoryFilter, quickActionFilter, dateFilter, rowsPerPage]);
 
   // Check if any filter is active
   const hasActiveFilter = 
     dateFilter.type === 'custom' || 
     (dateFilter.type === 'preset' && dateFilter.preset !== 'all') ||
-    categoryFilter !== 'all';
+    categoryFilter !== 'all' ||
+    quickActionFilter !== 'all';
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)]">
@@ -349,6 +357,12 @@ export default function ChatsPage() {
                 <CategoryFilterDropdown
                   value={categoryFilter}
                   onChange={setCategoryFilter}
+                />
+
+                {/* Quick Action Filter */}
+                <QuickActionFilterDropdown
+                  value={quickActionFilter}
+                  onChange={setQuickActionFilter}
                 />
                 
                 {/* Date Filter */}
@@ -480,6 +494,7 @@ export default function ChatsPage() {
                           setSearchQuery('');
                           setDateFilter({ type: 'preset', preset: 'all' });
                           setCategoryFilter('all');
+                          setQuickActionFilter('all');
                         }}
                         className="text-sm text-[var(--fg-brand-primary)] hover:underline"
                       >

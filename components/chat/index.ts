@@ -34,3 +34,4 @@ export { AddToSpaceModal } from './AddToSpaceModal';
 // Quick Action Forms
 export { CreatePostCopyForm } from './CreatePostCopyForm';
 export { QuickActionFieldEditor, type FieldType, type EditorMode } from './QuickActionFieldEditor';
+export { QuickActionSummary } from './QuickActionSummary';

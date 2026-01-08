@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { BackgroundGradient } from './BackgroundGradient';
-import { WelcomeHeader, PrePromptGrid } from './home';
+import { WelcomeHeader, QuickAccessPanels } from './home';
 import { PlusMenu } from './ui/plus-menu';
 import { ExtendedThinkingToggle } from './ui/extended-thinking-toggle';
 import { DataSourcesDropdown } from './ui/data-sources-dropdown';
@@ -983,40 +983,58 @@ export function ChatInterface() {
     setShowQuickActionForm(false);
     
     // Build the prompt context from the quick action config
+    const channels: Channel[] = quickActionConfig.channels.map(c => ({
+      id: c.id,
+      label: c.label,
+      shortLabel: c.short_label,
+      icon: c.icon,
+      supportedFormats: c.supported_formats as ContentFormat[],
+      isDefault: c.is_default,
+      displayOrder: c.display_order,
+      userId: c.user_id,
+      createdAt: c.created_at,
+      updatedAt: c.updated_at,
+    }));
+    
+    const contentSubtypes: ContentSubtype[] = quickActionConfig.contentSubtypes.map(s => ({
+      id: s.id,
+      label: s.label,
+      format: s.format as ContentFormat,
+      channelIds: s.channel_ids,
+      isDefault: s.is_default,
+      displayOrder: s.display_order,
+      userId: s.user_id,
+      createdAt: s.created_at,
+      updatedAt: s.updated_at,
+    }));
+    
+    const goals: Goal[] = quickActionConfig.goals.map(g => ({
+      id: g.id,
+      label: g.label,
+      description: g.description,
+      isDefault: g.is_default,
+      displayOrder: g.display_order,
+      userId: g.user_id,
+      createdAt: g.created_at,
+      updatedAt: g.updated_at,
+    }));
+    
     const promptContext: PromptContext = {
-      channels: quickActionConfig.channels.map(c => ({
-        id: c.id,
-        label: c.label,
-        shortLabel: c.short_label,
-        icon: c.icon,
-        supportedFormats: c.supported_formats as ContentFormat[],
-        isDefault: c.is_default,
-        displayOrder: c.display_order,
-        userId: c.user_id,
-        createdAt: c.created_at,
-        updatedAt: c.updated_at,
-      })),
-      contentSubtypes: quickActionConfig.contentSubtypes.map(s => ({
-        id: s.id,
-        label: s.label,
-        format: s.format as ContentFormat,
-        channelIds: s.channel_ids,
-        isDefault: s.is_default,
-        displayOrder: s.display_order,
-        userId: s.user_id,
-        createdAt: s.created_at,
-        updatedAt: s.updated_at,
-      })),
-      goals: quickActionConfig.goals.map(g => ({
-        id: g.id,
-        label: g.label,
-        description: g.description,
-        isDefault: g.is_default,
-        displayOrder: g.display_order,
-        userId: g.user_id,
-        createdAt: g.created_at,
-        updatedAt: g.updated_at,
-      })),
+      channels,
+      contentSubtypes,
+      goals,
+    };
+    
+    // Look up display-friendly labels for the quick action metadata
+    const selectedChannel = channels.find(c => c.id === formData.channelId);
+    const selectedGoal = goals.find(g => g.id === formData.goalId);
+    const selectedSubtypes = contentSubtypes.filter(s => formData.contentSubtypeIds.includes(s.id));
+    
+    // Get content format label
+    const formatLabels: Record<ContentFormat, string> = {
+      short_form: 'Short-form',
+      long_form: 'Long-form',
+      written: 'Written',
     };
     
     // Build the structured prompt using the prompt builder
@@ -1026,6 +1044,7 @@ export function ChatInterface() {
     resetScrollTracking();
     
     try {
+      // Build the request body with form data for server-side brand voice retrieval
       const requestBody = {
         model: selectedModel,
         connectors: connectorSettings,
@@ -1033,9 +1052,44 @@ export function ChatInterface() {
         writingStyle: currentWritingStyle?.id || null,
         // Pass quickActionType at top level for skill injection
         quickActionType: 'create-post-copy',
+        // Pass form data for server-side brand voice retrieval
+        quickActionFormData: {
+          channelId: formData.channelId,
+          channelLabel: selectedChannel?.label || 'Unknown',
+          goalId: formData.goalId,
+          goalLabel: selectedGoal?.label || 'Unknown',
+          keyMessage: formData.keyMessage,
+          contentFormat: formData.contentFormat,
+        },
       };
 
-      await sendMessage({ text: prompt }, { body: requestBody });
+      // Build quick action metadata for UI display
+      const quickActionMetadata = {
+        type: 'create-post-copy',
+        formData: {
+          channelId: formData.channelId,
+          channelLabel: selectedChannel?.label || 'Unknown',
+          channelIcon: selectedChannel?.icon || undefined,
+          contentFormat: formData.contentFormat,
+          contentFormatLabel: formatLabels[formData.contentFormat],
+          contentSubtypeLabels: selectedSubtypes.map(s => s.label),
+          goalLabel: selectedGoal?.label || 'Unknown',
+          keyMessage: formData.keyMessage,
+          outputPreferences: {
+            variations: formData.outputPreferences.variations,
+            hashtags: formData.outputPreferences.hashtags.charAt(0).toUpperCase() + formData.outputPreferences.hashtags.slice(1),
+            captionLength: formData.outputPreferences.captionLength.charAt(0).toUpperCase() + formData.outputPreferences.captionLength.slice(1),
+            includeCta: formData.outputPreferences.includeCta === 'yes' ? 'Yes' : 'No',
+          },
+        },
+        // Brand voice context will be populated by the API response
+        brandVoice: undefined,
+      };
+
+      await sendMessage({ text: prompt }, { 
+        body: requestBody,
+        quickAction: quickActionMetadata,
+      });
       
       // Clear the quick action form but KEEP the quickActionType
       // The quickActionType should persist for the entire chat session
@@ -1326,6 +1380,7 @@ export function ChatInterface() {
                               messageId={nextMessage.id}
                               chatId={currentSessionId ?? undefined}
                               attachments={message.attachments}
+                              quickAction={message.quickAction}
                             />
                           );
                         }
@@ -1346,6 +1401,7 @@ export function ChatInterface() {
                               thinking={streamingThinking}
                               chatId={currentSessionId ?? undefined}
                               attachments={message.attachments}
+                              quickAction={message.quickAction}
                             />
                           );
                         }
@@ -1740,7 +1796,7 @@ export function ChatInterface() {
                   ease: [0.4, 0, 0.2, 1] 
                 }}
               >
-                <PrePromptGrid 
+                <QuickAccessPanels 
                   onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)}
                 />
               </motion.div>

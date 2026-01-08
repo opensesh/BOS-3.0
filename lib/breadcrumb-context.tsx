@@ -96,7 +96,12 @@ export function BreadcrumbProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Reset custom breadcrumbs and quick action when pathname changes
+  // BUT don't reset when navigating to the home page (/) since the chat interface
+  // will set its own breadcrumbs and quick action type
   useEffect(() => {
+    // Skip reset for home page - ChatInterface manages its own breadcrumbs
+    if (pathname === '/') return;
+    
     setCustomBreadcrumbs(null);
     setQuickActionType(null);
   }, [pathname]);

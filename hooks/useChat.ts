@@ -26,6 +26,33 @@ export interface MessageAttachment {
   name?: string;
 }
 
+// Quick action metadata for form-based submissions
+export interface QuickActionMetadata {
+  /** The type of quick action (e.g., 'create-post-copy') */
+  type: string;
+  /** The form data submitted by the user */
+  formData: {
+    channelId: string;
+    channelLabel: string;
+    channelIcon?: string;
+    contentFormat: string;
+    contentFormatLabel: string;
+    contentSubtypeLabels: string[];
+    goalLabel: string;
+    keyMessage: string;
+    outputPreferences?: {
+      variations: number;
+      hashtags: string;
+      captionLength: string;
+      includeCta: string;
+    };
+  };
+  /** Brand voice context (if retrieved) */
+  brandVoice?: {
+    hasVoiceContext: boolean;
+  };
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -38,6 +65,8 @@ export interface ChatMessage {
   sources?: SourceInfo[];
   // Attachments (images, files)
   attachments?: MessageAttachment[];
+  // Quick action metadata (for form-based submissions)
+  quickAction?: QuickActionMetadata;
 }
 
 export interface ToolCall {
@@ -50,6 +79,8 @@ export interface ToolCall {
 
 export interface SendMessageOptions {
   body?: Record<string, unknown>;
+  /** Quick action metadata to attach to the message */
+  quickAction?: QuickActionMetadata;
 }
 
 export interface UseChatOptions {
@@ -161,6 +192,7 @@ export function useChat(options: UseChatOptions = {}) {
       content: message.text,
       createdAt: new Date(),
       attachments: messageAttachments.length > 0 ? messageAttachments : undefined,
+      quickAction: sendOptions?.quickAction,
     };
 
     // Add user message to state

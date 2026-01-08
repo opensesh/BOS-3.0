@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, X, ZoomIn, Download, Copy, Check } from 'lucide-react';
 import Image from 'next/image';
+import { QuickActionSummary } from './QuickActionSummary';
+import type { QuickActionMetadata } from '@/hooks/useChat';
 
 // Image attachment type
 interface MessageAttachment {
@@ -21,6 +23,8 @@ interface UserMessageBubbleProps {
   maxHeight?: number;
   /** Attached images */
   attachments?: MessageAttachment[];
+  /** Quick action metadata for form-based submissions */
+  quickAction?: QuickActionMetadata;
 }
 
 /**
@@ -75,7 +79,7 @@ async function copyImageToClipboard(dataUrl: string): Promise<boolean> {
  * - "Show more" functionality for long messages with gradient fade
  * - Attached image previews with hover actions (zoom, copy, download)
  */
-export function UserMessageBubble({ query, maxHeight = 120, attachments }: UserMessageBubbleProps) {
+export function UserMessageBubble({ query, maxHeight = 120, attachments, quickAction }: UserMessageBubbleProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -92,6 +96,15 @@ export function UserMessageBubble({ query, maxHeight = 120, attachments }: UserM
   }, [query, maxHeight]);
 
   const hasAttachments = attachments && attachments.length > 0;
+
+  // If this is a quick action submission, render the summary component instead
+  if (quickAction) {
+    return (
+      <div className="flex justify-end mb-6">
+        <QuickActionSummary quickAction={quickAction} />
+      </div>
+    );
+  }
 
   // Handle copy with feedback
   const handleCopy = useCallback(async (attachment: MessageAttachment, e?: React.MouseEvent) => {

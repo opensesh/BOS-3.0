@@ -14,6 +14,7 @@ import { autoSelectModel } from '@/lib/ai/auto-router';
 import { buildBrandSystemPrompt, shouldIncludeFullDocs, BRAND_SOURCES, type PageContext, type SkillContext } from '@/lib/brand-knowledge';
 import { getSkillIdForQuickAction } from '@/lib/quick-actions/skill-loader';
 import { loadSkillContent } from '@/lib/quick-actions/skill-loader-server';
+import { retrieveBrandVoice, formatVoiceForSystemPrompt, type VoiceRetrievalOptions } from '@/lib/quick-actions/brand-voice';
 import { getToolsForAnthropic } from '@/lib/ai/tools';
 import { executeTool } from '@/lib/ai/tools/executors';
 import { getAvailableMcpTools, mcpToolsToAnthropic } from '@/lib/ai/tools/mcp-executor';
@@ -1314,6 +1315,7 @@ export async function POST(req: Request) {
       writingStyle,
       quickActionType,
       brandId,
+      quickActionFormData,
     } = body as {
       messages: ClientMessage[];
       model?: string;
@@ -1324,6 +1326,14 @@ export async function POST(req: Request) {
       writingStyle?: string | null;
       quickActionType?: string;
       brandId?: string;
+      quickActionFormData?: {
+        channelId: string;
+        channelLabel: string;
+        goalId: string;
+        goalLabel: string;
+        keyMessage: string;
+        contentFormat: string;
+      };
     };
     
     // Default connector settings
@@ -1455,12 +1465,82 @@ export async function POST(req: Request) {
       }
     }
 
+    // Retrieve brand voice context for quick actions
+    // This performs semantic search to find relevant brand voice/tone guidelines
+    // and distills them into identity framing (not raw guidelines)
+    let brandVoiceSection = '';
+    if (quickActionType && quickActionFormData) {
+      try {
+        console.log(`[BrandVoice] Retrieving brand voice for quick action "${quickActionType}"`);
+        
+        // Build the voice retrieval options
+        const voiceOptions: VoiceRetrievalOptions = {
+          formData: {
+            channelId: quickActionFormData.channelId,
+            contentFormat: quickActionFormData.contentFormat as 'short_form' | 'long_form' | 'written',
+            contentSubtypeIds: [],
+            goalId: quickActionFormData.goalId,
+            keyMessage: quickActionFormData.keyMessage,
+            outputPreferences: {
+              variations: 1,
+              hashtags: 'generated',
+              captionLength: 'standard',
+              includeCta: 'no',
+            },
+            formId: 'api-generated',
+            createdAt: new Date().toISOString(),
+          },
+          channel: {
+            id: quickActionFormData.channelId,
+            label: quickActionFormData.channelLabel,
+            shortLabel: quickActionFormData.channelLabel,
+            icon: null,
+            supportedFormats: ['short_form', 'long_form', 'written'],
+            isDefault: false,
+            displayOrder: 0,
+            userId: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          goal: {
+            id: quickActionFormData.goalId,
+            label: quickActionFormData.goalLabel,
+            description: null,
+            isDefault: false,
+            displayOrder: 0,
+            userId: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          brandId,
+        };
+
+        const brandVoiceContext = await retrieveBrandVoice(voiceOptions);
+        
+        if (brandVoiceContext.hasVoiceContext) {
+          brandVoiceSection = formatVoiceForSystemPrompt(brandVoiceContext);
+          console.log(`[BrandVoice] Retrieved brand voice context (${brandVoiceSection.length} chars)`);
+        } else {
+          console.log('[BrandVoice] No brand voice context found - using skill content only');
+        }
+      } catch (error) {
+        console.error('[BrandVoice] Error retrieving brand voice:', error);
+        // Continue without brand voice - skill content will still apply
+      }
+    }
+
     // Build system prompt with optional writing style and skill context
     let systemPrompt = buildBrandSystemPrompt({
       includeFullDocs: shouldIncludeFullDocs(messages),
       context: enrichedContext,
       skill: skillContext,
     });
+
+    // Inject brand voice context into system prompt
+    // This comes AFTER skill context (skill defines task, voice defines personality)
+    if (brandVoiceSection) {
+      systemPrompt = `${systemPrompt}\n\n${brandVoiceSection}`;
+    }
 
     // Add writing style instructions if specified
     if (chatOptions.writingStyle && chatOptions.writingStyle !== 'normal') {

@@ -9,6 +9,7 @@ import {
   BRAND_PAGE_ROUTES,
   BRAND_SOURCES,
 } from '@/lib/brand-knowledge';
+import type { QuickActionMetadata } from '@/hooks/useChat';
 
 /**
  * Renders text with inline markdown formatting (bold, italic)
@@ -96,6 +97,8 @@ interface AnswerViewProps {
   attachments?: MessageAttachment[];
   /** Hide the sources counter (when canvas shows it separately) */
   hideSourcesCounter?: boolean;
+  /** Quick action metadata for form-based submissions */
+  quickAction?: QuickActionMetadata;
 }
 
 export function AnswerView({
@@ -108,6 +111,7 @@ export function AnswerView({
   thinking,
   attachments,
   hideSourcesCounter = false,
+  quickAction,
 }: AnswerViewProps) {
   // Group sources by index for citation display
   const getSourcesForCitation = (citations?: SourceInfo[]): SourceInfo[] => {
@@ -118,7 +122,7 @@ export function AnswerView({
   return (
     <div>
       {/* User Query Display - Right aligned bubble with show more */}
-      <UserMessageBubble query={query} attachments={attachments} />
+      <UserMessageBubble query={query} attachments={attachments} quickAction={quickAction} />
 
       {/* 
         IMPORTANT: Response Layout Structure

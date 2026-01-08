@@ -9,6 +9,7 @@ import { RelatedQuestions } from './RelatedQuestions';
 import { CanvasPreviewBubble } from '@/components/canvas';
 import { useCanvasContextOptional } from '@/lib/canvas-context';
 import { canvasService, type Canvas } from '@/lib/supabase/canvas-service';
+import type { QuickActionMetadata } from '@/hooks/useChat';
 
 // Message attachment interface
 interface MessageAttachment {
@@ -36,6 +37,8 @@ interface ChatContentProps {
   chatId?: string;
   /** Attached images from user message */
   attachments?: MessageAttachment[];
+  /** Quick action metadata for form-based submissions */
+  quickAction?: QuickActionMetadata;
 }
 
 export function ChatContent({
@@ -51,6 +54,7 @@ export function ChatContent({
   messageId,
   chatId,
   attachments,
+  quickAction,
 }: ChatContentProps) {
   // Canvas context for opening canvas panel
   const canvasContext = useCanvasContextOptional();
@@ -189,6 +193,7 @@ export function ChatContent({
         resourceCards={resourceCards}
         thinking={thinking}
         attachments={attachments}
+        quickAction={quickAction}
         // Don't show sources in AnswerView when we have a canvas - we show them below
         hideSourcesCounter={hasCanvas}
       />

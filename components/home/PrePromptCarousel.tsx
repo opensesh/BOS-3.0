@@ -20,7 +20,7 @@ import { IconHover3D } from './IconHover3D';
 import { useChatContext } from '@/lib/chat-context';
 import type { QuickActionType } from '@/lib/quick-actions';
 
-interface PrePromptGridProps {
+interface PrePromptCarouselProps {
   onPromptSubmit: (prompt: string) => void;
 }
 
@@ -116,7 +116,7 @@ const INITIAL_INDEX_TABLET = 2;
 // Swipe threshold in pixels
 const SWIPE_THRESHOLD = 50;
 
-export function PrePromptGrid({ onPromptSubmit }: PrePromptGridProps) {
+export function PrePromptCarousel({ onPromptSubmit }: PrePromptCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(INITIAL_INDEX_DESKTOP);
   const [visibleCount, setVisibleCount] = useState(4); // Default to desktop
   const router = useRouter();

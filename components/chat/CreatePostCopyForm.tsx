@@ -681,7 +681,6 @@ export function CreatePostCopyForm({
   
   // Form state
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const [contentFormat, setContentFormat] = useState<ContentFormat>(initialData?.contentFormat || 'short_form');
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(initialData?.channelId || null);
   const [contentSubtypeIds, setContentSubtypeIds] = useState<string[]>(initialData?.contentSubtypeIds || []);
@@ -815,11 +814,6 @@ export function CreatePostCopyForm({
     setUrlInput('');
   }, [urlInput]);
 
-  // Track first interaction with form
-  const handleFirstInteraction = useCallback(() => {
-    if (!hasInteracted) setHasInteracted(true);
-  }, [hasInteracted]);
-
   const handleSubmit = useCallback(() => {
     if (!selectedChannelId || !keyMessage.trim() || !goalId) return;
 
@@ -867,30 +861,22 @@ export function CreatePostCopyForm({
     <div className="w-full">
       {/* Collapsible Container */}
       <div className="rounded-xl bg-[var(--bg-secondary)] ring-1 ring-[var(--border-secondary)] shadow-sm overflow-hidden">
-        {/* Header - Only visible after user interacts with form */}
-        <AnimatePresence>
-          {hasInteracted && (
-            <motion.button
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              type="button"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-[var(--fg-primary)]">Create Post Copy</span>
-              </div>
-              <motion.div
-                animate={{ rotate: isExpanded ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ChevronDown className="w-4 h-4 text-[var(--fg-tertiary)]" />
-              </motion.div>
-            </motion.button>
-          )}
-        </AnimatePresence>
+        {/* Header - Always visible for better UX */}
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-[var(--fg-primary)]">Create Post Copy</span>
+          </div>
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronDown className="w-4 h-4 text-[var(--fg-tertiary)]" />
+          </motion.div>
+        </button>
 
         {/* Expandable Content */}
         <AnimatePresence initial={false}>
@@ -902,9 +888,9 @@ export function CreatePostCopyForm({
               transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               className="overflow-hidden"
             >
-              <div className={`px-4 pb-4 space-y-5 ${hasInteracted ? 'border-t border-[var(--border-secondary)]' : ''}`}>
+              <div className="px-4 pb-4 space-y-5 border-t border-[var(--border-secondary)]">
                 {/* Content Format Section - Master Filter (always visible) */}
-                <div className={hasInteracted ? 'pt-4' : 'pt-2'}>
+                <div className="pt-4">
                   <SectionHeader label="Content Format" />
                   <SegmentedControl
                     options={CONTENT_FORMATS.map(f => ({
@@ -912,10 +898,7 @@ export function CreatePostCopyForm({
                       label: f.label,
                     }))}
                     value={contentFormat}
-                    onChange={(format) => {
-                      handleFirstInteraction();
-                      setContentFormat(format);
-                    }}
+                    onChange={(format) => setContentFormat(format)}
                   />
                 </div>
 
@@ -928,10 +911,7 @@ export function CreatePostCopyForm({
                         key={channel.id}
                         channel={channel}
                         selected={selectedChannelId === channel.id}
-                        onClick={() => {
-                          handleFirstInteraction();
-                          selectChannel(channel.id);
-                        }}
+                        onClick={() => selectChannel(channel.id)}
                       />
                     ))}
                     {availableChannels.length === 0 && (

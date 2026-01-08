@@ -229,7 +229,7 @@ export function ChatTitleDropdown({
           relative flex items-center gap-1.5 px-2.5 h-7 rounded-lg border transition-all
           min-w-0 w-full overflow-hidden
           ${isLoading 
-            ? 'border-[var(--brand-aperol)]/30 cursor-default' 
+            ? 'border-[var(--border-secondary)] cursor-default' 
             : isOpen || isEditing
               ? 'border-[var(--border-primary)] bg-[var(--bg-secondary)] cursor-pointer'
               : 'border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50 cursor-pointer'

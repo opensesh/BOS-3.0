@@ -625,6 +625,13 @@ export function ChatInterface() {
   // status can be: 'submitted' | 'streaming' | 'ready' | 'error'
   const isLoading = status === 'submitted' || status === 'streaming';
   
+  // Show title loading for quick actions from submit until title is ready
+  // For quick action chats: loading starts immediately when streaming, continues until title is generated
+  // For regular chats: loading only shows during title generation API call
+  const isTitleLoading = quickActionType 
+    ? (isLoading || isGeneratingTitle) && !generatedTitle
+    : isGeneratingTitle;
+  
   // Clear submit error when user starts typing
   useEffect(() => {
     if (localInput && submitError) {
@@ -1247,7 +1254,7 @@ export function ChatInterface() {
               hasResources={allSources.length > 0 || allResourceCards.length > 0 || allImages.length > 0}
               resourcesCount={allSources.length + allResourceCards.length + allImages.length}
               threadTitle={threadTitle}
-              isTitleLoading={isGeneratingTitle}
+              isTitleLoading={isTitleLoading}
               onBack={handleBackToChats}
               onRenameThread={async (newTitle) => {
                 // Update the local generated title immediately for UI responsiveness

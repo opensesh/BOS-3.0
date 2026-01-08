@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Plus, Check, Search } from 'lucide-react';
+import { ChevronDown, Plus, Check, Search, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 import { getQuickActionConfig } from '@/lib/quick-actions';
@@ -67,7 +67,7 @@ function saveSelectedBrand(brandId: string): void {
 }
 
 /**
- * Quick Action Badge - Aperol-styled chip for guided chat mode
+ * Quick Action Badge - Gray chip with lightning bolt for guided chat mode
  */
 function QuickActionBadge({ type }: { type: string }) {
   const config = getQuickActionConfig(type as any);
@@ -80,14 +80,15 @@ function QuickActionBadge({ type }: { type: string }) {
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className="
-        inline-flex items-center
-        px-2.5 py-0.5
-        rounded-full
-        text-[11px] font-medium
-        bg-[var(--brand-aperol)] text-white
-        shadow-sm
+        inline-flex items-center gap-1.5
+        px-2.5 py-1
+        rounded-lg
+        text-xs font-medium
+        bg-[var(--bg-tertiary)] text-[var(--fg-primary)]
+        border border-[var(--border-secondary)]
       "
     >
+      <Zap className="w-3 h-3" />
       {config.title}
     </motion.span>
   );
@@ -148,9 +149,12 @@ export function Breadcrumbs() {
     setSearchQuery('');
   }, []);
 
-  // Separate breadcrumbs into path items and the final title
-  const pathBreadcrumbs = breadcrumbs.slice(0, -1);
-  const titleBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
+  // Separate breadcrumbs into path items (with href) and the final title (without href)
+  // Items with href are always path items, only the last item without href is the title
+  const lastItem = breadcrumbs[breadcrumbs.length - 1];
+  const hasTitle = lastItem && !lastItem.href;
+  const pathBreadcrumbs = hasTitle ? breadcrumbs.slice(0, -1) : breadcrumbs;
+  const titleBreadcrumb = hasTitle ? lastItem : null;
 
   return (
     <nav className="flex items-center text-xs" aria-label="Breadcrumb">

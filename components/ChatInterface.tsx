@@ -1328,7 +1328,7 @@ export function ChatInterface() {
                         // Quick action form: Show form only (no user bubble for cleaner UX)
                         if (!nextMessage && !isLoading && showQuickActionForm && quickActionType === 'create-post-copy') {
                           return (
-                            <div key={message.id} className="py-6">
+                            <div key={message.id}>
                               {/* Form rendered directly - no user bubble */}
                               <CreatePostCopyForm
                                 initialData={activeQuickAction?.data}

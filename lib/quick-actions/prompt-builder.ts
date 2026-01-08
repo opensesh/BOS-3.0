@@ -47,10 +47,8 @@ export interface BuildPromptOptions {
 // Helper Functions
 // =============================================================================
 
-function getChannelNames(channelIds: string[], channels: Channel[]): string[] {
-  return channelIds
-    .map(id => channels.find(c => c.id === id)?.label)
-    .filter((label): label is string => !!label);
+function getChannelName(channelId: string, channels: Channel[]): string {
+  return channels.find(c => c.id === channelId)?.label || 'Unknown Channel';
 }
 
 function getContentFormatLabel(format: ContentFormat): string {
@@ -111,10 +109,13 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
   const { channels, contentSubtypes, goals } = context;
 
   // Get human-readable values
-  const channelNames = getChannelNames(formData.channelIds, channels);
+  const channelName = getChannelName(formData.channelId, channels);
   const formatLabel = getContentFormatLabel(formData.contentFormat);
   const subtypeLabels = getContentSubtypeLabels(formData.contentSubtypeIds, contentSubtypes);
   const goalLabel = getGoalLabel(formData.goalId, goals);
+
+  // Check if this is podcast content (Episode Outline)
+  const isPodcastContent = subtypeLabels.some(label => label.toLowerCase().includes('episode outline'));
 
   // Build the prompt sections
   const sections: string[] = [];
@@ -137,14 +138,18 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
   // Main request section
   sections.push('## Request');
   if (subtypeLabels.length > 0) {
-    sections.push(`Create ${subtypeLabels.join(', ')} content for ${channelNames.join(', ')}.`);
+    if (isPodcastContent) {
+      sections.push(`Create a podcast episode outline for ${channelName}.`);
+    } else {
+      sections.push(`Create ${subtypeLabels.join(', ')} content for ${channelName}.`);
+    }
   } else {
-    sections.push(`Create ${formatLabel.toLowerCase()} content for ${channelNames.join(', ')}.`);
+    sections.push(`Create ${formatLabel.toLowerCase()} content for ${channelName}.`);
   }
 
   // Parameters
   sections.push('\n**Parameters:**');
-  sections.push(`- Platforms: ${channelNames.join(', ')}`);
+  sections.push(`- Platform: ${channelName}`);
   sections.push(`- Format: ${formatLabel}`);
   if (subtypeLabels.length > 0) {
     sections.push(`- Content Types: ${subtypeLabels.join(', ')}`);
@@ -182,8 +187,10 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
     }
   }
 
-  // Final instruction - specific for multiple content types
-  if (subtypeLabels.length > 1) {
+  // Final instruction - specific for content type
+  if (isPodcastContent) {
+    sections.push('\nGenerate a comprehensive podcast episode outline including: episode title, hook, key talking points, segment breakdown, and closing notes. This should be a script overview, not a full verbatim script.');
+  } else if (subtypeLabels.length > 1) {
     sections.push(`\nGenerate separate, optimized copy for EACH content type: ${subtypeLabels.join(', ')}. Clearly label each section.`);
   } else {
     sections.push('\nGenerate on-brand copy following the skill guidelines for this channel and content type.');
@@ -195,18 +202,18 @@ export function buildCreatePostCopyPrompt(options: BuildPromptOptions): string {
 /**
  * Build a system prompt context for the AI
  */
-export function buildSystemContext(channelNames: string[], format: string): string {
-  return `You are a social media copywriting expert. You're helping create ${format.toLowerCase()} content for ${channelNames.join(', ')}. 
+export function buildSystemContext(channelName: string, format: string): string {
+  return `You are a social media copywriting expert. You're helping create ${format.toLowerCase()} content for ${channelName}. 
 
 Key considerations:
-- Optimize for each platform's unique audience and best practices
+- Optimize for the platform's unique audience and best practices
 - Consider character limits and formatting constraints
 - Focus on driving the specified goal
 - Match the requested tone while maintaining authenticity
 - Include relevant hashtags where appropriate
 - Create engaging hooks and calls-to-action
 
-Provide separate copy for each platform, clearly labeled.`;
+Provide polished, platform-optimized copy.`;
 }
 
 /**
@@ -217,12 +224,12 @@ export function formatPromptForChat(
   context: PromptContext,
   brandContext?: BrandContext
 ): { userMessage: string; systemContext: string } {
-  const channelNames = getChannelNames(formData.channelIds, context.channels);
+  const channelName = getChannelName(formData.channelId, context.channels);
   const formatLabel = getContentFormatLabel(formData.contentFormat);
   
   return {
     userMessage: buildCreatePostCopyPrompt({ formData, context, brandContext }),
-    systemContext: buildSystemContext(channelNames, formatLabel),
+    systemContext: buildSystemContext(channelName, formatLabel),
   };
 }
 
@@ -233,12 +240,12 @@ export function generateFormSummary(
   formData: PostCopyFormData,
   context: PromptContext
 ): string {
-  const channelNames = getChannelNames(formData.channelIds, context.channels);
+  const channelName = getChannelName(formData.channelId, context.channels);
   const formatLabel = getContentFormatLabel(formData.contentFormat);
   const goalLabel = getGoalLabel(formData.goalId, context.goals);
   
   const parts = [
-    `Channels: ${channelNames.join(', ')}`,
+    `Channel: ${channelName}`,
     `Format: ${formatLabel}`,
     `Goal: ${goalLabel}`,
   ];

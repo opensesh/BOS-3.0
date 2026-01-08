@@ -294,7 +294,7 @@ export interface ReferenceUrl {
 
 export interface PostCopyFormData {
   // Required fields
-  channelIds: string[];
+  channelId: string;  // Single-select channel
   contentFormat: ContentFormat;
   contentSubtypeIds: string[];  // Multi-select content types
   goalId: string;
@@ -389,7 +389,7 @@ export function generateFormId(): string {
  */
 export function createInitialFormData(): PostCopyFormData {
   return {
-    channelIds: [],
+    channelId: '',  // Single-select channel, empty by default
     contentFormat: 'short_form',  // Default to short-form as the master filter
     contentSubtypeIds: [],  // Multi-select content types
     goalId: '',
@@ -411,24 +411,19 @@ export function createInitialFormData(): PostCopyFormData {
 }
 
 /**
- * Get available content formats for selected channels
+ * Get available content formats for a selected channel
+ * @deprecated Now that we use format-first, this is no longer needed
  */
-export function getAvailableFormatsForChannels(
+export function getAvailableFormatsForChannel(
   channels: Channel[],
-  selectedChannelIds: string[]
+  selectedChannelId: string | null
 ): ContentFormat[] {
-  if (selectedChannelIds.length === 0) return ['short_form', 'long_form', 'written'];
+  if (!selectedChannelId) return ['short_form', 'long_form', 'written'];
   
-  const selectedChannels = channels.filter(c => selectedChannelIds.includes(c.id));
-  if (selectedChannels.length === 0) return ['short_form', 'long_form', 'written'];
+  const selectedChannel = channels.find(c => c.id === selectedChannelId);
+  if (!selectedChannel) return ['short_form', 'long_form', 'written'];
   
-  // Find formats available in ALL selected channels
-  const formatSets = selectedChannels.map(c => new Set(c.supportedFormats));
-  const intersection = formatSets.reduce((acc, set) => {
-    return new Set([...acc].filter(format => set.has(format)));
-  });
-  
-  return Array.from(intersection) as ContentFormat[];
+  return selectedChannel.supportedFormats;
 }
 
 /**
@@ -443,23 +438,21 @@ export function getChannelsForFormat(
 }
 
 /**
- * Filter content subtypes by selected channels and format
+ * Filter content subtypes by selected channel and format
  */
-export function filterSubtypesByChannelsAndFormat(
+export function filterSubtypesByChannelAndFormat(
   subtypes: ContentSubtype[],
-  selectedChannelIds: string[],
+  selectedChannelId: string | null,
   format: ContentFormat
 ): ContentSubtype[] {
-  if (selectedChannelIds.length === 0) return [];
+  if (!selectedChannelId) return [];
   
   return subtypes.filter(subtype => {
     // Must match the format
     if (subtype.format !== format) return false;
     
-    // Must be available for at least one selected channel
-    return selectedChannelIds.some(channelId => 
-      subtype.channelIds.includes(channelId)
-    );
+    // Must be available for the selected channel
+    return subtype.channelIds.includes(selectedChannelId);
   });
 }
 

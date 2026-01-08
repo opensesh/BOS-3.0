@@ -37,7 +37,7 @@ import {
   CTA_OPTIONS,
   createInitialFormData,
   getChannelsForFormat,
-  filterSubtypesByChannelsAndFormat,
+  filterSubtypesByChannelAndFormat,
 } from '@/lib/quick-actions';
 
 // =============================================================================
@@ -59,8 +59,6 @@ interface CreatePostCopyFormProps {
   channels: Channel[];
   contentSubtypes: ContentSubtype[];
   goals: Goal[];
-  /** Called when user wants to add/edit a field */
-  onEditField?: (fieldType: 'channel' | 'goal', mode: 'add' | 'edit', item?: unknown) => void;
 }
 
 // =============================================================================
@@ -169,6 +167,21 @@ const PlatformIcon: React.FC<{ platform: string; className?: string }> = ({ plat
         <path d="M5.34 0A5.328 5.328 0 0 0 0 5.34v13.32A5.328 5.328 0 0 0 5.34 24h13.32A5.328 5.328 0 0 0 24 18.66V5.34A5.328 5.328 0 0 0 18.66 0zm6.525 2.568c4.988 0 9.054 4.066 9.054 9.054 0 1.955-.616 3.773-1.666 5.253-.376.528-.392.634-.792.634-.27 0-.544-.18-.544-.544 0-.18.06-.42.18-.634.96-1.32 1.53-2.932 1.53-4.709 0-4.314-3.507-7.82-7.762-7.82-4.254 0-7.762 3.506-7.762 7.82 0 1.778.57 3.39 1.53 4.71.12.213.18.453.18.633 0 .365-.274.544-.544.544-.4 0-.416-.106-.792-.634a9.04 9.04 0 0 1-1.666-5.253c0-4.988 4.066-9.054 9.054-9.054zM12 7.08a4.503 4.503 0 0 0-4.496 4.496c0 .78.197 1.512.543 2.153.246.453.502.632.843.632.404 0 .662-.346.662-.77 0-.18-.062-.358-.15-.533a2.975 2.975 0 0 1-.318-1.32 2.932 2.932 0 0 1 2.916-2.915A2.932 2.932 0 0 1 14.916 11.738c0 .469-.105.909-.318 1.319-.088.175-.15.354-.15.532 0 .425.258.771.662.771.34 0 .597-.179.843-.632a4.503 4.503 0 0 0-4.953-6.648zM12 10.5a1.06 1.06 0 0 0-.748.31 1.054 1.054 0 0 0-.312.748c0 .167.032.343.08.517l.754 4.085c.059.31.312.456.528.456h.007c.215 0 .47-.146.528-.456l.754-4.085c.047-.175.08-.35.08-.517a1.063 1.063 0 0 0-1.06-1.058c-.218 0-.37.06-.611.06z"/>
       </svg>
     ),
+    patreon: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.386.524c-4.764 0-8.64 3.876-8.64 8.64 0 4.75 3.876 8.613 8.64 8.613 4.75 0 8.614-3.864 8.614-8.613C24 4.4 20.136.524 15.386.524M.003 23.537h4.22V.524H.003"/>
+      </svg>
+    ),
+    skool: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 3.6c1.325 0 2.4 1.075 2.4 2.4s-1.075 2.4-2.4 2.4-2.4-1.075-2.4-2.4 1.075-2.4 2.4-2.4zm4.8 13.2H7.2v-1.2c0-1.325 1.075-2.4 2.4-2.4h.6c.663 0 1.263.27 1.8.6.537-.33 1.137-.6 1.8-.6h.6c1.325 0 2.4 1.075 2.4 2.4v1.2z"/>
+      </svg>
+    ),
+    blog: (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+      </svg>
+    ),
   };
 
   const normalizedPlatform = platform?.toLowerCase().replace(/\s+/g, '-') || '';
@@ -245,12 +258,9 @@ interface GoalTabSelectorProps {
   goals: Goal[];
   activeGoalId: string;
   onChange: (goalId: string) => void;
-  onAdd?: () => void;
-  onEdit?: () => void;
-  showEdit?: boolean;
 }
 
-function GoalTabSelector({ goals, activeGoalId, onChange, onAdd, onEdit, showEdit }: GoalTabSelectorProps) {
+function GoalTabSelector({ goals, activeGoalId, onChange }: GoalTabSelectorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
   const [isInitialized, setIsInitialized] = useState(false);
@@ -274,33 +284,9 @@ function GoalTabSelector({ goals, activeGoalId, onChange, onAdd, onEdit, showEdi
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
-          Goal
-        </label>
-        <div className="flex items-center gap-1">
-          {showEdit && onEdit && (
-            <button
-              type="button"
-              onClick={onEdit}
-              className="p-1 text-[var(--fg-quaternary)] hover:text-[var(--fg-secondary)] transition-colors"
-              title="Edit goals"
-            >
-              <Pencil className="w-3 h-3" />
-            </button>
-          )}
-          {onAdd && (
-            <button
-              type="button"
-              onClick={onAdd}
-              className="p-1 text-[var(--fg-quaternary)] hover:text-[var(--fg-brand-primary)] transition-colors"
-              title="Add new goal"
-            >
-              <Plus className="w-3 h-3" />
-            </button>
-          )}
-        </div>
-      </div>
+      <label className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
+        Goal
+      </label>
       <div 
         ref={containerRef}
         className="relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-tertiary)] ring-1 ring-[var(--border-secondary)]"
@@ -385,39 +371,14 @@ function ChannelChip({ channel, selected, onClick }: ChannelChipProps) {
 
 interface SectionHeaderProps {
   label: string;
-  onAdd?: () => void;
-  onEdit?: () => void;
-  showEdit?: boolean;
 }
 
-function SectionHeader({ label, onAdd, onEdit, showEdit }: SectionHeaderProps) {
+function SectionHeader({ label }: SectionHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-2">
+    <div className="mb-2">
       <label className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
         {label}
       </label>
-      <div className="flex items-center gap-1">
-        {showEdit && onEdit && (
-          <button
-            type="button"
-            onClick={onEdit}
-            className="p-1 text-[var(--fg-quaternary)] hover:text-[var(--fg-secondary)] transition-colors"
-            title="Edit options"
-          >
-            <Pencil className="w-3 h-3" />
-          </button>
-        )}
-        {onAdd && (
-          <button
-            type="button"
-            onClick={onAdd}
-            className="p-1 text-[var(--fg-quaternary)] hover:text-[var(--fg-brand-primary)] transition-colors"
-            title="Add new"
-          >
-            <Plus className="w-3 h-3" />
-          </button>
-        )}
-      </div>
     </div>
   );
 }
@@ -435,7 +396,6 @@ export function CreatePostCopyForm({
   channels,
   contentSubtypes,
   goals,
-  onEditField,
 }: CreatePostCopyFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -443,7 +403,7 @@ export function CreatePostCopyForm({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [contentFormat, setContentFormat] = useState<ContentFormat>(initialData?.contentFormat || 'short_form');
-  const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>(initialData?.channelIds || []);
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(initialData?.channelId || null);
   const [contentSubtypeIds, setContentSubtypeIds] = useState<string[]>(initialData?.contentSubtypeIds || []);
   const [goalId, setGoalId] = useState<string>(initialData?.goalId || '');
   const [keyMessage, setKeyMessage] = useState(initialData?.keyMessage || '');
@@ -490,19 +450,20 @@ export function CreatePostCopyForm({
     }));
   }, [contentSubtypes]);
 
-  // Available subtypes based on selected channels and format
+  // Available subtypes based on selected channel and format
   const availableSubtypes = useMemo(() => {
-    return filterSubtypesByChannelsAndFormat(subtypeObjects, selectedChannelIds, contentFormat);
-  }, [subtypeObjects, selectedChannelIds, contentFormat]);
+    return filterSubtypesByChannelAndFormat(subtypeObjects, selectedChannelId, contentFormat);
+  }, [subtypeObjects, selectedChannelId, contentFormat]);
 
-  // Reset channel selection when format changes (only keep channels that support the new format)
+  // Reset channel selection when format changes (clear if channel doesn't support new format)
   useEffect(() => {
-    const availableChannelIds = new Set(availableChannels.map(c => c.id));
-    const validSelectedIds = selectedChannelIds.filter(id => availableChannelIds.has(id));
-    if (validSelectedIds.length !== selectedChannelIds.length) {
-      setSelectedChannelIds(validSelectedIds);
+    if (selectedChannelId) {
+      const availableChannelIds = new Set(availableChannels.map(c => c.id));
+      if (!availableChannelIds.has(selectedChannelId)) {
+        setSelectedChannelId(null);
+      }
     }
-  }, [availableChannels, selectedChannelIds]);
+  }, [availableChannels, selectedChannelId]);
 
   // Reset content subtypes if not available
   useEffect(() => {
@@ -521,12 +482,8 @@ export function CreatePostCopyForm({
   }, [goalId, goals]);
 
   // Handlers
-  const toggleChannel = useCallback((channelId: string) => {
-    setSelectedChannelIds(prev =>
-      prev.includes(channelId)
-        ? prev.filter(id => id !== channelId)
-        : [...prev, channelId]
-    );
+  const selectChannel = useCallback((channelId: string) => {
+    setSelectedChannelId(channelId);
   }, []);
 
   const toggleContentSubtype = useCallback((subtypeId: string) => {
@@ -584,10 +541,10 @@ export function CreatePostCopyForm({
   }, [hasInteracted]);
 
   const handleSubmit = useCallback(() => {
-    if (selectedChannelIds.length === 0 || !keyMessage.trim() || !goalId) return;
+    if (!selectedChannelId || !keyMessage.trim() || !goalId) return;
 
     const formData: PostCopyFormData = {
-      channelIds: selectedChannelIds,
+      channelId: selectedChannelId,
       contentFormat,
       contentSubtypeIds,
       goalId,
@@ -609,7 +566,7 @@ export function CreatePostCopyForm({
 
     onSubmit(formData);
   }, [
-    selectedChannelIds,
+    selectedChannelId,
     contentFormat,
     contentSubtypeIds,
     goalId,
@@ -624,7 +581,7 @@ export function CreatePostCopyForm({
     onSubmit,
   ]);
 
-  const isValid = selectedChannelIds.length > 0 && keyMessage.trim().length > 0 && goalId;
+  const isValid = selectedChannelId && keyMessage.trim().length > 0 && goalId;
 
   return (
     <div className="w-full">
@@ -682,23 +639,18 @@ export function CreatePostCopyForm({
                   />
                 </div>
 
-                {/* Channels Section - Filtered by Content Format */}
+                {/* Channels Section - Single-select, Filtered by Content Format */}
                 <div>
-                  <SectionHeader
-                    label="Channels"
-                    onAdd={() => onEditField?.('channel', 'add')}
-                    onEdit={() => onEditField?.('channel', 'edit')}
-                    showEdit={channels.some(c => !c.isDefault)}
-                  />
+                  <SectionHeader label="Channels" />
                   <div className="flex flex-wrap gap-2">
                     {availableChannels.map((channel) => (
                       <ChannelChip
                         key={channel.id}
                         channel={channel}
-                        selected={selectedChannelIds.includes(channel.id)}
+                        selected={selectedChannelId === channel.id}
                         onClick={() => {
                           handleFirstInteraction();
-                          toggleChannel(channel.id);
+                          selectChannel(channel.id);
                         }}
                       />
                     ))}
@@ -711,7 +663,7 @@ export function CreatePostCopyForm({
                 </div>
 
                 {/* Content Type Section - Multi-select */}
-                {selectedChannelIds.length > 0 && availableSubtypes.length > 0 && (
+                {selectedChannelId && availableSubtypes.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -737,9 +689,6 @@ export function CreatePostCopyForm({
                   goals={goals}
                   activeGoalId={goalId}
                   onChange={setGoalId}
-                  onAdd={() => onEditField?.('goal', 'add')}
-                  onEdit={() => onEditField?.('goal', 'edit')}
-                  showEdit={goals.some(g => !g.isDefault)}
                 />
 
                 {/* Key Message */}

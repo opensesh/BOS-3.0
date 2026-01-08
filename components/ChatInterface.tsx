@@ -217,15 +217,15 @@ export function ChatInterface() {
 
   // Navigate to Recent Chats (back button handler)
   const handleBackToChats = useCallback(() => {
-    // Save current chat to history if there are messages
+    // Save current chat to history if there are complete conversations (user + assistant)
+    // Don't save abandoned quick actions that only have a user message
     if (messages.length > 0) {
       const firstUserMessage = messages.find(m => m.role === 'user');
       const firstAssistantMessage = messages.find(m => m.role === 'assistant');
-      if (firstUserMessage) {
+      // Only save if there's both a user message AND an assistant response
+      if (firstUserMessage && firstAssistantMessage) {
         const title = generatedTitle || getMessageContent(firstUserMessage).slice(0, 50) || 'Untitled Chat';
-        const preview = firstAssistantMessage 
-          ? getMessageContent(firstAssistantMessage).slice(0, 100)
-          : '';
+        const preview = getMessageContent(firstAssistantMessage).slice(0, 100);
         const chatMessages = messages.map(m => {
           const msgSources = (m as { sources?: SourceInfo[] }).sources;
           const msgAttachments = (m as { attachments?: MessageAttachment[] }).attachments;
@@ -296,16 +296,16 @@ export function ChatInterface() {
   // Listen for reset signals from context (e.g., sidebar navigation)
   useEffect(() => {
     if (shouldResetChat) {
-      // Save current chat to history if there are messages
+      // Save current chat to history if there are complete conversations (user + assistant)
+      // Don't save abandoned quick actions that only have a user message
       if (messages.length > 0) {
         const firstUserMessage = messages.find(m => m.role === 'user');
         const firstAssistantMessage = messages.find(m => m.role === 'assistant');
-        if (firstUserMessage) {
+        // Only save if there's both a user message AND an assistant response
+        if (firstUserMessage && firstAssistantMessage) {
           // Use generated title if available, otherwise fall back to first message
           const title = generatedTitle || getMessageContent(firstUserMessage).slice(0, 50) || 'Untitled Chat';
-          const preview = firstAssistantMessage 
-            ? getMessageContent(firstAssistantMessage).slice(0, 100)
-            : '';
+          const preview = getMessageContent(firstAssistantMessage).slice(0, 100);
           // Convert messages to the format expected by chat history
           // Include sources and attachments so they persist when reloading chat sessions
           const chatMessages = messages.map(m => {

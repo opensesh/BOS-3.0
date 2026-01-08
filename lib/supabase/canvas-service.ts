@@ -9,10 +9,9 @@ import type {
   CanvasVersionInsert,
   DbCanvas,
   DbCanvasVersion,
-  dbCanvasToApp,
-  dbCanvasVersionToApp,
   CanvasEditedBy,
 } from './types';
+import { dbCanvasToApp, dbCanvasVersionToApp } from './types';
 
 // Track if tables are available (to avoid repeated error logs)
 let tablesChecked = false;

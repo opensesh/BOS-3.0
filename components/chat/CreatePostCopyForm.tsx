@@ -858,21 +858,22 @@ export function CreatePostCopyForm({
   const isValid = selectedChannelId && keyMessage.trim().length > 0 && goalId;
 
   return (
-    <div className="w-full">
+    <div className="w-full min-w-0">
       {/* Collapsible Container */}
-      <div className="rounded-xl bg-[var(--bg-secondary)] ring-1 ring-[var(--border-secondary)] shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-[var(--bg-secondary)] ring-1 ring-[var(--border-secondary)] shadow-sm overflow-hidden w-full min-w-0">
         {/* Header - Always visible for better UX */}
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors min-w-0"
         >
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[var(--fg-primary)]">Post Data Input</span>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className="text-sm font-semibold text-[var(--fg-primary)] truncate">Post Data Input</span>
           </div>
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
+            className="flex-shrink-0 ml-2"
           >
             <ChevronDown className="w-4 h-4 text-[var(--fg-tertiary)]" />
           </motion.div>
@@ -886,9 +887,10 @@ export function CreatePostCopyForm({
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-              className="overflow-hidden"
+              className="overflow-hidden w-full min-w-0"
+              style={{ willChange: 'height' }}
             >
-              <div className="px-4 pb-4 space-y-5 border-t border-[var(--border-secondary)]">
+              <div className="px-4 pb-4 space-y-5 border-t border-[var(--border-secondary)] w-full min-w-0">
                 {/* Content Format Section - Master Filter (always visible) */}
                 <div className="pt-4">
                   <SectionHeader label="Content Format" />

@@ -344,6 +344,21 @@ export function ChatInterface() {
     if (sessionToLoad) {
       const loadSessionMessages = async () => {
         try {
+          // Look up the session in chat history to restore title and quickActionType
+          const loadedSession = chatHistory.find(chat => chat.id === sessionToLoad);
+          
+          // Restore the session's title (prevents re-generating title for existing chats)
+          if (loadedSession?.title) {
+            setGeneratedTitle(loadedSession.title);
+          }
+          
+          // Restore the session's quickActionType (shows Quick Action badge in breadcrumbs)
+          if (loadedSession?.quickActionType) {
+            setQuickActionType(loadedSession.quickActionType as QuickActionType);
+          } else {
+            setQuickActionType(null);
+          }
+          
           const sessionMessages = await getSessionMessages(sessionToLoad);
           if (sessionMessages && sessionMessages.length > 0) {
             // Convert ChatMessage[] to the format expected by useChat
@@ -378,7 +393,7 @@ export function ChatInterface() {
       };
       loadSessionMessages();
     }
-  }, [sessionToLoad, getSessionMessages, acknowledgeSessionLoad, setMessages]);
+  }, [sessionToLoad, getSessionMessages, acknowledgeSessionLoad, setMessages, chatHistory]);
 
   // Auto-save session when streaming completes (status changes from streaming to ready)
   const prevStatusRef = useRef(status);

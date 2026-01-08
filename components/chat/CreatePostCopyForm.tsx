@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Plus,
   Pencil,
   X,
@@ -14,7 +16,6 @@ import {
   PenLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/base/buttons/button';
-import { Select } from '@/components/ui/base/select/select';
 import type {
   PostCopyFormData,
   Channel,
@@ -206,8 +207,8 @@ function Chip({ selected, onClick, children, disabled }: ChipProps) {
       onClick={onClick}
       disabled={disabled}
       className={`
-        inline-flex items-center gap-1.5 px-3 py-1.5
-        rounded-lg text-sm font-medium transition-all duration-150
+        inline-flex items-center gap-1.5 px-2.5 py-1.5
+        rounded-md text-xs font-medium transition-all duration-150
         ${selected
           ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] ring-1 ring-[var(--border-brand-solid)]'
           : 'bg-[var(--bg-primary)] text-[var(--fg-secondary)] ring-1 ring-[var(--border-primary)] hover:ring-[var(--border-brand-solid)] hover:text-[var(--fg-primary)]'
@@ -215,7 +216,7 @@ function Chip({ selected, onClick, children, disabled }: ChipProps) {
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
       `}
     >
-      {selected && <Check className="w-3 h-3" />}
+      {selected && <Check className="w-3 h-3 shrink-0" />}
       {children}
     </button>
   );
@@ -253,7 +254,7 @@ function SegmentedControl<T extends string>({ options, value, onChange, disabled
   );
 }
 
-// Tab Selector for Goals (similar to Brain's Writing Styles page)
+// Tab Selector for Goals (scrollable with arrows, like SettingsTabs)
 interface GoalTabSelectorProps {
   goals: Goal[];
   activeGoalId: string;
@@ -261,13 +262,25 @@ interface GoalTabSelectorProps {
 }
 
 function GoalTabSelector({ goals, activeGoalId, onChange }: GoalTabSelectorProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Measure active tab position for sliding indicator
-  useEffect(() => {
-    const container = containerRef.current;
+  // Check scroll position to show/hide navigation arrows
+  const checkScrollPosition = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setShowLeftArrow(scrollLeft > 5);
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
+  }, []);
+
+  // Update sliding indicator position
+  useLayoutEffect(() => {
+    const container = scrollContainerRef.current;
     if (!container) return;
 
     const activeButton = container.querySelector(`[data-goal-id="${activeGoalId}"]`) as HTMLButtonElement;
@@ -282,59 +295,162 @@ function GoalTabSelector({ goals, activeGoalId, onChange }: GoalTabSelectorProps
     }
   }, [activeGoalId, goals, isInitialized]);
 
+  useEffect(() => {
+    checkScrollPosition();
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollPosition);
+      window.addEventListener('resize', checkScrollPosition);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScrollPosition);
+      }
+      window.removeEventListener('resize', checkScrollPosition);
+    };
+  }, [checkScrollPosition]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const scrollAmount = 120;
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
+  };
+
   return (
-    <div className="space-y-2">
-      <label className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
-        Goal
-      </label>
-      <div 
-        ref={containerRef}
-        className="relative inline-flex items-center gap-0.5 p-1 rounded-lg bg-[var(--bg-tertiary)] ring-1 ring-[var(--border-secondary)]"
-      >
-        {/* Sliding indicator */}
-        <motion.div
-          className="absolute top-1 bottom-1 rounded-md bg-[var(--bg-primary)] shadow-sm"
-          initial={false}
-          animate={{
-            left: indicatorStyle.left,
-            width: indicatorStyle.width,
-          }}
-          transition={{
-            type: 'spring',
-            stiffness: 500,
-            damping: 35,
-            mass: 1,
-          }}
-          style={{ opacity: isInitialized ? 1 : 0 }}
-          aria-hidden="true"
-        />
-        
-        {/* Goal tabs */}
-        {goals.map((goal) => {
-          const isActive = activeGoalId === goal.id;
-          return (
+    <div>
+      <SectionHeader label="Goal" />
+      <div className="relative flex items-center bg-[var(--bg-tertiary)] rounded-lg p-1 ring-1 ring-[var(--border-secondary)]">
+        {/* Left arrow - only render when needed */}
+        <AnimatePresence>
+          {showLeftArrow && (
             <motion.button
-              key={goal.id}
-              data-goal-id={goal.id}
               type="button"
-              onClick={() => onChange(goal.id)}
-              className="relative z-10 px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer"
-              animate={{
-                color: isActive 
-                  ? 'var(--fg-primary)' 
-                  : 'var(--fg-tertiary)',
-              }}
-              whileHover={!isActive ? { color: 'var(--fg-secondary)' } : {}}
-              whileTap={{ scale: 0.98 }}
-              transition={{
-                color: { duration: 0.15, ease: 'easeOut' },
-                scale: { type: 'spring', stiffness: 400, damping: 25 },
-              }}
+              onClick={() => scroll('left')}
+              className="
+                flex-shrink-0
+                w-6 h-6
+                flex items-center justify-center
+                rounded-md
+                text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+                hover:bg-[var(--bg-quaternary)]
+                transition-colors duration-150
+              "
+              aria-label="Scroll goals left"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
             >
-              {goal.label}
+              <ChevronLeft className="w-3.5 h-3.5" />
             </motion.button>
-          );
-        })}
+          )}
+        </AnimatePresence>
+
+        {/* Tabs scroll container */}
+        <div
+          ref={scrollContainerRef}
+          className="
+            relative flex-1 min-w-0
+            flex items-center gap-0.5
+            overflow-x-auto
+            scrollbar-hide
+            scroll-smooth
+            touch-pan-x
+            overscroll-x-contain
+          "
+          role="tablist"
+          aria-label="Goal tabs"
+          style={{
+            scrollbarWidth: 'none',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          {/* Sliding indicator */}
+          <motion.div
+            className="absolute top-0 bottom-0 rounded-md bg-[var(--bg-primary)] shadow-sm"
+            initial={false}
+            animate={{
+              left: indicatorStyle.left,
+              width: indicatorStyle.width,
+            }}
+            transition={{
+              type: 'spring',
+              stiffness: 500,
+              damping: 35,
+              mass: 1,
+            }}
+            style={{ opacity: isInitialized ? 1 : 0 }}
+            aria-hidden="true"
+          />
+          
+          {/* Goal tabs */}
+          {goals.map((goal) => {
+            const isActive = activeGoalId === goal.id;
+            return (
+              <motion.button
+                key={goal.id}
+                data-goal-id={goal.id}
+                type="button"
+                onClick={() => onChange(goal.id)}
+                role="tab"
+                aria-selected={isActive}
+                className="
+                  relative z-10 
+                  px-2.5 py-1.5
+                  rounded-md
+                  text-xs font-medium
+                  whitespace-nowrap
+                  cursor-pointer
+                  select-none
+                "
+                animate={{
+                  color: isActive 
+                    ? 'var(--fg-primary)' 
+                    : 'var(--fg-tertiary)',
+                }}
+                whileHover={!isActive ? { color: 'var(--fg-secondary)' } : {}}
+                whileTap={{ scale: 0.98 }}
+                transition={{
+                  color: { duration: 0.15, ease: 'easeOut' },
+                  scale: { type: 'spring', stiffness: 400, damping: 25 },
+                }}
+              >
+                {goal.label}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Right arrow - only render when needed */}
+        <AnimatePresence>
+          {showRightArrow && (
+            <motion.button
+              type="button"
+              onClick={() => scroll('right')}
+              className="
+                flex-shrink-0
+                w-6 h-6
+                flex items-center justify-center
+                rounded-md
+                text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
+                hover:bg-[var(--bg-quaternary)]
+                transition-colors duration-150
+              "
+              aria-label="Scroll goals right"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -379,6 +495,119 @@ function SectionHeader({ label }: SectionHeaderProps) {
       <label className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
         {label}
       </label>
+    </div>
+  );
+}
+
+// Compact dropdown for output preferences (lighter weight, more accessible)
+interface CompactSelectProps<T extends string | number> {
+  value: T;
+  onChange: (value: T) => void;
+  options: { id: T; label: string }[];
+  label: string;
+}
+
+function CompactSelect<T extends string | number>({ value, onChange, options, label }: CompactSelectProps<T>) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const selectedOption = options.find(o => o.id === value);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  // Close on escape key
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsOpen(false);
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
+
+  return (
+    <div className="flex items-center gap-2">
+      <label className="text-xs text-[var(--fg-tertiary)] whitespace-nowrap">{label}</label>
+      <div ref={containerRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className={`
+            inline-flex items-center gap-1.5 px-2.5 py-1.5
+            rounded-md text-xs font-medium
+            bg-[var(--bg-primary)] text-[var(--fg-primary)]
+            ring-1 transition-all duration-150 cursor-pointer
+            ${isOpen 
+              ? 'ring-2 ring-[var(--border-brand-solid)]' 
+              : 'ring-[var(--border-primary)] hover:ring-[var(--border-brand-solid)]'
+            }
+          `}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+        >
+          <span>{selectedOption?.label || 'Select'}</span>
+          <ChevronDown className={`w-3 h-3 text-[var(--fg-quaternary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.15 }}
+              className="
+                absolute z-50 top-full left-0 mt-1
+                min-w-full w-max
+                bg-[var(--bg-primary)] 
+                rounded-md shadow-lg
+                ring-1 ring-[var(--border-secondary)]
+                py-1 overflow-hidden
+              "
+              role="listbox"
+            >
+              {options.map((option) => {
+                const isSelected = option.id === value;
+                return (
+                  <button
+                    key={String(option.id)}
+                    type="button"
+                    onClick={() => {
+                      onChange(option.id);
+                      setIsOpen(false);
+                    }}
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`
+                      w-full flex items-center justify-between gap-3
+                      px-2.5 py-1.5 text-xs font-medium
+                      transition-colors cursor-pointer
+                      ${isSelected 
+                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                        : 'text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                      }
+                    `}
+                  >
+                    <span>{option.label}</span>
+                    {isSelected && <Check className="w-3 h-3 shrink-0" />}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -811,68 +1040,36 @@ export function CreatePostCopyForm({
                     >
                       <div className="flex flex-wrap items-center gap-4">
                         {/* Variations */}
-                        <div className="flex items-center gap-2">
-                          <label className="text-xs text-[var(--fg-tertiary)] whitespace-nowrap">Variations</label>
-                          <Select
-                            selectedKey={String(variations)}
-                            onSelectionChange={(key) => setVariations(Number(key) as VariationCount)}
-                            size="sm"
-                            placeholder="Select"
-                            className="min-w-[60px]"
-                          >
-                            {VARIATION_OPTIONS.map(v => (
-                              <Select.Item key={String(v.id)} id={String(v.id)} label={v.label} />
-                            ))}
-                          </Select>
-                        </div>
+                        <CompactSelect
+                          label="Variations"
+                          value={variations}
+                          onChange={(val) => setVariations(val as VariationCount)}
+                          options={VARIATION_OPTIONS}
+                        />
 
                         {/* Length */}
-                        <div className="flex items-center gap-2">
-                          <label className="text-xs text-[var(--fg-tertiary)] whitespace-nowrap">Length</label>
-                          <Select
-                            selectedKey={captionLength}
-                            onSelectionChange={(key) => setCaptionLength(key as CaptionLength)}
-                            size="sm"
-                            placeholder="Select"
-                            className="min-w-[100px]"
-                          >
-                            {CAPTION_LENGTH_OPTIONS.map(l => (
-                              <Select.Item key={l.id} id={l.id} label={l.label} />
-                            ))}
-                          </Select>
-                        </div>
+                        <CompactSelect
+                          label="Length"
+                          value={captionLength}
+                          onChange={(val) => setCaptionLength(val as CaptionLength)}
+                          options={CAPTION_LENGTH_OPTIONS}
+                        />
 
                         {/* Hashtags */}
-                        <div className="flex items-center gap-2">
-                          <label className="text-xs text-[var(--fg-tertiary)] whitespace-nowrap">Hashtags</label>
-                          <Select
-                            selectedKey={hashtags}
-                            onSelectionChange={(key) => setHashtags(key as HashtagPreference)}
-                            size="sm"
-                            placeholder="Select"
-                            className="min-w-[120px]"
-                          >
-                            {HASHTAG_OPTIONS.map(h => (
-                              <Select.Item key={h.id} id={h.id} label={h.label} />
-                            ))}
-                          </Select>
-                        </div>
+                        <CompactSelect
+                          label="Hashtags"
+                          value={hashtags}
+                          onChange={(val) => setHashtags(val as HashtagPreference)}
+                          options={HASHTAG_OPTIONS}
+                        />
 
                         {/* CTA */}
-                        <div className="flex items-center gap-2">
-                          <label className="text-xs text-[var(--fg-tertiary)] whitespace-nowrap">CTA</label>
-                          <Select
-                            selectedKey={includeCta}
-                            onSelectionChange={(key) => setIncludeCta(key as CtaPreference)}
-                            size="sm"
-                            placeholder="Select"
-                            className="min-w-[70px]"
-                          >
-                            {CTA_OPTIONS.map(c => (
-                              <Select.Item key={c.id} id={c.id} label={c.label} />
-                            ))}
-                          </Select>
-                        </div>
+                        <CompactSelect
+                          label="CTA"
+                          value={includeCta}
+                          onChange={(val) => setIncludeCta(val as CtaPreference)}
+                          options={CTA_OPTIONS}
+                        />
                       </div>
                     </motion.div>
                   )}

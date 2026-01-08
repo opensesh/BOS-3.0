@@ -899,7 +899,7 @@ export function Sidebar() {
 
         {/* Navigation Items */}
         <nav className={`flex flex-col ${isExpandedMode ? 'gap-0.5 px-2' : 'gap-1 items-center px-1'}`}>
-          {navItems.filter(item => item.label !== 'Home').map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = isItemActive(item);
             const hasSubItems = item.subItems && item.subItems.length > 0;

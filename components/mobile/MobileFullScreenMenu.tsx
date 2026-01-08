@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
+  Home,
   LayoutGrid,
   ScanFace,
   BrainCog,
@@ -21,6 +22,7 @@ import { LanguageSelector } from '@/components/ui/LanguageSelector';
 
 // Simple navigation items - no sub-items for mobile
 const navItems = [
+  { label: 'Home', href: '/', icon: Home },
   { label: 'Brand', href: '/brand-hub', icon: ScanFace },
   { label: 'Brain', href: '/brain', icon: BrainCog },
   { label: 'Spaces', href: '/spaces', icon: LayoutGrid },
@@ -89,6 +91,13 @@ export function MobileFullScreenMenu() {
     closeMobileMenu();
   }, [closeMobileMenu]);
 
+  const handleHomeClick = useCallback(() => {
+    if (pathname === '/') {
+      triggerChatReset();
+    }
+    closeMobileMenu();
+  }, [pathname, triggerChatReset, closeMobileMenu]);
+
   const isItemActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname === href || pathname.startsWith(href + '/');
@@ -147,7 +156,7 @@ export function MobileFullScreenMenu() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={handleNavClick}
+                      onClick={item.href === '/' ? handleHomeClick : handleNavClick}
                       className={`
                         flex items-center gap-3 px-4 py-3.5 rounded-xl
                         transition-colors

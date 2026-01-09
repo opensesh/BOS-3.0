@@ -146,11 +146,11 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
-      {/* Equal grid on desktop (6/6 split), stacked on mobile */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-stretch">
-        {/* Actions Panel */}
+      {/* Asymmetric grid on desktop - Actions wider to fit text, stacked on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-stretch">
+        {/* Actions Panel - takes 7 columns for wider buttons */}
         <motion.div
-          className="relative group h-full"
+          className="sm:col-span-7 relative group h-full"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
@@ -163,11 +163,11 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
               disabled={!isActuallyMobile}
             >
               <motion.div 
-                className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-brand-400)] to-[var(--color-brand-600)] flex items-center justify-center shadow-lg shadow-[var(--color-brand-500)]/20 flex-shrink-0"
-                whileHover={!isActuallyMobile ? { scale: 1.05, rotate: -3 } : {}}
+                className="w-9 h-9 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center flex-shrink-0"
+                whileHover={!isActuallyMobile ? { scale: 1.05 } : {}}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
-                <Zap className="w-4.5 h-4.5 text-white" strokeWidth={2} />
+                <Zap className="w-4 h-4 text-[var(--fg-tertiary)]" strokeWidth={2} />
               </motion.div>
               <div className="flex flex-col flex-1 min-w-0">
                 <h3 
@@ -180,7 +180,7 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   <span className="absolute left-0 top-0">
                     {actionsTitle.displayText}
                     {!actionsTitle.isComplete && (
-                      <span className="inline-block w-0.5 h-5 bg-[var(--color-brand-500)] ml-0.5 animate-pulse align-middle" />
+                      <span className="inline-block w-0.5 h-5 bg-[var(--fg-tertiary)] ml-0.5 animate-pulse align-middle" />
                     )}
                   </span>
                 </h3>
@@ -234,7 +234,7 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                         {/* Accent line */}
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 bg-[var(--color-brand-500)] group-hover/btn:h-1/2 transition-all duration-300 rounded-full" />
                         
-                        <span className="relative text-sm font-medium text-[var(--fg-secondary)] group-hover/btn:text-[var(--fg-primary)] transition-colors">
+                        <span className="relative text-sm font-medium text-[var(--fg-secondary)] group-hover/btn:text-[var(--fg-primary)] transition-colors whitespace-nowrap">
                           {action.title}
                         </span>
                         
@@ -248,9 +248,9 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
           </div>
         </motion.div>
 
-        {/* Brand Panel */}
+        {/* Brand Panel - takes 5 columns, more compact */}
         <motion.div
-          className="relative group h-full"
+          className="sm:col-span-5 relative group h-full"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
@@ -309,8 +309,8 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                   className={`overflow-hidden flex-1 flex flex-col ${!isHydrated ? 'hidden sm:block' : ''}`}
                 >
-                  {/* Brand links - 2-column grid matching Action buttons spacing */}
-                  <div className="grid grid-cols-2 gap-2.5 flex-1 content-start">
+                  {/* Brand links - 2-column grid, more compact than Actions */}
+                  <div className="grid grid-cols-2 gap-1.5 flex-1 content-start">
                     {brandLinks.map((link, index) => {
                       const Icon = link.icon;
                       return (
@@ -322,16 +322,10 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                         >
                           <Link
                             href={link.href}
-                            className="group/link relative flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-all duration-200 overflow-hidden hover:scale-[1.02]"
-                            style={{
-                              background: 'linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%)',
-                            }}
+                            className="group/link flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150 hover:bg-[var(--bg-tertiary)]"
                           >
-                            {/* Hover gradient overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-[var(--fg-tertiary)]/0 via-[var(--fg-tertiary)]/5 to-[var(--fg-tertiary)]/0 opacity-0 group-hover/link:opacity-100 transition-opacity duration-300" />
-                            
-                            <Icon className="relative w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/link:text-[var(--fg-tertiary)] transition-colors flex-shrink-0" />
-                            <span className="relative text-sm font-medium text-[var(--fg-secondary)] group-hover/link:text-[var(--fg-primary)] transition-colors truncate">
+                            <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/link:text-[var(--fg-tertiary)] transition-colors flex-shrink-0" />
+                            <span className="text-[13px] text-[var(--fg-secondary)] group-hover/link:text-[var(--fg-primary)] transition-colors truncate">
                               {link.label}
                             </span>
                           </Link>

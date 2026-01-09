@@ -1263,10 +1263,10 @@ export function ChatInterface() {
     const chatProjectId = currentChat?.projectId;
     const chatProject = chatProjectId ? projects.find(p => p.id === chatProjectId) : null;
     
-    // Only show title in breadcrumbs when we have an actual title to display
-    // For quick action chats: require generatedTitle (don't show prompt)
-    // For regular chats: show after assistant response with fallback to first message
-    const showTitle = hasAssistantResponse && !!displayTitle;
+    // For quick action chats: never show title in breadcrumb (it's already in the chat header)
+    // Breadcrumb ends at the quick action chip (e.g., "Chats / Create a Post")
+    // For regular chats: show title after assistant response
+    const showTitle = !quickActionType && hasAssistantResponse && !!displayTitle;
     
     // Set quick action badge in breadcrumbs (shows as Aperol chip)
     // This persists for the entire chat if it was initiated via quick action

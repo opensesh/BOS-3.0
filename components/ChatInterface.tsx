@@ -1813,7 +1813,7 @@ export function ChatInterface() {
               {/* Pre-prompt Cards Grid - below input, fades when typing or form is active */}
               {/* Uses opacity animation without unmounting to prevent layout shift */}
               <motion.div
-                className="mt-8"
+                className="mt-4"
                 initial={{ opacity: 1 }}
                 animate={{ 
                   opacity: input.trim() || showQuickActionForm || activeQuickAction ? 0 : 1,

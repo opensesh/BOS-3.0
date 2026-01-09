@@ -215,7 +215,7 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                       <motion.button
                         key={action.id}
                         onClick={() => handleActionClick(action)}
-                        className="group/btn relative flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-left transition-all duration-200 overflow-hidden"
+                        className="group/btn relative flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-left transition-all duration-200"
                         style={{
                           background: 'linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%)',
                         }}
@@ -229,16 +229,17 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                         whileTap={{ scale: 0.98 }}
                       >
                         {/* Hover gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-brand-500)]/0 via-[var(--color-brand-500)]/5 to-[var(--color-brand-500)]/0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[var(--color-brand-500)]/0 via-[var(--color-brand-500)]/5 to-[var(--color-brand-500)]/0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 pointer-events-none" />
                         
-                        {/* Accent line */}
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 bg-[var(--color-brand-500)] group-hover/btn:h-1/2 transition-all duration-300 rounded-full" />
+                        {/* Accent line - positioned slightly inset to avoid clipping */}
+                        <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-0 bg-[var(--color-brand-500)] group-hover/btn:h-1/2 transition-all duration-300 rounded-full" />
                         
                         <span className="relative text-sm font-medium text-[var(--fg-secondary)] group-hover/btn:text-[var(--fg-primary)] transition-colors whitespace-nowrap">
                           {action.title}
                         </span>
                         
-                        <ArrowUpRight className="relative w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/btn:text-[var(--color-brand-500)] transition-all duration-200 opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0" />
+                        {/* Arrow - simple opacity transition, no translate */}
+                        <ArrowUpRight className="relative w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/btn:text-[var(--color-brand-500)] transition-all duration-200 opacity-0 group-hover/btn:opacity-100" />
                       </motion.button>
                     ))}
                   </div>
@@ -322,8 +323,11 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                         >
                           <Link
                             href={link.href}
-                            className="group/link flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150 hover:bg-[var(--bg-tertiary)]"
+                            className="group/link relative flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150 hover:bg-[var(--bg-tertiary)]"
                           >
+                            {/* Accent line - same as Actions */}
+                            <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-0 bg-[var(--color-brand-500)] group-hover/link:h-1/2 transition-all duration-300 rounded-full" />
+                            
                             <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/link:text-[var(--fg-tertiary)] transition-colors flex-shrink-0" />
                             <span className="text-[13px] text-[var(--fg-secondary)] group-hover/link:text-[var(--fg-primary)] transition-colors truncate">
                               {link.label}

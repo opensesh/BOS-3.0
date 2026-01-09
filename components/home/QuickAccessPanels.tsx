@@ -14,7 +14,6 @@ import {
   Shapes,
   FileText,
   ArrowUpRight,
-  Sparkles,
 } from 'lucide-react';
 import { useChatContext } from '@/lib/chat-context';
 import type { QuickActionType } from '@/lib/quick-actions';
@@ -115,8 +114,8 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
-      {/* Asymmetric grid - Actions is larger, Brand is compact */}
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-start">
+      {/* Asymmetric grid - Actions is larger, Brand is compact, same height */}
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-stretch">
         {/* Actions Panel - Takes more space, offset down */}
         <motion.div
           className="sm:col-span-7 relative group"
@@ -128,19 +127,18 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
           <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-[var(--color-brand-500)]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
           <div className="relative rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-5 transition-all duration-300 hover:border-[var(--border-brand)]/30 hover:shadow-xl hover:shadow-[var(--color-brand-500)]/5">
-            {/* Header with icon and typewriter title */}
-            <div className="flex items-center gap-3 mb-5">
+            {/* Header with icon and typewriter title - stacked vertically */}
+            <div className="flex items-start gap-3 mb-5">
               <motion.div 
-                className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-brand-400)] to-[var(--color-brand-600)] flex items-center justify-center shadow-lg shadow-[var(--color-brand-500)]/20"
+                className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-brand-400)] to-[var(--color-brand-600)] flex items-center justify-center shadow-lg shadow-[var(--color-brand-500)]/20 flex-shrink-0"
                 whileHover={{ scale: 1.05, rotate: -3 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
                 <Zap className="w-4.5 h-4.5 text-white" strokeWidth={2} />
-                <Sparkles className="absolute -top-1 -right-1 w-3 h-3 text-[var(--color-brand-300)]" />
               </motion.div>
-              <div className="flex items-baseline gap-2">
+              <div className="flex flex-col">
                 <h3 
-                  className="text-lg font-bold text-[var(--fg-primary)] tracking-tight"
+                  className="text-lg font-bold text-[var(--fg-primary)] tracking-tight leading-tight"
                   style={{ fontFamily: 'Offbit, sans-serif' }}
                 >
                   {actionsTitle.displayText}
@@ -148,7 +146,7 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                     <span className="inline-block w-0.5 h-5 bg-[var(--color-brand-500)] ml-0.5 animate-pulse" />
                   )}
                 </h3>
-                <span className="text-[10px] uppercase tracking-widest text-[var(--fg-quaternary)] font-medium">
+                <span className="text-[10px] uppercase tracking-widest text-[var(--fg-quaternary)] font-medium mt-0.5">
                   Quick start
                 </span>
               </div>
@@ -190,9 +188,9 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
           </div>
         </motion.div>
 
-        {/* Brand Panel - Compact, different visual weight */}
+        {/* Brand Panel - Same height as Actions, different visual weight */}
         <motion.div
-          className="sm:col-span-5 sm:mt-8 relative group"
+          className="sm:col-span-5 relative group h-full"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
@@ -209,29 +207,34 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
             />
           </div>
           
-          <div className="relative rounded-2xl bg-[var(--bg-secondary)]/80 backdrop-blur-sm border border-[var(--border-secondary)] p-4 transition-all duration-300 hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]">
-            {/* Header */}
-            <div className="flex items-center gap-2.5 mb-4">
+          <div className="relative rounded-2xl bg-[var(--bg-secondary)]/80 backdrop-blur-sm border border-[var(--border-secondary)] p-5 transition-all duration-300 hover:border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] h-full">
+            {/* Header - stacked like Actions */}
+            <div className="flex items-start gap-3 mb-5">
               <motion.div 
-                className="w-8 h-8 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center"
+                className="w-9 h-9 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center flex-shrink-0"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
                 <FolderOpen className="w-4 h-4 text-[var(--fg-tertiary)]" />
               </motion.div>
-              <h3 
-                className="text-base font-bold text-[var(--fg-primary)] tracking-tight"
-                style={{ fontFamily: 'Offbit, sans-serif' }}
-              >
-                {brandTitle.displayText}
-                {!brandTitle.isComplete && (
-                  <span className="inline-block w-0.5 h-4 bg-[var(--fg-tertiary)] ml-0.5 animate-pulse" />
-                )}
-              </h3>
+              <div className="flex flex-col">
+                <h3 
+                  className="text-lg font-bold text-[var(--fg-primary)] tracking-tight leading-tight"
+                  style={{ fontFamily: 'Offbit, sans-serif' }}
+                >
+                  {brandTitle.displayText}
+                  {!brandTitle.isComplete && (
+                    <span className="inline-block w-0.5 h-5 bg-[var(--fg-tertiary)] ml-0.5 animate-pulse" />
+                  )}
+                </h3>
+                <span className="text-[10px] uppercase tracking-widest text-[var(--fg-quaternary)] font-medium mt-0.5">
+                  Directory
+                </span>
+              </div>
             </div>
 
-            {/* Brand links - Vertical list for compact feel */}
-            <div className="space-y-0.5">
+            {/* Brand links - 2-column grid to fit in same height */}
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1">
               {brandLinks.map((link, index) => {
                 const Icon = link.icon;
                 return (
@@ -243,15 +246,12 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   >
                     <Link
                       href={link.href}
-                      className="group/link flex items-center justify-between py-2 px-2 -mx-2 rounded-lg transition-all duration-150 hover:bg-[var(--bg-tertiary)]"
+                      className="group/link flex items-center gap-2 py-2 px-2 -mx-2 rounded-lg transition-all duration-150 hover:bg-[var(--bg-tertiary)]"
                     >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/link:text-[var(--fg-tertiary)] transition-colors" />
-                        <span className="text-sm text-[var(--fg-secondary)] group-hover/link:text-[var(--fg-primary)] transition-colors">
-                          {link.label}
-                        </span>
-                      </div>
-                      <ArrowUpRight className="w-3 h-3 text-[var(--fg-quaternary)] opacity-0 group-hover/link:opacity-100 transition-all duration-200 -translate-x-1 group-hover/link:translate-x-0" />
+                      <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/link:text-[var(--fg-tertiary)] transition-colors flex-shrink-0" />
+                      <span className="text-sm text-[var(--fg-secondary)] group-hover/link:text-[var(--fg-primary)] transition-colors truncate">
+                        {link.label}
+                      </span>
                     </Link>
                   </motion.div>
                 );

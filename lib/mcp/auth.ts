@@ -102,16 +102,31 @@ export async function validateApiKey(
 
 /**
  * MCP Auth verification function for withMcpAuth middleware
+ * Supports both Bearer token (header) and query parameter (?token=xxx) authentication
  */
 export async function verifyMcpToken(
-  _req: Request,
+  req: Request,
   bearerToken?: string
 ): Promise<AuthInfo | undefined> {
-  if (!bearerToken) {
+  // First try Bearer token from header
+  let token = bearerToken;
+  
+  // If no Bearer token, check for token in URL query parameter
+  // This supports Claude Desktop's custom connector which can't send headers
+  if (!token) {
+    try {
+      const url = new URL(req.url);
+      token = url.searchParams.get('token') || undefined;
+    } catch {
+      // URL parsing failed, continue without token
+    }
+  }
+  
+  if (!token) {
     return undefined;
   }
 
-  const authInfo = await validateApiKey(bearerToken);
+  const authInfo = await validateApiKey(token);
   
   if (!authInfo) {
     return undefined;

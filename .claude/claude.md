@@ -235,3 +235,38 @@ Card structure:
 | Charcoal | `#191919` | Dark backgrounds |
 | Vanilla | `#FFFAEE` | Light/cream accents |
 | Aperol | `#FE5102` | Primary brand color |
+
+---
+
+## BOS MCP Server Integration
+
+BOS exposes brand knowledge via the Model Context Protocol (MCP) for external AI clients like Claude Desktop.
+
+### Available Tools
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| `search_brand_knowledge` | Semantic search across brand docs | Questions about voice, messaging, philosophy |
+| `get_brand_colors` | Retrieve color palette | "What colors should I use?" |
+| `get_brand_assets` | List logos, fonts, images | "Show me our logos" |
+| `get_brand_guidelines` | Fetch guideline documents | Deep dive into specific guidelines |
+| `search_brand_assets` | Semantic asset search | "Find photos with warm tones" |
+
+### MCP Server Endpoint
+```
+URL: https://bos-3-0.vercel.app/api/mcp
+Transport: streamable-http
+Auth: Bearer token (API key from BOS settings)
+```
+
+### Claude Desktop Setup
+1. Copy `.claude/claude-desktop-config.example.json` to your Claude config location
+2. Replace `YOUR_API_KEY_HERE` with your BOS API key (generate in BOS Settings > MCP)
+3. Restart Claude Desktop
+
+### Voice Guidance for AI Assistants
+When using BOS MCP, act as a **brand steward**, not an outside advisor:
+- Use "we" and "our" naturally
+- Integrate brand knowledge seamlessly without clinical prefixes
+- Be helpful and informative while embodying brand voice
+- See `.claude/mcp-instructions.md` for detailed persona guidance

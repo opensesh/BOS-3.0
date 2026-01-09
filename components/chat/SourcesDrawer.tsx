@@ -2,6 +2,7 @@
 
 import React, { useMemo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { X, Globe, ExternalLink, Hexagon, ArrowRight, Compass, Rss, Search } from 'lucide-react';
 import { SourceInfo } from './AnswerView';
@@ -50,8 +51,8 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
     return { discoverSources: discover, webSources: web };
   }, [sources]);
 
-  // Don't render until mounted or if not open
-  if (!mounted || !isOpen) return null;
+  // Don't render until mounted
+  if (!mounted) return null;
 
   const totalCount = sources.length + resourceCards.length;
   const hasDiscoverSources = discoverSources.length > 0;
@@ -62,17 +63,70 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
   // Generate search query for external links
   const searchQuery = encodeURIComponent(query || 'related topics');
 
+  // Animation variants for smooth slide-in/out
+  const drawerVariants = {
+    hidden: {
+      x: '100%',
+      opacity: 0,
+    },
+    visible: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 400,
+        damping: 35,
+        mass: 0.8,
+      },
+    },
+    exit: {
+      x: '100%',
+      opacity: 0,
+      transition: {
+        type: 'spring',
+        stiffness: 400,
+        damping: 40,
+        mass: 0.8,
+      },
+    },
+  };
+
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.2 } },
+    exit: { 
+      opacity: [1, 0.8, 0.6, 0], // Keyframes: stay darker longer, then fade quickly
+      transition: { 
+        duration: 0.5,
+        times: [0, 0.6, 0.85, 1], // Spend most time at higher opacity values
+        ease: "easeOut",
+      } 
+    },
+  };
+
   // Portal content to document.body to escape stacking context
   const drawerContent = (
-    <>
-      {/* Backdrop - covers entire viewport including canvas */}
-      <div
-        className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop - covers main content area only, excludes sidebar and header */}
+          <motion.div
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed top-12 bottom-0 left-0 lg:left-[var(--sidebar-width)] right-0 bg-black/40 z-[100] backdrop-blur-sm"
+            onClick={onClose}
+          />
 
-      {/* Drawer - top-12 aligns with bottom of header */}
-      <div className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col animate-slide-in-right shadow-2xl">
+          {/* Drawer - top-12 aligns with bottom of header */}
+          <motion.div
+            variants={drawerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col shadow-2xl"
+          >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-[var(--bg-secondary)]/30">
           <h2 className="text-[15px] font-semibold text-[var(--fg-primary)]">
@@ -316,8 +370,10 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
             </div>
           )}
         </div>
-      </div>
-    </>
+      </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 
   // Render using portal to escape parent stacking context

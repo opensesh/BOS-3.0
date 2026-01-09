@@ -34,7 +34,7 @@ export function WritingStyleSelector({
   onSelect,
 }: WritingStyleSelectorProps) {
   return (
-    <div className="py-2 max-h-80 overflow-y-auto">
+    <div className="py-2 max-h-[96px] overflow-y-auto">
       {WRITING_STYLES.map((style) => {
         const isSelected = currentStyle?.id === style.id;
         const isFileStyle = !!style.filename;

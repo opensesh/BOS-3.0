@@ -139,7 +139,7 @@ export async function searchBrandKnowledge(
   const { data: chunks, error } = await supabase.rpc('match_document_chunks', {
     query_embedding: queryEmbedding,
     p_brand_id: brandId,
-    match_threshold: 0.7,
+    match_threshold: 0.5, // Lowered for better recall
     match_count: effectiveLimit,
   });
 
@@ -383,7 +383,7 @@ export async function searchBrandAssets(
     query_embedding: queryEmbedding,
     p_brand_id: brandId,
     p_category: category || null,
-    match_threshold: 0.6,
+    match_threshold: 0.5, // Lowered for better recall
     match_count: effectiveLimit,
   });
 

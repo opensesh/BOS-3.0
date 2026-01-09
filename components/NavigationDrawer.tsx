@@ -15,12 +15,8 @@ import {
   ImageIcon,
   Code,
   PenTool,
-  MessageSquare,
   Zap,
   Shapes,
-  Megaphone,
-  Target,
-  Lightbulb,
   ArrowRight,
 } from 'lucide-react';
 import { useChatContext } from '@/lib/chat-context';
@@ -53,28 +49,24 @@ const brandHubNavItems = [
 const quickActions = [
   {
     id: 'social-post',
-    icon: Megaphone,
     title: 'Create post',
     description: 'Social media copy',
     prompt: 'Help me create a social media post. I want to announce [topic/product] and need engaging copy that fits my brand voice.',
   },
   {
     id: 'brand-review',
-    icon: MessageSquare,
     title: 'Brand Review',
     description: 'Brand fit review',
     prompt: 'Review this and tell me if it matches my brand guidelines. Suggest improvements to make it more on-brand: [paste your content]',
   },
   {
     id: 'reverse-engineer',
-    icon: Lightbulb,
     title: 'Reverse Engineer',
     description: 'Creative concepts',
     prompt: 'Help me brainstorm creative ideas for [campaign/project]. I want fresh concepts that align with my brand values.',
   },
   {
     id: 'product-copy',
-    icon: Target,
     title: 'Product Copy',
     description: 'Content strategy',
     prompt: 'Help me plan a content campaign for [goal/product]. I need ideas for posts, timing, and messaging that align with my brand.',
@@ -394,11 +386,13 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
               {/* Quick Actions section - First */}
               <motion.div variants={fadeInUp} className="mb-4">
                 <div className="flex items-center justify-between mb-2 px-2">
-                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Quick Actions</h4>
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="w-3 h-3 text-[var(--fg-tertiary)]" />
+                    <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Quick Actions</h4>
+                  </div>
                 </div>
                 <div className="space-y-0.5">
                   {quickActions.map((action, index) => {
-                    const Icon = action.icon;
                     return (
                       <motion.button
                         key={action.id}
@@ -407,7 +401,6 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         onClick={() => handleQuickAction(action.id, action.prompt)}
                         className="w-full text-left px-3 py-1.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2 group"
                       >
-                        <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-brand-primary)] transition-colors flex-shrink-0" />
                         <span className="truncate">{action.title}</span>
                       </motion.button>
                     );

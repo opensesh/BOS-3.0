@@ -10,17 +10,19 @@ import { AddBrainResourceModal } from '@/components/brain/AddBrainResourceModal'
 import { useBrainResources, BrainResource } from '@/hooks/useBrainResources';
 import { PageTransition, MotionItem, staggerContainer, fadeInUp } from '@/lib/motion';
 import { Icon } from '@/components/ui/Icon';
-import { 
-  Settings, 
-  ExternalLink, 
-  Plus, 
-  Trash2, 
+import {
+  Settings,
+  ExternalLink,
+  Plus,
+  Trash2,
   Pencil,
   FolderTree,
   BookOpen,
   PenTool,
   ArrowUpRight,
   Zap,
+  Puzzle,
+  Bot,
 } from 'lucide-react';
 
 // Bento cards for subpages
@@ -52,6 +54,20 @@ const brainPages = [
     description: 'System capabilities and configuration',
     href: '/brain/skills',
     icon: Zap,
+  },
+  {
+    id: 'plugins',
+    title: 'Plugins',
+    description: 'Complete capability packages with commands, agents, and skills',
+    href: '/brain/plugins',
+    icon: Puzzle,
+  },
+  {
+    id: 'agents',
+    title: 'Agents',
+    description: 'Autonomous AI workflows that auto-activate based on context',
+    href: '/brain/agents',
+    icon: Bot,
   },
 ];
 

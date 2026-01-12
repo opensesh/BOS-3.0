@@ -5,8 +5,8 @@
  * replacing direct /claude-data/ fetches. This allows .claude/ to be
  * the single source of truth for local Claude configuration.
  *
- * GET /api/claude/knowledge/core/OS_brand%20identity.md
- * GET /api/claude/knowledge/writing-styles/blog.md
+ * GET /api/claude/brand-identity/OS_brand%20identity.md
+ * GET /api/claude/writing-styles/blog.md
  * GET /api/claude/skills/algorithmic-art/SKILL.md
  */
 

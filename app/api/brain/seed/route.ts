@@ -25,47 +25,47 @@ const FILE_MAPPINGS: Array<{
   slug: string;
   filePath: string;
 }> = [
-  // Brand Identity (from .claude/knowledge/core)
+  // Brand Identity (from .claude/brand-identity)
   {
     category: 'brand-identity',
     slug: 'brand-identity',
-    filePath: '.claude/knowledge/core/OS_brand identity.md',
+    filePath: '.claude/brand-identity/OS_brand identity.md',
   },
   {
     category: 'brand-identity',
     slug: 'brand-messaging',
-    filePath: '.claude/knowledge/core/OS_brand messaging.md',
+    filePath: '.claude/brand-identity/OS_brand messaging.md',
   },
   {
     category: 'brand-identity',
     slug: 'art-direction',
-    filePath: '.claude/knowledge/core/OS_art direction.md',
+    filePath: '.claude/brand-identity/OS_art direction.md',
   },
-  // Writing Styles (from .claude/knowledge/writing-styles)
+  // Writing Styles (from .claude/writing-styles)
   {
     category: 'writing-styles',
     slug: 'blog',
-    filePath: '.claude/knowledge/writing-styles/blog.md',
+    filePath: '.claude/writing-styles/blog.md',
   },
   {
     category: 'writing-styles',
     slug: 'creative',
-    filePath: '.claude/knowledge/writing-styles/creative.md',
+    filePath: '.claude/writing-styles/creative.md',
   },
   {
     category: 'writing-styles',
     slug: 'long-form',
-    filePath: '.claude/knowledge/writing-styles/long-form.md',
+    filePath: '.claude/writing-styles/long-form.md',
   },
   {
     category: 'writing-styles',
     slug: 'short-form',
-    filePath: '.claude/knowledge/writing-styles/short-form.md',
+    filePath: '.claude/writing-styles/short-form.md',
   },
   {
     category: 'writing-styles',
     slug: 'strategic',
-    filePath: '.claude/knowledge/writing-styles/strategic.md',
+    filePath: '.claude/writing-styles/strategic.md',
   },
   // Skills (from .claude/skills directory)
   {

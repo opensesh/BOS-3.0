@@ -173,28 +173,28 @@ BEGIN
 END $$;
 
 -- 10. Update existing documents with file paths
-UPDATE brand_documents SET file_path = '.claude/knowledge/core/OS_brand identity.md'
+UPDATE brand_documents SET file_path = '.claude/brand-identity/OS_brand identity.md'
 WHERE category = 'brand-identity' AND slug = 'brand-identity' AND file_path IS NULL;
 
-UPDATE brand_documents SET file_path = '.claude/knowledge/core/OS_brand messaging.md'
+UPDATE brand_documents SET file_path = '.claude/brand-identity/OS_brand messaging.md'
 WHERE category = 'brand-identity' AND slug = 'brand-messaging' AND file_path IS NULL;
 
-UPDATE brand_documents SET file_path = '.claude/knowledge/core/OS_art direction.md'
+UPDATE brand_documents SET file_path = '.claude/brand-identity/OS_art direction.md'
 WHERE category = 'brand-identity' AND slug = 'art-direction' AND file_path IS NULL;
 
-UPDATE brand_documents SET file_path = '.claude/knowledge/writing-styles/blog.md'
+UPDATE brand_documents SET file_path = '.claude/writing-styles/blog.md'
 WHERE category = 'writing-styles' AND slug = 'blog' AND file_path IS NULL;
 
-UPDATE brand_documents SET file_path = '.claude/knowledge/writing-styles/creative.md'
+UPDATE brand_documents SET file_path = '.claude/writing-styles/creative.md'
 WHERE category = 'writing-styles' AND slug = 'creative' AND file_path IS NULL;
 
-UPDATE brand_documents SET file_path = '.claude/knowledge/writing-styles/long-form.md'
+UPDATE brand_documents SET file_path = '.claude/writing-styles/long-form.md'
 WHERE category = 'writing-styles' AND slug = 'long-form' AND file_path IS NULL;
 
-UPDATE brand_documents SET file_path = '.claude/knowledge/writing-styles/short-form.md'
+UPDATE brand_documents SET file_path = '.claude/writing-styles/short-form.md'
 WHERE category = 'writing-styles' AND slug = 'short-form' AND file_path IS NULL;
 
-UPDATE brand_documents SET file_path = '.claude/knowledge/writing-styles/strategic.md'
+UPDATE brand_documents SET file_path = '.claude/writing-styles/strategic.md'
 WHERE category = 'writing-styles' AND slug = 'strategic' AND file_path IS NULL;
 
 -- Skills with SKILL.md paths

@@ -92,7 +92,7 @@ function processBrandDocs(): BrandDocument[] {
       docs.push({
         id: generateId(file),
         title: extractTitle(content),
-        path: `/.claude/knowledge/core/${file}`,
+        path: `/.claude/brand-identity/${file}`,
         content,
         keywords: extractKeywords(content),
       });
@@ -109,7 +109,7 @@ function processBrandDocs(): BrandDocument[] {
       docs.push({
         id: `writing_${generateId(file)}`,
         title: extractTitle(content),
-        path: `/.claude/knowledge/writing-styles/${file}`,
+        path: `/.claude/writing-styles/${file}`,
         content,
         keywords: extractKeywords(content),
       });

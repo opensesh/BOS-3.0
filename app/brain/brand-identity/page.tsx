@@ -17,9 +17,9 @@ import { SyncStatusIndicator } from '@/components/brain/SyncStatusIndicator';
 // Fallback data for when database is not seeded
 // Paths point to API route that serves .claude/ files
 const FALLBACK_DOCUMENTS = [
-  { id: 'brand-identity', slug: 'brand-identity', label: 'Brand Identity', file: 'OS_brand identity.md', path: '/api/claude/knowledge/core/OS_brand identity.md' },
-  { id: 'brand-messaging', slug: 'brand-messaging', label: 'Brand Messaging', file: 'OS_brand messaging.md', path: '/api/claude/knowledge/core/OS_brand messaging.md' },
-  { id: 'art-direction', slug: 'art-direction', label: 'Art Direction', file: 'OS_art direction.md', path: '/api/claude/knowledge/core/OS_art direction.md' },
+  { id: 'brand-identity', slug: 'brand-identity', label: 'Brand Identity', file: 'OS_brand identity.md', path: '/api/claude/brand-identity/OS_brand identity.md' },
+  { id: 'brand-messaging', slug: 'brand-messaging', label: 'Brand Messaging', file: 'OS_brand messaging.md', path: '/api/claude/brand-identity/OS_brand messaging.md' },
+  { id: 'art-direction', slug: 'art-direction', label: 'Art Direction', file: 'OS_art direction.md', path: '/api/claude/brand-identity/OS_art direction.md' },
 ];
 
 export default function BrandIdentityPage() {

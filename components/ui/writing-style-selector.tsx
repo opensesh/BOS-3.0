@@ -10,7 +10,7 @@ export interface WritingStyle {
 }
 
 // Writing styles available from brand brain
-// These correspond to files in .claude/knowledge/writing-styles/ (served via /api/claude/)
+// These correspond to files in .claude/writing-styles/ (served via /api/claude/)
 export const WRITING_STYLES: WritingStyle[] = [
   { id: 'normal', name: 'Normal', description: 'Default writing style' },
   { id: 'learning', name: 'Learning', description: 'Educational and explanatory' },
@@ -80,7 +80,7 @@ export async function loadWritingStyleContent(style: WritingStyle): Promise<stri
   }
 
   try {
-    const response = await fetch(`/api/claude/knowledge/writing-styles/${style.filename}`);
+    const response = await fetch(`/api/claude/writing-styles/${style.filename}`);
     if (response.ok) {
       return await response.text();
     }

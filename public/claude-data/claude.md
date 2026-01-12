@@ -72,7 +72,7 @@ Design agency that delivers world-class work at a fraction of typical agency cos
 ## 📚 Knowledge Base Structure
 
 ### Core Brand Documentation
-**Location:** `.claude/knowledge/core/`
+**Location:** `.claude/brand-identity/`
 
 All fundamental brand decisions live here (markdown + PDF versions):
 
@@ -84,7 +84,7 @@ All fundamental brand decisions live here (markdown + PDF versions):
 **→ Always reference these files when creating content or making brand decisions**
 
 ### Writing Styles
-**Location:** `.claude/knowledge/writing-styles/`
+**Location:** `.claude/writing-styles/`
 
 Context-specific voice guidelines:
 
@@ -172,7 +172,7 @@ Documentation for custom workflows and shortcuts.
 - Founder-driven personality
 - Real, relatable language
 
-**Always check:** `.claude/knowledge/core/OS_brand_messaging.md` for voice guidelines
+**Always check:** `.claude/brand-identity/OS_brand_messaging.md` for voice guidelines
 
 ### Content Approach
 **Keep it actionable and achievable.**
@@ -202,12 +202,12 @@ Help Karim create short-form and long-form content to share their templates and 
 - Generate content ideas aligned with brand pillars
 - Draft loose scripts for Instagram/YouTube
 - Suggest hooks and formats that match OPEN SESSION voice
-- Reference existing brand guidance in knowledge/core/
+- Reference existing brand guidance in brand-identity/
 - Iterate based on Karim's feedback
 
 **Always:**
-- Check `.claude/knowledge/writing-styles/short-form.md` or `long-form.md`
-- Reference `.claude/knowledge/core/OS_brand_messaging.md` for pillars
+- Check `.claude/writing-styles/short-form.md` or `long-form.md`
+- Reference `.claude/brand-identity/OS_brand_messaging.md` for pillars
 - Keep production requirements minimal (DIY-friendly)
 
 ### 2. Industry Intelligence
@@ -235,8 +235,8 @@ Track AI macroeconomic trends and microdesign tool impacts.
 Ensure all suggestions, content, and communication align with OPEN SESSION's brand identity.
 
 **Always:**
-- Reference `.claude/knowledge/core/` files before creating anything
-- Check voice guidelines in `.claude/knowledge/writing-styles/`
+- Reference `.claude/brand-identity/` files before creating anything
+- Check voice guidelines in `.claude/writing-styles/`
 - Stay true to the vintage-meets-modern aesthetic
 - Embody the warm, innovative, inclusive personality
 
@@ -363,7 +363,7 @@ When communicating as or for OPEN SESSION:
 
 Before creating any content or suggestions, ask:
 
-- [ ] Does this align with brand identity? (Check `knowledge/core/`)
+- [ ] Does this align with brand identity? (Check `brand-identity/`)
 - [ ] Is this DIY-friendly for Karim and Morgan?
 - [ ] Does the voice sound creative and personal, not corporate?
 - [ ] Have I explained my reasoning?

@@ -17,13 +17,19 @@ import { getSkillContent } from './actions';
 
 // Fallback skill files matching the .claude/skills directory
 const FALLBACK_SKILLS = [
-  { id: 'algorithmic-art', slug: 'algorithmic-art', label: 'Algorithmic Art', file: 'SKILL.md' },
-  { id: 'artifacts-builder', slug: 'artifacts-builder', label: 'Artifacts Builder', file: 'SKILL.md' },
+  { id: 'bos-code-quality', slug: 'bos-code-quality', label: 'BOS Code Quality', file: 'SKILL.md' },
   { id: 'brand-guidelines', slug: 'brand-guidelines', label: 'Brand Guidelines', file: 'SKILL.md' },
-  { id: 'canvas-design', slug: 'canvas-design', label: 'Canvas Design', file: 'SKILL.md' },
   { id: 'create-post-copy', slug: 'create-post-copy', label: 'Create Post', file: 'SKILL.md' },
+  { id: 'explanatory-output-style', slug: 'explanatory-output-style', label: 'Explanatory Output', file: 'SKILL.md' },
+  { id: 'frontend-design', slug: 'frontend-design', label: 'Frontend Design', file: 'SKILL.md' },
+  { id: 'learning-output-style', slug: 'learning-output-style', label: 'Learning Output', file: 'SKILL.md' },
   { id: 'mcp-builder', slug: 'mcp-builder', label: 'MCP Builder', file: 'SKILL.md' },
+  { id: 'security-guidance', slug: 'security-guidance', label: 'Security Guidance', file: 'SKILL.md' },
   { id: 'skill-creator', slug: 'skill-creator', label: 'Skill Creator', file: 'SKILL.md' },
+  { id: 'subagent-driven-development', slug: 'subagent-driven-development', label: 'Subagent Development', file: 'SKILL.md' },
+  { id: 'systematic-debugging', slug: 'systematic-debugging', label: 'Systematic Debugging', file: 'SKILL.md' },
+  { id: 'verification-before-completion', slug: 'verification-before-completion', label: 'Verification', file: 'SKILL.md' },
+  { id: 'writing-plans', slug: 'writing-plans', label: 'Writing Plans', file: 'SKILL.md' },
 ];
 
 function SkillsContent() {

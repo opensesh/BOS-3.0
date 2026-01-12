@@ -215,6 +215,52 @@ export const ALL_TOOLS: ToolDefinition[] = [
   brandKnowledgeTool,
 ];
 
+// ============================================
+// SERVER TOOLS (Anthropic-executed)
+// ============================================
+
+/**
+ * Server tools are tools that Anthropic executes on their servers.
+ * They have a different format than client tools.
+ * These require beta headers to be passed to the API.
+ */
+
+export interface ServerToolWebFetch {
+  type: 'web_fetch_20250910';
+  name: 'web_fetch';
+  max_uses?: number;
+  allowed_domains?: string[];
+  blocked_domains?: string[];
+  citations?: { enabled: boolean };
+  max_content_tokens?: number;
+}
+
+/**
+ * Web Fetch Server Tool
+ * Fetches and analyzes full web page content
+ * Requires beta header: anthropic-beta: web-fetch-2025-09-10
+ */
+export const webFetchServerTool: ServerToolWebFetch = {
+  type: 'web_fetch_20250910',
+  name: 'web_fetch',
+  max_uses: 5, // Limit per request to control token usage
+  citations: { enabled: true },
+};
+
+/**
+ * Get server tools that require beta headers
+ * Returns the tools and the required beta headers
+ */
+export function getServerTools(): {
+  tools: ServerToolWebFetch[];
+  betaHeaders: string[];
+} {
+  return {
+    tools: [webFetchServerTool],
+    betaHeaders: ['web-fetch-2025-09-10'],
+  };
+}
+
 /**
  * Get tools formatted for Anthropic API
  */

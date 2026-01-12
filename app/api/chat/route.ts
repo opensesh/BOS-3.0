@@ -15,7 +15,7 @@ import { buildBrandSystemPrompt, shouldIncludeFullDocs, BRAND_SOURCES, type Page
 import { getSkillIdForQuickAction } from '@/lib/quick-actions/skill-loader';
 import { loadSkillContent } from '@/lib/quick-actions/skill-loader-server';
 import { retrieveBrandVoice, formatVoiceForSystemPrompt, type VoiceRetrievalOptions } from '@/lib/quick-actions/brand-voice';
-import { getToolsForAnthropic } from '@/lib/ai/tools';
+import { getToolsForAnthropic, getServerTools } from '@/lib/ai/tools';
 import { executeTool } from '@/lib/ai/tools/executors';
 import { getAvailableMcpTools, mcpToolsToAnthropic } from '@/lib/ai/tools/mcp-executor';
 import { readFile } from 'fs/promises';
@@ -270,21 +270,30 @@ async function streamWithAnthropicNative(
   const modelId = getAnthropicModelId(selectedModel);
   const sse = createSSEEncoder();
   
-  // Prepare tools if enabled (including MCP tools)
-  let tools: Anthropic.Messages.Tool[] | undefined;
+  // Prepare tools if enabled (including MCP tools and server tools)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let tools: any[] | undefined;
+  let betaHeaders: string[] = [];
+
   if (options.enableTools && supportsToolUse(selectedModel)) {
-    // Get built-in tools
+    // Get built-in tools (client-side execution)
     const builtInTools = getToolsForAnthropic();
-    
+
+    // Get server tools (Anthropic-executed, require beta headers)
+    const serverToolsConfig = getServerTools();
+    betaHeaders = serverToolsConfig.betaHeaders;
+
     // Get MCP tools from active connections
     const mcpTools = await getAvailableMcpTools();
     const mcpToolsFormatted = mcpToolsToAnthropic(mcpTools) as Anthropic.Messages.Tool[];
-    
-    // Merge all tools
-    tools = [...builtInTools, ...mcpToolsFormatted];
-    
-    if (mcpTools.length > 0) {
-      console.log(`[Tools] Loaded ${builtInTools.length} built-in tools + ${mcpTools.length} MCP tools`);
+
+    // Merge all tools: built-in + server tools + MCP tools
+    // Server tools have a different format (type instead of input_schema)
+    tools = [...builtInTools, ...serverToolsConfig.tools, ...mcpToolsFormatted];
+
+    console.log(`[Tools] Loaded ${builtInTools.length} built-in + ${serverToolsConfig.tools.length} server + ${mcpTools.length} MCP tools`);
+    if (betaHeaders.length > 0) {
+      console.log(`[Tools] Beta headers: ${betaHeaders.join(', ')}`);
     }
   }
   
@@ -317,14 +326,22 @@ async function streamWithAnthropicNative(
         }
 
         // Create stream with native Anthropic SDK
-        const stream = await client.messages.stream({
+        // Include beta headers for server tools (e.g., web_fetch)
+        const streamOptions: Parameters<typeof client.messages.stream>[0] = {
           model: modelId,
           max_tokens: 16000,
           system: systemPrompt,
           messages: anthropicMessages,
           ...(tools ? { tools } : {}),
           ...(thinkingConfig ? { thinking: thinkingConfig } : {}),
-        });
+        };
+
+        // Add beta headers if server tools are enabled
+        const requestOptions = betaHeaders.length > 0
+          ? { headers: { 'anthropic-beta': betaHeaders.join(',') } }
+          : undefined;
+
+        const stream = await client.messages.stream(streamOptions, requestOptions);
 
         let currentToolUse: { id: string; name: string; input: string } | null = null;
         let pendingToolCalls: Array<{ id: string; name: string; input: Record<string, unknown> }> = [];
@@ -366,15 +383,46 @@ async function streamWithAnthropicNative(
           }
         });
 
-        // Handle content blocks (tool use start)
+        // Handle content blocks (tool use start and server tool results)
         stream.on('contentBlock', (block) => {
           try {
             if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
               currentToolUse = { id: block.id, name: block.name, input: '' };
-              controller.enqueue(sse.encode({ 
-                type: 'tool_use', 
+              controller.enqueue(sse.encode({
+                type: 'tool_use',
                 toolName: block.name,
-                content: `Using tool: ${block.name}` 
+                content: `Using tool: ${block.name}`
+              }));
+            }
+            // Handle server tool results (e.g., web_fetch executed by Anthropic)
+            // These come back directly in the stream without us executing them
+            // Note: Using string comparison as SDK types may not include all server tool result types
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const blockType = (block as any).type as string;
+            if (blockType === 'server_tool_result' || blockType === 'web_fetch_tool_result' || blockType === 'web_search_tool_result') {
+              console.log(`[Server Tool] Received ${blockType} result`);
+              // Extract citations if available
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const serverResult = block as any;
+              if (serverResult.citations && Array.isArray(serverResult.citations)) {
+                for (const citation of serverResult.citations) {
+                  if (citation.url) {
+                    collectedSources.push({
+                      id: `server-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                      name: citation.title || citation.url,
+                      url: citation.url,
+                      title: citation.title,
+                      snippet: citation.snippet,
+                      type: 'external',
+                    });
+                  }
+                }
+              }
+              // Notify client that server tool completed
+              controller.enqueue(sse.encode({
+                type: 'tool_result',
+                toolName: serverResult.tool_name || 'web_fetch',
+                content: 'Server tool completed'
               }));
             }
           } catch (err) {
@@ -390,16 +438,89 @@ async function streamWithAnthropicNative(
           }
         });
 
-        // Process complete messages for tool calls
+        // Server tools that Anthropic executes automatically - don't try to execute these manually
+        const SERVER_TOOL_NAMES = ['web_fetch'];
+
+        // Process complete messages for tool calls and server tool results
         stream.on('message', (message) => {
           try {
             for (const block of message.content || []) {
               if (block.type === 'tool_use' && 'id' in block && 'name' in block) {
+                // For server tools like web_fetch, capture the URL as a source
+                if (SERVER_TOOL_NAMES.includes(block.name)) {
+                  console.log(`[Server Tool] Skipping execution of ${block.name} - executed by Anthropic`);
+
+                  // Extract URL from web_fetch input and add as a primary source
+                  if (block.name === 'web_fetch') {
+                    const toolInput = (block as { input?: Record<string, unknown> }).input;
+                    const fetchUrl = toolInput?.url as string | undefined;
+                    if (fetchUrl) {
+                      // Extract domain and title from URL
+                      let domain = '';
+                      let title = '';
+                      try {
+                        const urlObj = new URL(fetchUrl);
+                        domain = urlObj.hostname.replace('www.', '');
+                        // Generate title from path or use domain
+                        const pathParts = urlObj.pathname.split('/').filter(Boolean);
+                        title = pathParts.length > 0
+                          ? pathParts[pathParts.length - 1]
+                              .replace(/[-_]/g, ' ')
+                              .replace(/\.(html?|php|aspx?)$/i, '')
+                              .split(' ')
+                              .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                              .join(' ')
+                          : domain;
+                      } catch {
+                        domain = fetchUrl;
+                        title = fetchUrl;
+                      }
+
+                      const sourceData: SourceData = {
+                        id: `webfetch-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                        name: domain,
+                        url: fetchUrl,
+                        title: title || domain,
+                        favicon: `https://www.google.com/s2/favicons?domain=${domain}&sz=32`,
+                        type: 'external',
+                      };
+
+                      collectedSources.push(sourceData);
+                      console.log(`[Server Tool] Added web_fetch URL to sources: ${fetchUrl}`);
+
+                      // Stream the source immediately so it appears in Links
+                      controller.enqueue(sse.encode({ type: 'sources', sources: [sourceData] }));
+                    }
+                  }
+                  continue;
+                }
                 pendingToolCalls.push({
                   id: block.id,
                   name: block.name,
                   input: (block as { input?: Record<string, unknown> }).input || {},
                 });
+              }
+              // Handle server tool results (e.g., web_fetch) in final message
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const anyBlock = block as any;
+              const msgBlockType = anyBlock.type as string;
+              if (msgBlockType === 'server_tool_result' || msgBlockType === 'web_fetch_tool_result' || msgBlockType === 'web_search_tool_result') {
+                console.log(`[Server Tool] Processing ${msgBlockType} from final message`);
+                // Extract citations from server tool result
+                if (anyBlock.citations && Array.isArray(anyBlock.citations)) {
+                  for (const citation of anyBlock.citations) {
+                    if (citation.url) {
+                      collectedSources.push({
+                        id: `server-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                        name: citation.title || citation.url,
+                        url: citation.url,
+                        title: citation.title,
+                        snippet: citation.snippet,
+                        type: 'external',
+                      });
+                    }
+                  }
+                }
               }
             }
           } catch (err) {

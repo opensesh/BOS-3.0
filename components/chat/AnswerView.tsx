@@ -19,35 +19,36 @@ function renderInlineMarkdown(text: string): React.ReactNode {
   // Split by bold markers first (**text**)
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  
+
   // Regex to match **bold** text (non-greedy, no newlines)
   const boldRegex = /\*\*([^*\n]+)\*\*/g;
   let match;
-  
+
   while ((match = boldRegex.exec(text)) !== null) {
     // Add text before the match
     if (match.index > lastIndex) {
       parts.push(text.slice(lastIndex, match.index));
     }
-    // Add the bold text
+    // Add the bold text with improved styling
+    // Using font-bold for stronger emphasis and full opacity for contrast
     parts.push(
-      <strong key={`bold-${match.index}`} className="font-semibold text-[var(--fg-primary)]">
+      <strong key={`bold-${match.index}`} className="font-bold text-[var(--fg-primary)]">
         {match[1]}
       </strong>
     );
     lastIndex = match.index + match[0].length;
   }
-  
+
   // Add remaining text
   if (lastIndex < text.length) {
     parts.push(text.slice(lastIndex));
   }
-  
+
   // If no formatting found, return original text
   if (parts.length === 0) {
     return text;
   }
-  
+
   return <>{parts}</>;
 }
 
@@ -150,17 +151,35 @@ export function AnswerView({
         {sections.map((section, idx) => {
           if (section.type === 'heading') {
             const level = section.level || 2;
-            const className = `font-bold text-[var(--fg-primary)] ${
-              level === 1 ? 'text-[18px] mt-5 mb-1' : ''
-            } ${
-              level === 2 ? 'text-[17px] mt-4 mb-1' : ''
-            } ${
-              level === 3 ? 'text-[16px] mt-3 mb-0.5' : ''
-            }`.trim();
-            
-            if (level === 1) return <h1 key={idx} className={className}>{renderInlineMarkdown(section.content)}</h1>;
-            if (level === 2) return <h2 key={idx} className={className}>{renderInlineMarkdown(section.content)}</h2>;
-            return <h3 key={idx} className={className}>{renderInlineMarkdown(section.content)}</h3>;
+            // Improved heading styles with subtle left border accent
+            // Uses brand color for visual hierarchy without being overwhelming
+            const baseStyles = 'font-bold text-[var(--fg-primary)]';
+            const accentStyles = 'pl-3 border-l-2 border-[var(--fg-brand-primary)]/40';
+
+            // H1: Largest, most prominent - with accent border
+            if (level === 1) {
+              return (
+                <h1 key={idx} className={`${baseStyles} ${accentStyles} text-[18px] mt-6 mb-2`}>
+                  {renderInlineMarkdown(section.content)}
+                </h1>
+              );
+            }
+
+            // H2: Secondary heading - with accent border
+            if (level === 2) {
+              return (
+                <h2 key={idx} className={`${baseStyles} ${accentStyles} text-[17px] mt-5 mb-1.5`}>
+                  {renderInlineMarkdown(section.content)}
+                </h2>
+              );
+            }
+
+            // H3: Tertiary heading - no border, just bold styling
+            return (
+              <h3 key={idx} className={`${baseStyles} text-[16px] mt-4 mb-1 text-[var(--fg-secondary)]`}>
+                {renderInlineMarkdown(section.content)}
+              </h3>
+            );
           }
 
           if (section.type === 'list' && section.items) {
@@ -215,9 +234,20 @@ export function parseContentToSections(
 ): ContentSection[] {
   // Strip out any raw <thinking>...</thinking> tags that the model might output
   // This can happen when extended thinking is off but the model still outputs thinking-style text
-  const cleanedContent = content
+  let cleanedContent = content
     .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
     .replace(/<thinking>[\s\S]*/gi, '') // Handle unclosed tags (still streaming)
+    .trim();
+
+  // IMPORTANT: Ensure markdown heading markers are on their own lines
+  // Claude sometimes outputs headings inline like "...text.## Heading" without newlines
+  // This preprocessing ensures proper heading detection by adding newlines before # markers
+  cleanedContent = cleanedContent
+    // Add newline before heading markers that aren't already at line start
+    // Pattern: any char (not newline) followed by 1-3 # and then space or capital letter
+    .replace(/([^\n])(#{1,3})(\s*)([A-Z])/g, '$1\n$2 $4')
+    // Normalize heading format: ensure space after # markers
+    .replace(/^(#{1,3})([A-Z])/gm, '$1 $2')
     .trim();
   
   const lines = cleanedContent.split('\n');

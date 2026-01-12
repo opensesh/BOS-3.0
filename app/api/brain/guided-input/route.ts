@@ -46,6 +46,22 @@ const INTERVIEW_QUESTIONS: Record<BrandDocumentCategory, string[]> = {
     "Are there any limitations or constraints to be aware of?",
     "Can you provide an example of this skill in action?",
   ],
+  'commands': [
+    "What is the command name (e.g., /my-command)?",
+    "What does this command do?",
+    "What inputs or arguments does it accept?",
+    "What output does it produce?",
+  ],
+  'data': [
+    "What type of data is this (e.g., reference list, lookup table)?",
+    "What is this data used for?",
+    "How should this data be formatted?",
+  ],
+  'config': [
+    "What is this configuration for?",
+    "What settings or options does it define?",
+    "Are there any dependencies or requirements?",
+  ],
 };
 
 // ============================================
@@ -96,6 +112,40 @@ The document should include:
 - Example usage scenario
 
 Format as clear, technical markdown suitable for AI instruction. Be precise and unambiguous.`,
+
+  'commands': `You are a technical writer helping document slash commands.
+Based on the user's answers, generate clear command documentation in markdown format.
+
+The document should include:
+- Command name and syntax
+- Description of what it does
+- Arguments and options
+- Example usage
+- Expected output
+
+Format as clear, technical markdown suitable for reference.`,
+
+  'data': `You are a technical writer helping document reference data.
+Based on the user's answers, generate well-structured data documentation in markdown format.
+
+The document should include:
+- Data type and purpose
+- Format and structure
+- Usage guidelines
+- Example entries
+
+Format as clear markdown with appropriate tables or lists.`,
+
+  'config': `You are a technical writer helping document configuration files.
+Based on the user's answers, generate clear configuration documentation in markdown format.
+
+The document should include:
+- Configuration purpose
+- Available settings
+- Default values
+- Dependencies and requirements
+
+Format as clear, technical markdown suitable for reference.`,
 };
 
 // ============================================

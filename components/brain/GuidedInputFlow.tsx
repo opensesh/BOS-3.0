@@ -124,6 +124,69 @@ const INTERVIEW_QUESTIONS: Record<BrandDocumentCategory, InterviewQuestion[]> = 
       multiline: true,
     },
   ],
+  'commands': [
+    {
+      id: 'name',
+      question: "What is the command name?",
+      placeholder: "e.g., /news-update, /content-ideas...",
+    },
+    {
+      id: 'description',
+      question: "What does this command do?",
+      placeholder: "Describe the command's purpose...",
+      multiline: true,
+    },
+    {
+      id: 'args',
+      question: "What arguments or inputs does it accept?",
+      placeholder: "List any required or optional parameters...",
+      multiline: true,
+    },
+    {
+      id: 'output',
+      question: "What output does it produce?",
+      placeholder: "Describe the expected results...",
+      multiline: true,
+    },
+  ],
+  'data': [
+    {
+      id: 'name',
+      question: "What is this data called?",
+      placeholder: "e.g., News Sources, Partner List...",
+    },
+    {
+      id: 'purpose',
+      question: "What is this data used for?",
+      placeholder: "Describe how this data is used...",
+      multiline: true,
+    },
+    {
+      id: 'format',
+      question: "How should this data be formatted?",
+      placeholder: "Describe the structure or format...",
+      multiline: true,
+    },
+  ],
+  'config': [
+    {
+      id: 'name',
+      question: "What is this configuration for?",
+      placeholder: "e.g., MCP Instructions, System Settings...",
+    },
+    {
+      id: 'settings',
+      question: "What settings or options does it define?",
+      placeholder: "List the configuration options...",
+      multiline: true,
+    },
+    {
+      id: 'notes',
+      question: "Are there any dependencies or requirements?",
+      placeholder: "Any additional notes...",
+      multiline: true,
+    },
+  ],
 };
 
 export function GuidedInputFlow({

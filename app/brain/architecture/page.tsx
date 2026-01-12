@@ -7,16 +7,24 @@ import { MarkdownCodeViewer } from '@/components/brain/MarkdownCodeViewer';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { PageTransition, MotionItem } from '@/lib/motion';
 import { Settings } from 'lucide-react';
+import { SyncStatusIndicator } from '@/components/brain/SyncStatusIndicator';
 
 export default function ArchitecturePage() {
   const [content, setContent] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/claude-data/system/architecture.md')
-      .then(res => res.text())
+    // Fetch from API route that serves .claude/ files
+    fetch('/api/claude/system/architecture.md')
+      .then(res => {
+        if (!res.ok) throw new Error('File not found');
+        return res.text();
+      })
       .then(text => setContent(text))
-      .catch(err => console.error('Failed to load architecture:', err));
+      .catch(err => {
+        console.error('Failed to load architecture:', err);
+        setContent('# Architecture\n\nArchitecture documentation not yet configured. Create `.claude/system/architecture.md` to display content here.');
+      });
   }, []);
 
   return (
@@ -36,13 +44,16 @@ export default function ArchitecturePage() {
                   Automatic
                 </span>
               </div>
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
-                title="Brain Settings"
-              >
-                <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
-              </button>
+              <div className="flex items-center gap-2">
+                <SyncStatusIndicator compact />
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                  title="Brain Settings"
+                >
+                  <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                </button>
+              </div>
             </div>
             <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               This website is structured to serve both as a landing page for humans and as a

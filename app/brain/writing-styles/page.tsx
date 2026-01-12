@@ -13,14 +13,16 @@ import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
 import { useBrainDocuments } from '@/hooks/useBrainDocuments';
 import { PageTransition, MotionItem } from '@/lib/motion';
 import { Settings, Plus, Loader2 } from 'lucide-react';
+import { SyncStatusIndicator } from '@/components/brain/SyncStatusIndicator';
 
 // Fallback data for when database is not seeded
+// Paths point to API route that serves .claude/ files
 const FALLBACK_DOCUMENTS = [
-  { id: 'blog', slug: 'blog', label: 'Blog', file: 'blog.md', path: '/claude-data/knowledge/writing-styles/blog.md' },
-  { id: 'creative', slug: 'creative', label: 'Creative', file: 'creative.md', path: '/claude-data/knowledge/writing-styles/creative.md' },
-  { id: 'long-form', slug: 'long-form', label: 'Long Form', file: 'long-form.md', path: '/claude-data/knowledge/writing-styles/long-form.md' },
-  { id: 'short-form', slug: 'short-form', label: 'Short Form', file: 'short-form.md', path: '/claude-data/knowledge/writing-styles/short-form.md' },
-  { id: 'strategic', slug: 'strategic', label: 'Strategic', file: 'strategic.md', path: '/claude-data/knowledge/writing-styles/strategic.md' },
+  { id: 'blog', slug: 'blog', label: 'Blog', file: 'blog.md', path: '/api/claude/knowledge/writing-styles/blog.md' },
+  { id: 'creative', slug: 'creative', label: 'Creative', file: 'creative.md', path: '/api/claude/knowledge/writing-styles/creative.md' },
+  { id: 'long-form', slug: 'long-form', label: 'Long Form', file: 'long-form.md', path: '/api/claude/knowledge/writing-styles/long-form.md' },
+  { id: 'short-form', slug: 'short-form', label: 'Short Form', file: 'short-form.md', path: '/api/claude/knowledge/writing-styles/short-form.md' },
+  { id: 'strategic', slug: 'strategic', label: 'Strategic', file: 'strategic.md', path: '/api/claude/knowledge/writing-styles/strategic.md' },
 ];
 
 function WritingStylesContent() {
@@ -137,6 +139,7 @@ function WritingStylesContent() {
                 Writing Styles
               </h1>
               <div className="flex items-center gap-2">
+                {!isUsingFallback && <SyncStatusIndicator compact />}
                 {!isUsingFallback && (
                   <motion.button
                     onClick={() => setIsAddModalOpen(true)}

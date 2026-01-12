@@ -27,12 +27,18 @@ const CATEGORY_LABELS: Record<BrandDocumentCategory, string> = {
   'brand-identity': 'Brand Identity',
   'writing-styles': 'Writing Style',
   'skills': 'Skill',
+  'commands': 'Command',
+  'data': 'Data',
+  'config': 'Config',
 };
 
 const CATEGORY_DESCRIPTIONS: Record<BrandDocumentCategory, string> = {
   'brand-identity': 'Add brand guidelines, values, or identity documentation',
   'writing-styles': 'Add voice and tone guidelines for different content types',
   'skills': 'Add AI capability definitions and instructions',
+  'commands': 'Add slash command definitions',
+  'data': 'Add reference data and lookup tables',
+  'config': 'Add configuration settings',
 };
 
 const PASTE_PLACEHOLDERS: Record<BrandDocumentCategory, string> = {
@@ -82,6 +88,40 @@ Expected results or artifacts...
 
 ## Example
 A practical demonstration of this skill in action...`,
+  'commands': `# /command-name
+
+## Description
+What this command does...
+
+## Arguments
+- arg1: Description
+- arg2: Description
+
+## Example
+\`/command-name arg1 arg2\``,
+  'data': `# Data Name
+
+## Purpose
+What this data is used for...
+
+## Format
+| Field | Type | Description |
+|-------|------|-------------|
+| field1 | string | Description |
+
+## Entries
+...`,
+  'config': `# Configuration Name
+
+## Purpose
+What this configuration controls...
+
+## Settings
+- setting1: value
+- setting2: value
+
+## Notes
+Any additional information...`,
 };
 
 export function AddDocumentModal({

@@ -19,52 +19,53 @@ import {
 import type { BrandDocumentCategory } from '@/lib/supabase/types';
 
 // File mappings for each category
+// All files are now read from .claude/ directory (the single source of truth for local files)
 const FILE_MAPPINGS: Array<{
   category: BrandDocumentCategory;
   slug: string;
   filePath: string;
 }> = [
-  // Brand Identity
+  // Brand Identity (from .claude/knowledge/core)
   {
     category: 'brand-identity',
     slug: 'brand-identity',
-    filePath: 'public/claude-data/knowledge/core/OS_brand identity.md',
+    filePath: '.claude/knowledge/core/OS_brand identity.md',
   },
   {
     category: 'brand-identity',
     slug: 'brand-messaging',
-    filePath: 'public/claude-data/knowledge/core/OS_brand messaging.md',
+    filePath: '.claude/knowledge/core/OS_brand messaging.md',
   },
   {
     category: 'brand-identity',
     slug: 'art-direction',
-    filePath: 'public/claude-data/knowledge/core/OS_art direction.md',
+    filePath: '.claude/knowledge/core/OS_art direction.md',
   },
-  // Writing Styles
+  // Writing Styles (from .claude/knowledge/writing-styles)
   {
     category: 'writing-styles',
     slug: 'blog',
-    filePath: 'public/claude-data/knowledge/writing-styles/blog.md',
+    filePath: '.claude/knowledge/writing-styles/blog.md',
   },
   {
     category: 'writing-styles',
     slug: 'creative',
-    filePath: 'public/claude-data/knowledge/writing-styles/creative.md',
+    filePath: '.claude/knowledge/writing-styles/creative.md',
   },
   {
     category: 'writing-styles',
     slug: 'long-form',
-    filePath: 'public/claude-data/knowledge/writing-styles/long-form.md',
+    filePath: '.claude/knowledge/writing-styles/long-form.md',
   },
   {
     category: 'writing-styles',
     slug: 'short-form',
-    filePath: 'public/claude-data/knowledge/writing-styles/short-form.md',
+    filePath: '.claude/knowledge/writing-styles/short-form.md',
   },
   {
     category: 'writing-styles',
     slug: 'strategic',
-    filePath: 'public/claude-data/knowledge/writing-styles/strategic.md',
+    filePath: '.claude/knowledge/writing-styles/strategic.md',
   },
   // Skills (from .claude/skills directory)
   {
@@ -96,6 +97,11 @@ const FILE_MAPPINGS: Array<{
     category: 'skills',
     slug: 'skill-creator',
     filePath: '.claude/skills/skill-creator/SKILL.md',
+  },
+  {
+    category: 'skills',
+    slug: 'create-post-copy',
+    filePath: '.claude/skills/create-post-copy/SKILL.md',
   },
 ];
 

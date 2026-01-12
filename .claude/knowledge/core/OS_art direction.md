@@ -178,7 +178,7 @@ Our visual language reflects the duality of isolation and acceleration that crea
 ### Core Aesthetic Threads
 All territories share these foundational elements:
 - **Dramatic lighting** that creates mood
-- **Authentic moments** over staged scenarios  
+- **Authentic moments** over staged scenarios
 - **Natural textures** as grounding elements
 - **World-building** mindset for immersion
 
@@ -199,7 +199,7 @@ All territories share these foundational elements:
 ## Texture System
 
 ### ASCII Textures
-**Role**: Core visual element with strong presence  
+**Role**: Core visual element with strong presence
 **Application**: Motion effects, primary design element
 
 | Property | Specification |

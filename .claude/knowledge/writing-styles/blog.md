@@ -8,49 +8,6 @@
 **Pronouns**: Always "we" (never "I")
 **Default Platform**: Ask if not specified
 
-## Content Ideas Format for Blog
-
-### What Blog Article Ideas Should Be
-**THOUGHT LEADERSHIP & PERSPECTIVE PIECES** - These connect to both short-form and long-form themes, but with editorial depth:
-
-**Article Idea Examples:**
-- "Our perspective: Why spec is the new code (and what that means for designers)"
-- "The realistic AI toolkit for designers in 2025: What actually works"
-- "Where we see design heading: Three trends that matter more than the hype"
-- "MCP changed how we work: A detailed look at our new workflow"
-- "Why most designers are using AI wrong (and how to fix it)"
-
-### Article Types & Focus
-
-**1. Future Perspectives (30%)**
-- "Where is design heading?"
-- Trend analysis with our take
-- Long-term implications of current tools
-- Provocative but grounded predictions
-
-**2. Tool & Framework Analysis (30%)**
-- "What's realistic for designers to adopt?"
-- Honest reviews and assessments
-- "Here's what we actually use daily"
-- Tool comparisons with nuance
-
-**3. Philosophy & Frameworks (25%)**
-- "Spec is the new code" deep dive
-- Design system philosophies explained
-- Why certain approaches matter
-- Connecting theory to practice
-
-**4. Case Studies & Our Approach (15%)**
-- How we solved specific challenges
-- Client transformation stories
-- Behind-the-scenes of our process
-- Lessons learned from real projects
-
-### Key Differentiators from Other Formats
-- **Short-form**: Quick post idea → **Blog**: Why it matters (analysis)
-- **Long-form**: How to do it (tutorial) → **Blog**: Should you do it? (perspective)
-- **Both**: Tactical execution → **Blog**: Strategic thinking
-
 ## Platform Strategy
 
 ### Substack (2-5 min reads)
@@ -61,7 +18,7 @@
 - **Best for**: AI tools launches, design system experiments, workflow tests
 
 ### Medium (4-10 min reads)
-- **Purpose**: Thought leadership, frameworks, industry analysis  
+- **Purpose**: Thought leadership, frameworks, industry analysis
 - **Style**: Authoritative but accessible
 - **Content**: "How MCP Will Transform Design Systems (With Examples)"
 - **Structure**: Problem → Framework → Case studies → Future implications → CTA
@@ -81,7 +38,7 @@
 
 ### Body Structure
 - **Headings**: Clear, crisp, simple (use multiple subheadings)
-- **Paragraphs**: 
+- **Paragraphs**:
   - Short for familiar concepts (ChatGPT, Figma)
   - Longer for new concepts (MCP, API architecture)
 - **Technical Details**: Include to establish authority, but explain simply
@@ -163,11 +120,11 @@ Always include:
 ## Example Opening (Substack)
 
 ```
-Yesterday, Anthropic dropped MCP. 
+Yesterday, Anthropic dropped MCP.
 
 We immediately canceled our meetings and spent 6 hours building with it.
 
-Here's what every designer needs to know: MCP isn't just another tool—it's the 
+Here's what every designer needs to know: MCP isn't just another tool—it's the
 bridge between your Figma files and production code that we've been waiting for.
 ```
 
@@ -176,11 +133,11 @@ bridge between your Figma files and production code that we've been waiting for.
 ```
 The Problem with Modern Design Systems
 
-Last week, a creative director at a $10M startup told us something we hear 
+Last week, a creative director at a $10M startup told us something we hear
 constantly: "My team spends 60% of their time on updates, not innovation."
 
-We've been there. At Google, we watched teams struggle with the same challenge. 
-But here's what changed everything: treating design systems as living, 
+We've been there. At Google, we watched teams struggle with the same challenge.
+But here's what changed everything: treating design systems as living,
 AI-powered organisms rather than static libraries.
 ```
 

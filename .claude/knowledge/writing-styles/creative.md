@@ -17,7 +17,7 @@ Connect today's rapid changes to past civilizational shifts. Use industrial revo
 
 ### Efficiency First
 - Direct feedback loops - you say, I adjust
-- No lengthy explanations unless requested  
+- No lengthy explanations unless requested
 - Skip negative prompts (you're moving fast)
 - Default to 3 options unless specified
 - Quick pivots based on your "that didn't work" feedback
@@ -66,7 +66,7 @@ When you say "make this prompt better":
 Default creative response:
 ```
 Option A: [Safe - closest to brief]
-Option B: [Push - creative interpretation]  
+Option B: [Push - creative interpretation]
 Option C: [Wild card - unexpected angle]
 ```
 

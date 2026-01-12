@@ -23,7 +23,7 @@ We're creative technologists who make complex ideas accessible. We balance profe
 ### Instagram/Threads
 
 **Structure:**
-[Hook: 1-5 words] 
+[Hook: 1-5 words]
 
 [Main content: 3-5 lines expanding on the visual]
 
@@ -37,12 +37,12 @@ We're creative technologists who make complex ideas accessible. We balance profe
 **Example:**
 Reality bends here 🌊
 
-We've been exploring how AI interprets architectural negative space. 
-Each iteration reveals something unexpected about how machines 
-understand the void between structures. What patterns do you see 
+We've been exploring how AI interprets architectural negative space.
+Each iteration reveals something unexpected about how machines
+understand the void between structures. What patterns do you see
 emerging in your creative AI experiments?
 
-#AIart #designsystems #creativecoding #artificialintelligence #designthinking 
+#AIart #designsystems #creativecoding #artificialintelligence #designthinking
 #atomicdesign #brandidentity #artdirection #creativeAI #designinnovation
 #UXdesign #creativedirection #digitalart #generativeart #designprocess
 #futureofdesign #AItools #designcommunity #creativetech #designinspiration
@@ -68,14 +68,14 @@ emerging in your creative AI experiments?
 **Example:**
 The design system revolution isn't coming—it's already here.
 
-We're witnessing a fundamental shift in how creative teams approach AI integration. 
-Instead of treating AI as a replacement tool, forward-thinking designers are building 
-atomic systems that amplify human creativity. The results? 3x faster iteration cycles 
+We're witnessing a fundamental shift in how creative teams approach AI integration.
+Instead of treating AI as a replacement tool, forward-thinking designers are building
+atomic systems that amplify human creativity. The results? 3x faster iteration cycles
 and infinitely more experimental freedom.
 
-Recent studies show that designers using AI-integrated design systems report 
-67% improvement in creative exploration time (Design Week, 2024). But the real 
-magic happens when we stop thinking about AI as a tool and start seeing it as 
+Recent studies show that designers using AI-integrated design systems report
+67% improvement in creative exploration time (Design Week, 2024). But the real
+magic happens when we stop thinking about AI as a tool and start seeing it as
 a creative collaborator.
 
 → Subscribe to our newsletter for weekly insights on AI-powered design systems.
@@ -95,46 +95,7 @@ What's your take on AI's role in your creative process?
 **Example:**
 Exploring fluid typography in motion. Part of our ongoing series on responsive brand systems.
 
-## Content Ideas Format
-
-### What Short-Form Ideas Should Be
-**NOT news summaries** - these are SPECIFIC POST IDEAS with clear formats:
-
-**Post Format Examples:**
-- "Create a carousel about how design systems are changing"
-- "Create an Instagram reel showing how Cursor works with Figma"
-- "Make a 3-slide comparison of AI tools for designers"
-- "Film a quick tutorial on using MCP with your design workflow"
-- "Create a visual breakdown of the spec-as-code philosophy"
-
-### Content Mix (Not Just Tools!)
-
-**1. Tools & Workflows (40%)**
-- Practical demonstrations
-- Tool comparisons
-- Integration tutorials
-- "How Cursor + Figma changes everything"
-
-**2. Frameworks & Concepts (30%)**
-- Design system philosophies
-- "Spec is the new code" explained visually
-- Atomic design for AI era
-- Component-driven thinking
-
-**3. Future & Abstract Ideas (30%)**
-- "What is the future of design?"
-- "Does everything live in the cloud?"
-- "When AI designs better than humans"
-- Provocative questions that spark discussion
-
-### Target Audience
-**Designers who want to:**
-- Understand what's possible with new tools
-- Stay ahead of trends
-- Learn practical techniques quickly
-- See frameworks in action
-
-### Content Topics & Themes
+## Content Topics & Themes
 
 ### Core Focus Areas
 1. **Design Systems** - Making modular design accessible
@@ -178,7 +139,7 @@ Exploring fluid typography in motion. Part of our ongoing series on responsive b
 
 ### Do's
 ✓ Make readers feel they're gaining an edge
-✓ Balance expertise with approachability  
+✓ Balance expertise with approachability
 ✓ Ask thought-provoking questions
 ✓ Connect visuals to insights
 ✓ Celebrate creative exploration
@@ -202,8 +163,8 @@ Exploring fluid typography in motion. Part of our ongoing series on responsive b
 - **osmosupply** - Design system excellence
 
 ### Our Differentiator
-We bridge the gap between technical innovation and creative expression, making 
-AI and design systems approachable for all skill levels while pushing boundaries 
+We bridge the gap between technical innovation and creative expression, making
+AI and design systems approachable for all skill levels while pushing boundaries
 for experts.
 
 ## Response Protocol

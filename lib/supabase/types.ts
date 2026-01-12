@@ -671,7 +671,18 @@ export function dbBrandToApp(db: DbBrand): Brand {
 // BRAND DOCUMENTS (Brain Knowledge Management)
 // ============================================
 
-export type BrandDocumentCategory = 'brand-identity' | 'writing-styles' | 'skills';
+export type BrandDocumentCategory =
+  | 'brand-identity'
+  | 'writing-styles'
+  | 'skills'
+  | 'commands'  // Slash commands like /news-update, /content-ideas
+  | 'data'      // Data files like news-sources.md
+  | 'config';   // Config files like CLAUDE.md, mcp-instructions.md
+
+// Sync-related types
+export type SyncStatus = 'synced' | 'pending_local' | 'pending_db' | 'conflict';
+export type SyncDirection = 'db_to_local' | 'local_to_db' | 'none';
+export type SyncTrigger = 'file_watcher' | 'db_trigger' | 'manual' | 'api';
 
 export interface DbBrandDocument {
   id: string;
@@ -687,6 +698,12 @@ export interface DbBrandDocument {
   embedding: number[] | null;
   created_at: string;
   updated_at: string;
+  // Sync-related fields
+  file_path: string | null;
+  file_hash: string | null;
+  sync_status: SyncStatus | null;
+  last_synced_at: string | null;
+  sync_direction: SyncDirection | null;
 }
 
 export interface BrandDocument {
@@ -703,6 +720,12 @@ export interface BrandDocument {
   embedding?: number[];
   createdAt: string;
   updatedAt: string;
+  // Sync-related fields
+  filePath?: string;
+  fileHash?: string;
+  syncStatus?: SyncStatus;
+  lastSyncedAt?: string;
+  syncDirection?: SyncDirection;
 }
 
 export interface BrandDocumentInsert {
@@ -715,6 +738,10 @@ export interface BrandDocumentInsert {
   sort_order?: number;
   is_system?: boolean;
   embedding?: number[];
+  // Sync-related fields
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
 }
 
 export interface BrandDocumentUpdate {
@@ -724,6 +751,47 @@ export interface BrandDocumentUpdate {
   sort_order?: number;
   is_deleted?: boolean;
   embedding?: number[];
+  // Sync-related fields
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+  last_synced_at?: string;
+  sync_direction?: SyncDirection;
+}
+
+// Sync log types
+export interface DbBrandDocumentSyncLog {
+  id: string;
+  document_id: string;
+  sync_direction: 'db_to_local' | 'local_to_db';
+  sync_status: 'success' | 'failed' | 'conflict';
+  content_hash_before: string | null;
+  content_hash_after: string | null;
+  error_message: string | null;
+  triggered_by: SyncTrigger | null;
+  created_at: string;
+}
+
+export interface BrandDocumentSyncLog {
+  id: string;
+  documentId: string;
+  syncDirection: 'db_to_local' | 'local_to_db';
+  syncStatus: 'success' | 'failed' | 'conflict';
+  contentHashBefore?: string;
+  contentHashAfter?: string;
+  errorMessage?: string;
+  triggeredBy?: SyncTrigger;
+  createdAt: string;
+}
+
+export interface BrandDocumentSyncLogInsert {
+  document_id: string;
+  sync_direction: 'db_to_local' | 'local_to_db';
+  sync_status: 'success' | 'failed' | 'conflict';
+  content_hash_before?: string;
+  content_hash_after?: string;
+  error_message?: string;
+  triggered_by?: SyncTrigger;
 }
 
 // ============================================
@@ -929,6 +997,12 @@ export function dbBrandDocumentToApp(db: DbBrandDocument): BrandDocument {
     embedding: db.embedding || undefined,
     createdAt: db.created_at,
     updatedAt: db.updated_at,
+    // Sync-related fields
+    filePath: db.file_path || undefined,
+    fileHash: db.file_hash || undefined,
+    syncStatus: db.sync_status || undefined,
+    lastSyncedAt: db.last_synced_at || undefined,
+    syncDirection: db.sync_direction || undefined,
   };
 }
 

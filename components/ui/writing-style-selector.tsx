@@ -10,7 +10,7 @@ export interface WritingStyle {
 }
 
 // Writing styles available from brand brain
-// These correspond to files in /public/claude-data/knowledge/writing-styles/
+// These correspond to files in .claude/knowledge/writing-styles/ (served via /api/claude/)
 export const WRITING_STYLES: WritingStyle[] = [
   { id: 'normal', name: 'Normal', description: 'Default writing style' },
   { id: 'learning', name: 'Learning', description: 'Educational and explanatory' },
@@ -73,13 +73,14 @@ export function WritingStyleSelector({
 }
 
 // Helper to load a writing style's content from the markdown file
+// Uses API route to serve .claude/ files
 export async function loadWritingStyleContent(style: WritingStyle): Promise<string | null> {
   if (!style.filename) {
     return null;
   }
 
   try {
-    const response = await fetch(`/claude-data/knowledge/writing-styles/${style.filename}`);
+    const response = await fetch(`/api/claude/knowledge/writing-styles/${style.filename}`);
     if (response.ok) {
       return await response.text();
     }

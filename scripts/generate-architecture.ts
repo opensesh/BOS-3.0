@@ -17,7 +17,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT_DIR = process.cwd();
-const OUTPUT_FILE = path.join(ROOT_DIR, 'public', 'claude-data', 'system', 'architecture.md');
+// Output to .claude/system/ directory (served via /api/claude/ route)
+const OUTPUT_FILE = path.join(ROOT_DIR, '.claude', 'system', 'architecture.md');
 const ROOT_OUTPUT_FILE = path.join(ROOT_DIR, 'ARCHITECTURE.md');
 
 // ============================================================================
@@ -529,7 +530,7 @@ async function main() {
     const markdown = generateMarkdown();
     
     fs.writeFileSync(OUTPUT_FILE, markdown);
-    console.log('✅ public/claude-data/system/architecture.md');
+    console.log('✅ .claude/system/architecture.md');
     
     fs.writeFileSync(ROOT_OUTPUT_FILE, markdown);
     console.log('✅ ARCHITECTURE.md');

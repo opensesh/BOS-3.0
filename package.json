@@ -12,7 +12,11 @@
     "fetch-thumbnails": "npx tsx scripts/populate-thumbnails.ts",
     "capture-screenshots": "npx tsx scripts/capture-screenshots.ts",
     "prebuild": "npm run generate:brand-index",
-    "prepare": "[ -d .git ] && git config core.hooksPath .githooks || true"
+    "prepare": "[ -d .git ] && git config core.hooksPath .githooks || true",
+    "sync:status": "npx tsx scripts/sync-claude-files.ts status",
+    "sync:pull": "npx tsx scripts/sync-claude-files.ts pull",
+    "sync:push": "npx tsx scripts/sync-claude-files.ts push",
+    "sync:conflicts": "npx tsx scripts/sync-claude-files.ts conflicts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
@@ -29,6 +33,7 @@
     "@untitledui/icons": "^0.0.19",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
+    "chokidar": "^5.0.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "framer-motion": "^11.15.0",

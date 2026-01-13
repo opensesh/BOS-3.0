@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
 import { TypographySettingsTableModal } from '@/components/brand-hub/TypographySettingsTableModal';
-import { RefreshCw, Download, ChevronDown, Monitor, Globe } from 'lucide-react';
+import { RefreshCw, Download, ChevronDown, Monitor, Globe, Loader2 } from 'lucide-react';
+import JSZip from 'jszip';
+import { useBrandFonts } from '@/hooks/useBrandFonts';
+import type { BrandFont } from '@/lib/supabase/types';
 
 type FontFormat = 'desktop' | 'web';
 
@@ -24,6 +27,7 @@ interface TypographySection {
   defaultText: string;
   fontClass: string;
   fontPath: string;
+  fontFamilyPattern: string; // Pattern to match fonts by name
 }
 
 const typographySections: TypographySection[] = [
@@ -32,6 +36,7 @@ const typographySections: TypographySection[] = [
     label: 'Display',
     fontClass: 'font-display',
     fontPath: 'neue-haas-grotesk display',
+    fontFamilyPattern: 'NeueHaasDisplay',
     defaultText: 'Brand OS™',
     styles: [
       { name: 'Display 1', value: 'display-1', fontSize: '72px', fontWeight: '700', fontFamily: 'Neue Haas Grotesk Display Pro', lineHeight: '1.1' },
@@ -44,6 +49,7 @@ const typographySections: TypographySection[] = [
     label: 'Heading',
     fontClass: 'font-display',
     fontPath: 'neue-haas-grotesk display',
+    fontFamilyPattern: 'NeueHaasDisplay',
     defaultText: 'We aspire to be creative problem solvers',
     styles: [
       { name: 'Heading 1', value: 'heading-1', fontSize: '40px', fontWeight: '700', fontFamily: 'Neue Haas Grotesk Display Pro', lineHeight: '1.2' },
@@ -57,6 +63,7 @@ const typographySections: TypographySection[] = [
     label: 'Accent',
     fontClass: 'font-mono',
     fontPath: 'offbit',
+    fontFamilyPattern: 'OffBit',
     defaultText: 'Born to Create, Made to Make',
     styles: [
       { name: 'Heading 5', value: 'heading-5', fontSize: '18px', fontWeight: '700', fontFamily: 'OffBit', lineHeight: '1.4' },
@@ -68,6 +75,7 @@ const typographySections: TypographySection[] = [
     label: 'Text',
     fontClass: 'font-sans',
     fontPath: 'neue-haas-grotesk text',
+    fontFamilyPattern: 'NeueHaasText',
     defaultText: 'Figma serves as the core design system that integrates essential brand elements. It\'s filled with a rich base of variables for global and semantic tokens that can be translated into multiple styling options.',
     styles: [
       { name: 'Body 1', value: 'body-1', fontSize: '18px', fontWeight: '400', fontFamily: 'Neue Haas Grotesk Display Pro', lineHeight: '1.6' },
@@ -78,18 +86,46 @@ const typographySections: TypographySection[] = [
   },
 ];
 
+// Helper to filter fonts by format (desktop = ttf/otf, web = woff2)
+function filterFontsByFormat(fonts: BrandFont[], format: FontFormat): BrandFont[] {
+  const extensions = format === 'desktop' ? ['.ttf', '.otf'] : ['.woff2', '.woff'];
+  return fonts.filter(font => {
+    const filename = font.filename.toLowerCase();
+    return extensions.some(ext => filename.endsWith(ext));
+  });
+}
+
+// Helper to filter fonts by family pattern
+function filterFontsByFamily(fonts: BrandFont[], familyPattern: string): BrandFont[] {
+  return fonts.filter(font => {
+    const name = font.name.toLowerCase();
+    const filename = font.filename.toLowerCase();
+    const pattern = familyPattern.toLowerCase();
+    return name.includes(pattern) || filename.includes(pattern);
+  });
+}
+
 function TypographyCard({ 
   section, 
+  fonts,
   onRegisterReset 
 }: { 
   section: TypographySection;
+  fonts: BrandFont[];
   onRegisterReset?: (resetFn: () => void) => void;
 }) {
   const [selectedStyle, setSelectedStyle] = useState(section.styles[0]);
   const [text, setText] = useState(section.defaultText);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState<FontFormat>('desktop');
+  const [isDownloading, setIsDownloading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Get fonts for this section filtered by format
+  const sectionFonts = useMemo(() => {
+    const familyFonts = filterFontsByFamily(fonts, section.fontFamilyPattern);
+    return filterFontsByFormat(familyFonts, selectedFormat);
+  }, [fonts, section.fontFamilyPattern, selectedFormat]);
 
   // Auto-resize textarea to hug content
   useEffect(() => {
@@ -111,30 +147,54 @@ function TypographyCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDownloadAll = () => {
-    // Create download info for the entire font family
-    const formatLabel = selectedFormat === 'desktop' ? 'Desktop (TTF/OTF)' : 'Web (WOFF2)';
-    const fontInfo = `
-Font Family: ${section.styles[0].fontFamily}
-Section: ${section.label}
-Format: ${formatLabel}
-Path: /assets/fonts/${section.fontPath}/${selectedFormat === 'desktop' ? 'Desktop' : 'Web'}
+  const handleDownloadAll = async () => {
+    if (sectionFonts.length === 0) {
+      console.warn('No fonts available for download');
+      return;
+    }
 
-Included Styles:
-${section.styles.map(s => `- ${s.name} (${s.fontWeight})`).join('\n')}
+    setIsDownloading(true);
 
-Note: In production, this would download a ZIP file containing all ${selectedFormat} font files for the ${section.label} family.
-    `.trim();
+    try {
+      const zip = new JSZip();
+      const formatLabel = selectedFormat === 'desktop' ? 'Desktop' : 'Web';
+      const folderName = `${section.label}-${formatLabel}`;
+      const folder = zip.folder(folderName);
 
-    const blob = new Blob([fontInfo], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${section.id}-fonts-${selectedFormat}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+      if (!folder) {
+        throw new Error('Failed to create zip folder');
+      }
+
+      // Fetch all font files and add to zip
+      await Promise.all(
+        sectionFonts.map(async (font) => {
+          if (!font.publicUrl) return;
+          
+          try {
+            const response = await fetch(font.publicUrl);
+            const blob = await response.blob();
+            folder.file(font.filename, blob);
+          } catch (error) {
+            console.error(`Failed to fetch ${font.filename}:`, error);
+          }
+        })
+      );
+
+      // Generate and download zip
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${section.id}-fonts-${selectedFormat}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download failed:', error);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -220,10 +280,22 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
           {/* Download All Button */}
           <button
             onClick={handleDownloadAll}
-            className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-brand-primary)] transition-colors text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)]"
-            title={`Download all ${section.label} fonts (${selectedFormat === 'desktop' ? 'TTF/OTF' : 'WOFF2'})`}
+            disabled={isDownloading || sectionFonts.length === 0}
+            className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border transition-colors ${
+              isDownloading || sectionFonts.length === 0
+                ? 'bg-[var(--bg-tertiary)] border-[var(--border-secondary)] text-[var(--fg-tertiary)] cursor-not-allowed'
+                : 'bg-[var(--bg-primary)] border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-brand-primary)] text-[var(--fg-tertiary)] hover:text-[var(--fg-brand-primary)]'
+            }`}
+            title={sectionFonts.length > 0 
+              ? `Download ${sectionFonts.length} ${section.label} fonts (${selectedFormat === 'desktop' ? 'TTF/OTF' : 'WOFF2'})`
+              : 'No fonts available'
+            }
           >
-            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            {isDownloading ? (
+              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            )}
           </button>
         </div>
       </div>
@@ -258,6 +330,11 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
           <span>Size: {selectedStyle.fontSize}</span>
           <span>Weight: {selectedStyle.fontWeight}</span>
           <span>Line Height: {selectedStyle.lineHeight}</span>
+          {sectionFonts.length > 0 && (
+            <span className="text-[var(--fg-brand-primary)]">
+              {sectionFonts.length} {selectedFormat === 'desktop' ? 'TTF/OTF' : 'WOFF2'} files
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -267,39 +344,98 @@ Note: In production, this would download a ZIP file containing all ${selectedFor
 export default function FontsPage() {
   const [cardRefs, setCardRefs] = useState<Record<string, (() => void) | null>>({});
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+
+  // Fetch fonts from Supabase
+  const { fonts, isLoading, error, refresh } = useBrandFonts();
 
   const resetAllSections = () => {
     Object.values(cardRefs).forEach((reset) => reset?.());
   };
 
-  const handleDownloadAll = () => {
-    // Create comprehensive font download info
-    const fontInfo = `
+  const handleDownloadAll = async () => {
+    if (fonts.length === 0) {
+      console.warn('No fonts available for download');
+      return;
+    }
+
+    setIsDownloadingAll(true);
+
+    try {
+      const zip = new JSZip();
+
+      // Create folders for Desktop and Web fonts
+      const desktopFolder = zip.folder('Desktop');
+      const webFolder = zip.folder('Web');
+
+      if (!desktopFolder || !webFolder) {
+        throw new Error('Failed to create zip folders');
+      }
+
+      // Separate fonts by format
+      const desktopFonts = filterFontsByFormat(fonts, 'desktop');
+      const webFonts = filterFontsByFormat(fonts, 'web');
+
+      // Download desktop fonts
+      await Promise.all(
+        desktopFonts.map(async (font) => {
+          if (!font.publicUrl) return;
+          
+          try {
+            const response = await fetch(font.publicUrl);
+            const blob = await response.blob();
+            desktopFolder.file(font.filename, blob);
+          } catch (error) {
+            console.error(`Failed to fetch ${font.filename}:`, error);
+          }
+        })
+      );
+
+      // Download web fonts
+      await Promise.all(
+        webFonts.map(async (font) => {
+          if (!font.publicUrl) return;
+          
+          try {
+            const response = await fetch(font.publicUrl);
+            const blob = await response.blob();
+            webFolder.file(font.filename, blob);
+          } catch (error) {
+            console.error(`Failed to fetch ${font.filename}:`, error);
+          }
+        })
+      );
+
+      // Add a readme file
+      const readme = `
 BRAND OS™ Typography System
 ============================
 
 This package contains all font families used in the Brand OS design system.
 
+CONTENTS:
+---------
+
+/Desktop/ - Desktop font files (TTF/OTF)
+  - ${desktopFonts.length} files
+
+/Web/ - Web font files (WOFF2)
+  - ${webFonts.length} files
+
 FONT FAMILIES INCLUDED:
 -----------------------
 
 1. NEUE HAAS GROTESK DISPLAY PRO
-   Location: /assets/fonts/neue-haas-grotesk display/
-   Formats: Desktop (TTF), Web (WOFF2)
-   Weights: 75 Bold, 65 Medium
    Usage: Display text, headings (H1-H4)
+   Weights: Various (Light to Black)
 
 2. NEUE HAAS GROTESK TEXT PRO
-   Location: /assets/fonts/neue-haas-grotesk text/
-   Formats: Desktop (OTF), Web (WOFF2)
-   Weights: 55 Roman, 65 Medium
    Usage: Body copy, paragraphs, captions
+   Weights: Various (Light to Bold)
 
 3. OFFBIT
-   Location: /assets/fonts/offbit/
-   Formats: Desktop (TTF), Web (WOFF2)
-   Weights: 101 Bold, Regular
    Usage: Accent text, subheadings (H5-H6), code
+   Weights: Regular, Bold
 
 USAGE NOTES:
 ------------
@@ -307,20 +443,66 @@ USAGE NOTES:
 - Text fonts are for body copy (12-18px)
 - OffBit should be used sparingly (max 2 instances per viewport)
 - Minimum 2 size steps between hierarchy levels
+`.trim();
 
-Note: In production, this would download a ZIP file containing all font files.
-    `.trim();
+      zip.file('README.txt', readme);
 
-    const blob = new Blob([fontInfo], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'brand-os-typography-system.txt';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+      // Generate and download zip
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'brand-os-typography-system.zip';
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download failed:', error);
+    } finally {
+      setIsDownloadingAll(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
+        <Sidebar />
+        <BrandHubLayout
+          title="Typography"
+          description="Our type system uses Neue Haas Grotesk for display and body text, paired with OffBit for accent and monospace needs."
+        >
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--fg-tertiary)]" />
+            <span className="ml-2 text-[var(--fg-tertiary)]">Loading fonts...</span>
+          </div>
+        </BrandHubLayout>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
+        <Sidebar />
+        <BrandHubLayout
+          title="Typography"
+          description="Our type system uses Neue Haas Grotesk for display and body text, paired with OffBit for accent and monospace needs."
+        >
+          <div className="flex flex-col items-center justify-center py-20">
+            <p className="text-[var(--fg-error-primary)] mb-4">Failed to load fonts</p>
+            <button
+              onClick={refresh}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
+          </div>
+        </BrandHubLayout>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
@@ -335,15 +517,24 @@ Note: In production, this would download a ZIP file containing all font files.
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <span className="text-xs text-[var(--fg-tertiary)]">
-              {typographySections.length} font families
+              {typographySections.length} font families • {fonts.length} font files
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownloadAll}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-xs text-[var(--fg-tertiary)]"
+              disabled={isDownloadingAll || fonts.length === 0}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-colors text-xs ${
+                isDownloadingAll || fonts.length === 0
+                  ? 'bg-[var(--bg-tertiary)] border-[var(--border-secondary)] text-[var(--fg-tertiary)] cursor-not-allowed'
+                  : 'bg-[var(--bg-secondary)] border-[var(--border-primary)] hover:border-[var(--border-brand)] text-[var(--fg-tertiary)]'
+              }`}
             >
-              <Download className="w-3.5 h-3.5" />
+              {isDownloadingAll ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
               Download All
             </button>
             <button
@@ -361,6 +552,7 @@ Note: In production, this would download a ZIP file containing all font files.
             <TypographyCard
               key={section.id}
               section={section}
+              fonts={fonts}
               onRegisterReset={(resetFn) => {
                 setCardRefs((prev) => ({ ...prev, [section.id]: resetFn }));
               }}

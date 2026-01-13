@@ -28,6 +28,7 @@ import {
   ArrowRight,
   Puzzle,
   Bot,
+  Layers,
 } from 'lucide-react';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
@@ -61,6 +62,7 @@ const navItems = [
       { label: 'Colors', href: '/brand-hub/colors', icon: Palette },
       { label: 'Typography', href: '/brand-hub/fonts', icon: Type },
       { label: 'Art Direction', href: '/brand-hub/art-direction', icon: ImageIcon },
+      { label: 'Textures', href: '/brand-hub/textures', icon: Layers },
       { label: 'Tokens', href: '/brand-hub/design-tokens', icon: Shapes },
       { label: 'Guidelines', href: '/brand-hub/guidelines', icon: FileText },
     ]

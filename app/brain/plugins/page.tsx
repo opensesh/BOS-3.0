@@ -1,87 +1,163 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { MarkdownEditor } from '@/components/brain/MarkdownEditor';
-import { TabSelector } from '@/components/brain/TabSelector';
+import { FolderTreeNav, BreadcrumbNav, type TreeItem } from '@/components/brain/FolderTreeNav';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { Settings, Loader2 } from 'lucide-react';
-import { getPluginContent, listPlugins } from './actions';
+import { 
+  Settings, 
+  Loader2, 
+  ChevronLeft, 
+  Package,
+  FolderTree,
+  Menu,
+  X,
+} from 'lucide-react';
+import { getPluginContent, listPlugins, getPluginStructure } from './actions';
+
+interface PluginFile {
+  id: string;
+  slug: string;
+  title: string;
+  itemType: 'folder' | 'file';
+  path: string;
+  children?: PluginFile[];
+}
 
 function PluginsContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState<string>('');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const fileParam = searchParams.get('file');
+  
+  // State
   const [plugins, setPlugins] = useState<{ id: string; label: string }[]>([]);
+  const [activePlugin, setActivePlugin] = useState<string>('');
+  const [pluginTree, setPluginTree] = useState<TreeItem | null>(null);
+  const [selectedFile, setSelectedFile] = useState<TreeItem | null>(null);
   const [content, setContent] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const [isTreeLoading, setIsTreeLoading] = useState(false);
+  const [isContentLoading, setIsContentLoading] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Load plugin list on mount
   useEffect(() => {
     listPlugins()
       .then(pluginList => {
         setPlugins(pluginList);
-
-        // Set initial tab
-        let initialTab = '';
-        if (tabParam && pluginList.some(p => p.id === tabParam)) {
-          initialTab = tabParam;
-        } else if (pluginList.length > 0) {
-          initialTab = pluginList[0].id;
-        }
-        setActiveTab(initialTab);
+        // Set initial plugin from URL or first in list
+        const initialPlugin = tabParam && pluginList.some(p => p.id === tabParam) 
+          ? tabParam 
+          : pluginList[0]?.id || '';
+        setActivePlugin(initialPlugin);
       })
-      .catch(err => {
-        console.error('Failed to load plugins:', err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      .catch(err => console.error('Failed to load plugins:', err))
+      .finally(() => setIsLoading(false));
   }, [tabParam]);
 
-  // Load plugin content when active tab changes
+  // Load plugin structure when active plugin changes
   useEffect(() => {
-    if (!activeTab || content[activeTab]) return;
+    if (!activePlugin) return;
 
-    setIsLoadingContent(true);
-    getPluginContent(activeTab)
-      .then(pluginContent => {
-        setContent(prev => ({ ...prev, [activeTab]: pluginContent }));
+    setIsTreeLoading(true);
+    setPluginTree(null);
+    setSelectedFile(null);
+
+    getPluginStructure(activePlugin)
+      .then(structure => {
+        if (structure) {
+          setPluginTree(structure);
+          // Auto-select README.md if it exists at root
+          const readme = structure.children?.find(
+            child => child.itemType === 'file' && 
+            child.slug.toLowerCase().includes('readme')
+          );
+          if (readme) {
+            setSelectedFile(readme);
+          } else if (structure.children?.[0]?.itemType === 'file') {
+            setSelectedFile(structure.children[0]);
+          }
+        }
+      })
+      .catch(err => console.error('Failed to load plugin structure:', err))
+      .finally(() => setIsTreeLoading(false));
+  }, [activePlugin]);
+
+  // Load file content when selected file changes
+  useEffect(() => {
+    if (!selectedFile || selectedFile.itemType === 'folder') return;
+
+    const contentKey = `${activePlugin}/${selectedFile.pathSegments?.join('/') || selectedFile.slug}`;
+    if (content[contentKey]) return;
+
+    setIsContentLoading(true);
+    const filePath = selectedFile.pathSegments?.join('/') || selectedFile.slug;
+    
+    getPluginContent(activePlugin, filePath)
+      .then(fileContent => {
+        setContent(prev => ({ ...prev, [contentKey]: fileContent }));
       })
       .catch(err => {
-        console.error('Failed to load plugin content:', err);
-        setContent(prev => ({
-          ...prev,
-          [activeTab]: `Error loading plugin content for ${activeTab}`
-        }));
+        console.error('Failed to load file content:', err);
+        setContent(prev => ({ ...prev, [contentKey]: `Error loading content` }));
       })
-      .finally(() => {
-        setIsLoadingContent(false);
-      });
-  }, [activeTab, content]);
+      .finally(() => setIsContentLoading(false));
+  }, [activePlugin, selectedFile, content]);
 
-  const tabs = plugins.map(p => ({ id: p.id, label: p.label }));
-  const currentContent = content[activeTab] || '';
-  const currentFilename = `${activeTab || 'plugin'}-README.md`;
+  // Handle file selection from tree
+  const handleSelectItem = useCallback((item: TreeItem) => {
+    if (item.itemType === 'file') {
+      setSelectedFile(item);
+      setIsSidebarOpen(false); // Close mobile sidebar
+    }
+  }, []);
+
+  // Handle breadcrumb navigation
+  const handleBreadcrumbNavigate = useCallback((index: number) => {
+    if (index < 0) {
+      // Navigate back to plugin list
+      setSelectedFile(null);
+    }
+    // For now, breadcrumb navigation stays on current file
+  }, []);
+
+  // Current content
+  const contentKey = selectedFile 
+    ? `${activePlugin}/${selectedFile.pathSegments?.join('/') || selectedFile.slug}`
+    : '';
+  const currentContent = content[contentKey] || '';
+  const currentFilename = selectedFile?.title || 'README.md';
+
+  // Current path for breadcrumb
+  const currentPath = selectedFile?.pathSegments || [];
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
 
       <MainContent className="overflow-y-auto custom-scrollbar">
-        <PageTransition className="w-full max-w-6xl mx-auto px-6 py-8 md:px-12 md:py-12">
+        <PageTransition className="w-full max-w-7xl mx-auto px-4 py-6 md:px-8 md:py-10 lg:px-12 lg:py-12">
           {/* Page Header */}
-          <MotionItem className="flex flex-col gap-2 mb-10">
+          <MotionItem className="flex flex-col gap-2 mb-8">
             <div className="flex items-center justify-between">
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)]">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-[var(--fg-primary)]">
                 Plugins
               </h1>
               <div className="flex items-center gap-2">
+                {/* Mobile tree toggle */}
+                <button
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="md:hidden p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                  title="Toggle file tree"
+                >
+                  <FolderTree className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                </button>
                 <button
                   onClick={() => setIsSettingsOpen(true)}
                   className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
@@ -91,42 +167,150 @@ function PluginsContent() {
                 </button>
               </div>
             </div>
-            <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
+            <p className="text-sm md:text-base lg:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               Complete capability packages combining commands, agents, and skills.
-              Plugins provide specialized workflows and integrations.
             </p>
           </MotionItem>
 
+          {/* Plugin Selector */}
+          <MotionItem className="mb-6">
+            <div className="flex flex-wrap gap-2">
+              {plugins.map(plugin => (
+                <motion.button
+                  key={plugin.id}
+                  onClick={() => setActivePlugin(plugin.id)}
+                  className={`
+                    flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
+                    transition-all duration-200
+                    ${activePlugin === plugin.id
+                      ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] border border-[var(--border-brand)]'
+                      : 'bg-[var(--bg-secondary)] text-[var(--fg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                    }
+                  `}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Package className="w-4 h-4" />
+                  <span>{plugin.label}</span>
+                </motion.button>
+              ))}
+            </div>
+          </MotionItem>
+
           {/* Loading State */}
-          {(isLoading || !activeTab) && (
+          {(isLoading || isTreeLoading) && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--fg-brand-primary)]" />
             </div>
           )}
 
-          {/* Tab Selector */}
-          {tabs.length > 0 && !isLoading && activeTab && (
-            <MotionItem className="mb-6">
-              <TabSelector
-                tabs={tabs}
-                activeTab={activeTab}
-                onChange={setActiveTab}
-              />
+          {/* Main Content Area */}
+          {!isLoading && !isTreeLoading && pluginTree && (
+            <MotionItem>
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Desktop Sidebar - File Tree */}
+                <div className="hidden lg:block w-64 flex-shrink-0">
+                  <div className="sticky top-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4">
+                    <h3 className="text-sm font-medium text-[var(--fg-secondary)] mb-3 px-2">
+                      Files
+                    </h3>
+                    <FolderTreeNav
+                      tree={pluginTree}
+                      selectedId={selectedFile?.id}
+                      onSelect={handleSelectItem}
+                      showRoot={false}
+                      initialExpanded={[pluginTree.id]}
+                    />
+                  </div>
+                </div>
+
+                {/* Mobile Sidebar Overlay */}
+                <AnimatePresence>
+                  {isSidebarOpen && (
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                      />
+                      <motion.div
+                        initial={{ x: -300 }}
+                        animate={{ x: 0 }}
+                        exit={{ x: -300 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        className="fixed left-0 top-0 bottom-0 w-72 bg-[var(--bg-primary)] border-r border-[var(--border-primary)] z-50 lg:hidden overflow-y-auto"
+                      >
+                        <div className="p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-medium text-[var(--fg-primary)]">
+                              Files
+                            </h3>
+                            <button
+                              onClick={() => setIsSidebarOpen(false)}
+                              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)]"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <FolderTreeNav
+                            tree={pluginTree}
+                            selectedId={selectedFile?.id}
+                            onSelect={handleSelectItem}
+                            showRoot={false}
+                            initialExpanded={[pluginTree.id]}
+                          />
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+
+                {/* Content Area */}
+                <div className="flex-1 min-w-0">
+                  {/* Breadcrumb */}
+                  {selectedFile && currentPath.length > 0 && (
+                    <div className="mb-4">
+                      <BreadcrumbNav
+                        pathSegments={currentPath}
+                        rootLabel={plugins.find(p => p.id === activePlugin)?.label || activePlugin}
+                        onNavigate={handleBreadcrumbNavigate}
+                      />
+                    </div>
+                  )}
+
+                  {/* File Content */}
+                  {selectedFile ? (
+                    <MarkdownEditor
+                      documentId={selectedFile.id}
+                      filename={currentFilename}
+                      content={currentContent}
+                      maxLines={100}
+                      isLoading={isContentLoading}
+                      readOnly={true}
+                    />
+                  ) : (
+                    <div className="rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-8 text-center">
+                      <FolderTree className="w-12 h-12 mx-auto mb-4 text-[var(--fg-tertiary)]" />
+                      <p className="text-[var(--fg-secondary)]">
+                        Select a file from the tree to view its contents
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </MotionItem>
           )}
 
-          {/* Content Viewer */}
-          {!isLoading && activeTab && (
-            <MotionItem>
-              <MarkdownEditor
-                documentId={activeTab}
-                filename={currentFilename}
-                content={currentContent}
-                maxLines={100}
-                isLoading={isLoadingContent}
-                readOnly={true}
-              />
-            </MotionItem>
+          {/* Empty State */}
+          {!isLoading && !isTreeLoading && !pluginTree && plugins.length > 0 && (
+            <div className="rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-8 text-center">
+              <Package className="w-12 h-12 mx-auto mb-4 text-[var(--fg-tertiary)]" />
+              <p className="text-[var(--fg-secondary)]">
+                No files found in this plugin
+              </p>
+            </div>
           )}
         </PageTransition>
       </MainContent>

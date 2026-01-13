@@ -57,9 +57,10 @@ function SkillsContent() {
     restoreVersion,
   } = useBrainDocuments({ category: 'skills' });
 
-  // Determine if we should use fallback (derived state, not effect-based)
-  const shouldUseFallback = !isLoading && (!!error || documents.length === 0 || documents.every(d => !d.content));
-  const isUsingFallback = hasInitialized && shouldUseFallback;
+  // Always use fallback for skills - .claude/skills/ is the source of truth
+  // The database may have partial data, but we want to show all skills from the file system
+  const shouldUseFallback = true;
+  const isUsingFallback = hasInitialized;
 
   // Initialize active tab once loading completes
   // Priority: URL param > first document from database > first fallback skill

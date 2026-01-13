@@ -10,7 +10,7 @@ import { TabSelector } from '@/components/brain/TabSelector';
 import { FolderTreeNav, BreadcrumbNav, type TreeItem } from '@/components/brain/FolderTreeNav';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { Settings, Loader2, FolderTree, X } from 'lucide-react';
+import { Settings, Loader2, FolderTree, X, ChevronDown } from 'lucide-react';
 import { getPluginContent, listPlugins, getPluginStructure } from './actions';
 
 // Animation variants for content transitions
@@ -113,6 +113,54 @@ function PluginsContent() {
     }));
   }, [plugins]);
 
+  // Flatten tree to get all folders and files for dropdown navigation
+  const flattenedItems = useMemo(() => {
+    if (!pluginTree) return { folders: [] as TreeItem[], files: [] as TreeItem[] };
+    
+    const folders: TreeItem[] = [];
+    const files: TreeItem[] = [];
+    
+    const traverse = (item: TreeItem, depth = 0) => {
+      if (item.itemType === 'folder' && item.children) {
+        // Don't include root folder
+        if (depth > 0) {
+          folders.push(item);
+        }
+        item.children.forEach(child => traverse(child, depth + 1));
+      } else if (item.itemType === 'file') {
+        files.push(item);
+      }
+    };
+    
+    traverse(pluginTree);
+    return { folders, files };
+  }, [pluginTree]);
+
+  // Get current folder based on selected file's path
+  const currentFolder = useMemo(() => {
+    if (!selectedFile?.pathSegments || selectedFile.pathSegments.length < 2) {
+      return null;
+    }
+    // Find the parent folder
+    const parentPath = selectedFile.pathSegments.slice(0, -1);
+    return flattenedItems.folders.find(f => 
+      f.pathSegments?.join('/') === parentPath.join('/')
+    ) || null;
+  }, [selectedFile, flattenedItems.folders]);
+
+  // Get files in current folder for file dropdown
+  const filesInCurrentContext = useMemo(() => {
+    if (!pluginTree) return [];
+    
+    // If no folder selected, show root-level files
+    if (!currentFolder) {
+      return pluginTree.children?.filter(c => c.itemType === 'file') || [];
+    }
+    
+    // Show files in current folder
+    return currentFolder.children?.filter(c => c.itemType === 'file') || [];
+  }, [pluginTree, currentFolder]);
+
   // Handle plugin tab change
   const handlePluginChange = useCallback((pluginId: string) => {
     setActivePlugin(pluginId);
@@ -125,6 +173,30 @@ function PluginsContent() {
       setIsSidebarOpen(false); // Close mobile sidebar
     }
   }, []);
+
+  // Handle folder dropdown change
+  const handleFolderChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const folderId = e.target.value;
+    if (folderId === 'root') {
+      // Select first root-level file
+      const rootFile = pluginTree?.children?.find(c => c.itemType === 'file');
+      if (rootFile) setSelectedFile(rootFile);
+      return;
+    }
+    const folder = flattenedItems.folders.find(f => f.id === folderId);
+    if (folder?.children) {
+      // Select first file in folder
+      const firstFile = folder.children.find(c => c.itemType === 'file');
+      if (firstFile) setSelectedFile(firstFile);
+    }
+  }, [flattenedItems.folders, pluginTree]);
+
+  // Handle file dropdown change
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const fileId = e.target.value;
+    const file = flattenedItems.files.find(f => f.id === fileId);
+    if (file) setSelectedFile(file);
+  }, [flattenedItems.files]);
 
   // Handle breadcrumb navigation
   const handleBreadcrumbNavigate = useCallback((index: number) => {
@@ -181,12 +253,85 @@ function PluginsContent() {
 
           {/* Plugin Tab Selector */}
           {tabs.length > 0 && !isLoading && (
-            <MotionItem className="mb-6">
+            <MotionItem className="mb-4">
               <TabSelector
                 tabs={tabs}
                 activeTab={activePlugin}
                 onChange={handlePluginChange}
               />
+            </MotionItem>
+          )}
+
+          {/* Mobile/Tablet Dropdown Navigation - visible below lg breakpoint */}
+          {!isLoading && !isTreeLoading && pluginTree && (
+            <MotionItem className="lg:hidden mb-6">
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* Folder Dropdown */}
+                {flattenedItems.folders.length > 0 && (
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs text-[var(--fg-tertiary)] mb-1.5 uppercase tracking-wide">
+                      Folder
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={currentFolder?.id || 'root'}
+                        onChange={handleFolderChange}
+                        className="
+                          w-full appearance-none
+                          px-3 py-2.5 pr-10
+                          text-sm text-[var(--fg-primary)]
+                          bg-[var(--bg-secondary)] 
+                          border border-[var(--border-primary)] 
+                          rounded-lg
+                          focus:outline-none focus:border-[var(--border-brand)]
+                          transition-colors
+                          cursor-pointer
+                        "
+                      >
+                        <option value="root">{activePlugin.toLowerCase()} (root)</option>
+                        {flattenedItems.folders.map(folder => (
+                          <option key={folder.id} value={folder.id}>
+                            {folder.pathSegments?.join(' / ') || folder.slug}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)] pointer-events-none" />
+                    </div>
+                  </div>
+                )}
+
+                {/* File Dropdown */}
+                <div className="flex-1 min-w-0">
+                  <label className="block text-xs text-[var(--fg-tertiary)] mb-1.5 uppercase tracking-wide">
+                    File
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedFile?.id || ''}
+                      onChange={handleFileChange}
+                      className="
+                        w-full appearance-none
+                        px-3 py-2.5 pr-10
+                        text-sm text-[var(--fg-primary)]
+                        bg-[var(--bg-secondary)] 
+                        border border-[var(--border-primary)] 
+                        rounded-lg
+                        focus:outline-none focus:border-[var(--border-brand)]
+                        transition-colors
+                        cursor-pointer
+                      "
+                    >
+                      <option value="" disabled>Select a file...</option>
+                      {flattenedItems.files.map(file => (
+                        <option key={file.id} value={file.id}>
+                          {file.pathSegments?.join(' / ') || file.slug}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)] pointer-events-none" />
+                  </div>
+                </div>
+              </div>
             </MotionItem>
           )}
 

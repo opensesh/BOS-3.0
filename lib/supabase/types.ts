@@ -1640,3 +1640,503 @@ export function dbMcpConnectionToApp(db: DbMcpConnection): McpConnection {
     lastUsed: db.last_used || undefined,
   };
 }
+
+// ============================================
+// BRAIN TABLES (New Architecture)
+// ============================================
+
+export type BrainFileType = 'markdown' | 'pdf';
+export type BrainItemType = 'folder' | 'file';
+
+// Base sync fields interface
+export interface BrainSyncFields {
+  filePath?: string;
+  fileHash?: string;
+  syncStatus?: SyncStatus;
+  lastSyncedAt?: string;
+  syncDirection?: SyncDirection;
+}
+
+// ============================================
+// BRAIN BRAND IDENTITY
+// ============================================
+
+export interface DbBrainBrandIdentity {
+  id: string;
+  brand_id: string;
+  slug: string;
+  title: string;
+  content: string;
+  file_type: BrainFileType;
+  storage_path: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  sort_order: number;
+  is_active: boolean;
+  file_path: string | null;
+  file_hash: string | null;
+  sync_status: SyncStatus | null;
+  last_synced_at: string | null;
+  sync_direction: SyncDirection | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrainBrandIdentity extends BrainSyncFields {
+  id: string;
+  brandId: string;
+  slug: string;
+  title: string;
+  content: string;
+  fileType: BrainFileType;
+  storagePath?: string;
+  fileSize?: number;
+  mimeType?: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // Computed at runtime
+  publicUrl?: string;
+}
+
+export interface BrainBrandIdentityInsert {
+  brand_id: string;
+  slug: string;
+  title: string;
+  content?: string;
+  file_type?: BrainFileType;
+  storage_path?: string;
+  file_size?: number;
+  mime_type?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+}
+
+export interface BrainBrandIdentityUpdate {
+  title?: string;
+  content?: string;
+  file_type?: BrainFileType;
+  storage_path?: string;
+  file_size?: number;
+  mime_type?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+  last_synced_at?: string;
+  sync_direction?: SyncDirection;
+}
+
+export function dbBrainBrandIdentityToApp(db: DbBrainBrandIdentity, publicUrl?: string): BrainBrandIdentity {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    slug: db.slug,
+    title: db.title,
+    content: db.content,
+    fileType: db.file_type,
+    storagePath: db.storage_path || undefined,
+    fileSize: db.file_size || undefined,
+    mimeType: db.mime_type || undefined,
+    sortOrder: db.sort_order,
+    isActive: db.is_active,
+    filePath: db.file_path || undefined,
+    fileHash: db.file_hash || undefined,
+    syncStatus: db.sync_status || undefined,
+    lastSyncedAt: db.last_synced_at || undefined,
+    syncDirection: db.sync_direction || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+    publicUrl,
+  };
+}
+
+// ============================================
+// BRAIN WRITING STYLES
+// ============================================
+
+export interface DbBrainWritingStyle {
+  id: string;
+  brand_id: string;
+  slug: string;
+  title: string;
+  content: string;
+  description: string | null;
+  sort_order: number;
+  is_active: boolean;
+  file_path: string | null;
+  file_hash: string | null;
+  sync_status: SyncStatus | null;
+  last_synced_at: string | null;
+  sync_direction: SyncDirection | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrainWritingStyle extends BrainSyncFields {
+  id: string;
+  brandId: string;
+  slug: string;
+  title: string;
+  content: string;
+  description?: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BrainWritingStyleInsert {
+  brand_id: string;
+  slug: string;
+  title: string;
+  content?: string;
+  description?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+}
+
+export interface BrainWritingStyleUpdate {
+  title?: string;
+  content?: string;
+  description?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+  last_synced_at?: string;
+  sync_direction?: SyncDirection;
+}
+
+export function dbBrainWritingStyleToApp(db: DbBrainWritingStyle): BrainWritingStyle {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    slug: db.slug,
+    title: db.title,
+    content: db.content,
+    description: db.description || undefined,
+    sortOrder: db.sort_order,
+    isActive: db.is_active,
+    filePath: db.file_path || undefined,
+    fileHash: db.file_hash || undefined,
+    syncStatus: db.sync_status || undefined,
+    lastSyncedAt: db.last_synced_at || undefined,
+    syncDirection: db.sync_direction || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// ============================================
+// BRAIN PLUGINS (Nested Structure)
+// ============================================
+
+export interface DbBrainPlugin {
+  id: string;
+  brand_id: string;
+  parent_id: string | null;
+  slug: string;
+  title: string;
+  item_type: BrainItemType;
+  content: string;
+  plugin_slug: string;
+  path_segments: string[];
+  sort_order: number;
+  metadata: Record<string, unknown>;
+  is_active: boolean;
+  file_path: string | null;
+  file_hash: string | null;
+  sync_status: SyncStatus | null;
+  last_synced_at: string | null;
+  sync_direction: SyncDirection | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrainPlugin extends BrainSyncFields {
+  id: string;
+  brandId: string;
+  parentId?: string;
+  slug: string;
+  title: string;
+  itemType: BrainItemType;
+  content: string;
+  pluginSlug: string;
+  pathSegments: string[];
+  sortOrder: number;
+  metadata: Record<string, unknown>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // Computed for tree structure
+  children?: BrainPlugin[];
+}
+
+export interface BrainPluginInsert {
+  brand_id: string;
+  parent_id?: string;
+  slug: string;
+  title: string;
+  item_type?: BrainItemType;
+  content?: string;
+  plugin_slug: string;
+  path_segments?: string[];
+  sort_order?: number;
+  metadata?: Record<string, unknown>;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+}
+
+export interface BrainPluginUpdate {
+  parent_id?: string;
+  title?: string;
+  item_type?: BrainItemType;
+  content?: string;
+  path_segments?: string[];
+  sort_order?: number;
+  metadata?: Record<string, unknown>;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+  last_synced_at?: string;
+  sync_direction?: SyncDirection;
+}
+
+export function dbBrainPluginToApp(db: DbBrainPlugin): BrainPlugin {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    parentId: db.parent_id || undefined,
+    slug: db.slug,
+    title: db.title,
+    itemType: db.item_type,
+    content: db.content,
+    pluginSlug: db.plugin_slug,
+    pathSegments: db.path_segments || [],
+    sortOrder: db.sort_order,
+    metadata: db.metadata || {},
+    isActive: db.is_active,
+    filePath: db.file_path || undefined,
+    fileHash: db.file_hash || undefined,
+    syncStatus: db.sync_status || undefined,
+    lastSyncedAt: db.last_synced_at || undefined,
+    syncDirection: db.sync_direction || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// ============================================
+// BRAIN SKILLS (Nested Structure)
+// ============================================
+
+export interface DbBrainSkill {
+  id: string;
+  brand_id: string;
+  parent_id: string | null;
+  slug: string;
+  title: string;
+  item_type: BrainItemType;
+  content: string;
+  skill_slug: string;
+  path_segments: string[];
+  sort_order: number;
+  metadata: Record<string, unknown>;
+  is_active: boolean;
+  file_path: string | null;
+  file_hash: string | null;
+  sync_status: SyncStatus | null;
+  last_synced_at: string | null;
+  sync_direction: SyncDirection | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrainSkill extends BrainSyncFields {
+  id: string;
+  brandId: string;
+  parentId?: string;
+  slug: string;
+  title: string;
+  itemType: BrainItemType;
+  content: string;
+  skillSlug: string;
+  pathSegments: string[];
+  sortOrder: number;
+  metadata: Record<string, unknown>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  children?: BrainSkill[];
+}
+
+export interface BrainSkillInsert {
+  brand_id: string;
+  parent_id?: string;
+  slug: string;
+  title: string;
+  item_type?: BrainItemType;
+  content?: string;
+  skill_slug: string;
+  path_segments?: string[];
+  sort_order?: number;
+  metadata?: Record<string, unknown>;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+}
+
+export interface BrainSkillUpdate {
+  parent_id?: string;
+  title?: string;
+  item_type?: BrainItemType;
+  content?: string;
+  path_segments?: string[];
+  sort_order?: number;
+  metadata?: Record<string, unknown>;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+  last_synced_at?: string;
+  sync_direction?: SyncDirection;
+}
+
+export function dbBrainSkillToApp(db: DbBrainSkill): BrainSkill {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    parentId: db.parent_id || undefined,
+    slug: db.slug,
+    title: db.title,
+    itemType: db.item_type,
+    content: db.content,
+    skillSlug: db.skill_slug,
+    pathSegments: db.path_segments || [],
+    sortOrder: db.sort_order,
+    metadata: db.metadata || {},
+    isActive: db.is_active,
+    filePath: db.file_path || undefined,
+    fileHash: db.file_hash || undefined,
+    syncStatus: db.sync_status || undefined,
+    lastSyncedAt: db.last_synced_at || undefined,
+    syncDirection: db.sync_direction || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
+// ============================================
+// BRAIN AGENTS (Nested Structure)
+// ============================================
+
+export interface DbBrainAgent {
+  id: string;
+  brand_id: string;
+  parent_id: string | null;
+  slug: string;
+  title: string;
+  item_type: BrainItemType;
+  content: string;
+  agent_slug: string;
+  path_segments: string[];
+  sort_order: number;
+  metadata: Record<string, unknown>;
+  is_active: boolean;
+  file_path: string | null;
+  file_hash: string | null;
+  sync_status: SyncStatus | null;
+  last_synced_at: string | null;
+  sync_direction: SyncDirection | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrainAgent extends BrainSyncFields {
+  id: string;
+  brandId: string;
+  parentId?: string;
+  slug: string;
+  title: string;
+  itemType: BrainItemType;
+  content: string;
+  agentSlug: string;
+  pathSegments: string[];
+  sortOrder: number;
+  metadata: Record<string, unknown>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  children?: BrainAgent[];
+}
+
+export interface BrainAgentInsert {
+  brand_id: string;
+  parent_id?: string;
+  slug: string;
+  title: string;
+  item_type?: BrainItemType;
+  content?: string;
+  agent_slug: string;
+  path_segments?: string[];
+  sort_order?: number;
+  metadata?: Record<string, unknown>;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+}
+
+export interface BrainAgentUpdate {
+  parent_id?: string;
+  title?: string;
+  item_type?: BrainItemType;
+  content?: string;
+  path_segments?: string[];
+  sort_order?: number;
+  metadata?: Record<string, unknown>;
+  is_active?: boolean;
+  file_path?: string;
+  file_hash?: string;
+  sync_status?: SyncStatus;
+  last_synced_at?: string;
+  sync_direction?: SyncDirection;
+}
+
+export function dbBrainAgentToApp(db: DbBrainAgent): BrainAgent {
+  return {
+    id: db.id,
+    brandId: db.brand_id,
+    parentId: db.parent_id || undefined,
+    slug: db.slug,
+    title: db.title,
+    itemType: db.item_type,
+    content: db.content,
+    agentSlug: db.agent_slug,
+    pathSegments: db.path_segments || [],
+    sortOrder: db.sort_order,
+    metadata: db.metadata || {},
+    isActive: db.is_active,
+    filePath: db.file_path || undefined,
+    fileHash: db.file_hash || undefined,
+    syncStatus: db.sync_status || undefined,
+    lastSyncedAt: db.last_synced_at || undefined,
+    syncDirection: db.sync_direction || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}

@@ -89,7 +89,8 @@ function ResourceCard({
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <div className="p-2 rounded-lg bg-[var(--bg-primary)]/50 border border-[var(--border-primary)] flex-shrink-0">
+      {/* Icon - fixed size square container */}
+      <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex-shrink-0 text-[var(--fg-tertiary)]">
         <ResourceIconPreview 
           type={resource.icon} 
           lucideIconName={resource.lucideIconName}

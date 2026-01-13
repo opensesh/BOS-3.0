@@ -5,22 +5,83 @@ import { motion } from 'framer-motion';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { MarkdownEditor } from '@/components/brain/MarkdownEditor';
+import { PDFViewer } from '@/components/brain/PDFViewer';
 import { TabSelector } from '@/components/brain/TabSelector';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { VersionHistoryPanel } from '@/components/brain/VersionHistoryPanel';
 import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
-import { useBrainDocuments } from '@/hooks/useBrainDocuments';
+import { useBrainBrandIdentity } from '@/hooks/useBrainBrandIdentity';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { Settings, Plus, Loader2 } from 'lucide-react';
+import { Settings, Plus, Loader2, FileText, FileCode } from 'lucide-react';
 import { SyncStatusIndicator } from '@/components/brain/SyncStatusIndicator';
+import type { BrainBrandIdentity } from '@/lib/supabase/types';
 
 // Fallback data for when database is not seeded
-// Paths point to API route that serves .claude/ files
-const FALLBACK_DOCUMENTS = [
-  { id: 'brand-identity', slug: 'brand-identity', label: 'Brand Identity', file: 'OS_brand identity.md', path: '/api/claude/brand-identity/OS_brand identity.md' },
-  { id: 'brand-messaging', slug: 'brand-messaging', label: 'Brand Messaging', file: 'OS_brand messaging.md', path: '/api/claude/brand-identity/OS_brand messaging.md' },
-  { id: 'art-direction', slug: 'art-direction', label: 'Art Direction', file: 'OS_art direction.md', path: '/api/claude/brand-identity/OS_art direction.md' },
+// Includes both Markdown and PDF files
+const FALLBACK_DOCUMENTS: Array<{
+  id: string;
+  slug: string;
+  label: string;
+  file: string;
+  path: string;
+  fileType: 'markdown' | 'pdf';
+}> = [
+  { 
+    id: 'brand-identity', 
+    slug: 'brand-identity', 
+    label: 'Brand Identity', 
+    file: 'OS_brand identity.md', 
+    path: '/api/claude/brand-identity/OS_brand identity.md',
+    fileType: 'markdown',
+  },
+  { 
+    id: 'brand-identity-pdf', 
+    slug: 'brand-identity-pdf', 
+    label: 'Brand Identity (PDF)', 
+    file: 'OS_Brand Identity.pdf', 
+    path: '/api/claude/brand-identity/OS_Brand Identity.pdf',
+    fileType: 'pdf',
+  },
+  { 
+    id: 'brand-messaging', 
+    slug: 'brand-messaging', 
+    label: 'Brand Messaging', 
+    file: 'OS_brand messaging.md', 
+    path: '/api/claude/brand-identity/OS_brand messaging.md',
+    fileType: 'markdown',
+  },
+  { 
+    id: 'brand-messaging-pdf', 
+    slug: 'brand-messaging-pdf', 
+    label: 'Brand Messaging (PDF)', 
+    file: 'OS_brand messaging.pdf', 
+    path: '/api/claude/brand-identity/OS_brand messaging.pdf',
+    fileType: 'pdf',
+  },
+  { 
+    id: 'art-direction', 
+    slug: 'art-direction', 
+    label: 'Art Direction', 
+    file: 'OS_art direction.md', 
+    path: '/api/claude/brand-identity/OS_art direction.md',
+    fileType: 'markdown',
+  },
+  { 
+    id: 'art-direction-pdf', 
+    slug: 'art-direction-pdf', 
+    label: 'Art Direction (PDF)', 
+    file: 'OS_art direction.pdf', 
+    path: '/api/claude/brand-identity/OS_art direction.pdf',
+    fileType: 'pdf',
+  },
 ];
+
+// Custom tab with file type badge
+interface DocumentTab {
+  id: string;
+  label: string;
+  fileType?: 'markdown' | 'pdf';
+}
 
 export default function BrandIdentityPage() {
   const [activeTab, setActiveTab] = useState('brand-identity');
@@ -40,22 +101,23 @@ export default function BrandIdentityPage() {
     createDocument,
     updateDocument,
     deleteDocument,
-    restoreVersion,
     fetchDocuments,
-  } = useBrainDocuments({ category: 'brand-identity' });
+  } = useBrainBrandIdentity();
 
   // Check if we need to use fallback (database not seeded or empty documents)
   useEffect(() => {
-    if (!isLoading && (error || documents.length === 0 || documents.every(d => !d.content))) {
+    if (!isLoading && (error || documents.length === 0)) {
       setIsUsingFallback(true);
-      // Load fallback content from static files
+      // Load fallback content from static files (only markdown)
       FALLBACK_DOCUMENTS.forEach(doc => {
-        fetch(doc.path)
-          .then(res => res.text())
-          .then(text => {
-            setFallbackContent(prev => ({ ...prev, [doc.slug]: text }));
-          })
-          .catch(err => console.error('Failed to load fallback:', err));
+        if (doc.fileType === 'markdown') {
+          fetch(doc.path)
+            .then(res => res.text())
+            .then(text => {
+              setFallbackContent(prev => ({ ...prev, [doc.slug]: text }));
+            })
+            .catch(err => console.error('Failed to load fallback:', err));
+        }
       });
     } else {
       setIsUsingFallback(false);
@@ -65,7 +127,6 @@ export default function BrandIdentityPage() {
   // Set active document when tab changes
   useEffect(() => {
     if (isUsingFallback) {
-      // For fallback mode, we don't have real documents
       return;
     }
     const doc = documents.find(d => d.slug === activeTab);
@@ -75,23 +136,42 @@ export default function BrandIdentityPage() {
   }, [activeTab, documents, isUsingFallback, setActiveDocument]);
 
   // Generate tabs from documents or fallback
-  const tabs = isUsingFallback
-    ? FALLBACK_DOCUMENTS.map(d => ({ id: d.slug, label: d.label }))
-    : documents.map(d => ({ id: d.slug, label: d.title }));
+  const tabs: DocumentTab[] = isUsingFallback
+    ? FALLBACK_DOCUMENTS.map(d => ({ 
+        id: d.slug, 
+        label: d.label,
+        fileType: d.fileType,
+      }))
+    : documents.map(d => ({ 
+        id: d.slug, 
+        label: d.title,
+        fileType: d.fileType,
+      }));
 
-  // Get current content
+  // Get current document info
+  const currentFallbackDoc = FALLBACK_DOCUMENTS.find(d => d.slug === activeTab);
+  const currentFileType = isUsingFallback
+    ? currentFallbackDoc?.fileType || 'markdown'
+    : activeDocument?.fileType || 'markdown';
+
   const currentContent = isUsingFallback
-    ? fallbackContent[activeTab] || 'Loading...'
-    : activeDocument?.content || '';
+    ? (currentFileType === 'pdf' 
+        ? currentFallbackDoc?.path || '' 
+        : fallbackContent[activeTab] || 'Loading...')
+    : (activeDocument?.fileType === 'pdf' 
+        ? activeDocument?.publicUrl || activeDocument?.storagePath || ''
+        : activeDocument?.content || '');
 
   const currentFilename = isUsingFallback
-    ? FALLBACK_DOCUMENTS.find(d => d.slug === activeTab)?.file || 'document.md'
-    : `${activeDocument?.slug || 'document'}.md`;
+    ? currentFallbackDoc?.file || 'document.md'
+    : activeDocument?.fileType === 'pdf'
+      ? `${activeDocument?.slug || 'document'}.pdf`
+      : `${activeDocument?.slug || 'document'}.md`;
 
   // Handle save
-  const handleSave = useCallback(async (content: string, changeSummary?: string) => {
+  const handleSave = useCallback(async (content: string) => {
     if (!activeDocument) return;
-    await updateDocument(activeDocument.id, content, changeSummary);
+    await updateDocument(activeDocument.id, { content });
   }, [activeDocument, updateDocument]);
 
   // Handle add document
@@ -114,11 +194,20 @@ export default function BrandIdentityPage() {
     }
   }, [activeDocument, deleteDocument, documents]);
 
-  // Handle restore version
-  const handleRestoreVersion = useCallback(async (versionNumber: number) => {
-    if (!activeDocument) return;
-    await restoreVersion(activeDocument.id, versionNumber);
-  }, [activeDocument, restoreVersion]);
+  // Custom tab renderer with file type badge
+  const renderTab = useCallback((tab: DocumentTab, isActive: boolean) => {
+    const isPdf = tab.fileType === 'pdf';
+    return (
+      <div className="flex items-center gap-2">
+        {isPdf ? (
+          <FileText className="w-3.5 h-3.5 text-red-400" />
+        ) : (
+          <FileCode className="w-3.5 h-3.5 text-emerald-400" />
+        )}
+        <span>{tab.label}</span>
+      </div>
+    );
+  }, []);
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
@@ -172,32 +261,73 @@ export default function BrandIdentityPage() {
             </div>
           )}
 
-          {/* Tab Selector */}
+          {/* Tab Selector with File Type Badges */}
           {tabs.length > 0 && (
             <MotionItem className="mb-6">
-              <TabSelector
-                tabs={tabs}
-                activeTab={activeTab}
-                onChange={setActiveTab}
-                locked={isEditing}
-              />
+              <div className="flex flex-wrap gap-2">
+                {tabs.map((tab) => {
+                  const isActive = tab.id === activeTab;
+                  const isPdf = tab.fileType === 'pdf';
+                  
+                  return (
+                    <motion.button
+                      key={tab.id}
+                      onClick={() => !isEditing && setActiveTab(tab.id)}
+                      disabled={isEditing}
+                      className={`
+                        flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
+                        transition-all duration-200
+                        ${isActive 
+                          ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] border border-[var(--border-brand)]' 
+                          : 'bg-[var(--bg-secondary)] text-[var(--fg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
+                        }
+                        ${isEditing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                      `}
+                      whileHover={!isEditing ? { scale: 1.02 } : {}}
+                      whileTap={!isEditing ? { scale: 0.98 } : {}}
+                    >
+                      <span className={`p-1 rounded ${isPdf ? 'bg-red-500/20' : 'bg-emerald-500/20'}`}>
+                        {isPdf ? (
+                          <FileText className="w-3 h-3 text-red-400" />
+                        ) : (
+                          <FileCode className="w-3 h-3 text-emerald-400" />
+                        )}
+                      </span>
+                      <span>{tab.label}</span>
+                    </motion.button>
+                  );
+                })}
+              </div>
             </MotionItem>
           )}
 
-          {/* Content Editor */}
+          {/* Content Viewer - switches between Markdown and PDF */}
           <MotionItem>
-            <MarkdownEditor
-              documentId={activeDocument?.id || activeTab}
-              filename={currentFilename}
-              content={currentContent}
-              maxLines={50}
-              onSave={isUsingFallback ? undefined : handleSave}
-              onDelete={!isUsingFallback && activeDocument ? handleDelete : undefined}
-              onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
-              onEditingChange={setIsEditing}
-              isLoading={isLoading}
-              readOnly={isUsingFallback}
-            />
+            {currentFileType === 'pdf' ? (
+              <PDFViewer
+                url={currentContent}
+                filename={currentFilename}
+                title={isUsingFallback 
+                  ? currentFallbackDoc?.label 
+                  : activeDocument?.title
+                }
+                fileSize={activeDocument?.fileSize}
+                maxHeight={700}
+              />
+            ) : (
+              <MarkdownEditor
+                documentId={activeDocument?.id || activeTab}
+                filename={currentFilename}
+                content={currentContent}
+                maxLines={50}
+                onSave={isUsingFallback ? undefined : handleSave}
+                onDelete={!isUsingFallback && activeDocument ? handleDelete : undefined}
+                onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
+                onEditingChange={setIsEditing}
+                isLoading={isLoading}
+                readOnly={isUsingFallback}
+              />
+            )}
           </MotionItem>
         </PageTransition>
       </MainContent>
@@ -210,14 +340,17 @@ export default function BrandIdentityPage() {
       />
 
       {/* Version History Panel */}
-      {activeDocument && (
+      {activeDocument && activeDocument.fileType !== 'pdf' && (
         <VersionHistoryPanel
           isOpen={isHistoryOpen}
           onClose={() => setIsHistoryOpen(false)}
           documentId={activeDocument.id}
           documentTitle={activeDocument.title}
           currentContent={activeDocument.content}
-          onRestore={handleRestoreVersion}
+          onRestore={async (versionNumber: number) => {
+            // TODO: Implement version restore for new tables
+            console.log('Restore version:', versionNumber);
+          }}
         />
       )}
 

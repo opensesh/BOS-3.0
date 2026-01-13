@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Link } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
 import { BrainResource } from '@/hooks/useBrainResources';
@@ -20,9 +20,6 @@ interface AddBrainResourceModalProps {
   onUpdateResource?: (id: string, updates: Partial<BrainResource>) => void;
 }
 
-// Tab types for the icon picker
-type IconTab = 'popular' | 'brands' | 'all';
-
 export function AddBrainResourceModal({
   isOpen,
   onClose,
@@ -35,7 +32,6 @@ export function AddBrainResourceModal({
   const [url, setUrl] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Link');
   const [iconSearch, setIconSearch] = useState('');
-  const [iconTab, setIconTab] = useState<IconTab>('popular');
   const [error, setError] = useState('');
 
   // Get all Lucide icons once
@@ -110,7 +106,7 @@ export function AddBrainResourceModal({
     onClose();
   };
 
-  // Get displayed icons based on tab and search
+  // Get displayed icons based on search
   const displayedIcons = useMemo(() => {
     const query = iconSearch.toLowerCase().trim();
     
@@ -124,24 +120,13 @@ export function AddBrainResourceModal({
         icon.keywords.some(k => k.includes(query))
       ).map(i => i.name);
       
-      // Interleave results: show FA matches first (they're usually what people want for brands)
-      return [...faMatches, ...lucideMatches].slice(0, 24);
+      // Show FA matches first (they're usually what people want for brands)
+      return [...faMatches, ...lucideMatches].slice(0, 18);
     }
     
-    switch (iconTab) {
-      case 'popular':
-        // Mix of popular Lucide and FA icons
-        return [...POPULAR_ICONS.fontAwesome.slice(0, 6), ...POPULAR_ICONS.lucide.slice(0, 12)];
-      case 'brands':
-        // Font Awesome brand icons only
-        return FA_BRAND_ICONS.slice(0, 24).map(i => i.name);
-      case 'all':
-        // All Lucide icons
-        return allLucideIcons.slice(0, 24);
-      default:
-        return [];
-    }
-  }, [iconSearch, iconTab, allLucideIcons]);
+    // Default: show mix of popular FA brands and Lucide icons
+    return [...POPULAR_ICONS.fontAwesome.slice(0, 6), ...POPULAR_ICONS.lucide.slice(0, 12)];
+  }, [iconSearch, allLucideIcons]);
 
   // Common input styles using UUI theme tokens
   const inputStyles = `
@@ -150,15 +135,6 @@ export function AddBrainResourceModal({
     text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)]
     focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent
     transition-colors
-  `;
-
-  // Tab button styles
-  const tabStyles = (isActive: boolean) => `
-    px-3 py-1.5 text-xs font-medium rounded-md transition-colors
-    ${isActive 
-      ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
-      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
-    }
   `;
 
   return (
@@ -208,31 +184,6 @@ export function AddBrainResourceModal({
           <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
             Icon
           </label>
-          
-          {/* Tabs */}
-          <div className="flex gap-1 mb-3">
-            <button
-              type="button"
-              onClick={() => { setIconTab('popular'); setIconSearch(''); }}
-              className={tabStyles(iconTab === 'popular' && !iconSearch)}
-            >
-              Popular
-            </button>
-            <button
-              type="button"
-              onClick={() => { setIconTab('brands'); setIconSearch(''); }}
-              className={tabStyles(iconTab === 'brands' && !iconSearch)}
-            >
-              Brands
-            </button>
-            <button
-              type="button"
-              onClick={() => { setIconTab('all'); setIconSearch(''); }}
-              className={tabStyles(iconTab === 'all' && !iconSearch)}
-            >
-              All Icons
-            </button>
-          </div>
           
           {/* Search input */}
           <div className="relative mb-3">

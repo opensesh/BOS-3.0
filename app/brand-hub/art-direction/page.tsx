@@ -1,23 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
 import { ArtDirectionSettingsModal } from '@/components/brand-hub/ArtDirectionSettingsModal';
 import { TabSelector } from '@/components/brain/TabSelector';
-import { Download, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, X, ChevronLeft, ChevronRight, Loader2, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import JSZip from 'jszip';
+import { useBrandArtDirection } from '@/hooks/useBrandArtDirection';
+import type { BrandArtImage, BrandArtImageMetadata, ArtDirectionCategory } from '@/lib/supabase/types';
 
-type Category = 'All' | 'Auto' | 'Lifestyle' | 'Move' | 'Escape' | 'Work' | 'Feel';
-
-interface ArtImage {
-  id: string;
-  src: string;
-  category: Exclude<Category, 'All'>;
-  title: string;
-}
+type Category = 'All' | ArtDirectionCategory;
 
 interface CategoryContent {
   title: string;
@@ -72,65 +67,41 @@ const categoryContent: Record<Category, CategoryContent> = {
   },
 };
 
-// Generate image data from the available images
-const artImages: ArtImage[] = [
-  // Auto
-  { id: 'auto-1', src: '/assets/images/auto-audi-quattro-urban-portrait.png', category: 'Auto', title: 'Audi Quattro Urban Portrait' },
-  { id: 'auto-2', src: '/assets/images/auto-bmw-convertible-garage-night.png', category: 'Auto', title: 'BMW Convertible Garage Night' },
-  { id: 'auto-3', src: '/assets/images/auto-desert-porsche-sunset-drift.png', category: 'Auto', title: 'Desert Porsche Sunset Drift' },
-  { id: 'auto-4', src: '/assets/images/auto-night-drive-motion-blur.png', category: 'Auto', title: 'Night Drive Motion Blur' },
-  { id: 'auto-5', src: '/assets/images/auto-rally-porsche-night-racing.png', category: 'Auto', title: 'Rally Porsche Night Racing' },
-  { id: 'auto-6', src: '/assets/images/auto-truck-wildflowers-mountain-dusk.png', category: 'Auto', title: 'Truck Wildflowers Mountain Dusk' },
-  { id: 'auto-7', src: '/assets/images/auto-vintage-interior-dashboard-sunset.png', category: 'Auto', title: 'Vintage Interior Dashboard Sunset' },
-  { id: 'auto-8', src: '/assets/images/auto-white-porsche-desert-headlights.png', category: 'Auto', title: 'White Porsche Desert Headlights' },
-  // Escape
-  { id: 'escape-1', src: '/assets/images/escape-astronaut-sparkle-floating.png', category: 'Escape', title: 'Astronaut Sparkle Floating' },
-  { id: 'escape-2', src: '/assets/images/escape-cliffside-workspace-ocean-view.png', category: 'Escape', title: 'Cliffside Workspace Ocean View' },
-  { id: 'escape-3', src: '/assets/images/escape-coastal-laptop-remote-work.png', category: 'Escape', title: 'Coastal Laptop Remote Work' },
-  { id: 'escape-4', src: '/assets/images/escape-desert-silhouette-wanderer.png', category: 'Escape', title: 'Desert Silhouette Wanderer' },
-  { id: 'escape-5', src: '/assets/images/escape-floating-sun-documents.png', category: 'Escape', title: 'Floating Sun Documents' },
-  { id: 'escape-6', src: '/assets/images/escape-geometric-stairs-silhouette.png', category: 'Escape', title: 'Geometric Stairs Silhouette' },
-  { id: 'escape-7', src: '/assets/images/escape-meadow-workspace-clouds.png', category: 'Escape', title: 'Meadow Workspace Clouds' },
-  { id: 'escape-8', src: '/assets/images/escape-mountain-desk-wilderness.png', category: 'Escape', title: 'Mountain Desk Wilderness' },
-  // Feel
-  { id: 'feel-1', src: '/assets/images/feel-abstract-figure-warm-tones.png', category: 'Feel', title: 'Abstract Figure Warm Tones' },
-  { id: 'feel-2', src: '/assets/images/feel-delicate-abstract-movement.png', category: 'Feel', title: 'Delicate Abstract Movement' },
-  { id: 'feel-3', src: '/assets/images/feel-dynamic-spin-motion-dress.png', category: 'Feel', title: 'Dynamic Spin Motion Dress' },
-  { id: 'feel-4', src: '/assets/images/feel-ethereal-portrait-softness.png', category: 'Feel', title: 'Ethereal Portrait Softness' },
-  { id: 'feel-5', src: '/assets/images/feel-flowing-fabric-grace.png', category: 'Feel', title: 'Flowing Fabric Grace' },
-  { id: 'feel-6', src: '/assets/images/feel-motion-blur-bouquet-flowers.png', category: 'Feel', title: 'Motion Blur Bouquet Flowers' },
-  { id: 'feel-7', src: '/assets/images/feel-portrait-shadow-play.png', category: 'Feel', title: 'Portrait Shadow Play' },
-  { id: 'feel-8', src: '/assets/images/feel-water-droplets-diagonal-reflection.png', category: 'Feel', title: 'Water Droplets Diagonal Reflection' },
-  // Lifestyle
-  { id: 'lifestyle-1', src: '/assets/images/lifestyle-casual-chic-sidewalk.png', category: 'Lifestyle', title: 'Casual Chic Sidewalk' },
-  { id: 'lifestyle-2', src: '/assets/images/lifestyle-confident-street-style.png', category: 'Lifestyle', title: 'Confident Street Style' },
-  { id: 'lifestyle-3', src: '/assets/images/lifestyle-contemporary-fashion-portrait.png', category: 'Lifestyle', title: 'Contemporary Fashion Portrait' },
-  { id: 'lifestyle-4', src: '/assets/images/lifestyle-editorial-look-urban.png', category: 'Lifestyle', title: 'Editorial Look Urban' },
-  { id: 'lifestyle-5', src: '/assets/images/lifestyle-minimalist-white-tones.png', category: 'Lifestyle', title: 'Minimalist White Tones' },
-  { id: 'lifestyle-6', src: '/assets/images/lifestyle-modern-aesthetic-pose.png', category: 'Lifestyle', title: 'Modern Aesthetic Pose' },
-  { id: 'lifestyle-7', src: '/assets/images/lifestyle-urban-angel-street-fashion.png', category: 'Lifestyle', title: 'Urban Angel Street Fashion' },
-  { id: 'lifestyle-8', src: '/assets/images/lifestyle-yellow-puffer-portrait.png', category: 'Lifestyle', title: 'Yellow Puffer Portrait' },
-  // Move
-  { id: 'move-1', src: '/assets/images/move-abstract-dance-flow.png', category: 'Move', title: 'Abstract Dance Flow' },
-  { id: 'move-2', src: '/assets/images/move-athletic-motion-energy.png', category: 'Move', title: 'Athletic Motion Energy' },
-  { id: 'move-3', src: '/assets/images/move-dynamic-figure-action.png', category: 'Move', title: 'Dynamic Figure Action' },
-  { id: 'move-4', src: '/assets/images/move-flowing-movement-grace.png', category: 'Move', title: 'Flowing Movement Grace' },
-  { id: 'move-5', src: '/assets/images/move-gesture-blur-dance.png', category: 'Move', title: 'Gesture Blur Dance' },
-  { id: 'move-6', src: '/assets/images/move-kinetic-energy-motion.png', category: 'Move', title: 'Kinetic Energy Motion' },
-  { id: 'move-7', src: '/assets/images/move-palm-trees-runners-motion.png', category: 'Move', title: 'Palm Trees Runners Motion' },
-  { id: 'move-8', src: '/assets/images/move-speed-blur-running.png', category: 'Move', title: 'Speed Blur Running' },
-  // Work
-  { id: 'work-1', src: '/assets/images/work-business-presentation.png', category: 'Work', title: 'Business Presentation' },
-  { id: 'work-2', src: '/assets/images/work-conference-networking-event.png', category: 'Work', title: 'Conference Networking Event' },
-  { id: 'work-3', src: '/assets/images/work-corporate-environment.png', category: 'Work', title: 'Corporate Environment' },
-  { id: 'work-4', src: '/assets/images/work-iterra-brand-green-hills.png', category: 'Work', title: 'Iterra Brand Green Hills' },
-  { id: 'work-5', src: '/assets/images/work-office-workspace-modern.png', category: 'Work', title: 'Office Workspace Modern' },
-  { id: 'work-6', src: '/assets/images/work-professional-collaboration.png', category: 'Work', title: 'Professional Collaboration' },
-  { id: 'work-7', src: '/assets/images/work-professional-setting.png', category: 'Work', title: 'Professional Setting' },
-  { id: 'work-8', src: '/assets/images/work-team-meeting-discussion.png', category: 'Work', title: 'Team Meeting Discussion' },
-];
-
 const categories: Category[] = ['All', 'Auto', 'Lifestyle', 'Move', 'Escape', 'Work', 'Feel'];
+
+// Helper to get category from variant field
+function getCategoryFromImage(image: BrandArtImage): ArtDirectionCategory | null {
+  // First check metadata for artCategory
+  const meta = image.metadata as BrandArtImageMetadata;
+  if (meta.artCategory) {
+    return meta.artCategory;
+  }
+  
+  // Fall back to variant field (lowercase)
+  if (image.variant) {
+    const variantLower = image.variant.toLowerCase();
+    const categoryMap: Record<string, ArtDirectionCategory> = {
+      'auto': 'Auto',
+      'lifestyle': 'Lifestyle',
+      'move': 'Move',
+      'escape': 'Escape',
+      'work': 'Work',
+      'feel': 'Feel',
+    };
+    return categoryMap[variantLower] || null;
+  }
+  
+  return null;
+}
+
+// Helper to get display title from image
+function getImageTitle(image: BrandArtImage): string {
+  // Capitalize each word in the name
+  return image.name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 function ImageModal({ 
   image, 
@@ -139,20 +110,22 @@ function ImageModal({
   onClose,
   onNavigate 
 }: { 
-  image: ArtImage; 
-  images: ArtImage[];
+  image: BrandArtImage; 
+  images: BrandArtImage[];
   currentIndex: number;
   onClose: () => void;
   onNavigate: (index: number) => void;
 }) {
   const handleDownload = async () => {
+    if (!image.publicUrl) return;
+    
     try {
-      const response = await fetch(image.src);
+      const response = await fetch(image.publicUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${image.id}.png`;
+      a.download = image.filename || `${image.id}.png`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -187,6 +160,8 @@ function ImageModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, images.length]);
+
+  const category = getCategoryFromImage(image);
 
   return (
     <motion.div 
@@ -243,8 +218,8 @@ function ImageModal({
         key={image.id}
       >
         <Image
-          src={image.src}
-          alt={image.title}
+          src={image.publicUrl || ''}
+          alt={getImageTitle(image)}
           width={1200}
           height={800}
           className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
@@ -254,8 +229,8 @@ function ImageModal({
         <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-medium text-white mb-1">{image.title}</h3>
-              <span className="text-sm text-white/70">{image.category}</span>
+              <h3 className="text-lg font-medium text-white mb-1">{getImageTitle(image)}</h3>
+              <span className="text-sm text-white/70">{category || 'Image'}</span>
             </div>
             <button
               onClick={handleDownload}
@@ -355,10 +330,19 @@ export default function ArtDirectionPage() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Fetch images from Supabase
+  const { images, isLoading, error, refresh } = useBrandArtDirection();
+
   // Filter images based on selected category
-  const filteredImages = selectedCategory === 'All' 
-    ? artImages 
-    : artImages.filter(img => img.category === selectedCategory);
+  const filteredImages = useMemo(() => {
+    if (selectedCategory === 'All') {
+      return images;
+    }
+    return images.filter(img => {
+      const category = getCategoryFromImage(img);
+      return category === selectedCategory;
+    });
+  }, [images, selectedCategory]);
 
   // Get the currently selected image
   const selectedImage = selectedImageIndex !== null ? filteredImages[selectedImageIndex] : null;
@@ -385,13 +369,15 @@ export default function ArtDirectionPage() {
       // Fetch all images and add to zip
       await Promise.all(
         filteredImages.map(async (image) => {
+          if (!image.publicUrl) return;
+          
           try {
-            const response = await fetch(image.src);
+            const response = await fetch(image.publicUrl);
             const blob = await response.blob();
-            const filename = image.src.split('/').pop() || `${image.id}.png`;
+            const filename = image.filename || `${image.id}.png`;
             folder.file(filename, blob);
           } catch (error) {
-            console.error(`Failed to fetch ${image.src}:`, error);
+            console.error(`Failed to fetch ${image.name}:`, error);
           }
         })
       );
@@ -413,6 +399,46 @@ export default function ArtDirectionPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
+        <Sidebar />
+        <BrandHubLayout
+          title="Art Direction"
+          description="Our visual language spans automotive excellence, lifestyle moments, dynamic movement, escapist dreams, professional environments, and emotional resonance."
+        >
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--fg-tertiary)]" />
+            <span className="ml-2 text-[var(--fg-tertiary)]">Loading images...</span>
+          </div>
+        </BrandHubLayout>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
+        <Sidebar />
+        <BrandHubLayout
+          title="Art Direction"
+          description="Our visual language spans automotive excellence, lifestyle moments, dynamic movement, escapist dreams, professional environments, and emotional resonance."
+        >
+          <div className="flex flex-col items-center justify-center py-20">
+            <p className="text-[var(--fg-error-primary)] mb-4">Failed to load images</p>
+            <button
+              onClick={refresh}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
+          </div>
+        </BrandHubLayout>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
       <Sidebar />
@@ -433,16 +459,16 @@ export default function ArtDirectionPage() {
           {/* Download Button - Icon Only, pushed to right */}
           <motion.button
             onClick={handleDownloadAll}
-            disabled={isDownloading}
+            disabled={isDownloading || filteredImages.length === 0}
             className={`
               w-9 h-9 rounded-lg transition-all duration-200 flex items-center justify-center ml-auto
-              ${isDownloading
+              ${isDownloading || filteredImages.length === 0
                 ? 'bg-[var(--fg-primary)]/5 text-[var(--fg-primary)]/40 cursor-not-allowed'
                 : 'bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
               }
             `}
-            whileHover={!isDownloading ? { scale: 1.05 } : {}}
-            whileTap={!isDownloading ? { scale: 0.95 } : {}}
+            whileHover={!isDownloading && filteredImages.length > 0 ? { scale: 1.05 } : {}}
+            whileTap={!isDownloading && filteredImages.length > 0 ? { scale: 0.95 } : {}}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
             title={`Download ${selectedCategory === 'All' ? 'all images' : selectedCategory + ' images'} as ZIP`}
           >
@@ -493,7 +519,7 @@ export default function ArtDirectionPage() {
                   )}
                 </AnimatePresence>
                 
-                {/* Category Label on Active (only when <= 5 images) */}
+                {/* Category Label on Active (only when <= 8 images) */}
                 <AnimatePresence>
                   {activeImage === index && filteredImages.length <= 8 && (
                     <motion.div
@@ -503,7 +529,7 @@ export default function ArtDirectionPage() {
                       className="absolute flex h-full w-full flex-col items-end justify-end p-4 z-20"
                     >
                       <p className="text-left text-xs text-white/70 font-accent tracking-wider uppercase">
-                        {image.category}
+                        {getCategoryFromImage(image) || 'Image'}
                       </p>
                     </motion.div>
                   )}
@@ -511,8 +537,8 @@ export default function ArtDirectionPage() {
                 
                 {/* Image */}
                 <Image
-                  src={image.src}
-                  alt={image.title}
+                  src={image.publicUrl || ''}
+                  alt={getImageTitle(image)}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 28rem"
@@ -557,15 +583,17 @@ export default function ArtDirectionPage() {
                       exit={{ opacity: 0, y: 16 }}
                       className="absolute inset-0 flex items-end justify-end px-4 pb-4 z-20"
                     >
-                      <p className="text-xs text-white/70 font-accent tracking-wider uppercase">{image.category}</p>
+                      <p className="text-xs text-white/70 font-accent tracking-wider uppercase">
+                        {getCategoryFromImage(image) || 'Image'}
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
                 {/* Image */}
                 <Image
-                  src={image.src}
-                  alt={image.title}
+                  src={image.publicUrl || ''}
+                  alt={getImageTitle(image)}
                   fill
                   className="object-cover select-none"
                   sizes="100vw"

@@ -2,9 +2,37 @@
  * Constants and file mappings for the Claude configuration sync system
  *
  * This module defines the mapping between database documents and local files.
+ * Supports both the legacy brand_documents table and new brain_* tables.
  */
 
 import type { FileMappingConfig, SyncConfig } from './types';
+
+/**
+ * Brain table types for the new architecture
+ */
+export type BrainTableType = 
+  | 'brain_brand_identity'
+  | 'brain_writing_styles'
+  | 'brain_plugins'
+  | 'brain_skills'
+  | 'brain_agents'
+  | 'brain_commands'
+  | 'brain_knowledge'
+  | 'brain_system';
+
+/**
+ * Extended file mapping with brain table support
+ */
+export interface BrainFileMappingConfig extends FileMappingConfig {
+  /** The brain table to sync to (new architecture) */
+  brainTable?: BrainTableType;
+  /** File type: 'markdown' or 'pdf' */
+  fileType?: 'markdown' | 'pdf';
+  /** For nested items: the parent plugin/skill/agent slug */
+  parentSlug?: string;
+  /** Path segments for nested items */
+  pathSegments?: string[];
+}
 
 /**
  * Mapping of database documents to local file paths
@@ -180,4 +208,191 @@ export function getFileMappingsByCategory(
   category: string
 ): FileMappingConfig[] {
   return FILE_MAPPINGS.filter((m) => m.category === category);
+}
+
+// ============================================
+// NEW BRAIN TABLE MAPPINGS
+// ============================================
+
+/**
+ * Mappings for the new brain_brand_identity table
+ * Includes both Markdown and PDF files
+ */
+export const BRAIN_BRAND_IDENTITY_MAPPINGS: BrainFileMappingConfig[] = [
+  // Markdown files
+  {
+    category: 'brand-identity',
+    slug: 'brand-identity',
+    filePath: '.claude/brand-identity/OS_brand identity.md',
+    title: 'Brand Identity',
+    icon: 'badge',
+    brainTable: 'brain_brand_identity',
+    fileType: 'markdown',
+  },
+  {
+    category: 'brand-identity',
+    slug: 'brand-messaging',
+    filePath: '.claude/brand-identity/OS_brand messaging.md',
+    title: 'Brand Messaging',
+    icon: 'message-square',
+    brainTable: 'brain_brand_identity',
+    fileType: 'markdown',
+  },
+  {
+    category: 'brand-identity',
+    slug: 'art-direction',
+    filePath: '.claude/brand-identity/OS_art direction.md',
+    title: 'Art Direction',
+    icon: 'palette',
+    brainTable: 'brain_brand_identity',
+    fileType: 'markdown',
+  },
+  // PDF files
+  {
+    category: 'brand-identity',
+    slug: 'brand-identity-pdf',
+    filePath: '.claude/brand-identity/OS_Brand Identity.pdf',
+    title: 'Brand Identity (PDF)',
+    icon: 'file-text',
+    brainTable: 'brain_brand_identity',
+    fileType: 'pdf',
+  },
+  {
+    category: 'brand-identity',
+    slug: 'brand-messaging-pdf',
+    filePath: '.claude/brand-identity/OS_brand messaging.pdf',
+    title: 'Brand Messaging (PDF)',
+    icon: 'file-text',
+    brainTable: 'brain_brand_identity',
+    fileType: 'pdf',
+  },
+  {
+    category: 'brand-identity',
+    slug: 'art-direction-pdf',
+    filePath: '.claude/brand-identity/OS_art direction.pdf',
+    title: 'Art Direction (PDF)',
+    icon: 'file-text',
+    brainTable: 'brain_brand_identity',
+    fileType: 'pdf',
+  },
+];
+
+/**
+ * Mappings for the new brain_writing_styles table
+ */
+export const BRAIN_WRITING_STYLES_MAPPINGS: BrainFileMappingConfig[] = [
+  {
+    category: 'writing-styles',
+    slug: 'blog',
+    filePath: '.claude/writing-styles/blog.md',
+    title: 'Blog',
+    icon: 'book-open',
+    brainTable: 'brain_writing_styles',
+    fileType: 'markdown',
+  },
+  {
+    category: 'writing-styles',
+    slug: 'creative',
+    filePath: '.claude/writing-styles/creative.md',
+    title: 'Creative',
+    icon: 'wand-2',
+    brainTable: 'brain_writing_styles',
+    fileType: 'markdown',
+  },
+  {
+    category: 'writing-styles',
+    slug: 'long-form',
+    filePath: '.claude/writing-styles/long-form.md',
+    title: 'Long Form',
+    icon: 'file-text',
+    brainTable: 'brain_writing_styles',
+    fileType: 'markdown',
+  },
+  {
+    category: 'writing-styles',
+    slug: 'short-form',
+    filePath: '.claude/writing-styles/short-form.md',
+    title: 'Short Form',
+    icon: 'message-circle',
+    brainTable: 'brain_writing_styles',
+    fileType: 'markdown',
+  },
+  {
+    category: 'writing-styles',
+    slug: 'strategic',
+    filePath: '.claude/writing-styles/strategic.md',
+    title: 'Strategic',
+    icon: 'target',
+    brainTable: 'brain_writing_styles',
+    fileType: 'markdown',
+  },
+];
+
+/**
+ * Get all brain mappings for a specific brain table
+ */
+export function getBrainMappingsByTable(
+  table: BrainTableType
+): BrainFileMappingConfig[] {
+  const allMappings = [
+    ...BRAIN_BRAND_IDENTITY_MAPPINGS,
+    ...BRAIN_WRITING_STYLES_MAPPINGS,
+  ];
+  return allMappings.filter((m) => m.brainTable === table);
+}
+
+/**
+ * Get brain mapping by file path
+ */
+export function getBrainMappingByPath(
+  filePath: string
+): BrainFileMappingConfig | undefined {
+  const normalizedPath = filePath.replace(/\\/g, '/');
+  const allMappings = [
+    ...BRAIN_BRAND_IDENTITY_MAPPINGS,
+    ...BRAIN_WRITING_STYLES_MAPPINGS,
+  ];
+  return allMappings.find(
+    (m) => normalizedPath.endsWith(m.filePath) || m.filePath === normalizedPath
+  );
+}
+
+/**
+ * Determine brain table from file path
+ */
+export function getBrainTableFromPath(
+  filePath: string
+): BrainTableType | undefined {
+  const normalizedPath = filePath.replace(/\\/g, '/').toLowerCase();
+  
+  if (normalizedPath.includes('/brand-identity/')) {
+    return 'brain_brand_identity';
+  }
+  if (normalizedPath.includes('/writing-styles/')) {
+    return 'brain_writing_styles';
+  }
+  if (normalizedPath.includes('/plugins/')) {
+    return 'brain_plugins';
+  }
+  if (normalizedPath.includes('/skills/')) {
+    return 'brain_skills';
+  }
+  if (normalizedPath.includes('/agents/')) {
+    return 'brain_agents';
+  }
+  if (normalizedPath.includes('/commands/')) {
+    return 'brain_commands';
+  }
+  if (normalizedPath.includes('/knowledge/')) {
+    return 'brain_knowledge';
+  }
+  
+  return undefined;
+}
+
+/**
+ * Check if a file path is a PDF
+ */
+export function isPdfFile(filePath: string): boolean {
+  return filePath.toLowerCase().endsWith('.pdf');
 }

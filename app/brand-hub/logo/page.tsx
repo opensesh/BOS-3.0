@@ -1,79 +1,28 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import JSZip from 'jszip';
 import { useTheme } from 'next-themes';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
 import { LogoSettingsTableModal } from '@/components/brand-hub/LogoSettingsTableModal';
-import { RefreshCw, Download, Palette, ChevronDown } from 'lucide-react';
+import { RefreshCw, Download, Palette, ChevronDown, Loader2 } from 'lucide-react';
+import { useBrandLogos } from '@/hooks/useBrandLogos';
+import type { BrandLogo, BrandLogoMetadata } from '@/lib/supabase/types';
 
 type ColorVariant = 'vanilla' | 'glass' | 'charcoal';
 type DownloadFormat = 'svg' | 'png';
 
-interface LogoVariant {
+interface LogoGroup {
   id: string;
   name: string;
-  vanillaPath: string;
-  glassPath: string;
-  charcoalPath?: string;
+  logos: {
+    vanilla?: BrandLogo;
+    glass?: BrandLogo;
+    charcoal?: BrandLogo;
+  };
 }
-
-const mainLogos: LogoVariant[] = [
-  {
-    id: 'brandmark',
-    name: 'Brandmark',
-    vanillaPath: '/assets/logos/brandmark-vanilla.svg',
-    glassPath: '/assets/logos/brandmark-glass.svg',
-    charcoalPath: '/assets/logos/brandmark-charcoal.svg',
-  },
-  {
-    id: 'combo',
-    name: 'Combo',
-    vanillaPath: '/assets/logos/logo_main_combo_vanilla.svg',
-    glassPath: '/assets/logos/logo_main_combo_glass.svg',
-    charcoalPath: '/assets/logos/logo_main_combo_charcoal.svg',
-  },
-  {
-    id: 'stacked',
-    name: 'Stacked',
-    vanillaPath: '/assets/logos/stacked-vanilla.svg',
-    glassPath: '/assets/logos/stacked-glass.svg',
-    charcoalPath: '/assets/logos/stacked-charcoal.svg',
-  },
-  {
-    id: 'horizontal',
-    name: 'Horizontal',
-    vanillaPath: '/assets/logos/horizontal-vanilla.svg',
-    glassPath: '/assets/logos/horizontal-glass.svg',
-    charcoalPath: '/assets/logos/horizontal-charcoal.svg',
-  },
-];
-
-const accessoryLogos: LogoVariant[] = [
-  {
-    id: 'core',
-    name: 'Core',
-    vanillaPath: '/assets/logos/core.svg',
-    glassPath: '/assets/logos/core-glass.svg',
-    charcoalPath: '/assets/logos/core-charcoal.svg',
-  },
-  {
-    id: 'outline',
-    name: 'Outline',
-    vanillaPath: '/assets/logos/outline.svg',
-    glassPath: '/assets/logos/outline-glass.svg',
-    charcoalPath: '/assets/logos/outline-charcoal.svg',
-  },
-  {
-    id: 'filled',
-    name: 'Filled',
-    vanillaPath: '/assets/logos/filled.svg',
-    glassPath: '/assets/logos/filled-glass.svg',
-    charcoalPath: '/assets/logos/filled-charcoal.svg',
-  },
-];
 
 const colorOptions: { value: ColorVariant; label: string }[] = [
   { value: 'vanilla', label: 'Vanilla' },
@@ -157,22 +106,17 @@ function Dropdown({
 }
 
 function LogoCard({ 
-  logo, 
+  logoGroup, 
   colorVariant, 
   onColorChange,
 }: { 
-  logo: LogoVariant; 
+  logoGroup: LogoGroup; 
   colorVariant: ColorVariant;
   onColorChange: (color: ColorVariant) => void;
 }) {
-  const getImagePath = () => {
-    if (colorVariant === 'charcoal') {
-      return logo.charcoalPath || logo.vanillaPath;
-    }
-    return colorVariant === 'vanilla' ? logo.vanillaPath : logo.glassPath;
-  };
-  
-  const imagePath = getImagePath();
+  // Get the logo for the current color variant, fallback to vanilla if not available
+  const logo = logoGroup.logos[colorVariant] || logoGroup.logos.vanilla;
+  const imagePath = logo?.publicUrl || '';
   
   // Determine background based on color variant for better contrast
   // Charcoal logos are dark, so they go on light (vanilla) background
@@ -182,6 +126,8 @@ function LogoCard({
     : 'bg-[var(--color-charcoal)]'; // Vanilla/glass logos on charcoal background
   
   const handleDownload = async (format: DownloadFormat) => {
+    if (!imagePath) return;
+    
     try {
       const response = await fetch(imagePath);
       const blob = await response.blob();
@@ -205,7 +151,7 @@ function LogoCard({
                 const url = URL.createObjectURL(pngBlob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${logo.id}-${colorVariant}.png`;
+                a.download = `${logoGroup.id}-${colorVariant}.png`;
                 document.body.appendChild(a);
                 a.click();
                 URL.revokeObjectURL(url);
@@ -221,7 +167,7 @@ function LogoCard({
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${logo.id}-${colorVariant}.svg`;
+        a.download = `${logoGroup.id}-${colorVariant}.svg`;
         document.body.appendChild(a);
         a.click();
         URL.revokeObjectURL(url);
@@ -233,21 +179,25 @@ function LogoCard({
   };
 
   // Scale customization based on logo ID
-  const isWideOrStacked = ['combo', 'stacked', 'horizontal'].includes(logo.id);
+  const isWideOrStacked = ['combo', 'stacked', 'horizontal'].includes(logoGroup.id);
   const imageSizeClass = isWideOrStacked 
     ? "max-w-[85%] max-h-[85%]" // Bigger for combo/stacked/horizontal
     : "max-w-[70%] max-h-[70%]"; // Default for others
+
+  if (!logo) {
+    return null;
+  }
 
   return (
     <div 
       className="group relative rounded-xl overflow-hidden border border-[var(--border-secondary)] transition-all duration-300 hover:border-[var(--border-brand)] bg-[var(--bg-secondary)]"
       role="article"
-      aria-label={`${logo.name} logo - ${colorVariant} variant`}
+      aria-label={`${logoGroup.name} logo - ${colorVariant} variant`}
     >
       {/* Header Row with Logo Name and Controls */}
       <div className="bg-[var(--bg-tertiary)]/50 px-3 py-2 border-b border-[var(--border-secondary)] flex items-center justify-between">
         {/* Logo Name Label */}
-        <span className="text-[11px] font-medium text-[var(--fg-secondary)] font-display">{logo.name}</span>
+        <span className="text-[11px] font-medium text-[var(--fg-secondary)] font-display">{logoGroup.name}</span>
         
         {/* Controls */}
         <div className="flex gap-1 items-center">
@@ -272,7 +222,7 @@ function LogoCard({
       <div className={`aspect-square ${bgClass} relative flex items-center justify-center p-3`}>
         <Image
           src={imagePath}
-          alt={`${logo.name} logo in ${colorVariant} variant`}
+          alt={`${logoGroup.name} logo in ${colorVariant} variant`}
           width={100}
           height={100}
           className={`object-contain ${imageSizeClass}`}
@@ -283,67 +233,173 @@ function LogoCard({
   );
 }
 
+// Helper function to extract logo type from variant string
+function getLogoTypeFromVariant(variant: string | undefined): string {
+  if (!variant) return 'other';
+  // Handle variants like "brandmark-vanilla", "combo-glass", "core-charcoal"
+  const parts = variant.split('-');
+  if (parts.length >= 2) {
+    // Check if it's a variant ending (vanilla, glass, charcoal)
+    const lastPart = parts[parts.length - 1];
+    if (['vanilla', 'glass', 'charcoal', 'default'].includes(lastPart)) {
+      return parts.slice(0, -1).join('-');
+    }
+  }
+  return variant;
+}
+
+// Helper function to extract color variant from variant string
+function getColorFromVariant(variant: string | undefined): ColorVariant | null {
+  if (!variant) return null;
+  if (variant.endsWith('-vanilla') || variant === 'vanilla') return 'vanilla';
+  if (variant.endsWith('-glass') || variant === 'glass') return 'glass';
+  if (variant.endsWith('-charcoal') || variant === 'charcoal') return 'charcoal';
+  // For logos like "core.svg" (no variant suffix), check the filename
+  if (variant.endsWith('-default') || !variant.includes('-')) return 'vanilla';
+  return null;
+}
+
+// Helper to get display name for logo type
+function getDisplayName(logoType: string): string {
+  const displayNames: Record<string, string> = {
+    'brandmark': 'Brandmark',
+    'combo': 'Combo',
+    'stacked': 'Stacked',
+    'horizontal': 'Horizontal',
+    'core': 'Core',
+    'outline': 'Outline',
+    'filled': 'Filled',
+    'logo_main_combo': 'Combo',
+  };
+  return displayNames[logoType] || logoType.charAt(0).toUpperCase() + logoType.slice(1);
+}
+
 export default function LogoPage() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
+  // Fetch logos from Supabase
+  const { mainLogos, accessoryLogos, isLoading, error, refresh } = useBrandLogos();
+  
   // Get the default color based on the current theme
-  // Light mode: use charcoal logos (dark on light background)
-  // Dark mode: use vanilla logos (light on dark background)
   const getDefaultColor = (): ColorVariant => {
     return resolvedTheme === 'light' ? 'charcoal' : 'vanilla';
   };
 
-  const [mainColors, setMainColors] = useState<Record<string, ColorVariant>>({
-    brandmark: 'vanilla',
-    combo: 'vanilla',
-    stacked: 'vanilla',
-    horizontal: 'vanilla',
-  });
+  // Group logos by type for both main and accessory
+  const groupedMainLogos = useMemo(() => {
+    const groups: Record<string, LogoGroup> = {};
+    
+    mainLogos.forEach(logo => {
+      const metadata = logo.metadata as BrandLogoMetadata;
+      const logoType = metadata.logoType || getLogoTypeFromVariant(logo.variant);
+      const colorVariant = getColorFromVariant(logo.variant);
+      
+      if (!groups[logoType]) {
+        groups[logoType] = {
+          id: logoType,
+          name: getDisplayName(logoType),
+          logos: {}
+        };
+      }
+      
+      if (colorVariant) {
+        groups[logoType].logos[colorVariant] = logo;
+      }
+    });
+    
+    // Sort by preferred order
+    const preferredOrder = ['brandmark', 'combo', 'stacked', 'horizontal'];
+    return Object.values(groups).sort((a, b) => {
+      const aIndex = preferredOrder.indexOf(a.id);
+      const bIndex = preferredOrder.indexOf(b.id);
+      if (aIndex === -1 && bIndex === -1) return a.name.localeCompare(b.name);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  }, [mainLogos]);
 
-  const [accessoryColors, setAccessoryColors] = useState<Record<string, ColorVariant>>({
-    core: 'vanilla',
-    outline: 'vanilla',
-    filled: 'vanilla',
-  });
+  const groupedAccessoryLogos = useMemo(() => {
+    const groups: Record<string, LogoGroup> = {};
+    
+    accessoryLogos.forEach(logo => {
+      const metadata = logo.metadata as BrandLogoMetadata;
+      const logoType = metadata.logoType || getLogoTypeFromVariant(logo.variant);
+      const colorVariant = getColorFromVariant(logo.variant);
+      
+      if (!groups[logoType]) {
+        groups[logoType] = {
+          id: logoType,
+          name: getDisplayName(logoType),
+          logos: {}
+        };
+      }
+      
+      if (colorVariant) {
+        groups[logoType].logos[colorVariant] = logo;
+      }
+    });
+    
+    // Sort by preferred order
+    const preferredOrder = ['core', 'outline', 'filled'];
+    return Object.values(groups).sort((a, b) => {
+      const aIndex = preferredOrder.indexOf(a.id);
+      const bIndex = preferredOrder.indexOf(b.id);
+      if (aIndex === -1 && bIndex === -1) return a.name.localeCompare(b.name);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  }, [accessoryLogos]);
 
-  // Set mounted state and initialize colors based on theme
+  const allLogoGroups = useMemo(() => [...groupedMainLogos, ...groupedAccessoryLogos], [groupedMainLogos, groupedAccessoryLogos]);
+
+  const [mainColors, setMainColors] = useState<Record<string, ColorVariant>>({});
+  const [accessoryColors, setAccessoryColors] = useState<Record<string, ColorVariant>>({});
+
+  // Set mounted state
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Update default colors when theme changes
+  // Initialize colors when logos are loaded or theme changes
   useEffect(() => {
-    if (mounted) {
+    if (mounted && groupedMainLogos.length > 0) {
       const defaultColor = getDefaultColor();
-      setMainColors({
-        brandmark: defaultColor,
-        combo: defaultColor,
-        stacked: defaultColor,
-        horizontal: defaultColor,
+      const mainColorsInit: Record<string, ColorVariant> = {};
+      groupedMainLogos.forEach(group => {
+        mainColorsInit[group.id] = defaultColor;
       });
-      setAccessoryColors({
-        core: defaultColor,
-        outline: defaultColor,
-        filled: defaultColor,
-      });
+      setMainColors(mainColorsInit);
     }
-  }, [resolvedTheme, mounted]);
+  }, [mounted, groupedMainLogos.length, resolvedTheme]);
+
+  useEffect(() => {
+    if (mounted && groupedAccessoryLogos.length > 0) {
+      const defaultColor = getDefaultColor();
+      const accessoryColorsInit: Record<string, ColorVariant> = {};
+      groupedAccessoryLogos.forEach(group => {
+        accessoryColorsInit[group.id] = defaultColor;
+      });
+      setAccessoryColors(accessoryColorsInit);
+    }
+  }, [mounted, groupedAccessoryLogos.length, resolvedTheme]);
 
   const resetAllColors = () => {
     const defaultColor = getDefaultColor();
-    setMainColors({
-      brandmark: defaultColor,
-      combo: defaultColor,
-      stacked: defaultColor,
-      horizontal: defaultColor,
+    const mainColorsReset: Record<string, ColorVariant> = {};
+    groupedMainLogos.forEach(group => {
+      mainColorsReset[group.id] = defaultColor;
     });
-    setAccessoryColors({
-      core: defaultColor,
-      outline: defaultColor,
-      filled: defaultColor,
+    setMainColors(mainColorsReset);
+    
+    const accessoryColorsReset: Record<string, ColorVariant> = {};
+    groupedAccessoryLogos.forEach(group => {
+      accessoryColorsReset[group.id] = defaultColor;
     });
+    setAccessoryColors(accessoryColorsReset);
   };
 
   const setMainColor = (id: string, color: ColorVariant) => {
@@ -360,8 +416,6 @@ export default function LogoPage() {
     }));
   };
 
-  // Combine all logos into one array for a unified grid
-  const allLogos = [...mainLogos, ...accessoryLogos];
   const allColors = { ...mainColors, ...accessoryColors };
   const setColor = (id: string, color: ColorVariant) => {
     if (mainColors[id] !== undefined) {
@@ -370,6 +424,84 @@ export default function LogoPage() {
       setAccessoryColor(id, color);
     }
   };
+
+  const handleDownloadAll = async () => {
+    try {
+      const zip = new JSZip();
+      
+      // Create an array of promises to fetch all images
+      const promises = allLogoGroups.map(async (logoGroup) => {
+        const colorVariant = allColors[logoGroup.id] || 'vanilla';
+        const logo = logoGroup.logos[colorVariant] || logoGroup.logos.vanilla;
+        
+        if (!logo?.publicUrl) return;
+        
+        try {
+          const response = await fetch(logo.publicUrl);
+          const blob = await response.blob();
+          zip.file(`${logoGroup.id}-${colorVariant}.svg`, blob);
+        } catch (error) {
+          console.error(`Failed to download ${logoGroup.name}:`, error);
+        }
+      });
+
+      // Wait for all fetches to complete
+      await Promise.all(promises);
+
+      // Generate and download the zip file
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "brand-logos.zip";
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Failed to create zip file:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
+        <Sidebar />
+        <BrandHubLayout
+          title="Logo"
+          description="Our logo system includes multiple lockups for different contexts."
+        >
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--fg-tertiary)]" />
+            <span className="ml-2 text-[var(--fg-tertiary)]">Loading logos...</span>
+          </div>
+        </BrandHubLayout>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
+        <Sidebar />
+        <BrandHubLayout
+          title="Logo"
+          description="Our logo system includes multiple lockups for different contexts."
+        >
+          <div className="flex flex-col items-center justify-center py-20">
+            <p className="text-[var(--fg-error-primary)] mb-4">Failed to load logos</p>
+            <button
+              onClick={refresh}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
+          </div>
+        </BrandHubLayout>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
@@ -384,51 +516,12 @@ export default function LogoPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <span className="text-xs text-[var(--fg-tertiary)]">
-              {allLogos.length} logo variants
+              {allLogoGroups.length} logo variants
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={async () => {
-                try {
-                  const zip = new JSZip();
-                  
-                  // Create an array of promises to fetch all images
-                  const promises = allLogos.map(async (logo) => {
-                    const colorVariant = allColors[logo.id];
-                    let imagePath: string;
-                    if (colorVariant === 'charcoal') {
-                      imagePath = logo.charcoalPath || logo.vanillaPath;
-                    } else {
-                      imagePath = colorVariant === 'vanilla' ? logo.vanillaPath : logo.glassPath;
-                    }
-                    
-                    try {
-                      const response = await fetch(imagePath);
-                      const blob = await response.blob();
-                      zip.file(`${logo.id}-${colorVariant}.svg`, blob);
-                    } catch (error) {
-                      console.error(`Failed to download ${logo.name}:`, error);
-                    }
-                  });
-
-                  // Wait for all fetches to complete
-                  await Promise.all(promises);
-
-                  // Generate and download the zip file
-                  const content = await zip.generateAsync({ type: "blob" });
-                  const url = URL.createObjectURL(content);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = "brand-logos.zip";
-                  document.body.appendChild(a);
-                  a.click();
-                  URL.revokeObjectURL(url);
-                  document.body.removeChild(a);
-                } catch (error) {
-                  console.error('Failed to create zip file:', error);
-                }
-              }}
+              onClick={handleDownloadAll}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors text-xs text-[var(--fg-tertiary)]"
             >
               <Download className="w-3.5 h-3.5" />
@@ -445,38 +538,42 @@ export default function LogoPage() {
         </div>
 
         {/* Main Logos Section */}
-        <div className="mb-8">
-          <h2 className="text-sm font-medium text-[var(--fg-primary)] mb-4 font-display">
-            Main Logos
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {mainLogos.map((logo) => (
-              <LogoCard
-                key={logo.id}
-                logo={logo}
-                colorVariant={mainColors[logo.id]}
-                onColorChange={(color) => setMainColor(logo.id, color)}
-              />
-            ))}
+        {groupedMainLogos.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-medium text-[var(--fg-primary)] mb-4 font-display">
+              Main Logos
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {groupedMainLogos.map((logoGroup) => (
+                <LogoCard
+                  key={logoGroup.id}
+                  logoGroup={logoGroup}
+                  colorVariant={mainColors[logoGroup.id] || 'vanilla'}
+                  onColorChange={(color) => setMainColor(logoGroup.id, color)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Accessory Logos Section */}
-        <div>
-          <h2 className="text-sm font-medium text-[var(--fg-primary)] mb-4 font-display">
-            Accessory Logos
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {accessoryLogos.map((logo) => (
-              <LogoCard
-                key={logo.id}
-                logo={logo}
-                colorVariant={accessoryColors[logo.id]}
-                onColorChange={(color) => setAccessoryColor(logo.id, color)}
-              />
-            ))}
+        {groupedAccessoryLogos.length > 0 && (
+          <div>
+            <h2 className="text-sm font-medium text-[var(--fg-primary)] mb-4 font-display">
+              Accessory Logos
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {groupedAccessoryLogos.map((logoGroup) => (
+                <LogoCard
+                  key={logoGroup.id}
+                  logoGroup={logoGroup}
+                  colorVariant={accessoryColors[logoGroup.id] || 'vanilla'}
+                  onColorChange={(color) => setAccessoryColor(logoGroup.id, color)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </BrandHubLayout>
 
       {/* Logo Settings Modal */}

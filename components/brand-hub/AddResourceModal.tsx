@@ -1,8 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { Search } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
+import { Icon } from '@/components/ui/Icon';
 import { BrandResource } from '@/types';
+import { 
+  getAllLucideIconNames, 
+  FA_BRAND_ICONS, 
+  POPULAR_ICONS,
+  isFontAwesomeIcon 
+} from '@/lib/icons';
 
 interface AddResourceModalProps {
   isOpen: boolean;
@@ -22,15 +30,23 @@ export function AddResourceModal({
   const isEditMode = !!editResource;
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('Link');
+  const [iconSearch, setIconSearch] = useState('');
   const [error, setError] = useState('');
+
+  // Get all Lucide icons once
+  const allLucideIcons = useMemo(() => getAllLucideIconNames(), []);
 
   useEffect(() => {
     if (editResource && isOpen) {
       setName(editResource.name);
       setUrl(editResource.url);
+      setSelectedIcon(editResource.lucideIconName || 'Link');
     } else if (!editResource && isOpen) {
       setName('');
       setUrl('');
+      setSelectedIcon('Link');
+      setIconSearch('');
       setError('');
     }
   }, [editResource, isOpen]);
@@ -66,29 +82,55 @@ export function AddResourceModal({
       onUpdateResource(editResource.id, {
         name: name.trim(),
         url: urlToAdd,
+        lucideIconName: selectedIcon,
       });
     } else {
       onAddResource({
         name: name.trim(),
         url: urlToAdd,
-        icon: 'custom',
+        icon: 'lucide',
+        lucideIconName: selectedIcon,
       });
     }
 
     setName('');
     setUrl('');
+    setSelectedIcon('Link');
+    setIconSearch('');
     setError('');
     onClose();
   };
 
   const handleClose = () => {
-    if (!isEditMode) {
-      setName('');
-      setUrl('');
-    }
+    setName('');
+    setUrl('');
+    setSelectedIcon('Link');
+    setIconSearch('');
     setError('');
     onClose();
   };
+
+  // Get displayed icons based on search
+  const displayedIcons = useMemo(() => {
+    const query = iconSearch.toLowerCase().trim();
+    
+    if (query) {
+      // When searching, search both Lucide and FA icons
+      const lucideMatches = allLucideIcons.filter(n => 
+        n.toLowerCase().includes(query)
+      );
+      const faMatches = FA_BRAND_ICONS.filter(icon =>
+        icon.name.toLowerCase().includes(query) ||
+        icon.keywords.some(k => k.includes(query))
+      ).map(i => i.name);
+      
+      // Show FA matches first (they're usually what people want for brands)
+      return [...faMatches, ...lucideMatches].slice(0, 18);
+    }
+    
+    // Default: show mix of popular FA brands and Lucide icons
+    return [...POPULAR_ICONS.fontAwesome.slice(0, 6), ...POPULAR_ICONS.lucide.slice(0, 12)];
+  }, [iconSearch, allLucideIcons]);
 
   // Common input styles using UUI theme tokens
   const inputStyles = `
@@ -103,10 +145,11 @@ export function AddResourceModal({
     <Modal isOpen={isOpen} onClose={handleClose} title={isEditMode ? "Edit Resource" : "Add Resource"} size="md">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
+          <label htmlFor="resource-name" className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
             Name <span className="text-[var(--fg-error-primary)]">*</span>
           </label>
           <input
+            id="resource-name"
             type="text"
             value={name}
             onChange={(e) => {
@@ -119,10 +162,11 @@ export function AddResourceModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
+          <label htmlFor="resource-url" className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
             URL <span className="text-[var(--fg-error-primary)]">*</span>
           </label>
           <input
+            id="resource-url"
             type="url"
             value={url}
             onChange={(e) => {
@@ -132,7 +176,85 @@ export function AddResourceModal({
             placeholder="https://example.com"
             className={inputStyles}
           />
-          {error && <p className="mt-1 text-sm text-[var(--fg-error-primary)]">{error}</p>}
+          {error && (
+            <p className="mt-1 text-sm text-[var(--fg-error-primary)]" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+
+        {/* Icon Picker */}
+        <div>
+          <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
+            Icon
+          </label>
+          
+          {/* Search input */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)]" aria-hidden="true" />
+            <input
+              type="text"
+              value={iconSearch}
+              onChange={(e) => setIconSearch(e.target.value)}
+              placeholder="Search icons... (try 'notion', 'slack', 'google')"
+              aria-label="Search icons"
+              className="w-full pl-10 pr-3 py-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] text-sm text-[var(--fg-primary)] placeholder-[var(--fg-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:border-transparent transition-colors"
+            />
+          </div>
+          
+          {/* Icon Grid */}
+          <div 
+            className="grid grid-cols-6 gap-2" 
+            role="listbox" 
+            aria-label="Available icons"
+          >
+            {displayedIcons.map((iconName) => {
+              const isFA = isFontAwesomeIcon(iconName);
+              const displayName = isFA ? iconName.replace('fa-', '').replace(/-/g, ' ') : iconName;
+              
+              return (
+                <button
+                  key={iconName}
+                  type="button"
+                  role="option"
+                  aria-selected={selectedIcon === iconName}
+                  onClick={() => setSelectedIcon(iconName)}
+                  title={displayName}
+                  className={`
+                    p-2.5 rounded-lg border transition-all flex items-center justify-center
+                    focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:ring-offset-1
+                    ${selectedIcon === iconName
+                      ? 'bg-[var(--bg-brand-primary)] border-[var(--border-brand-solid)] text-[var(--fg-brand-primary)]'
+                      : 'bg-[var(--bg-tertiary)] border-transparent text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] hover:text-[var(--fg-primary)]'
+                    }
+                  `}
+                >
+                  <Icon name={iconName} className="w-4 h-4" aria-hidden="true" />
+                </button>
+              );
+            })}
+          </div>
+          
+          {displayedIcons.length === 0 && iconSearch && (
+            <p className="text-center text-sm text-[var(--fg-tertiary)] py-4">
+              No icons found for &ldquo;{iconSearch}&rdquo;
+            </p>
+          )}
+          
+          {/* Selected icon preview */}
+          <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-[var(--bg-tertiary)]">
+            <div className="p-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]">
+              <Icon name={selectedIcon} className="w-5 h-5" />
+            </div>
+            <span className="text-sm text-[var(--fg-secondary)]">
+              Selected: <span className="font-medium text-[var(--fg-primary)]">
+                {isFontAwesomeIcon(selectedIcon) 
+                  ? selectedIcon.replace('fa-', '').replace(/-/g, ' ')
+                  : selectedIcon
+                }
+              </span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -159,7 +281,7 @@ export function AddResourceModal({
   );
 }
 
-// Icon preview component
+// Icon preview component for displaying resource icons
 export function ResourceIconPreview({
   type,
   lucideIconName,
@@ -173,12 +295,9 @@ export function ResourceIconPreview({
 }) {
   const sizeClasses = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
 
-  if (type === 'lucide' && lucideIconName) {
-    const LucideIcons = require('lucide-react');
-    const IconComponent = LucideIcons[lucideIconName];
-    if (IconComponent) {
-      return <IconComponent className={sizeClasses} />;
-    }
+  // Use the Icon component for lucide icons or custom icon names
+  if (lucideIconName) {
+    return <Icon name={lucideIconName} className={sizeClasses} />;
   }
 
   if (type === 'custom' && customIconUrl) {
@@ -191,6 +310,7 @@ export function ResourceIconPreview({
     );
   }
 
+  // Legacy icon types with inline SVGs
   switch (type) {
     case 'google-drive':
       return (
@@ -217,12 +337,7 @@ export function ResourceIconPreview({
         </svg>
       );
     default:
-      return (
-        <svg className={sizeClasses} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="16" />
-          <line x1="8" y1="12" x2="16" y2="12" />
-        </svg>
-      );
+      // Default to Link icon
+      return <Icon name="Link" className={sizeClasses} />;
   }
 }

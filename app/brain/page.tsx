@@ -97,8 +97,8 @@ function ResourceCard({
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      {/* Icon - no hover color change, stays neutral */}
-      <div className="p-2 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex-shrink-0 text-[var(--fg-tertiary)]">
+      {/* Icon - fixed size square container */}
+      <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex-shrink-0 text-[var(--fg-tertiary)]">
         <ResourceIconPreview iconName={resource.iconName} />
       </div>
       

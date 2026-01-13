@@ -298,7 +298,7 @@ interface ModeSelectorProps {
 function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
   return (
     <div className="p-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Paste Mode Card */}
         <button
           onClick={onSelectPaste}
@@ -313,11 +313,13 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
           <h3 className="text-lg font-display font-semibold text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors mb-2">
             Manual
           </h3>
-          <p className="text-sm text-[var(--fg-tertiary)]">
-            Already have content? Paste it directly and we&apos;ll add it to your knowledge base.
-          </p>
-          <div className="mt-4 text-xs text-[var(--fg-quaternary)]">
-            Fastest option
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+            <p className="text-sm text-[var(--fg-tertiary)] flex-1">
+              Already have content? Paste it directly and we&apos;ll add it to your knowledge base.
+            </p>
+            <div className="text-xs text-[var(--fg-quaternary)] whitespace-nowrap sm:mt-0">
+              Fastest option
+            </div>
           </div>
         </button>
 
@@ -335,11 +337,13 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
           <h3 className="text-lg font-display font-semibold text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors mb-2">
             Guided
           </h3>
-          <p className="text-sm text-[var(--fg-tertiary)]">
-            Answer a few questions and we&apos;ll help you create structured, well-formatted content.
-          </p>
-          <div className="mt-4 text-xs text-[var(--fg-quaternary)]">
-            AI-assisted
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+            <p className="text-sm text-[var(--fg-tertiary)] flex-1">
+              Answer a few questions and we&apos;ll help you create structured, well-formatted content.
+            </p>
+            <div className="text-xs text-[var(--fg-quaternary)] whitespace-nowrap sm:mt-0">
+              AI-assisted
+            </div>
           </div>
         </button>
       </div>

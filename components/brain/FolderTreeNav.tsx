@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronRight, 
-  ChevronDown, 
   Folder, 
   FolderOpen, 
   FileText,
@@ -44,6 +43,31 @@ interface TreeNodeProps {
   onSelect: (item: TreeItem) => void;
 }
 
+// Smoother animation variants
+const childrenVariants = {
+  hidden: { 
+    height: 0, 
+    opacity: 0,
+    transition: {
+      height: { duration: 0.2, ease: [0.4, 0, 0.2, 1] },
+      opacity: { duration: 0.15 },
+    },
+  },
+  visible: { 
+    height: 'auto', 
+    opacity: 1,
+    transition: {
+      height: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
+      opacity: { duration: 0.2, delay: 0.05 },
+    },
+  },
+};
+
+const chevronVariants = {
+  collapsed: { rotate: 0 },
+  expanded: { rotate: 90 },
+};
+
 function TreeNode({ 
   item, 
   level, 
@@ -80,6 +104,11 @@ function TreeNode({
     ? 'text-[var(--fg-brand-primary)]' 
     : 'text-[var(--fg-tertiary)]';
 
+  // Format label as lowercase filename
+  const displayLabel = item.itemType === 'file' 
+    ? item.slug.toLowerCase()
+    : item.title.toLowerCase();
+
   return (
     <div>
       <motion.button
@@ -93,8 +122,8 @@ function TreeNode({
           }
         `}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
-        whileHover={{ x: 2 }}
         whileTap={{ scale: 0.98 }}
+        transition={{ duration: 0.1 }}
       >
         {/* Chevron for folders */}
         <span 
@@ -103,9 +132,10 @@ function TreeNode({
         >
           {isFolder && hasChildren && (
             <motion.span
+              variants={chevronVariants}
               initial={false}
-              animate={{ rotate: isExpanded ? 90 : 0 }}
-              transition={{ duration: 0.15 }}
+              animate={isExpanded ? 'expanded' : 'collapsed'}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             >
               <ChevronRight className="w-3.5 h-3.5 text-[var(--fg-tertiary)]" />
             </motion.span>
@@ -116,19 +146,19 @@ function TreeNode({
         <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
 
         {/* Label */}
-        <span className="text-sm truncate flex-1">
-          {item.title}
+        <span className="text-sm truncate flex-1 font-mono">
+          {displayLabel}
         </span>
       </motion.button>
 
-      {/* Children */}
+      {/* Children with smooth height animation */}
       <AnimatePresence initial={false}>
         {isFolder && hasChildren && isExpanded && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            variants={childrenVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
             className="overflow-hidden"
           >
             {item.children?.map((child) => (
@@ -232,10 +262,10 @@ export function BreadcrumbNav({
   onNavigate,
   className = '',
 }: BreadcrumbNavProps) {
-  const allSegments = [rootLabel, ...pathSegments];
+  const allSegments = useMemo(() => [rootLabel, ...pathSegments], [rootLabel, pathSegments]);
 
   return (
-    <nav className={`flex items-center gap-1 text-sm ${className}`}>
+    <nav className={`flex items-center gap-1 text-sm font-mono ${className}`}>
       {allSegments.map((segment, index) => {
         const isLast = index === allSegments.length - 1;
         
@@ -245,7 +275,7 @@ export function BreadcrumbNav({
               <ChevronRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)]" />
             )}
             <button
-              onClick={() => onNavigate(index - 1)} // -1 because root is at index 0
+              onClick={() => onNavigate(index - 1)}
               disabled={isLast}
               className={`
                 px-1.5 py-0.5 rounded transition-colors
@@ -265,17 +295,11 @@ export function BreadcrumbNav({
 }
 
 /**
- * Format a path segment into a readable label
+ * Format a path segment into a readable label (lowercase)
  */
 function formatSegmentLabel(segment: string): string {
-  // Remove file extension
-  const withoutExt = segment.replace(/\.(md|txt|json)$/, '');
-  // Convert kebab-case or snake_case to Title Case
-  return withoutExt
-    .replace(/[-_]/g, ' ')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  // Keep it lowercase, just clean up
+  return segment.toLowerCase().replace(/[-_]/g, '-');
 }
 
 // ============================================

@@ -81,10 +81,10 @@ function WritingStylesContent() {
     }
   }, [activeTab, documents, isUsingFallback, setActiveDocument]);
 
-  // Generate tabs from documents or fallback
+  // Generate tabs from documents or fallback (lowercase filename.md format)
   const tabs = isUsingFallback
-    ? FALLBACK_DOCUMENTS.map(d => ({ id: d.slug, label: d.label }))
-    : documents.map(d => ({ id: d.slug, label: d.title }));
+    ? FALLBACK_DOCUMENTS.map(d => ({ id: d.slug, label: `${d.slug}.md` }))
+    : documents.map(d => ({ id: d.slug, label: `${d.slug}.md` }));
 
   // Get current content
   const currentContent = isUsingFallback

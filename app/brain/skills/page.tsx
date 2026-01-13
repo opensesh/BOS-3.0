@@ -206,11 +206,6 @@ function SkillsContent() {
             <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               AI capabilities and skill definitions. These documents teach the AI how to perform 
               specific tasks and when to use them.
-              {isUsingFallback && (
-                <span className="block mt-2 text-sm text-[var(--fg-warning-primary)]">
-                  Viewing static files. Connect to database to enable editing.
-                </span>
-              )}
             </p>
           </MotionItem>
 

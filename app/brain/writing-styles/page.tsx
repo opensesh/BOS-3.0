@@ -12,8 +12,7 @@ import { VersionHistoryPanel } from '@/components/brain/VersionHistoryPanel';
 import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
 import { useBrainDocuments } from '@/hooks/useBrainDocuments';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { Settings, Plus, Loader2 } from 'lucide-react';
-import { SyncStatusIndicator } from '@/components/brain/SyncStatusIndicator';
+import { Settings, Plus, Loader2, HelpCircle } from 'lucide-react';
 
 // Fallback data for when database is not seeded
 // Paths point to API route that serves .claude/ files
@@ -135,11 +134,56 @@ function WritingStylesContent() {
           {/* Page Header */}
           <MotionItem className="flex flex-col gap-2 mb-10">
             <div className="flex items-center justify-between">
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
-                Writing Styles
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)] leading-tight">
+                  Writing Styles
+                </h1>
+                {!isUsingFallback && (
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-[var(--fg-quaternary)] font-medium">
+                      STATUS
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2.5 py-1 text-xs font-medium bg-[var(--bg-success-primary)] text-[var(--fg-success-primary)] rounded-full">
+                        Up to Date
+                      </span>
+                      <div className="relative group">
+                        <button
+                          type="button"
+                          className="p-0.5 text-[var(--fg-quaternary)] hover:text-[var(--fg-tertiary)] transition-colors"
+                          aria-label="Status information"
+                        >
+                          <HelpCircle className="w-4 h-4" />
+                        </button>
+                        {/* Tooltip */}
+                        <div className="
+                          absolute bottom-full left-1/2 -translate-x-1/2 mb-2
+                          px-3 py-2
+                          bg-[var(--bg-primary-solid,#0a0d12)] dark:bg-[var(--bg-secondary)]
+                          text-xs font-semibold text-white dark:text-[var(--fg-primary)]
+                          rounded-lg
+                          opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                          transition-all duration-150
+                          z-50
+                          shadow-lg
+                          w-max max-w-xs
+                        ">
+                          <div className="space-y-1.5">
+                            <div className="whitespace-normal"><strong>Up to Date:</strong> All brand data is in sync across teammates.</div>
+                            <div className="whitespace-normal"><strong>Outdated:</strong> Error saving or connecting to database.</div>
+                          </div>
+                          {/* Arrow */}
+                          <div className="
+                            absolute top-full left-1/2 -translate-x-1/2
+                            border-4 border-transparent border-t-[var(--bg-primary-solid,#0a0d12)] dark:border-t-[var(--bg-secondary)]
+                          " />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="flex items-center gap-2">
-                {!isUsingFallback && <SyncStatusIndicator compact />}
                 {!isUsingFallback && (
                   <motion.button
                     onClick={() => setIsAddModalOpen(true)}

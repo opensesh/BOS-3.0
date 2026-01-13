@@ -16,20 +16,21 @@ import { Settings, Plus, Loader2 } from 'lucide-react';
 import { getSkillContent } from './actions';
 
 // Fallback skill files matching the .claude/skills directory
+// Using lowercase slug format for tab labels
 const FALLBACK_SKILLS = [
-  { id: 'bos-code-quality', slug: 'bos-code-quality', label: 'BOS Code Quality', file: 'SKILL.md' },
-  { id: 'brand-guidelines', slug: 'brand-guidelines', label: 'Brand Guidelines', file: 'SKILL.md' },
-  { id: 'create-post-copy', slug: 'create-post-copy', label: 'Create Post', file: 'SKILL.md' },
-  { id: 'explanatory-output-style', slug: 'explanatory-output-style', label: 'Explanatory Output', file: 'SKILL.md' },
-  { id: 'frontend-design', slug: 'frontend-design', label: 'Frontend Design', file: 'SKILL.md' },
-  { id: 'learning-output-style', slug: 'learning-output-style', label: 'Learning Output', file: 'SKILL.md' },
-  { id: 'mcp-builder', slug: 'mcp-builder', label: 'MCP Builder', file: 'SKILL.md' },
-  { id: 'security-guidance', slug: 'security-guidance', label: 'Security Guidance', file: 'SKILL.md' },
-  { id: 'skill-creator', slug: 'skill-creator', label: 'Skill Creator', file: 'SKILL.md' },
-  { id: 'subagent-driven-development', slug: 'subagent-driven-development', label: 'Subagent Development', file: 'SKILL.md' },
-  { id: 'systematic-debugging', slug: 'systematic-debugging', label: 'Systematic Debugging', file: 'SKILL.md' },
-  { id: 'verification-before-completion', slug: 'verification-before-completion', label: 'Verification', file: 'SKILL.md' },
-  { id: 'writing-plans', slug: 'writing-plans', label: 'Writing Plans', file: 'SKILL.md' },
+  { id: 'bos-code-quality', slug: 'bos-code-quality', label: 'bos-code-quality', file: 'SKILL.md' },
+  { id: 'brand-guidelines', slug: 'brand-guidelines', label: 'brand-guidelines', file: 'SKILL.md' },
+  { id: 'create-post-copy', slug: 'create-post-copy', label: 'create-post-copy', file: 'SKILL.md' },
+  { id: 'explanatory-output-style', slug: 'explanatory-output-style', label: 'explanatory-output-style', file: 'SKILL.md' },
+  { id: 'frontend-design', slug: 'frontend-design', label: 'frontend-design', file: 'SKILL.md' },
+  { id: 'learning-output-style', slug: 'learning-output-style', label: 'learning-output-style', file: 'SKILL.md' },
+  { id: 'mcp-builder', slug: 'mcp-builder', label: 'mcp-builder', file: 'SKILL.md' },
+  { id: 'security-guidance', slug: 'security-guidance', label: 'security-guidance', file: 'SKILL.md' },
+  { id: 'skill-creator', slug: 'skill-creator', label: 'skill-creator', file: 'SKILL.md' },
+  { id: 'subagent-driven-development', slug: 'subagent-driven-development', label: 'subagent-driven-development', file: 'SKILL.md' },
+  { id: 'systematic-debugging', slug: 'systematic-debugging', label: 'systematic-debugging', file: 'SKILL.md' },
+  { id: 'verification-before-completion', slug: 'verification-before-completion', label: 'verification-before-completion', file: 'SKILL.md' },
+  { id: 'writing-plans', slug: 'writing-plans', label: 'writing-plans', file: 'SKILL.md' },
 ];
 
 function SkillsContent() {
@@ -122,10 +123,10 @@ function SkillsContent() {
     }
   }, [activeTab, documents, isUsingFallback, hasInitialized, setActiveDocument]);
 
-  // Generate tabs from documents or fallback
+  // Generate tabs from documents or fallback (lowercase format)
   const tabs = isUsingFallback
-    ? FALLBACK_SKILLS.map(s => ({ id: s.slug, label: s.label }))
-    : documents.map(d => ({ id: d.slug, label: d.title }));
+    ? FALLBACK_SKILLS.map(s => ({ id: s.slug, label: s.slug }))
+    : documents.map(d => ({ id: d.slug, label: d.slug }));
 
   // Get current content
   const currentContent = isUsingFallback

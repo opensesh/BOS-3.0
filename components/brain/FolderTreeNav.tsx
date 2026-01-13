@@ -146,7 +146,7 @@ function TreeNode({
         <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
 
         {/* Label */}
-        <span className="text-sm truncate flex-1 font-mono">
+        <span className="text-sm truncate flex-1">
           {displayLabel}
         </span>
       </motion.button>

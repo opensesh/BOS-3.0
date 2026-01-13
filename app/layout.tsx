@@ -16,17 +16,17 @@ import { Toaster } from 'sonner';
 const neueHaas = localFont({
   src: [
     {
-      path: '../fonts/NeueHaasDisplayRoman.woff2',
+      path: '../lib/brand-styles/fonts/NeueHaasDisplayRoman.woff2',
       weight: '400',
       style: 'normal',
     },
     {
-      path: '../fonts/NeueHaasDisplayMedium.woff2',
+      path: '../lib/brand-styles/fonts/NeueHaasDisplayMedium.woff2',
       weight: '500',
       style: 'normal',
     },
     {
-      path: '../fonts/NeueHaasDisplayBold.woff2',
+      path: '../lib/brand-styles/fonts/NeueHaasDisplayBold.woff2',
       weight: '700',
       style: 'normal',
     },

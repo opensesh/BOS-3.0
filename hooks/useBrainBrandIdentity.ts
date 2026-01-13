@@ -110,6 +110,7 @@ export function useBrainBrandIdentity(
       // If no documents and auto-seed is enabled, seed from .claude/
       if (data.length === 0 && autoSeed && !hasAttemptedSeed.current) {
         hasAttemptedSeed.current = true;
+        console.log('[useBrainBrandIdentity] No documents found, seeding from .claude/...');
         const seedSuccess = await seedDocuments();
         
         if (seedSuccess) {
@@ -119,8 +120,8 @@ export function useBrainBrandIdentity(
             const refetchedData = await refetchResponse.json();
             setDocuments(refetchedData);
             
-            // Set first document as active if none selected
-            if (refetchedData.length > 0 && !activeDocument) {
+            // Set first document as active
+            if (refetchedData.length > 0) {
               setActiveDocument(refetchedData[0]);
             }
             return;
@@ -130,15 +131,16 @@ export function useBrainBrandIdentity(
       
       setDocuments(data);
 
-      // Update active document if it exists in the new data
-      if (activeDocument) {
-        const updated = data.find((d: BrainBrandIdentity) => d.id === activeDocument.id);
-        if (updated) {
-          setActiveDocument(updated);
-        }
-      } else if (data.length > 0) {
-        // Set first document as active if none selected
-        setActiveDocument(data[0]);
+      // Set first document as active if none selected and we have data
+      if (data.length > 0) {
+        setActiveDocument((prev: BrainBrandIdentity | null) => {
+          // If we have a previous selection, try to keep it
+          if (prev) {
+            const stillExists = data.find((d: BrainBrandIdentity) => d.id === prev.id);
+            return stillExists || data[0];
+          }
+          return data[0];
+        });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -147,7 +149,7 @@ export function useBrainBrandIdentity(
     } finally {
       setIsLoading(false);
     }
-  }, [brandId, autoSeed, activeDocument, seedDocuments]);
+  }, [brandId, autoSeed, seedDocuments]);
 
   // Auto-fetch on mount
   useEffect(() => {

@@ -6,12 +6,18 @@ import { Plus, Check, Upload, FileText, ImageIcon, Palette, X, ChevronDown } fro
 import { Brandmark } from './Brandmark';
 import { Brand } from '@/types';
 
+// Supabase storage URL helper
+function getSupabaseLogoUrl(filename: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return `${supabaseUrl}/storage/v1/object/public/brand-assets/open-session/logos/${filename}`;
+}
+
 // Default brands - can be extended
 const DEFAULT_BRANDS: Brand[] = [
   {
     id: 'open-session',
     name: 'Open Session',
-    logoPath: '/assets/logos/brandmark-vanilla.svg',
+    logoPath: '', // Will be set based on Supabase URL
     isDefault: true,
   },
 ];
@@ -143,9 +149,10 @@ export function MobileBrandSelector({ onClose }: MobileBrandSelectorProps) {
     }
 
     // For now, use a default logo path or the first uploaded file
+    const defaultLogoUrl = getSupabaseLogoUrl('brandmark-vanilla.svg');
     const logoPath = uploadedFiles.length > 0 
       ? URL.createObjectURL(uploadedFiles[0])
-      : '/assets/logos/brandmark-vanilla.svg';
+      : defaultLogoUrl;
 
     const newBrand: Brand = {
       id: `custom-${Date.now()}`,

@@ -6,6 +6,12 @@
 
 import { BrandPageRoute } from './types';
 
+// Supabase storage URL helper
+function getLogoUrl(filename: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return `${supabaseUrl}/storage/v1/object/public/brand-assets/open-session/logos/${filename}`;
+}
+
 // Topic to page route mapping
 export const BRAND_PAGE_ROUTES: Record<string, BrandPageRoute> = {
   logos: {
@@ -14,7 +20,7 @@ export const BRAND_PAGE_ROUTES: Record<string, BrandPageRoute> = {
     description: 'View all logo variants and usage guidelines',
     href: '/brand-hub/logo',
     icon: 'Hexagon',
-    thumbnail: '/assets/logos/brandmark-vanilla.svg',
+    thumbnail: getLogoUrl('brandmark-vanilla.svg'),
   },
   colors: {
     topic: 'colors',

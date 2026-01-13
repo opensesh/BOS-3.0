@@ -6,6 +6,21 @@
  */
 
 // ===========================================
+// Supabase Storage URL Helpers
+// ===========================================
+
+function getStorageUrl(category: string, filename: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return `${supabaseUrl}/storage/v1/object/public/brand-assets/open-session/${category}/${filename}`;
+}
+
+const logo = (filename: string) => getStorageUrl('logos', filename);
+const image = (filename: string) => getStorageUrl('images', filename);
+const texture = (filename: string) => getStorageUrl('textures', filename);
+const font = (filename: string) => getStorageUrl('fonts', filename);
+const illustration = (filename: string) => getStorageUrl('illustrations', filename);
+
+// ===========================================
 // Types
 // ===========================================
 
@@ -68,36 +83,36 @@ export const LOGO_ASSETS: LogoAsset[] = [
     id: 'brandmark',
     name: 'Brandmark',
     description: 'Standalone icon, minimum 50px',
-    vanillaPath: '/assets/logos/brandmark-vanilla.svg',
-    glassPath: '/assets/logos/brandmark-glass.svg',
-    charcoalPath: '/assets/logos/brandmark-charcoal.svg',
+    vanillaPath: logo('brandmark-vanilla.svg'),
+    glassPath: logo('brandmark-glass.svg'),
+    charcoalPath: logo('brandmark-charcoal.svg'),
     category: 'primary',
   },
   {
     id: 'combo',
     name: 'Combo',
     description: 'Brandmark + wordmark together',
-    vanillaPath: '/assets/logos/logo_main_combo_vanilla.svg',
-    glassPath: '/assets/logos/logo_main_combo_glass.svg',
-    charcoalPath: '/assets/logos/logo_main_combo_charcoal.svg',
+    vanillaPath: logo('logo_main_combo_vanilla.svg'),
+    glassPath: logo('logo_main_combo_glass.svg'),
+    charcoalPath: logo('logo_main_combo_charcoal.svg'),
     category: 'primary',
   },
   {
     id: 'stacked',
     name: 'Stacked',
     description: 'Wordmark stacked vertically',
-    vanillaPath: '/assets/logos/stacked-vanilla.svg',
-    glassPath: '/assets/logos/stacked-glass.svg',
-    charcoalPath: '/assets/logos/stacked-charcoal.svg',
+    vanillaPath: logo('stacked-vanilla.svg'),
+    glassPath: logo('stacked-glass.svg'),
+    charcoalPath: logo('stacked-charcoal.svg'),
     category: 'primary',
   },
   {
     id: 'horizontal',
     name: 'Horizontal',
     description: 'Wordmark in horizontal layout',
-    vanillaPath: '/assets/logos/horizontal-vanilla.svg',
-    glassPath: '/assets/logos/horizontal-glass.svg',
-    charcoalPath: '/assets/logos/horizontal-charcoal.svg',
+    vanillaPath: logo('horizontal-vanilla.svg'),
+    glassPath: logo('horizontal-glass.svg'),
+    charcoalPath: logo('horizontal-charcoal.svg'),
     category: 'primary',
   },
 ];
@@ -114,8 +129,8 @@ export const FONT_ASSETS: FontAsset[] = [
     family: 'Neue Haas Grotesk Display Pro',
     weights: ['Bold', 'Medium'],
     specimen: 'Brand OS™',
-    desktopPath: '/assets/fonts/NeueHaasGroteskDisplay-Pro.zip',
-    webPath: '/assets/fonts/NeueHaasDisplay.woff2',
+    desktopPath: font('NeueHaasGroteskDisplay-Pro.zip'),
+    webPath: font('NeueHaasDisplay.woff2'),
   },
   {
     id: 'neue-haas-text',
@@ -124,8 +139,8 @@ export const FONT_ASSETS: FontAsset[] = [
     family: 'Neue Haas Grotesk Text Pro',
     weights: ['Roman', 'Medium'],
     specimen: 'The quick brown fox jumps over the lazy dog.',
-    desktopPath: '/assets/fonts/NeueHaasGroteskText-Pro.zip',
-    webPath: '/assets/fonts/NeueHaasText.woff2',
+    desktopPath: font('NeueHaasGroteskText-Pro.zip'),
+    webPath: font('NeueHaasText.woff2'),
   },
   {
     id: 'offbit',
@@ -134,8 +149,8 @@ export const FONT_ASSETS: FontAsset[] = [
     family: 'OffBit',
     weights: ['Regular', 'Bold'],
     specimen: 'Born to Create, Made to Make',
-    desktopPath: '/assets/fonts/OffBit.zip',
-    webPath: '/assets/fonts/OffBit-Regular.woff2',
+    desktopPath: font('OffBit.zip'),
+    webPath: font('OffBit-Regular.woff2'),
   },
 ];
 
@@ -145,23 +160,23 @@ export const FONT_ASSETS: FontAsset[] = [
 
 export const ART_DIRECTION_ASSETS: ArtDirectionAsset[] = [
   // Auto - 2 representative images
-  { id: 'auto-1', name: 'Audi Quattro Urban', category: 'auto', src: '/assets/images/auto-audi-quattro-urban-portrait.png' },
-  { id: 'auto-2', name: 'Desert Porsche Sunset', category: 'auto', src: '/assets/images/auto-desert-porsche-sunset-drift.png' },
+  { id: 'auto-1', name: 'Audi Quattro Urban', category: 'auto', src: image('auto-audi-quattro-urban-portrait.png') },
+  { id: 'auto-2', name: 'Desert Porsche Sunset', category: 'auto', src: image('auto-desert-porsche-sunset-drift.png') },
   // Lifestyle - 2 representative images
-  { id: 'lifestyle-1', name: 'Confident Street Style', category: 'lifestyle', src: '/assets/images/lifestyle-confident-street-style.png' },
-  { id: 'lifestyle-2', name: 'Editorial Look Urban', category: 'lifestyle', src: '/assets/images/lifestyle-editorial-look-urban.png' },
+  { id: 'lifestyle-1', name: 'Confident Street Style', category: 'lifestyle', src: image('lifestyle-confident-street-style.png') },
+  { id: 'lifestyle-2', name: 'Editorial Look Urban', category: 'lifestyle', src: image('lifestyle-editorial-look-urban.png') },
   // Move - 2 representative images
-  { id: 'move-1', name: 'Athletic Motion Energy', category: 'move', src: '/assets/images/move-athletic-motion-energy.png' },
-  { id: 'move-2', name: 'Abstract Dance Flow', category: 'move', src: '/assets/images/move-abstract-dance-flow.png' },
+  { id: 'move-1', name: 'Athletic Motion Energy', category: 'move', src: image('move-athletic-motion-energy.png') },
+  { id: 'move-2', name: 'Abstract Dance Flow', category: 'move', src: image('move-abstract-dance-flow.png') },
   // Escape - 2 representative images
-  { id: 'escape-1', name: 'Cliffside Workspace', category: 'escape', src: '/assets/images/escape-cliffside-workspace-ocean-view.png' },
-  { id: 'escape-2', name: 'Desert Wanderer', category: 'escape', src: '/assets/images/escape-desert-silhouette-wanderer.png' },
+  { id: 'escape-1', name: 'Cliffside Workspace', category: 'escape', src: image('escape-cliffside-workspace-ocean-view.png') },
+  { id: 'escape-2', name: 'Desert Wanderer', category: 'escape', src: image('escape-desert-silhouette-wanderer.png') },
   // Work - 2 representative images
-  { id: 'work-1', name: 'Professional Collaboration', category: 'work', src: '/assets/images/work-professional-collaboration.png' },
-  { id: 'work-2', name: 'Modern Workspace', category: 'work', src: '/assets/images/work-office-workspace-modern.png' },
+  { id: 'work-1', name: 'Professional Collaboration', category: 'work', src: image('work-professional-collaboration.png') },
+  { id: 'work-2', name: 'Modern Workspace', category: 'work', src: image('work-office-workspace-modern.png') },
   // Feel - 2 representative images
-  { id: 'feel-1', name: 'Ethereal Portrait', category: 'feel', src: '/assets/images/feel-ethereal-portrait-softness.png' },
-  { id: 'feel-2', name: 'Flowing Fabric Grace', category: 'feel', src: '/assets/images/feel-flowing-fabric-grace.png' },
+  { id: 'feel-1', name: 'Ethereal Portrait', category: 'feel', src: image('feel-ethereal-portrait-softness.png') },
+  { id: 'feel-2', name: 'Flowing Fabric Grace', category: 'feel', src: image('feel-flowing-fabric-grace.png') },
 ];
 
 // ===========================================
@@ -173,23 +188,23 @@ export const TEXTURE_ASSETS: TextureAsset[] = [
     id: 'ascii',
     name: 'ASCII',
     description: 'Digital text pattern overlay',
-    lightPath: '/assets/textures/texture_ascii_01_white_compressed.jpg',
-    darkPath: '/assets/textures/texture_ascii_01_black_compressed.jpg',
-    previewPath: '/assets/textures/texture_ascii_01_white_compressed.jpg',
+    lightPath: texture('texture_ascii_01_white_compressed.jpg'),
+    darkPath: texture('texture_ascii_01_black_compressed.jpg'),
+    previewPath: texture('texture_ascii_01_white_compressed.jpg'),
   },
   {
     id: 'halftone',
     name: 'Halftone',
     description: 'Print-inspired dot pattern',
-    lightPath: '/assets/textures/texture_halftone_01_compressed.jpg',
-    previewPath: '/assets/textures/texture_halftone_01_compressed.jpg',
+    lightPath: texture('texture_halftone_01_compressed.jpg'),
+    previewPath: texture('texture_halftone_01_compressed.jpg'),
   },
   {
     id: 'recycled-card',
     name: 'Recycled Card',
     description: 'Paper texture overlay',
-    lightPath: '/assets/textures/texture_recycled-card_01_compressed.jpg',
-    previewPath: '/assets/textures/texture_recycled-card_01_compressed.jpg',
+    lightPath: texture('texture_recycled-card_01_compressed.jpg'),
+    previewPath: texture('texture_recycled-card_01_compressed.jpg'),
   },
 ];
 
@@ -202,21 +217,21 @@ export const ILLUSTRATION_ASSETS: IllustrationAsset[] = [
     id: 'shape-1',
     name: 'Abstract Shape 1',
     description: 'Geometric form',
-    path: '/assets/illustrations/shape-01.svg',
+    path: illustration('shape-01.svg'),
     category: 'geometric',
   },
   {
     id: 'shape-2',
     name: 'Abstract Shape 2',
     description: 'Organic form',
-    path: '/assets/illustrations/shape-02.svg',
+    path: illustration('shape-02.svg'),
     category: 'organic',
   },
   {
     id: 'shape-3',
     name: 'Abstract Shape 3',
     description: 'Linear pattern',
-    path: '/assets/illustrations/shape-03.svg',
+    path: illustration('shape-03.svg'),
     category: 'linear',
   },
 ];

@@ -9,6 +9,12 @@ interface BrandmarkProps {
   size?: number;
 }
 
+// Supabase storage URL helper for logos
+function getLogoUrl(filename: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return `${supabaseUrl}/storage/v1/object/public/brand-assets/open-session/logos/${filename}`;
+}
+
 export function Brandmark({ className = '', size = 24 }: BrandmarkProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -20,8 +26,8 @@ export function Brandmark({ className = '', size = 24 }: BrandmarkProps) {
 
   // Use charcoal logo for light mode, vanilla for dark mode
   const logoSrc = mounted && resolvedTheme === 'dark' 
-    ? '/assets/logos/brandmark-vanilla.svg'
-    : '/assets/logos/brandmark-charcoal.svg';
+    ? getLogoUrl('brandmark-vanilla.svg')
+    : getLogoUrl('brandmark-charcoal.svg');
 
   return (
     <div 

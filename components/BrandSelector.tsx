@@ -110,12 +110,18 @@ export function BrandSelector({ size = 20, className = '', href = '/', onClick }
     setMounted(true);
   }, []);
 
+  // Supabase storage URL helper
+  const getSupabaseLogoUrl = (filename: string) => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return `${supabaseUrl}/storage/v1/object/public/brand-assets/open-session/logos/${filename}`;
+  };
+
   // Get theme-aware logo path for default brand
   const getLogoPath = (brand: Brand) => {
     if (brand.isDefault && mounted) {
       return resolvedTheme === 'dark'
-        ? '/assets/logos/brandmark-vanilla.svg'
-        : '/assets/logos/brandmark-charcoal.svg';
+        ? getSupabaseLogoUrl('brandmark-vanilla.svg')
+        : getSupabaseLogoUrl('brandmark-charcoal.svg');
     }
     return brand.logoPath;
   };
@@ -179,9 +185,11 @@ export function BrandSelector({ size = 20, className = '', href = '/', onClick }
 
     // For now, use a default logo path or the first uploaded file
     // In the future, this would upload files to a server and get URLs
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const defaultLogoUrl = `${supabaseUrl}/storage/v1/object/public/brand-assets/open-session/logos/brandmark-vanilla.svg`;
     const logoPath = uploadedFiles.length > 0 
       ? URL.createObjectURL(uploadedFiles[0]) // Temporary URL for now
-      : '/assets/logos/brandmark-vanilla.svg'; // Default fallback
+      : defaultLogoUrl; // Default fallback from Supabase
 
     const newBrand: Brand = {
       id: `custom-${Date.now()}`,

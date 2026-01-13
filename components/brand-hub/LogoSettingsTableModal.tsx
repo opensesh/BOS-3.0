@@ -27,6 +27,12 @@ interface StaticLogo {
   variants: { variant: string; path: string }[];
 }
 
+// Supabase storage URL helper
+function getLogoUrl(filename: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return `${supabaseUrl}/storage/v1/object/public/brand-assets/open-session/logos/${filename}`;
+}
+
 const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
   // Main Logos
   {
@@ -35,9 +41,9 @@ const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
     category: 'main',
     logoType: 'brandmark',
     variants: [
-      { variant: 'vanilla', path: '/assets/logos/brandmark-vanilla.svg' },
-      { variant: 'glass', path: '/assets/logos/brandmark-glass.svg' },
-      { variant: 'charcoal', path: '/assets/logos/brandmark-charcoal.svg' },
+      { variant: 'vanilla', path: getLogoUrl('brandmark-vanilla.svg') },
+      { variant: 'glass', path: getLogoUrl('brandmark-glass.svg') },
+      { variant: 'charcoal', path: getLogoUrl('brandmark-charcoal.svg') },
     ],
   },
   {
@@ -46,9 +52,9 @@ const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
     category: 'main',
     logoType: 'combo',
     variants: [
-      { variant: 'vanilla', path: '/assets/logos/logo_main_combo_vanilla.svg' },
-      { variant: 'glass', path: '/assets/logos/logo_main_combo_glass.svg' },
-      { variant: 'charcoal', path: '/assets/logos/logo_main_combo_charcoal.svg' },
+      { variant: 'vanilla', path: getLogoUrl('logo_main_combo_vanilla.svg') },
+      { variant: 'glass', path: getLogoUrl('logo_main_combo_glass.svg') },
+      { variant: 'charcoal', path: getLogoUrl('logo_main_combo_charcoal.svg') },
     ],
   },
   {
@@ -57,9 +63,9 @@ const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
     category: 'main',
     logoType: 'stacked',
     variants: [
-      { variant: 'vanilla', path: '/assets/logos/stacked-vanilla.svg' },
-      { variant: 'glass', path: '/assets/logos/stacked-glass.svg' },
-      { variant: 'charcoal', path: '/assets/logos/stacked-charcoal.svg' },
+      { variant: 'vanilla', path: getLogoUrl('stacked-vanilla.svg') },
+      { variant: 'glass', path: getLogoUrl('stacked-glass.svg') },
+      { variant: 'charcoal', path: getLogoUrl('stacked-charcoal.svg') },
     ],
   },
   {
@@ -68,9 +74,9 @@ const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
     category: 'main',
     logoType: 'horizontal',
     variants: [
-      { variant: 'vanilla', path: '/assets/logos/horizontal-vanilla.svg' },
-      { variant: 'glass', path: '/assets/logos/horizontal-glass.svg' },
-      { variant: 'charcoal', path: '/assets/logos/horizontal-charcoal.svg' },
+      { variant: 'vanilla', path: getLogoUrl('horizontal-vanilla.svg') },
+      { variant: 'glass', path: getLogoUrl('horizontal-glass.svg') },
+      { variant: 'charcoal', path: getLogoUrl('horizontal-charcoal.svg') },
     ],
   },
   // Accessory Logos
@@ -80,9 +86,9 @@ const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
     category: 'accessory',
     logoType: 'core',
     variants: [
-      { variant: 'vanilla', path: '/assets/logos/core.svg' },
-      { variant: 'glass', path: '/assets/logos/core-glass.svg' },
-      { variant: 'charcoal', path: '/assets/logos/core-charcoal.svg' },
+      { variant: 'vanilla', path: getLogoUrl('core.svg') },
+      { variant: 'glass', path: getLogoUrl('core-glass.svg') },
+      { variant: 'charcoal', path: getLogoUrl('core-charcoal.svg') },
     ],
   },
   {
@@ -91,9 +97,9 @@ const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
     category: 'accessory',
     logoType: 'outline',
     variants: [
-      { variant: 'vanilla', path: '/assets/logos/outline.svg' },
-      { variant: 'glass', path: '/assets/logos/outline-glass.svg' },
-      { variant: 'charcoal', path: '/assets/logos/outline-charcoal.svg' },
+      { variant: 'vanilla', path: getLogoUrl('outline.svg') },
+      { variant: 'glass', path: getLogoUrl('outline-glass.svg') },
+      { variant: 'charcoal', path: getLogoUrl('outline-charcoal.svg') },
     ],
   },
   {
@@ -102,9 +108,9 @@ const STATIC_SYSTEM_LOGOS: StaticLogo[] = [
     category: 'accessory',
     logoType: 'filled',
     variants: [
-      { variant: 'vanilla', path: '/assets/logos/filled.svg' },
-      { variant: 'glass', path: '/assets/logos/filled-glass.svg' },
-      { variant: 'charcoal', path: '/assets/logos/filled-charcoal.svg' },
+      { variant: 'vanilla', path: getLogoUrl('filled.svg') },
+      { variant: 'glass', path: getLogoUrl('filled-glass.svg') },
+      { variant: 'charcoal', path: getLogoUrl('filled-charcoal.svg') },
     ],
   },
 ];

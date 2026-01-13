@@ -32,6 +32,12 @@ interface StaticArtImage {
   format: 'png' | 'jpg' | 'webp';
 }
 
+// Supabase storage URL helper
+function getImageUrl(filename: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return `${supabaseUrl}/storage/v1/object/public/brand-assets/open-session/images/${filename}`;
+}
+
 const STATIC_ART_IMAGES: StaticArtImage[] = [
   // Auto category
   {
@@ -39,7 +45,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Audi Quattro Urban Portrait',
     category: 'Auto',
     tags: ['urban', 'night', 'precision'],
-    path: '/assets/images/auto-audi-quattro-urban-portrait.png',
+    path: getImageUrl('auto-audi-quattro-urban-portrait.png'),
     format: 'png',
   },
   {
@@ -47,7 +53,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'BMW Convertible Garage Night',
     category: 'Auto',
     tags: ['garage', 'night', 'elegance'],
-    path: '/assets/images/auto-bmw-convertible-garage-night.png',
+    path: getImageUrl('auto-bmw-convertible-garage-night.png'),
     format: 'png',
   },
   {
@@ -55,7 +61,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Desert Porsche Sunset Drift',
     category: 'Auto',
     tags: ['desert', 'sunset', 'speed'],
-    path: '/assets/images/auto-desert-porsche-sunset-drift.png',
+    path: getImageUrl('auto-desert-porsche-sunset-drift.png'),
     format: 'png',
   },
   {
@@ -63,7 +69,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Night Drive Motion Blur',
     category: 'Auto',
     tags: ['night', 'motion', 'speed'],
-    path: '/assets/images/auto-night-drive-motion-blur.png',
+    path: getImageUrl('auto-night-drive-motion-blur.png'),
     format: 'png',
   },
   // Lifestyle category
@@ -72,7 +78,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Confident Street Style',
     category: 'Lifestyle',
     tags: ['urban', 'fashion', 'confidence'],
-    path: '/assets/images/lifestyle-confident-street-style.png',
+    path: getImageUrl('lifestyle-confident-street-style.png'),
     format: 'png',
   },
   {
@@ -80,7 +86,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Editorial Look Urban',
     category: 'Lifestyle',
     tags: ['editorial', 'fashion', 'urban'],
-    path: '/assets/images/lifestyle-editorial-look-urban.png',
+    path: getImageUrl('lifestyle-editorial-look-urban.png'),
     format: 'png',
   },
   {
@@ -88,7 +94,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Modern Aesthetic Pose',
     category: 'Lifestyle',
     tags: ['modern', 'aesthetic', 'bold'],
-    path: '/assets/images/lifestyle-modern-aesthetic-pose.png',
+    path: getImageUrl('lifestyle-modern-aesthetic-pose.png'),
     format: 'png',
   },
   // Move category
@@ -97,7 +103,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Abstract Dance Flow',
     category: 'Move',
     tags: ['dance', 'flow', 'energy'],
-    path: '/assets/images/move-abstract-dance-flow.png',
+    path: getImageUrl('move-abstract-dance-flow.png'),
     format: 'png',
   },
   {
@@ -105,7 +111,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Athletic Motion Energy',
     category: 'Move',
     tags: ['athletic', 'motion', 'energy'],
-    path: '/assets/images/move-athletic-motion-energy.png',
+    path: getImageUrl('move-athletic-motion-energy.png'),
     format: 'png',
   },
   {
@@ -113,7 +119,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Kinetic Energy Motion',
     category: 'Move',
     tags: ['kinetic', 'energy', 'momentum'],
-    path: '/assets/images/move-kinetic-energy-motion.png',
+    path: getImageUrl('move-kinetic-energy-motion.png'),
     format: 'png',
   },
   // Escape category
@@ -122,7 +128,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Astronaut Sparkle Floating',
     category: 'Escape',
     tags: ['surreal', 'dreams', 'wonder'],
-    path: '/assets/images/escape-astronaut-sparkle-floating.png',
+    path: getImageUrl('escape-astronaut-sparkle-floating.png'),
     format: 'png',
   },
   {
@@ -130,7 +136,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Cliffside Workspace Ocean View',
     category: 'Escape',
     tags: ['remote', 'freedom', 'adventure'],
-    path: '/assets/images/escape-cliffside-workspace-ocean-view.png',
+    path: getImageUrl('escape-cliffside-workspace-ocean-view.png'),
     format: 'png',
   },
   {
@@ -138,7 +144,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Desert Silhouette Wanderer',
     category: 'Escape',
     tags: ['desert', 'freedom', 'remote'],
-    path: '/assets/images/escape-desert-silhouette-wanderer.png',
+    path: getImageUrl('escape-desert-silhouette-wanderer.png'),
     format: 'png',
   },
   // Work category
@@ -147,7 +153,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Business Presentation',
     category: 'Work',
     tags: ['leadership', 'collaboration', 'purpose'],
-    path: '/assets/images/work-business-presentation.png',
+    path: getImageUrl('work-business-presentation.png'),
     format: 'png',
   },
   {
@@ -155,7 +161,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Professional Collaboration',
     category: 'Work',
     tags: ['collaboration', 'innovation', 'growth'],
-    path: '/assets/images/work-professional-collaboration.png',
+    path: getImageUrl('work-professional-collaboration.png'),
     format: 'png',
   },
   {
@@ -163,7 +169,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Team Meeting Discussion',
     category: 'Work',
     tags: ['collaboration', 'focus', 'purpose'],
-    path: '/assets/images/work-team-meeting-discussion.png',
+    path: getImageUrl('work-team-meeting-discussion.png'),
     format: 'png',
   },
   // Feel category
@@ -172,7 +178,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Abstract Figure Warm Tones',
     category: 'Feel',
     tags: ['abstract', 'warmth', 'intimacy'],
-    path: '/assets/images/feel-abstract-figure-warm-tones.png',
+    path: getImageUrl('feel-abstract-figure-warm-tones.png'),
     format: 'png',
   },
   {
@@ -180,7 +186,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Ethereal Portrait Softness',
     category: 'Feel',
     tags: ['softness', 'poetic', 'intimacy'],
-    path: '/assets/images/feel-ethereal-portrait-softness.png',
+    path: getImageUrl('feel-ethereal-portrait-softness.png'),
     format: 'png',
   },
   {
@@ -188,7 +194,7 @@ const STATIC_ART_IMAGES: StaticArtImage[] = [
     name: 'Flowing Fabric Grace',
     category: 'Feel',
     tags: ['texture', 'grace', 'poetic'],
-    path: '/assets/images/feel-flowing-fabric-grace.png',
+    path: getImageUrl('feel-flowing-fabric-grace.png'),
     format: 'png',
   },
 ];

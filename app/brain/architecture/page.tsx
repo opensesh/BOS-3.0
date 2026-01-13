@@ -7,7 +7,6 @@ import { MarkdownCodeViewer } from '@/components/brain/MarkdownCodeViewer';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { PageTransition, MotionItem } from '@/lib/motion';
 import { Settings } from 'lucide-react';
-import { SyncStatusIndicator } from '@/components/brain/SyncStatusIndicator';
 
 export default function ArchitecturePage() {
   const [content, setContent] = useState('');
@@ -45,7 +44,6 @@ export default function ArchitecturePage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <SyncStatusIndicator compact />
                 <button
                   onClick={() => setIsSettingsOpen(true)}
                   className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"

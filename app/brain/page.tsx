@@ -58,14 +58,14 @@ const brainPages = [
   {
     id: 'plugins',
     title: 'Plugins',
-    description: 'Complete capability packages with commands, agents, and skills',
+    description: 'Complete capability packages',
     href: '/brain/plugins',
     icon: Puzzle,
   },
   {
     id: 'agents',
     title: 'Agents',
-    description: 'Autonomous AI workflows that auto-activate based on context',
+    description: 'Autonomous AI workflows',
     href: '/brain/agents',
     icon: Bot,
   },
@@ -291,7 +291,7 @@ export default function BrainPage() {
                   Resources
                 </h2>
                 <motion.div 
-                  className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3"
+                  className="flex flex-col sm:flex-row sm:flex-wrap sm:items-stretch gap-3"
                   variants={staggerContainer}
                   initial="hidden"
                   animate="visible"
@@ -301,7 +301,7 @@ export default function BrainPage() {
                       key={resource.id} 
                       variants={fadeInUp} 
                       custom={index}
-                      className="w-full sm:w-auto sm:min-w-[180px] sm:max-w-[220px]"
+                      className="w-full sm:w-[200px]"
                     >
                       <ResourceCard 
                         resource={resource} 

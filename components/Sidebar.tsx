@@ -26,6 +26,8 @@ import {
   FolderPlus,
   Folder,
   ArrowRight,
+  Puzzle,
+  Bot,
 } from 'lucide-react';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
@@ -72,6 +74,8 @@ const navItems = [
       { label: 'Brand Identity', href: '/brain/brand-identity', icon: FileText },
       { label: 'Writing Styles', href: '/brain/writing-styles', icon: PenTool },
       { label: 'Skills', href: '/brain/skills', icon: Zap },
+      { label: 'Plugins', href: '/brain/plugins', icon: Puzzle },
+      { label: 'Agents', href: '/brain/agents', icon: Bot },
     ]
   },
   { 

@@ -18,6 +18,8 @@ import {
   Zap,
   Shapes,
   ArrowRight,
+  Puzzle,
+  Bot,
 } from 'lucide-react';
 import { useChatContext } from '@/lib/chat-context';
 import { useSpaces } from '@/hooks/useSpaces';
@@ -547,6 +549,8 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
           { label: 'Brand Identity', href: '/brain/brand-identity', icon: FileText },
           { label: 'Writing Styles', href: '/brain/writing-styles', icon: PenTool },
           { label: 'Skills', href: '/brain/skills', icon: Zap },
+          { label: 'Plugins', href: '/brain/plugins', icon: Puzzle },
+          { label: 'Agents', href: '/brain/agents', icon: Bot },
         ];
         const isOnBrainSubpage = pathname.startsWith('/brain/');
         

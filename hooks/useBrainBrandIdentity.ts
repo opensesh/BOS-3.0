@@ -2,10 +2,11 @@
  * Hook for managing Brain Brand Identity documents
  * 
  * Fetches from the new brain_brand_identity table which supports
- * both Markdown and PDF file types.
+ * both Markdown and PDF file types. Automatically seeds data from
+ * .claude/ directory if Supabase is empty.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { BrainBrandIdentity } from '@/lib/supabase/types';
 
 interface UseBrainBrandIdentityOptions {
@@ -13,6 +14,8 @@ interface UseBrainBrandIdentityOptions {
   brandId?: string;
   /** Whether to auto-fetch on mount */
   autoFetch?: boolean;
+  /** Whether to auto-seed if no documents exist */
+  autoSeed?: boolean;
 }
 
 interface UseBrainBrandIdentityReturn {
@@ -20,6 +23,8 @@ interface UseBrainBrandIdentityReturn {
   documents: BrainBrandIdentity[];
   /** Whether documents are loading */
   isLoading: boolean;
+  /** Whether we're currently seeding data */
+  isSeeding: boolean;
   /** Error message if fetch failed */
   error: string | null;
   /** Currently selected document */
@@ -28,6 +33,8 @@ interface UseBrainBrandIdentityReturn {
   setActiveDocument: (doc: BrainBrandIdentity | null) => void;
   /** Refetch documents from API */
   fetchDocuments: () => Promise<void>;
+  /** Manually trigger seed operation */
+  seedDocuments: () => Promise<boolean>;
   /** Create a new document */
   createDocument: (
     title: string,
@@ -49,12 +56,42 @@ const DEFAULT_BRAND_ID = '00000000-0000-0000-0000-000000000001';
 export function useBrainBrandIdentity(
   options: UseBrainBrandIdentityOptions = {}
 ): UseBrainBrandIdentityReturn {
-  const { brandId = DEFAULT_BRAND_ID, autoFetch = true } = options;
+  const { brandId = DEFAULT_BRAND_ID, autoFetch = true, autoSeed = true } = options;
 
   const [documents, setDocuments] = useState<BrainBrandIdentity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSeeding, setIsSeeding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeDocument, setActiveDocument] = useState<BrainBrandIdentity | null>(null);
+  
+  // Track if we've already attempted to seed to avoid loops
+  const hasAttemptedSeed = useRef(false);
+
+  // Seed documents from .claude/ directory
+  const seedDocuments = useCallback(async (): Promise<boolean> => {
+    setIsSeeding(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/brain/seed?brandId=${brandId}`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to seed documents');
+      }
+
+      const result = await response.json();
+      return result.success;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to seed documents';
+      console.error('Error seeding documents:', err);
+      setError(message);
+      return false;
+    } finally {
+      setIsSeeding(false);
+    }
+  }, [brandId]);
 
   // Fetch all documents
   const fetchDocuments = useCallback(async () => {
@@ -69,14 +106,39 @@ export function useBrainBrandIdentity(
       }
 
       const data = await response.json();
+      
+      // If no documents and auto-seed is enabled, seed from .claude/
+      if (data.length === 0 && autoSeed && !hasAttemptedSeed.current) {
+        hasAttemptedSeed.current = true;
+        const seedSuccess = await seedDocuments();
+        
+        if (seedSuccess) {
+          // Refetch after seeding
+          const refetchResponse = await fetch(`/api/brain/brand-identity?brandId=${brandId}`);
+          if (refetchResponse.ok) {
+            const refetchedData = await refetchResponse.json();
+            setDocuments(refetchedData);
+            
+            // Set first document as active if none selected
+            if (refetchedData.length > 0 && !activeDocument) {
+              setActiveDocument(refetchedData[0]);
+            }
+            return;
+          }
+        }
+      }
+      
       setDocuments(data);
 
-      // Update active document if it exists
+      // Update active document if it exists in the new data
       if (activeDocument) {
         const updated = data.find((d: BrainBrandIdentity) => d.id === activeDocument.id);
         if (updated) {
           setActiveDocument(updated);
         }
+      } else if (data.length > 0) {
+        // Set first document as active if none selected
+        setActiveDocument(data[0]);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -85,7 +147,7 @@ export function useBrainBrandIdentity(
     } finally {
       setIsLoading(false);
     }
-  }, [brandId, activeDocument]);
+  }, [brandId, autoSeed, activeDocument, seedDocuments]);
 
   // Auto-fetch on mount
   useEffect(() => {
@@ -179,10 +241,12 @@ export function useBrainBrandIdentity(
   return {
     documents,
     isLoading,
+    isSeeding,
     error,
     activeDocument,
     setActiveDocument,
     fetchDocuments,
+    seedDocuments,
     createDocument,
     updateDocument,
     deleteDocument,

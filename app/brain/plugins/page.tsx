@@ -1,38 +1,33 @@
 'use client';
 
-import React, { useState, useEffect, Suspense, useCallback } from 'react';
+import React, { useState, useEffect, Suspense, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { MarkdownEditor } from '@/components/brain/MarkdownEditor';
+import { TabSelector } from '@/components/brain/TabSelector';
 import { FolderTreeNav, BreadcrumbNav, type TreeItem } from '@/components/brain/FolderTreeNav';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { 
-  Settings, 
-  Loader2, 
-  ChevronLeft, 
-  Package,
-  FolderTree,
-  Menu,
-  X,
-} from 'lucide-react';
+import { Settings, Loader2, FolderTree, X } from 'lucide-react';
 import { getPluginContent, listPlugins, getPluginStructure } from './actions';
 
-interface PluginFile {
-  id: string;
-  slug: string;
-  title: string;
-  itemType: 'folder' | 'file';
-  path: string;
-  children?: PluginFile[];
-}
+// Animation variants for content transitions
+const contentVariants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
+const sidebarVariants = {
+  hidden: { x: -300, opacity: 0 },
+  visible: { x: 0, opacity: 1 },
+};
 
 function PluginsContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const fileParam = searchParams.get('file');
   
   // State
   const [plugins, setPlugins] = useState<{ id: string; label: string }[]>([]);
@@ -110,6 +105,19 @@ function PluginsContent() {
       .finally(() => setIsContentLoading(false));
   }, [activePlugin, selectedFile, content]);
 
+  // Generate tabs with lowercase format
+  const tabs = useMemo(() => {
+    return plugins.map(p => ({
+      id: p.id,
+      label: p.id.toLowerCase(),
+    }));
+  }, [plugins]);
+
+  // Handle plugin tab change
+  const handlePluginChange = useCallback((pluginId: string) => {
+    setActivePlugin(pluginId);
+  }, []);
+
   // Handle file selection from tree
   const handleSelectItem = useCallback((item: TreeItem) => {
     if (item.itemType === 'file') {
@@ -121,10 +129,9 @@ function PluginsContent() {
   // Handle breadcrumb navigation
   const handleBreadcrumbNavigate = useCallback((index: number) => {
     if (index < 0) {
-      // Navigate back to plugin list
+      // Navigate back to plugin root
       setSelectedFile(null);
     }
-    // For now, breadcrumb navigation stays on current file
   }, []);
 
   // Current content
@@ -132,7 +139,7 @@ function PluginsContent() {
     ? `${activePlugin}/${selectedFile.pathSegments?.join('/') || selectedFile.slug}`
     : '';
   const currentContent = content[contentKey] || '';
-  const currentFilename = selectedFile?.title || 'README.md';
+  const currentFilename = selectedFile?.slug?.toLowerCase() || 'readme.md';
 
   // Current path for breadcrumb
   const currentPath = selectedFile?.pathSegments || [];
@@ -153,7 +160,7 @@ function PluginsContent() {
                 {/* Mobile tree toggle */}
                 <button
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="md:hidden p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                  className="lg:hidden p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
                   title="Toggle file tree"
                 >
                   <FolderTree className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
@@ -172,30 +179,16 @@ function PluginsContent() {
             </p>
           </MotionItem>
 
-          {/* Plugin Selector */}
-          <MotionItem className="mb-6">
-            <div className="flex flex-wrap gap-2">
-              {plugins.map(plugin => (
-                <motion.button
-                  key={plugin.id}
-                  onClick={() => setActivePlugin(plugin.id)}
-                  className={`
-                    flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium
-                    transition-all duration-200
-                    ${activePlugin === plugin.id
-                      ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] border border-[var(--border-brand)]'
-                      : 'bg-[var(--bg-secondary)] text-[var(--fg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
-                    }
-                  `}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Package className="w-4 h-4" />
-                  <span>{plugin.label}</span>
-                </motion.button>
-              ))}
-            </div>
-          </MotionItem>
+          {/* Plugin Tab Selector */}
+          {tabs.length > 0 && !isLoading && (
+            <MotionItem className="mb-6">
+              <TabSelector
+                tabs={tabs}
+                activeTab={activePlugin}
+                onChange={handlePluginChange}
+              />
+            </MotionItem>
+          )}
 
           {/* Loading State */}
           {(isLoading || isTreeLoading) && (
@@ -212,7 +205,7 @@ function PluginsContent() {
                 <div className="hidden lg:block w-64 flex-shrink-0">
                   <div className="sticky top-6 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4">
                     <h3 className="text-sm font-medium text-[var(--fg-secondary)] mb-3 px-2">
-                      Files
+                      files
                     </h3>
                     <FolderTreeNav
                       tree={pluginTree}
@@ -232,24 +225,30 @@ function PluginsContent() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
                         className="fixed inset-0 bg-black/50 z-40 lg:hidden"
                         onClick={() => setIsSidebarOpen(false)}
                       />
                       <motion.div
-                        initial={{ x: -300 }}
-                        animate={{ x: 0 }}
-                        exit={{ x: -300 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        variants={sidebarVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        transition={{ 
+                          type: 'spring', 
+                          damping: 30, 
+                          stiffness: 300,
+                        }}
                         className="fixed left-0 top-0 bottom-0 w-72 bg-[var(--bg-primary)] border-r border-[var(--border-primary)] z-50 lg:hidden overflow-y-auto"
                       >
                         <div className="p-4">
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-medium text-[var(--fg-primary)]">
-                              Files
+                              files
                             </h3>
                             <button
                               onClick={() => setIsSidebarOpen(false)}
-                              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)]"
+                              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -271,33 +270,60 @@ function PluginsContent() {
                 <div className="flex-1 min-w-0">
                   {/* Breadcrumb */}
                   {selectedFile && currentPath.length > 0 && (
-                    <div className="mb-4">
+                    <motion.div 
+                      className="mb-4"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
                       <BreadcrumbNav
                         pathSegments={currentPath}
-                        rootLabel={plugins.find(p => p.id === activePlugin)?.label || activePlugin}
+                        rootLabel={activePlugin.toLowerCase()}
                         onNavigate={handleBreadcrumbNavigate}
                       />
-                    </div>
+                    </motion.div>
                   )}
 
-                  {/* File Content */}
-                  {selectedFile ? (
-                    <MarkdownEditor
-                      documentId={selectedFile.id}
-                      filename={currentFilename}
-                      content={currentContent}
-                      maxLines={100}
-                      isLoading={isContentLoading}
-                      readOnly={true}
-                    />
-                  ) : (
-                    <div className="rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-8 text-center">
-                      <FolderTree className="w-12 h-12 mx-auto mb-4 text-[var(--fg-tertiary)]" />
-                      <p className="text-[var(--fg-secondary)]">
-                        Select a file from the tree to view its contents
-                      </p>
-                    </div>
-                  )}
+                  {/* File Content with animated transitions */}
+                  <AnimatePresence mode="wait">
+                    {selectedFile ? (
+                      <motion.div
+                        key={selectedFile.id}
+                        variants={contentVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={{
+                          duration: 0.2,
+                          ease: [0.4, 0, 0.2, 1],
+                        }}
+                      >
+                        <MarkdownEditor
+                          documentId={selectedFile.id}
+                          filename={currentFilename}
+                          content={currentContent}
+                          maxLines={100}
+                          isLoading={isContentLoading}
+                          readOnly={true}
+                        />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="empty"
+                        variants={contentVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        transition={{ duration: 0.2 }}
+                        className="rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-8 text-center"
+                      >
+                        <FolderTree className="w-12 h-12 mx-auto mb-4 text-[var(--fg-tertiary)]" />
+                        <p className="text-[var(--fg-secondary)]">
+                          Select a file from the tree to view its contents
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </MotionItem>
@@ -306,7 +332,7 @@ function PluginsContent() {
           {/* Empty State */}
           {!isLoading && !isTreeLoading && !pluginTree && plugins.length > 0 && (
             <div className="rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-8 text-center">
-              <Package className="w-12 h-12 mx-auto mb-4 text-[var(--fg-tertiary)]" />
+              <FolderTree className="w-12 h-12 mx-auto mb-4 text-[var(--fg-tertiary)]" />
               <p className="text-[var(--fg-secondary)]">
                 No files found in this plugin
               </p>

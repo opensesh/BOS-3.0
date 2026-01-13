@@ -159,18 +159,18 @@ export default function DesignTokensPage() {
     setDownloading(true);
     
     try {
-      // Create a list of files to fetch
+      // Create a list of files to fetch from the API route
       const files = [
-        { path: '/styles/tokens.json', name: 'tokens.json' },
-        { path: '/styles/tailwind.config.ts', name: 'tailwind.config.ts' },
-        { path: '/styles/brand.css', name: 'brand.css' },
-        { path: '/styles/README.md', name: 'README.md' },
-        { path: '/styles/AI-CONTEXT.md', name: 'AI-CONTEXT.md' },
-        { path: '/styles/fonts/NeueHaasDisplayBold.woff2', name: 'fonts/NeueHaasDisplayBold.woff2' },
-        { path: '/styles/fonts/NeueHaasDisplayMedium.woff2', name: 'fonts/NeueHaasDisplayMedium.woff2' },
-        { path: '/styles/fonts/NeueHaasDisplayRoman.woff2', name: 'fonts/NeueHaasDisplayRoman.woff2' },
-        { path: '/styles/fonts/OffBit-Bold.woff2', name: 'fonts/OffBit-Bold.woff2' },
-        { path: '/styles/fonts/OffBit-Regular.woff2', name: 'fonts/OffBit-Regular.woff2' },
+        { path: '/api/styles/tokens.json', name: 'tokens.json' },
+        { path: '/api/styles/tailwind.config.ts', name: 'tailwind.config.ts' },
+        { path: '/api/styles/brand.css', name: 'brand.css' },
+        { path: '/api/styles/README.md', name: 'README.md' },
+        { path: '/api/styles/AI-CONTEXT.md', name: 'AI-CONTEXT.md' },
+        { path: '/api/styles/fonts/NeueHaasDisplayBold.woff2', name: 'fonts/NeueHaasDisplayBold.woff2' },
+        { path: '/api/styles/fonts/NeueHaasDisplayMedium.woff2', name: 'fonts/NeueHaasDisplayMedium.woff2' },
+        { path: '/api/styles/fonts/NeueHaasDisplayRoman.woff2', name: 'fonts/NeueHaasDisplayRoman.woff2' },
+        { path: '/api/styles/fonts/OffBit-Bold.woff2', name: 'fonts/OffBit-Bold.woff2' },
+        { path: '/api/styles/fonts/OffBit-Regular.woff2', name: 'fonts/OffBit-Regular.woff2' },
       ];
 
       // Dynamically import JSZip
@@ -204,8 +204,8 @@ export default function DesignTokensPage() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download failed:', error);
-      // Fallback: open the styles folder in a new tab
-      window.open('/styles/', '_blank');
+      // Show error notification (styles are served via API, no fallback URL)
+      alert('Download failed. Please try again.');
     } finally {
       setDownloading(false);
     }

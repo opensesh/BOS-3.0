@@ -338,7 +338,7 @@ function ModeSelector({ onSelectPaste, onSelectGuided }: ModeSelectorProps) {
           <p className="text-sm text-[var(--fg-tertiary)]">
             Answer a few questions and we&apos;ll help you create structured, well-formatted content.
           </p>
-          <div className="mt-4 text-xs text-[var(--fg-brand-primary)]">
+          <div className="mt-4 text-xs text-[var(--fg-quaternary)]">
             AI-assisted
           </div>
         </button>

@@ -71,13 +71,7 @@ const categories: Category[] = ['All', 'Auto', 'Lifestyle', 'Move', 'Escape', 'W
 
 // Helper to get category from variant field
 function getCategoryFromImage(image: BrandArtImage): ArtDirectionCategory | null {
-  // First check metadata for artCategory
-  const meta = image.metadata as BrandArtImageMetadata;
-  if (meta.artCategory) {
-    return meta.artCategory;
-  }
-  
-  // Fall back to variant field (lowercase)
+  // First check variant field (primary source from database)
   if (image.variant) {
     const variantLower = image.variant.toLowerCase();
     const categoryMap: Record<string, ArtDirectionCategory> = {
@@ -88,7 +82,15 @@ function getCategoryFromImage(image: BrandArtImage): ArtDirectionCategory | null
       'work': 'Work',
       'feel': 'Feel',
     };
-    return categoryMap[variantLower] || null;
+    if (categoryMap[variantLower]) {
+      return categoryMap[variantLower];
+    }
+  }
+  
+  // Fall back to metadata artCategory
+  const meta = image.metadata as BrandArtImageMetadata;
+  if (meta.artCategory) {
+    return meta.artCategory;
   }
   
   return null;

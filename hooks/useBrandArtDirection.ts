@@ -16,7 +16,7 @@ import {
 } from '@/lib/supabase/brand-art-service';
 
 // Default brand ID for Open Session
-const DEFAULT_BRAND_ID = process.env.NEXT_PUBLIC_DEFAULT_BRAND_ID || '';
+const DEFAULT_BRAND_ID = process.env.NEXT_PUBLIC_DEFAULT_BRAND_ID || '16aa5681-c792-45cf-bf65-9f9cbc3197af';
 
 interface UseBrandArtDirectionOptions {
   brandId?: string;
@@ -73,6 +73,22 @@ export function useBrandArtDirection(options: UseBrandArtDirectionOptions = {}):
   const filteredImages = selectedCategory === 'All'
     ? images
     : images.filter(img => {
+        // First check variant field (primary source from database)
+        if (img.variant) {
+          const variantLower = img.variant.toLowerCase();
+          const categoryMap: Record<string, ArtDirectionCategory> = {
+            'auto': 'Auto',
+            'lifestyle': 'Lifestyle',
+            'move': 'Move',
+            'escape': 'Escape',
+            'work': 'Work',
+            'feel': 'Feel',
+          };
+          if (categoryMap[variantLower] === selectedCategory) {
+            return true;
+          }
+        }
+        // Fall back to metadata artCategory
         const meta = img.metadata as BrandArtImageMetadata;
         return meta.artCategory === selectedCategory;
       });

@@ -19,7 +19,7 @@ import {
 } from '@/lib/supabase/brand-guidelines-service';
 
 // Default brand ID for Open Session
-const DEFAULT_BRAND_ID = process.env.NEXT_PUBLIC_DEFAULT_BRAND_ID || '';
+const DEFAULT_BRAND_ID = process.env.NEXT_PUBLIC_DEFAULT_BRAND_ID || '16aa5681-c792-45cf-bf65-9f9cbc3197af';
 
 interface UseBrandGuidelinesOptions {
   brandId?: string;

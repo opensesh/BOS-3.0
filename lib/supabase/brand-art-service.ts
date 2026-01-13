@@ -370,9 +370,32 @@ export async function getArtImagesGroupedByCategory(brandId: string): Promise<
   });
   grouped.set('Other', []);
 
+  // Category mapping from variant to ArtDirectionCategory
+  const categoryMap: Record<string, ArtDirectionCategory> = {
+    'auto': 'Auto',
+    'lifestyle': 'Lifestyle',
+    'move': 'Move',
+    'escape': 'Escape',
+    'work': 'Work',
+    'feel': 'Feel',
+  };
+
   images.forEach(image => {
-    const meta = image.metadata as BrandArtImageMetadata;
-    const category = meta.artCategory || 'Other';
+    // First check variant field
+    let category: ArtDirectionCategory | 'Other' = 'Other';
+    if (image.variant) {
+      const variantLower = image.variant.toLowerCase();
+      if (categoryMap[variantLower]) {
+        category = categoryMap[variantLower];
+      }
+    }
+    // Fall back to metadata artCategory
+    if (category === 'Other') {
+      const meta = image.metadata as BrandArtImageMetadata;
+      if (meta.artCategory) {
+        category = meta.artCategory;
+      }
+    }
     
     if (!grouped.has(category)) {
       grouped.set(category, []);
@@ -401,7 +424,26 @@ export async function getArtImageCounts(brandId: string): Promise<
     Feel: 0,
   };
 
+  // Category mapping from variant to ArtDirectionCategory
+  const categoryMap: Record<string, ArtDirectionCategory> = {
+    'auto': 'Auto',
+    'lifestyle': 'Lifestyle',
+    'move': 'Move',
+    'escape': 'Escape',
+    'work': 'Work',
+    'feel': 'Feel',
+  };
+
   images.forEach(image => {
+    // First check variant field
+    if (image.variant) {
+      const variantLower = image.variant.toLowerCase();
+      if (categoryMap[variantLower] && categoryMap[variantLower] in counts) {
+        counts[categoryMap[variantLower]]++;
+        return;
+      }
+    }
+    // Fall back to metadata artCategory
     const meta = image.metadata as BrandArtImageMetadata;
     if (meta.artCategory && meta.artCategory in counts) {
       counts[meta.artCategory]++;

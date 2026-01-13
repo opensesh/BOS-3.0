@@ -283,6 +283,7 @@ function CategoryDescription({ category }: { category: Category }) {
 export default function TexturesPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category>('all');
   const [selectedTextureIndex, setSelectedTextureIndex] = useState<number | null>(null);
+  const [activeTexture, setActiveTexture] = useState<number>(0);
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Fetch textures from Supabase
@@ -292,6 +293,7 @@ export default function TexturesPage() {
   const handleCategoryChange = (category: Category) => {
     setSelectedCategory(category);
     setSelectedVariant(category);
+    setActiveTexture(0);
   };
 
   // Filter textures for display
@@ -431,40 +433,137 @@ export default function TexturesPage() {
           </motion.button>
         </div>
 
-        {/* Texture Grid Gallery */}
+        {/* Gallery - Horizontal Accordion Style (matching Art Direction) */}
         <motion.div
+          id="textures"
           initial={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"
+          className="relative w-full"
         >
-          {displayTextures.map((texture, index) => (
-            <motion.div
-              key={texture.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2, delay: index * 0.03 }}
-              onClick={() => setSelectedTextureIndex(index)}
-              className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer border border-[var(--border-secondary)] hover:border-[var(--border-brand)] transition-all duration-300"
-            >
-              {/* Texture Image */}
-              <Image
-                src={texture.publicUrl || ''}
-                alt={getTextureTitle(texture)}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                quality={85}
-              />
+          {/* Desktop: Horizontal Gallery */}
+          <div className="hidden md:flex w-full items-center justify-center gap-1">
+            {displayTextures.map((texture, index) => (
+              <motion.div
+                key={`${selectedCategory}-${index}-${texture.id}`}
+                className="relative cursor-pointer overflow-hidden rounded-3xl"
+                initial={false}
+                animate={{
+                  width: activeTexture === index ? '28rem' : '5rem',
+                  height: '24rem',
+                }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                onClick={() => setSelectedTextureIndex(index)}
+                onMouseEnter={() => setActiveTexture(index)}
+              >
+                {/* Gradient Overlay on Active */}
+                <AnimatePresence>
+                  {activeTexture === index && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 h-full w-full bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-10"
+                    />
+                  )}
+                </AnimatePresence>
+                
+                {/* Category Label on Active (only when <= 8 textures) */}
+                <AnimatePresence>
+                  {activeTexture === index && displayTextures.length <= 8 && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute flex h-full w-full flex-col items-end justify-end p-4 z-20"
+                    >
+                      <p className="text-left text-xs text-white/70 font-accent tracking-wider uppercase">
+                        {categories.find(c => c.id === getTextureVariant(texture))?.label || 'Texture'}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {/* Image */}
+                <Image
+                  src={texture.publicUrl || ''}
+                  alt={getTextureTitle(texture)}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 28rem"
+                  quality={90}
+                  priority={index < 3}
+                />
+              </motion.div>
+            ))}
+          </div>
 
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100">
-                <span className="text-white text-xs font-medium text-center line-clamp-2">
-                  {getTextureTitle(texture)}
-                </span>
-              </div>
-            </motion.div>
-          ))}
+          {/* Mobile: Vertical Accordion Gallery */}
+          <div className="flex md:hidden w-full flex-col items-center justify-center gap-1">
+            {displayTextures.slice(0, 10).map((texture, index) => (
+              <motion.div
+                key={`${selectedCategory}-mobile-${index}-${texture.id}`}
+                className="relative cursor-pointer overflow-hidden rounded-3xl w-full"
+                initial={false}
+                animate={{ 
+                  height: activeTexture === index ? '20rem' : '2.75rem' 
+                }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                onClick={() => setActiveTexture(activeTexture === index ? -1 : index)}
+              >
+                {/* Gradient Overlay on Active */}
+                <AnimatePresence>
+                  {activeTexture === index && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none z-10"
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* Category Label on Active */}
+                <AnimatePresence>
+                  {activeTexture === index && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 16 }}
+                      className="absolute inset-0 flex items-end justify-end px-4 pb-4 z-20"
+                    >
+                      <p className="text-xs text-white/70 font-accent tracking-wider uppercase">
+                        {categories.find(c => c.id === getTextureVariant(texture))?.label || 'Texture'}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Image */}
+                <Image
+                  src={texture.publicUrl || ''}
+                  alt={getTextureTitle(texture)}
+                  fill
+                  className="object-cover select-none"
+                  sizes="100vw"
+                  quality={85}
+                />
+              </motion.div>
+            ))}
+
+            {/* Truncation indicator for mobile */}
+            {displayTextures.length > 10 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="w-full py-4 text-center"
+              >
+                <p className="text-sm text-[var(--fg-primary)]/50 font-accent tracking-wider">
+                  +{displayTextures.length - 10} more {displayTextures.length - 10 === 1 ? 'texture' : 'textures'}
+                </p>
+              </motion.div>
+            )}
+          </div>
         </motion.div>
 
         {/* Empty State */}

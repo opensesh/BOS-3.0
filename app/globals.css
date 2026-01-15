@@ -178,7 +178,8 @@ button,
 /* Chat response typography - Perplexity-style */
 .chat-content {
   font-size: 15px;
-  line-height: 1.7;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
   color: var(--fg-primary);
 }
 
@@ -189,7 +190,7 @@ button,
   font-weight: 600;
   color: var(--fg-primary);
   margin-top: 1.5em;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.75em;
 }
 
 .chat-content h1 {
@@ -205,17 +206,17 @@ button,
 }
 
 .chat-content p {
-  margin-bottom: 1em;
+  margin-bottom: 1.5em;
 }
 
 .chat-content ul,
 .chat-content ol {
   padding-left: 1.5em;
-  margin-bottom: 1em;
+  margin-bottom: 1.5em;
 }
 
 .chat-content li {
-  margin-bottom: 0.25em;
+  margin-bottom: 0.5em;
 }
 
 .chat-content code {

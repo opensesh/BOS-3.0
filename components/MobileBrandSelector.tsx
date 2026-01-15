@@ -238,17 +238,17 @@ export function MobileBrandSelector({ onClose }: MobileBrandSelectorProps) {
             "
           >
             <div className="p-2">
-              <div className="px-3 py-2 text-xs font-semibold text-[var(--fg-secondary)] uppercase tracking-wider">
+              <div className="px-3 py-2 text-sm font-semibold text-[var(--fg-secondary)] uppercase tracking-wider">
                 SELECT BRAND
               </div>
-              
+
               {brands.map((brand) => (
                 <button
                   key={brand.id}
                   onClick={() => handleSelectBrand(brand.id)}
                   className={`
                     w-full flex items-center justify-between
-                    px-3 py-2 rounded-lg
+                    px-3.5 py-2.5 rounded-lg
                     hover:bg-[var(--bg-tertiary)]
                     transition-colors duration-200
                     ${selectedBrandId === brand.id ? 'bg-[var(--bg-tertiary)]' : ''}
@@ -269,12 +269,12 @@ export function MobileBrandSelector({ onClose }: MobileBrandSelectorProps) {
                         <Brandmark size={20} />
                       )}
                     </div>
-                    <span className="text-sm font-medium text-[var(--fg-primary)] truncate">
+                    <span className="text-base font-medium text-[var(--fg-primary)] truncate">
                       {brand.name}
                     </span>
                   </div>
                   {selectedBrandId === brand.id && (
-                    <Check className="w-4 h-4 text-brand-aperol flex-shrink-0 ml-2" />
+                    <Check className="w-5 h-5 text-brand-aperol flex-shrink-0 ml-2" />
                   )}
                 </button>
               ))}
@@ -287,15 +287,15 @@ export function MobileBrandSelector({ onClose }: MobileBrandSelectorProps) {
                 }}
                 className="
                   w-full flex items-center space-x-3
-                  px-3 py-2 mt-2 rounded-lg
+                  px-3.5 py-2.5 mt-2 rounded-lg
                   border border-[var(--border-secondary)]
                   hover:bg-[var(--bg-tertiary)]
                   hover:border-brand-aperol/50
                   transition-all duration-200
                 "
               >
-                <Plus className="w-4 h-4 text-brand-aperol" />
-                <span className="text-sm font-medium text-brand-aperol">
+                <Plus className="w-5 h-5 text-brand-aperol" />
+                <span className="text-base font-medium text-brand-aperol">
                   Add New Brand
                 </span>
               </button>

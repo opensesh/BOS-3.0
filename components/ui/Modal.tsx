@@ -74,7 +74,7 @@ export function Modal({
               <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-secondary)] flex-shrink-0">
                 <Heading
                   slot="title"
-                  className="text-lg font-display font-semibold text-[var(--fg-primary)]"
+                  className="text-xl font-display font-semibold text-[var(--fg-primary)]"
                 >
                   {title}
                 </Heading>
@@ -140,12 +140,12 @@ export function ConfirmModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
-      <p className="text-[var(--fg-secondary)] mb-6">{message}</p>
+      <p className="text-base text-[var(--fg-secondary)] mb-6">{message}</p>
       <div className="flex justify-end gap-3">
         <button
           onClick={onClose}
           disabled={isLoading}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--fg-primary)] bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] transition-colors disabled:opacity-50"
+          className="px-4 py-2.5 rounded-lg text-base font-medium text-[var(--fg-primary)] bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] transition-colors disabled:opacity-50"
         >
           {cancelText}
         </button>
@@ -153,7 +153,7 @@ export function ConfirmModal({
           onClick={onConfirm}
           disabled={isLoading}
           className={cn(
-            'px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50',
+            'px-4 py-2.5 rounded-lg text-base font-medium transition-colors disabled:opacity-50',
             variantClasses[variant]
           )}
         >

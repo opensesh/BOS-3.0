@@ -125,7 +125,7 @@ export function NotificationsDropdown({ isOpen, onClose, triggerRef }: Notificat
             {/* Header */}
             <div className="flex items-center justify-between px-4 min-h-[52px] border-b border-[var(--border-secondary)]">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
+              <h3 className="text-base font-semibold text-[var(--fg-primary)]">
                 Notifications
               </h3>
               {unreadCount > 0 && (
@@ -199,14 +199,14 @@ export function NotificationsDropdown({ isOpen, onClose, triggerRef }: Notificat
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-[var(--fg-primary)] line-clamp-1">
+                          <p className="text-base font-medium text-[var(--fg-primary)] line-clamp-1">
                             {notification.title}
                           </p>
                           {!notification.read && (
                             <span className="w-2 h-2 rounded-full bg-[var(--color-aperol)] flex-shrink-0 mt-1.5" />
                           )}
                         </div>
-                        <p className="text-xs text-[var(--fg-tertiary)] line-clamp-2 mt-0.5">
+                        <p className="text-sm text-[var(--fg-tertiary)] line-clamp-2 mt-0.5">
                           {notification.message}
                         </p>
                         <p className="text-[10px] text-[var(--fg-quaternary)] mt-1">
@@ -228,8 +228,8 @@ export function NotificationsDropdown({ isOpen, onClose, triggerRef }: Notificat
                 ">
                   <Bell className="w-5 h-5 text-[var(--fg-quaternary)]" />
                 </div>
-                <p className="text-sm text-[var(--fg-secondary)]">No new notifications</p>
-                <p className="text-xs text-[var(--fg-tertiary)] mt-1">
+                <p className="text-base text-[var(--fg-secondary)]">No new notifications</p>
+                <p className="text-sm text-[var(--fg-tertiary)] mt-1">
                   We'll let you know when something arrives
                 </p>
               </div>
@@ -246,7 +246,7 @@ export function NotificationsDropdown({ isOpen, onClose, triggerRef }: Notificat
                 }}
                 className="
                   w-full px-4 py-2.5
-                  text-sm text-[var(--fg-brand-primary)]
+                  text-base text-[var(--fg-brand-primary)]
                   hover:bg-[var(--bg-tertiary)]
                   transition-colors
                   font-medium

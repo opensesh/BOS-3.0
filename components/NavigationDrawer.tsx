@@ -195,14 +195,14 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-2">
                 <div className="flex items-center justify-between px-2 pt-[14px] pb-2">
-                  <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Chats</h3>
-                  <Link 
-                    href="/chats" 
+                  <h3 className="text-base font-semibold text-[var(--fg-primary)]">Chats</h3>
+                  <Link
+                    href="/chats"
                     onClick={onClose}
-                    className="text-xs text-[var(--fg-brand-primary)] hover:underline flex items-center gap-1"
+                    className="text-sm text-[var(--fg-brand-primary)] hover:underline flex items-center gap-1"
                   >
                     View all
-                    <ArrowRight className="w-3 h-3" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </motion.div>
@@ -215,13 +215,13 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       variants={fadeInUp}
                       custom={index}
                       onClick={() => handleChatClick(chat.id)}
-                      className="w-full text-left px-3.5 py-2.5 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
+                      className="w-full text-left px-3.5 py-3 rounded-lg text-base text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
                     >
                       <span className="truncate">{chat.title}</span>
                     </motion.button>
                   ))
                 ) : (
-                  <p className="text-xs text-[var(--fg-quaternary)] px-3 py-2">
+                  <p className="text-sm text-[var(--fg-quaternary)] px-3 py-2">
                     No recent chats yet
                   </p>
                 )}
@@ -241,14 +241,14 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-2">
                 <div className="flex items-center justify-between px-2 pt-[14px] pb-2">
-                  <h3 className="text-sm font-semibold text-[var(--fg-primary)]">Projects</h3>
-                  <Link 
-                    href="/projects" 
+                  <h3 className="text-base font-semibold text-[var(--fg-primary)]">Projects</h3>
+                  <Link
+                    href="/projects"
                     onClick={onClose}
-                    className="text-xs text-[var(--fg-brand-primary)] hover:underline flex items-center gap-1"
+                    className="text-sm text-[var(--fg-brand-primary)] hover:underline flex items-center gap-1"
                   >
                     View all
-                    <ArrowRight className="w-3 h-3" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </motion.div>
@@ -260,7 +260,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       <Link
                         href={`/projects/${project.id}`}
                         onClick={onClose}
-                        className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+                        className="w-full flex items-center gap-2 px-3.5 py-3 rounded-lg text-base text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
                       >
                         <div
                           className="w-3 h-3 rounded-sm flex-shrink-0"
@@ -271,7 +271,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                     </motion.div>
                   ))
                 ) : (
-                  <p className="text-xs text-[var(--fg-quaternary)] px-3 py-2">
+                  <p className="text-sm text-[var(--fg-quaternary)] px-3 py-2">
                     No projects yet
                   </p>
                 )}
@@ -282,9 +282,9 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                 <Link
                   href="/projects"
                   onClick={onClose}
-                  className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+                  className="w-full flex items-center gap-2 px-3.5 py-3 rounded-lg text-base text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
                 >
-                  <FolderPlus className="w-4 h-4" />
+                  <FolderPlus className="w-5 h-5" />
                   <span>Create new project</span>
                 </Link>
               </motion.div>
@@ -303,33 +303,33 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
             <div className="px-2 mb-2">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Spaces</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Spaces</h3>
               </motion.div>
-              
-              <motion.button 
+
+              <motion.button
                 variants={fadeInUp}
-                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors mb-1 text-sm"
+                className="w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors mb-1 text-base"
               >
-                <FileText className="w-4 h-4" />
+                <FileText className="w-5 h-5" />
                 <span>Templates</span>
               </motion.button>
-              
-              <motion.button 
+
+              <motion.button
                 variants={fadeInUp}
-                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors mb-3 text-sm"
+                className="w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors mb-3 text-base"
               >
-                <FolderPlus className="w-4 h-4" />
+                <FolderPlus className="w-5 h-5" />
                 <span>Create new Space</span>
               </motion.button>
 
               <motion.div variants={fadeInUp} className="border-t border-[var(--border-secondary)] pt-2">
                 <div className="px-3 py-1 text-xs text-[var(--fg-tertiary)] mb-2">My Spaces</div>
                 {!spacesLoaded ? (
-                  <div className="px-3 py-2 text-xs text-[var(--fg-quaternary)]">
+                  <div className="px-3 py-2 text-sm text-[var(--fg-quaternary)]">
                     Loading...
                   </div>
                 ) : userSpaces.length === 0 ? (
-                  <div className="px-3 py-2 text-xs text-[var(--fg-quaternary)]">
+                  <div className="px-3 py-2 text-sm text-[var(--fg-quaternary)]">
                     No spaces yet. Create one above!
                   </div>
                 ) : (
@@ -344,7 +344,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         <Link
                           href={`/spaces/${space.slug}`}
                           className={`
-                            w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg mb-1
+                            w-full flex items-center gap-3 px-3.5 py-3 rounded-lg mb-1
                             transition-colors
                             ${
                               isSpaceActive
@@ -355,9 +355,9 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         >
                           <LayoutGrid className={`w-5 h-5 ${isSpaceActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{space.title}</div>
+                            <div className="text-base font-medium truncate">{space.title}</div>
                             {space.description && (
-                              <div className="text-xs text-[var(--fg-tertiary)] truncate">
+                              <div className="text-sm text-[var(--fg-tertiary)] truncate">
                                 {space.description}
                               </div>
                             )}
@@ -382,16 +382,13 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
           >
             <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Home</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Home</h3>
               </motion.div>
 
               {/* Quick Actions section - First */}
               <motion.div variants={fadeInUp} className="mb-4">
                 <div className="flex items-center justify-between mb-2 px-2">
-                  <div className="flex items-center gap-1.5">
-                    <Zap className="w-3 h-3 text-[var(--fg-tertiary)]" />
-                    <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Quick Actions</h4>
-                  </div>
+                  <h4 className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Quick actions</h4>
                 </div>
                 <div className="space-y-0.5">
                   {quickActions.map((action, index) => {
@@ -401,7 +398,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         variants={fadeInUp}
                         custom={index}
                         onClick={() => handleQuickAction(action.id, action.prompt)}
-                        className="w-full text-left px-3.5 py-2 rounded-md text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2 group"
+                        className="w-full text-left px-3.5 py-2.5 rounded-md text-base text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2 group"
                       >
                         <span className="truncate">{action.title}</span>
                       </motion.button>
@@ -413,14 +410,14 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
               {/* Projects section */}
               <motion.div variants={fadeInUp} className="mb-4 pt-3 border-t border-[var(--border-secondary)]">
                 <div className="flex items-center justify-between mb-2 px-2">
-                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Projects</h4>
-                  <Link 
-                    href="/projects" 
+                  <h4 className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Projects</h4>
+                  <Link
+                    href="/projects"
                     onClick={onClose}
-                    className="text-[10px] text-[var(--fg-brand-primary)] hover:underline flex items-center gap-0.5"
+                    className="text-xs text-[var(--fg-brand-primary)] hover:underline flex items-center gap-0.5"
                   >
                     View all
-                    <ArrowRight className="w-2.5 h-2.5" />
+                    <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
                 <div className="space-y-1">
@@ -430,7 +427,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         <Link
                           href={`/projects/${project.id}`}
                           onClick={onClose}
-                          className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+                          className="w-full flex items-center gap-2 px-3.5 py-3 rounded-lg text-base text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
                         >
                           <div
                             className="w-3 h-3 rounded-sm flex-shrink-0"
@@ -441,24 +438,24 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       </motion.div>
                     ))
                   ) : (
-                    <p className="text-xs text-[var(--fg-quaternary)] px-3 py-1">
+                    <p className="text-sm text-[var(--fg-quaternary)] px-3 py-1">
                       No projects yet
                     </p>
                   )}
                 </div>
               </motion.div>
-              
+
               {/* Recent chats section */}
               <motion.div variants={fadeInUp} className="pt-3 border-t border-[var(--border-secondary)]">
                 <div className="flex items-center justify-between mb-2 px-2">
-                  <h4 className="text-[10px] font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Chats</h4>
-                  <Link 
-                    href="/chats" 
+                  <h4 className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wide">Chats</h4>
+                  <Link
+                    href="/chats"
                     onClick={onClose}
-                    className="text-[10px] text-[var(--fg-brand-primary)] hover:underline flex items-center gap-0.5"
+                    className="text-xs text-[var(--fg-brand-primary)] hover:underline flex items-center gap-0.5"
                   >
                     View all
-                    <ArrowRight className="w-2.5 h-2.5" />
+                    <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
                 <div className="space-y-1">
@@ -469,13 +466,13 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                         variants={fadeInUp}
                         custom={index}
                         onClick={() => handleChatClick(chat.id)}
-                        className="w-full text-left px-3.5 py-2.5 rounded-lg text-sm text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
+                        className="w-full text-left px-3.5 py-3 rounded-lg text-base text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors flex items-center gap-2"
                       >
                         <span className="truncate">{chat.title}</span>
                       </motion.button>
                     ))
                   ) : (
-                    <p className="text-xs text-[var(--fg-quaternary)] px-3 py-1">
+                    <p className="text-sm text-[var(--fg-quaternary)] px-3 py-1">
                       No recent chats yet
                     </p>
                   )}
@@ -488,9 +485,9 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Brand':
         // Only show "View All Assets" when on a subpage, not on main /brand-hub
         const isOnSubpage = pathname.startsWith('/brand-hub/');
-        
+
         return (
-          <motion.div 
+          <motion.div
             className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
@@ -499,9 +496,9 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Brand</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Brand</h3>
               </motion.div>
-              
+
               <div className="space-y-1">
                 {brandHubNavItems.map((navItem, index) => {
                   const Icon = navItem.icon;
@@ -511,8 +508,8 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       <Link
                         href={navItem.href}
                         className={`
-                          w-full flex items-center gap-2 px-2.5 py-2 rounded-md
-                          transition-colors text-sm
+                          w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md
+                          transition-colors text-base
                           ${
                             isActive
                               ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
@@ -520,7 +517,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                           }
                         `}
                       >
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                        <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
                         <span>{navItem.label}</span>
                       </Link>
                     </motion.div>
@@ -533,7 +530,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                 <motion.div variants={fadeInUp} className="mt-3 pt-3 border-t border-[var(--border-secondary)]">
                   <Link
                     href="/brand-hub"
-                    className="w-full flex items-center justify-center gap-2 px-2.5 py-2 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-sm"
+                    className="w-full flex items-center justify-center gap-2 px-2.5 py-2.5 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-base"
                   >
                     View All Assets
                   </Link>
@@ -542,7 +539,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             </div>
           </motion.div>
         );
-      
+
       case 'Brain':
         const brainNavItems = [
           { label: 'Architecture', href: '/brain/architecture', icon: Code },
@@ -553,9 +550,9 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
           { label: 'Agents', href: '/brain/agents', icon: Bot },
         ];
         const isOnBrainSubpage = pathname.startsWith('/brain/');
-        
+
         return (
-          <motion.div 
+          <motion.div
             className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
@@ -564,9 +561,9 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Brain</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Brain</h3>
               </motion.div>
-              
+
               <div className="space-y-1">
                 {brainNavItems.map((navItem, index) => {
                   const Icon = navItem.icon;
@@ -576,8 +573,8 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                       <Link
                         href={navItem.href}
                         className={`
-                          w-full flex items-center gap-2 px-2.5 py-2 rounded-md
-                          transition-colors text-sm
+                          w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md
+                          transition-colors text-base
                           ${
                             isActive
                               ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
@@ -585,7 +582,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                           }
                         `}
                       >
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
+                        <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
                         <span>{navItem.label}</span>
                       </Link>
                     </motion.div>
@@ -598,7 +595,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                 <motion.div variants={fadeInUp} className="mt-3 pt-3 border-t border-[var(--border-secondary)]">
                   <Link
                     href="/brain"
-                    className="w-full flex items-center justify-center gap-2 px-2.5 py-2 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-sm"
+                    className="w-full flex items-center justify-center gap-2 px-2.5 py-2.5 rounded-md text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors text-base"
                   >
                     View Brain Overview
                   </Link>
@@ -607,10 +604,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             </div>
           </motion.div>
         );
-      
+
       case 'Resources':
         return (
-          <motion.div 
+          <motion.div
             className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
@@ -619,10 +616,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Resources</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Resources</h3>
               </motion.div>
-              
-              <motion.div variants={fadeInUp} className="text-sm text-[var(--fg-tertiary)] p-2">
+
+              <motion.div variants={fadeInUp} className="text-base text-[var(--fg-tertiary)] p-2">
                 Resources and documentation coming soon
               </motion.div>
             </div>

@@ -227,8 +227,8 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
             aria-label="Date filter"
           >
           {/* Calendar Header */}
-          <div className="px-4 pt-4 pb-2 border-b border-[var(--border-secondary)]">
-            <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
+          <div className="px-4 pt-4 pb-2.5 border-b border-[var(--border-secondary)]">
+            <p className="text-sm font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
               {selectionStart ? 'Select end date' : 'Select date range'}
             </p>
           </div>
@@ -306,14 +306,14 @@ export function DateFilterDropdown({ value, onChange }: DateFilterDropdownProps)
 
           {/* Quick Presets */}
           <div className="px-3 py-3 border-t border-[var(--border-secondary)] bg-[var(--bg-secondary)]/50">
-            <p className="text-xs font-medium text-[var(--fg-quaternary)] mb-2 px-1">Quick filters</p>
+            <p className="text-sm font-medium text-[var(--fg-quaternary)] mb-2 px-1">Quick filters</p>
             <div className="flex gap-1.5">
               {presets.map((preset) => (
                 <button
                   key={preset.id}
                   onClick={() => handlePresetClick(preset.id)}
                   className={`
-                    flex-1 px-2 py-1.5 rounded-md text-xs font-medium whitespace-nowrap
+                    flex-1 px-2.5 py-2 rounded-md text-sm font-medium whitespace-nowrap
                     transition-colors
                     ${value.type === 'preset' && value.preset === preset.id
                       ? 'bg-brand-aperol text-white'

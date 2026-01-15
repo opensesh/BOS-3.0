@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
   Settings,
-  Link2,
   Rss,
   LogOut,
 } from 'lucide-react';
@@ -103,7 +102,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
           >
             {/* User Info */}
             <div className="px-4 min-h-[52px] flex flex-col justify-center border-b border-[var(--border-secondary)]">
-              <p className="text-sm font-medium text-[var(--fg-primary)]">
+              <p className="text-base font-medium text-[var(--fg-primary)]">
                 {user.name}
               </p>
               <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">
@@ -127,23 +126,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
                 "
               >
                 <Settings className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                <span className="text-sm text-[var(--fg-secondary)]">{t('settings')}</span>
-              </button>
-              <button
-                onClick={() => {
-                  router.push('/links');
-                  onClose();
-                }}
-                className="
-                  w-full flex items-center gap-3
-                  px-4 py-2
-                  text-left
-                  hover:bg-[var(--bg-tertiary)]
-                  transition-colors
-                "
-              >
-                <Link2 className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                <span className="text-sm text-[var(--fg-secondary)]">{t('links')}</span>
+                <span className="text-base text-[var(--fg-secondary)]">{t('settings')}</span>
               </button>
               <button
                 onClick={() => {
@@ -160,7 +143,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
                 "
               >
                 <Rss className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                <span className="text-sm text-[var(--fg-secondary)]">{t('updates')}</span>
+                <span className="text-base text-[var(--fg-secondary)]">{t('updates')}</span>
               </button>
             </div>
 
@@ -172,7 +155,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
             {/* Theme Section - Compact single row */}
             <div className="px-4 py-2.5 border-b border-[var(--border-secondary)]">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[var(--fg-tertiary)]">{t('theme')}</span>
+                <span className="text-sm text-[var(--fg-tertiary)]">{t('theme')}</span>
                 <ThemeCompactToggle />
               </div>
             </div>
@@ -193,7 +176,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
                 "
               >
                 <LogOut className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                <span className="text-sm text-[var(--fg-secondary)]">{t('logOut')}</span>
+                <span className="text-base text-[var(--fg-secondary)]">{t('logOut')}</span>
               </button>
             </div>
           </motion.div>

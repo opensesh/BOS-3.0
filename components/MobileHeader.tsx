@@ -19,7 +19,7 @@ export function MobileHeader({ onBrandClick }: MobileHeaderProps) {
 
   return (
     <>
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-[var(--bg-secondary)] backdrop-blur-sm border-b border-[var(--border-secondary)]">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-[160] h-14 bg-[var(--bg-secondary)] backdrop-blur-sm border-b border-[var(--border-secondary)]">
         <div className="flex items-center justify-between h-full px-3">
           {/* Left: Brand Logo Link */}
           <Link

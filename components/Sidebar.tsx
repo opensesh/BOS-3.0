@@ -936,11 +936,11 @@ export function Sidebar() {
                         <Link
                           href={item.href}
                           onClick={item.href === '/' ? handleHomeClick : closeMobileMenu}
-                          className="flex-1 flex items-center gap-2.5 px-3 py-2.5"
+                          className="flex-1 flex items-center gap-2.5 px-3 py-3"
                           aria-current={isOnMainPage ? 'page' : undefined}
                         >
-                          <Icon className="w-[18px] h-[18px] flex-shrink-0" />
-                          <span className="text-sm font-medium">{item.label}</span>
+                          <Icon className="w-5 h-5 flex-shrink-0" />
+                          <span className="text-base font-medium">{item.label}</span>
                         </Link>
                         
                         {/* Toggle button for sections with sub-items */}
@@ -986,7 +986,7 @@ export function Sidebar() {
                                       {projects.slice(0, 3).map((project) => (
                                         <button
                                           key={project.id}
-                                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                                          className="w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
                                         >
                                           <div
                                             className="w-3 h-3 rounded-sm flex-shrink-0"
@@ -1000,7 +1000,7 @@ export function Sidebar() {
                                   )}
                                   {/* Recent chats */}
                                   <div className="px-2 py-1 text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider font-medium">Recent chats</div>
-                                  {chatHistory.slice(0, 3).map((chat) => (
+                                  {chatHistory.slice(0, 4).map((chat) => (
                                     <button
                                       key={chat.id}
                                       onClick={() => {
@@ -1009,13 +1009,20 @@ export function Sidebar() {
                                           router.push('/');
                                         }
                                       }}
-                                      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                                      className="w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
                                     >
                                       <span className="truncate">{chat.title}</span>
                                     </button>
                                   ))}
-                                  {chatHistory.length === 0 && (
+                                  {chatHistory.length === 0 ? (
                                     <p className="px-2.5 py-2 text-xs text-[var(--fg-quaternary)]">No recent chats</p>
+                                  ) : (
+                                    <Link
+                                      href="/chats"
+                                      className="w-full flex items-center gap-1 px-2.5 py-2.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                                    >
+                                      See all
+                                    </Link>
                                   )}
                                 </>
                               )}
@@ -1023,8 +1030,8 @@ export function Sidebar() {
                               {/* Spaces - show user spaces */}
                               {item.label === 'Spaces' && (
                                 <>
-                                  <button className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
-                                    <FolderPlus className="w-3.5 h-3.5" />
+                                  <button className="w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                                    <FolderPlus className="w-4 h-4" />
                                     <span>Create new Space</span>
                                   </button>
                                   {spacesLoaded && userSpaces.map((space) => (
@@ -1032,19 +1039,19 @@ export function Sidebar() {
                                       key={space.id}
                                       href={`/spaces/${space.slug}`}
                                       className={`
-                                        w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs transition-colors
+                                        w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-sm transition-colors
                                         ${pathname === `/spaces/${space.slug}`
                                           ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]'
                                           : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
                                         }
                                       `}
                                     >
-                                      <LayoutGrid className="w-3.5 h-3.5 flex-shrink-0" />
+                                      <LayoutGrid className="w-4 h-4 flex-shrink-0" />
                                       <span className="truncate">{space.title}</span>
                                     </Link>
                                   ))}
                                   {spacesLoaded && userSpaces.length === 0 && (
-                                    <p className="px-2.5 py-2 text-xs text-[var(--fg-quaternary)]">No spaces yet</p>
+                                    <p className="px-2.5 py-2.5 text-sm text-[var(--fg-quaternary)]">No spaces yet</p>
                                   )}
                                 </>
                               )}
@@ -1058,7 +1065,7 @@ export function Sidebar() {
                                     key={subItem.href}
                                     href={subItem.href}
                                     className={`
-                                      w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs transition-colors
+                                      w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-sm transition-colors
                                       ${isSubActive
                                         ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]'
                                         : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
@@ -1066,7 +1073,7 @@ export function Sidebar() {
                                     `}
                                     aria-current={isSubActive ? 'page' : undefined}
                                   >
-                                    <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                                    <SubIcon className="w-4 h-4 flex-shrink-0" />
                                     <span>{subItem.label}</span>
                                   </Link>
                                 );
@@ -1138,10 +1145,10 @@ export function Sidebar() {
                     `}>
                       <Link
                         href="/projects"
-                        className="flex-1 flex items-center gap-2.5 px-3 py-2.5"
+                        className="flex-1 flex items-center gap-2.5 px-3 py-3"
                       >
-                        <Folder className="w-[18px] h-[18px]" />
-                        <span className="text-sm flex-1">Projects</span>
+                        <Folder className="w-5 h-5" />
+                        <span className="text-base flex-1">Projects</span>
                         {projects.length > 0 && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
                             {projects.length}
@@ -1178,7 +1185,7 @@ export function Sidebar() {
                               <Link
                                 key={project.id}
                                 href={`/projects/${project.id}`}
-                                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                                className="w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                               >
                                 <div
                                   className="w-3 h-3 rounded-sm flex-shrink-0"
@@ -1190,10 +1197,10 @@ export function Sidebar() {
                             {projects.length > 5 && (
                               <Link
                                 href="/projects"
-                                className="w-full flex items-center gap-1 px-2.5 py-2 rounded-md text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                                className="w-full flex items-center gap-1 px-2.5 py-2.5 rounded-md text-sm text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                               >
                                 View all {projects.length}
-                                <ArrowRight className="w-3 h-3" />
+                                <ArrowRight className="w-3.5 h-3.5" />
                               </Link>
                             )}
                           </div>
@@ -1241,10 +1248,10 @@ export function Sidebar() {
                     `}>
                       <Link
                         href="/chats"
-                        className="flex-1 flex items-center gap-2.5 px-3 py-2.5"
+                        className="flex-1 flex items-center gap-2.5 px-3 py-3"
                       >
-                        <History className="w-[18px] h-[18px]" />
-                        <span className="text-sm flex-1">Chats</span>
+                        <History className="w-5 h-5" />
+                        <span className="text-base flex-1">Chats</span>
                         {chatHistory.length > 0 && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bg-quaternary)] text-[var(--fg-tertiary)]">
                             {chatHistory.length}
@@ -1284,7 +1291,7 @@ export function Sidebar() {
                                   loadSession(chat.id);
                                   if (pathname !== '/') router.push('/');
                                 }}
-                                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
+                                className="w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md text-sm text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
                               >
                                 <span className="truncate">{chat.title}</span>
                               </button>
@@ -1292,10 +1299,10 @@ export function Sidebar() {
                             {chatHistory.length > 5 && (
                               <Link
                                 href="/chats"
-                                className="w-full flex items-center gap-1 px-2.5 py-2 rounded-md text-xs text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                                className="w-full flex items-center gap-1 px-2.5 py-2.5 rounded-md text-sm text-[var(--fg-brand-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                               >
                                 View all {chatHistory.length}
-                                <ArrowRight className="w-3 h-3" />
+                                <ArrowRight className="w-3.5 h-3.5" />
                               </Link>
                             )}
                           </div>

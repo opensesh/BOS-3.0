@@ -113,7 +113,7 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
             {/* Header */}
             <div className="flex items-center justify-between px-4 min-h-[52px] border-b border-[var(--border-secondary)]">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-[var(--fg-primary)]">
+                <h3 className="text-base font-semibold text-[var(--fg-primary)]">
                   Need help?
                 </h3>
               </div>
@@ -147,7 +147,7 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
                   ">
                     <Icon className="w-4 h-4 text-[var(--fg-tertiary)]" />
                   </div>
-                  <span className="text-sm text-[var(--fg-secondary)]">{item.label}</span>
+                  <span className="text-base text-[var(--fg-secondary)]">{item.label}</span>
                 </button>
               );
             })}
@@ -166,7 +166,7 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
                 bg-[var(--bg-primary)]
                 hover:bg-[var(--bg-tertiary)]
                 text-[var(--fg-primary)]
-                text-sm font-medium
+                text-base font-medium
                 rounded-lg
                 border border-[var(--border-secondary)]
                 transition-colors

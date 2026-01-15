@@ -157,18 +157,18 @@ export function Breadcrumbs() {
   const titleBreadcrumb = hasTitle ? lastItem : null;
 
   return (
-    <nav className="flex items-center text-xs" aria-label="Breadcrumb">
+    <nav className="flex items-center text-sm" aria-label="Breadcrumb">
       {/* Separator after brand icon */}
-      <span className="mx-1.5 text-fg-quaternary">/</span>
-      
+      <span className="mx-2 text-fg-quaternary">/</span>
+
       {/* Brand/Organization Selector */}
       <div className="relative">
         <button
           ref={triggerRef}
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={`
-            flex items-center gap-1
-            px-1.5 py-0.5
+            flex items-center gap-1.5
+            px-2 py-1
             rounded
             text-fg-primary hover:text-fg-primary
             hover:bg-bg-tertiary
@@ -176,8 +176,8 @@ export function Breadcrumbs() {
             ${isDropdownOpen ? 'bg-bg-tertiary' : ''}
           `}
         >
-          <span className="font-medium text-xs">{selectedBrand.name}</span>
-          <ChevronDown className={`w-3 h-3 text-fg-tertiary transition-transform duration-150 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          <span className="font-medium">{selectedBrand.name}</span>
+          <ChevronDown className={`w-3.5 h-3.5 text-fg-tertiary transition-transform duration-150 ${isDropdownOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {/* Brand Dropdown */}
@@ -203,8 +203,8 @@ export function Breadcrumbs() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Find organization..."
                   className="
-                    w-full pl-7 pr-2 py-1.5
-                    text-xs
+                    w-full pl-8 pr-3 py-2
+                    text-sm
                     bg-bg-tertiary border border-border-secondary
                     rounded
                     text-fg-primary
@@ -223,8 +223,8 @@ export function Breadcrumbs() {
                   onClick={() => handleSelectBrand(brand.id)}
                   className={`
                     w-full flex items-center justify-between
-                    px-3 py-1.5
-                    text-xs text-left
+                    px-3.5 py-2
+                    text-sm text-left
                     hover:bg-bg-tertiary
                     transition-colors duration-100
                     ${selectedBrandId === brand.id ? 'bg-bg-tertiary' : ''}
@@ -232,12 +232,12 @@ export function Breadcrumbs() {
                 >
                   <span className="text-fg-primary">{brand.name}</span>
                   {selectedBrandId === brand.id && (
-                    <Check className="w-3.5 h-3.5 text-fg-brand-primary" />
+                    <Check className="w-4 h-4 text-fg-brand-primary" />
                   )}
                 </button>
               ))}
               {filteredBrands.length === 0 && (
-                <div className="px-3 py-2 text-xs text-fg-tertiary">
+                <div className="px-3.5 py-2 text-sm text-fg-tertiary">
                   No organizations found
                 </div>
               )}
@@ -248,8 +248,8 @@ export function Breadcrumbs() {
               <button
                 className="
                   w-full flex items-center
-                  px-3 py-1.5
-                  text-xs text-fg-secondary hover:text-fg-primary
+                  px-3.5 py-2
+                  text-sm text-fg-secondary hover:text-fg-primary
                   hover:bg-bg-tertiary
                   transition-colors duration-100
                 "
@@ -262,14 +262,14 @@ export function Breadcrumbs() {
             <div className="border-t border-border-secondary">
               <button
                 className="
-                  w-full flex items-center gap-1.5
-                  px-3 py-1.5
-                  text-xs text-fg-secondary hover:text-fg-primary
+                  w-full flex items-center gap-2
+                  px-3.5 py-2
+                  text-sm text-fg-secondary hover:text-fg-primary
                   hover:bg-bg-tertiary
                   transition-colors duration-100
                 "
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
                 <span>New organization</span>
               </button>
             </div>
@@ -280,12 +280,12 @@ export function Breadcrumbs() {
       {/* Path breadcrumbs (everything except the final title) */}
       {pathBreadcrumbs.map((crumb, index) => (
         <div key={index} className="flex items-center">
-          <span className="mx-1.5 text-fg-quaternary">/</span>
+          <span className="mx-2 text-fg-quaternary">/</span>
           {crumb.href ? (
             <Link
               href={crumb.href}
               className="
-                px-1.5 py-0.5
+                px-2 py-1
                 rounded
                 text-fg-secondary hover:text-fg-primary
                 hover:bg-bg-tertiary
@@ -295,7 +295,7 @@ export function Breadcrumbs() {
               {crumb.label}
             </Link>
           ) : (
-            <span className="px-1.5 py-0.5 text-fg-primary">
+            <span className="px-2 py-1 text-fg-primary">
               {crumb.label}
             </span>
           )}
@@ -306,7 +306,7 @@ export function Breadcrumbs() {
       <AnimatePresence mode="wait">
         {quickActionType && (
           <div className="flex items-center">
-            <span className="mx-1.5 text-fg-quaternary">/</span>
+            <span className="mx-2 text-fg-quaternary">/</span>
             <QuickActionBadge type={quickActionType} />
           </div>
         )}
@@ -315,7 +315,7 @@ export function Breadcrumbs() {
       {/* Title breadcrumb (final item) - animated when it appears */}
       {titleBreadcrumb && (
         <div className="flex items-center">
-          <span className="mx-1.5 text-fg-quaternary">/</span>
+          <span className="mx-2 text-fg-quaternary">/</span>
           <AnimatePresence mode="wait">
             <motion.span
               key={titleBreadcrumb.label}
@@ -323,7 +323,7 @@ export function Breadcrumbs() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 4 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="px-1.5 py-0.5 text-fg-primary"
+              className="px-2 py-1 text-fg-primary"
             >
               {titleBreadcrumb.label}
             </motion.span>

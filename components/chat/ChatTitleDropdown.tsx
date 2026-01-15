@@ -391,7 +391,7 @@ export function ChatTitleDropdown({
                   key={idx}
                   onClick={'onClick' in item ? item.onClick : undefined}
                   className={`
-                    w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-colors
+                    w-full flex items-center gap-2.5 px-3.5 py-2.5 text-base transition-colors
                     ${
                       isDanger
                         ? 'text-[var(--fg-error-primary)] hover:bg-[var(--bg-error-primary)]'

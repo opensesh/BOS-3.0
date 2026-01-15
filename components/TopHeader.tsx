@@ -60,7 +60,7 @@ export function TopHeader({ children }: TopHeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-bg-secondary border-b border-border-secondary">
+      <header className="fixed top-0 left-0 right-0 z-[160] h-14 bg-bg-secondary border-b border-border-secondary">
         <div className="flex items-center justify-between h-full pr-3">
           {/* Left Section: Brand Icon + Breadcrumbs */}
           <div className="flex items-center">

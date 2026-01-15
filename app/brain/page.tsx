@@ -21,8 +21,6 @@ import {
   PenTool,
   ArrowUpRight,
   Zap,
-  Puzzle,
-  Bot,
 } from 'lucide-react';
 
 // Bento cards for subpages
@@ -54,20 +52,6 @@ const brainPages = [
     description: 'System capabilities and configuration',
     href: '/brain/skills',
     icon: Zap,
-  },
-  {
-    id: 'plugins',
-    title: 'Plugins',
-    description: 'Complete capability packages',
-    href: '/brain/plugins',
-    icon: Puzzle,
-  },
-  {
-    id: 'agents',
-    title: 'Agents',
-    description: 'Autonomous AI workflows',
-    href: '/brain/agents',
-    icon: Bot,
   },
 ];
 
@@ -254,15 +238,26 @@ export default function BrainPage() {
                 <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)]">
                   Brain
                 </h1>
-                <motion.button
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
-                  title="Brain Settings"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
-                </motion.button>
+                <div className="flex items-center gap-2">
+                  <motion.button
+                    onClick={() => setIsAddResourceOpen(true)}
+                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                    title="Add Resource"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                    title="Brain Settings"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                  </motion.button>
+                </div>
               </div>
               <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
                 Your brand&apos;s AI knowledge center. Configure Claude with your brand identity, 
@@ -271,8 +266,8 @@ export default function BrainPage() {
             </MotionItem>
 
             {/* Bento Cards for Subpages */}
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-10"
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-10"
               variants={staggerContainer}
               initial="hidden"
               animate="visible"

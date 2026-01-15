@@ -159,7 +159,7 @@ export function AnswerView({
             // H1: Largest, most prominent - with accent border
             if (level === 1) {
               return (
-                <h1 key={idx} className={`${baseStyles} ${accentStyles} text-[18px] mt-6 mb-2`}>
+                <h1 key={idx} className={`${baseStyles} ${accentStyles} text-[18px] mt-6 mb-3`}>
                   {renderInlineMarkdown(section.content)}
                 </h1>
               );
@@ -168,7 +168,7 @@ export function AnswerView({
             // H2: Secondary heading - with accent border
             if (level === 2) {
               return (
-                <h2 key={idx} className={`${baseStyles} ${accentStyles} text-[17px] mt-5 mb-1.5`}>
+                <h2 key={idx} className={`${baseStyles} ${accentStyles} text-[17px] mt-5 mb-2.5`}>
                   {renderInlineMarkdown(section.content)}
                 </h2>
               );
@@ -176,7 +176,7 @@ export function AnswerView({
 
             // H3: Tertiary heading - no border, just bold styling
             return (
-              <h3 key={idx} className={`${baseStyles} text-[16px] mt-4 mb-1 text-[var(--fg-secondary)]`}>
+              <h3 key={idx} className={`${baseStyles} text-[16px] mt-4 mb-2 text-[var(--fg-secondary)]`}>
                 {renderInlineMarkdown(section.content)}
               </h3>
             );
@@ -184,9 +184,9 @@ export function AnswerView({
 
           if (section.type === 'list' && section.items) {
             return (
-              <ul key={idx} className="space-y-0.5 pl-5 list-disc marker:text-[var(--fg-tertiary)]">
+              <ul key={idx} className="space-y-1.5 pl-5 list-disc marker:text-[var(--fg-tertiary)]">
                 {section.items.map((item, itemIdx) => (
-                  <li key={itemIdx} className="text-[15px] leading-[1.6] text-[var(--fg-primary)]/90 pl-1">
+                  <li key={itemIdx} className="text-[15px] leading-[1.75] text-[var(--fg-primary)]/90 pl-1">
                     {renderInlineMarkdown(item)}
                   </li>
                 ))}
@@ -196,11 +196,11 @@ export function AnswerView({
 
           // Paragraph with optional inline citations
           const sectionSources = getSourcesForCitation(section.citations);
-          
+
           return (
             <p
               key={idx}
-              className="text-[15px] leading-[1.6] text-[var(--fg-primary)]/90"
+              className="text-[15px] leading-[1.75] text-[var(--fg-primary)]/90"
             >
               {renderInlineMarkdown(section.content)}
               {showCitations && sectionSources.length > 0 && (

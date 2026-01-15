@@ -28,6 +28,56 @@ lib/supabase/     # Database services
 hooks/            # Custom React hooks
 ```
 
+## Claude Configuration Structure
+
+The `.claude/` directory contains all AI assistant configuration, organized by purpose:
+
+```
+.claude/
+├── agents/           # Autonomous workflows (auto-activate on context)
+├── commands/         # User-triggered slash commands (/feature-dev, etc.)
+├── plugins/          # Full plugin packages (agents + commands + hooks + skills)
+├── skills/           # Auto-activating knowledge modules
+├── knowledge/        # Brand knowledge base (PDFs, guidelines)
+├── brand-identity/   # Brand assets (logos, fonts, colors)
+├── writing-styles/   # Content tone guides (creative, strategic, blog)
+├── data/             # Data sources (news-sources.md, etc.)
+├── system/           # Auto-generated architecture docs
+├── CLAUDE.md         # This file - main development guide
+└── BOS-DESIGN-SYSTEM.md  # Design system reference
+```
+
+### Agents vs Commands vs Skills
+
+| Type | Trigger | Purpose | Location |
+|------|---------|---------|----------|
+| **Agents** | Auto-activates on context | Autonomous multi-step workflows | `agents/` or `plugins/*/agents/` |
+| **Commands** | User types `/command` | Single operations, user-controlled | `commands/` or `plugins/*/commands/` |
+| **Skills** | Auto-activates on keywords | Context-aware knowledge injection | `skills/` or `plugins/*/skills/` |
+| **Plugins** | Contains all of the above | Full-featured packages | `plugins/` |
+
+### Plugin-Embedded Agents
+
+Some agents live inside plugins as subagents for larger workflows:
+
+| Plugin | Embedded Agents |
+|--------|-----------------|
+| `feature-dev` | code-architect, code-explorer, code-reviewer |
+| `pr-review-toolkit` | code-reviewer, silent-failure-hunter, code-simplifier, comment-analyzer, pr-test-analyzer, type-design-analyzer |
+| `plugin-dev` | agent-creator, skill-reviewer, plugin-validator |
+| `agent-sdk-dev` | agent-sdk-verifier-ts, agent-sdk-verifier-py |
+| `hookify` | conversation-analyzer |
+
+### Where to Look First
+
+- **Building a feature?** → Check `plugins/feature-dev/`
+- **Reviewing a PR?** → Check `plugins/pr-review-toolkit/`
+- **Creating a plugin?** → Check `plugins/plugin-dev/`
+- **Brand questions?** → Check `knowledge/` and `brand-identity/`
+- **Writing content?** → Check `writing-styles/`
+
+---
+
 ## Code Conventions
 
 ### TypeScript

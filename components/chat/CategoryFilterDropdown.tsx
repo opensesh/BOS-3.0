@@ -134,8 +134,8 @@ export function CategoryFilterDropdown({ value, onChange }: CategoryFilterDropdo
             aria-label="Category filter"
           >
             {/* Header */}
-            <div className="px-4 pt-4 pb-2 border-b border-[var(--border-secondary)]">
-              <p className="text-xs font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
+            <div className="px-4 pt-4 pb-2.5 border-b border-[var(--border-secondary)]">
+              <p className="text-sm font-medium text-[var(--fg-tertiary)] uppercase tracking-wider">
                 Filter by category
               </p>
             </div>
@@ -150,7 +150,7 @@ export function CategoryFilterDropdown({ value, onChange }: CategoryFilterDropdo
                     onClick={() => handleCategoryClick(category.id)}
                     className={`
                       w-full flex items-center gap-3 px-4 py-2.5
-                      text-sm transition-colors
+                      text-base transition-colors
                       ${value === category.id
                         ? 'bg-brand-aperol/15 text-brand-aperol'
                         : 'text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'

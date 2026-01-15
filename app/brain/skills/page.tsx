@@ -13,25 +13,6 @@ import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
 import { useBrainDocuments } from '@/hooks/useBrainDocuments';
 import { PageTransition, MotionItem } from '@/lib/motion';
 import { Settings, Plus, Loader2 } from 'lucide-react';
-import { getSkillContent } from './actions';
-
-// Fallback skill files matching the .claude/skills directory
-// Using lowercase slug format for tab labels
-const FALLBACK_SKILLS = [
-  { id: 'bos-code-quality', slug: 'bos-code-quality', label: 'bos-code-quality', file: 'SKILL.md' },
-  { id: 'brand-guidelines', slug: 'brand-guidelines', label: 'brand-guidelines', file: 'SKILL.md' },
-  { id: 'create-post-copy', slug: 'create-post-copy', label: 'create-post-copy', file: 'SKILL.md' },
-  { id: 'explanatory-output-style', slug: 'explanatory-output-style', label: 'explanatory-output-style', file: 'SKILL.md' },
-  { id: 'frontend-design', slug: 'frontend-design', label: 'frontend-design', file: 'SKILL.md' },
-  { id: 'learning-output-style', slug: 'learning-output-style', label: 'learning-output-style', file: 'SKILL.md' },
-  { id: 'mcp-builder', slug: 'mcp-builder', label: 'mcp-builder', file: 'SKILL.md' },
-  { id: 'security-guidance', slug: 'security-guidance', label: 'security-guidance', file: 'SKILL.md' },
-  { id: 'skill-creator', slug: 'skill-creator', label: 'skill-creator', file: 'SKILL.md' },
-  { id: 'subagent-driven-development', slug: 'subagent-driven-development', label: 'subagent-driven-development', file: 'SKILL.md' },
-  { id: 'systematic-debugging', slug: 'systematic-debugging', label: 'systematic-debugging', file: 'SKILL.md' },
-  { id: 'verification-before-completion', slug: 'verification-before-completion', label: 'verification-before-completion', file: 'SKILL.md' },
-  { id: 'writing-plans', slug: 'writing-plans', label: 'writing-plans', file: 'SKILL.md' },
-];
 
 function SkillsContent() {
   const searchParams = useSearchParams();
@@ -40,8 +21,6 @@ function SkillsContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [fallbackContent, setFallbackContent] = useState<Record<string, string>>({});
-  const [isLoadingFallback, setIsLoadingFallback] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
 
@@ -57,86 +36,47 @@ function SkillsContent() {
     restoreVersion,
   } = useBrainDocuments({ category: 'skills' });
 
-  // Always use fallback for skills - .claude/skills/ is the source of truth
-  // The database may have partial data, but we want to show all skills from the file system
-  const shouldUseFallback = true;
-  const isUsingFallback = hasInitialized;
-
   // Initialize active tab once loading completes
-  // Priority: URL param > first document from database > first fallback skill
+  // Priority: URL param > first document from database
   useEffect(() => {
-    if (!isLoading && !hasInitialized) {
+    if (!isLoading && !hasInitialized && documents.length > 0) {
       let initialTab = '';
-      
+
       if (tabParam) {
-        // Check if URL param matches a database document or fallback skill
+        // Check if URL param matches a database document
         const matchesDoc = documents.some(d => d.slug === tabParam);
-        const matchesFallback = FALLBACK_SKILLS.some(s => s.slug === tabParam);
-        if (matchesDoc || matchesFallback) {
+        if (matchesDoc) {
           initialTab = tabParam;
         }
       }
-      
-      // If no valid URL param, use first available option
+
+      // If no valid URL param, use first available document
       if (!initialTab) {
-        if (documents.length > 0 && documents.some(d => d.content)) {
-          // Use first database document with content
-          const firstDocWithContent = documents.find(d => d.content);
-          initialTab = firstDocWithContent?.slug || documents[0].slug;
-        } else {
-          // Use first fallback skill
-          initialTab = FALLBACK_SKILLS[0].slug;
-        }
+        const firstDocWithContent = documents.find(d => d.content);
+        initialTab = firstDocWithContent?.slug || documents[0].slug;
       }
-      
+
       setActiveTab(initialTab);
       setHasInitialized(true);
     }
   }, [isLoading, hasInitialized, tabParam, documents]);
 
-  // Load fallback content when active tab changes (using server action)
-  useEffect(() => {
-    if (shouldUseFallback && hasInitialized && activeTab) {
-      setIsLoadingFallback(true);
-      getSkillContent(activeTab)
-        .then(content => {
-          setFallbackContent(prev => ({ ...prev, [activeTab]: content }));
-        })
-        .catch(err => {
-          console.error('Failed to load skill content:', err);
-          setFallbackContent(prev => ({ 
-            ...prev, 
-            [activeTab]: `Error loading skill content for ${activeTab}` 
-          }));
-        })
-        .finally(() => {
-          setIsLoadingFallback(false);
-        });
-    }
-  }, [shouldUseFallback, hasInitialized, activeTab]);
-
   // Set active document when tab changes
   useEffect(() => {
-    if (isUsingFallback || !hasInitialized || !activeTab) return;
+    if (!hasInitialized || !activeTab) return;
     const doc = documents.find(d => d.slug === activeTab);
     if (doc) {
       setActiveDocument(doc);
     }
-  }, [activeTab, documents, isUsingFallback, hasInitialized, setActiveDocument]);
+  }, [activeTab, documents, hasInitialized, setActiveDocument]);
 
-  // Generate tabs from documents or fallback (lowercase format)
-  const tabs = isUsingFallback
-    ? FALLBACK_SKILLS.map(s => ({ id: s.slug, label: s.slug }))
-    : documents.map(d => ({ id: d.slug, label: d.slug }));
+  // Generate tabs from documents (lowercase format)
+  const tabs = documents.map(d => ({ id: d.slug, label: d.slug }));
 
   // Get current content
-  const currentContent = isUsingFallback
-    ? fallbackContent[activeTab] || 'Loading...'
-    : activeDocument?.content || '';
+  const currentContent = activeDocument?.content || '';
 
-  const currentFilename = isUsingFallback
-    ? FALLBACK_SKILLS.find(s => s.slug === activeTab)?.file || 'SKILL.md'
-    : `${activeDocument?.slug || 'skill'}.md`;
+  const currentFilename = `${activeDocument?.slug || 'skill'}.md`;
 
   // Handle save
   const handleSave = useCallback(async (content: string, changeSummary?: string) => {
@@ -182,18 +122,16 @@ function SkillsContent() {
                 Skills
               </h1>
               <div className="flex items-center gap-2">
-                {!isUsingFallback && (
-                  <motion.button
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    title="Add"
-                    aria-label="Add skill"
-                  >
-                    <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
-                  </motion.button>
-                )}
+                <motion.button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Add"
+                  aria-label="Add skill"
+                >
+                  <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                </motion.button>
                 <button
                   onClick={() => setIsSettingsOpen(true)}
                   className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
@@ -210,7 +148,7 @@ function SkillsContent() {
           </MotionItem>
 
           {/* Loading State */}
-          {(isLoading || isLoadingFallback || !hasInitialized || !activeTab) && (
+          {(isLoading || !hasInitialized || !activeTab) && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--fg-brand-primary)]" />
             </div>
@@ -236,12 +174,10 @@ function SkillsContent() {
                 filename={currentFilename}
                 content={currentContent}
                 maxLines={100}
-                onSave={isUsingFallback ? undefined : handleSave}
-                onDelete={!isUsingFallback && activeDocument ? handleDelete : undefined}
-                onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
+                onSave={handleSave}
+                onDelete={activeDocument ? handleDelete : undefined}
+                onViewHistory={() => setIsHistoryOpen(true)}
                 onEditingChange={setIsEditing}
-                isLoading={isLoadingFallback}
-                readOnly={isUsingFallback}
               />
             </MotionItem>
           )}

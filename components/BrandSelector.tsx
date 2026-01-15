@@ -286,28 +286,28 @@ export function BrandSelector({ size = 20, className = '', href = '/', onClick }
             }}
           >
             <div className="p-2">
-              <div className="px-3 py-2 text-xs font-semibold text-fg-tertiary uppercase tracking-wider">
+              <div className="px-3 py-2 text-sm font-semibold text-fg-tertiary uppercase tracking-wider">
                 SELECT BRAND
               </div>
-              
+
               {brands.map((brand) => (
                 <button
                   key={brand.id}
                   onClick={() => handleSelectBrand(brand.id)}
                   className={`
                     w-full flex items-center justify-between
-                    px-3 py-2 rounded-lg
+                    px-3.5 py-2.5 rounded-lg
                     hover:bg-bg-tertiary
                     transition-colors duration-200
                     group
                     ${selectedBrandId === brand.id ? 'bg-bg-tertiary' : ''}
                   `}
                 >
-                  <span className="text-sm font-medium text-fg-primary truncate flex-1 min-w-0 text-left">
+                  <span className="text-base font-medium text-fg-primary truncate flex-1 min-w-0 text-left">
                     {brand.name}
                   </span>
                   {selectedBrandId === brand.id && (
-                    <Check className="w-4 h-4 text-fg-brand-primary flex-shrink-0 ml-2" />
+                    <Check className="w-5 h-5 text-fg-brand-primary flex-shrink-0 ml-2" />
                   )}
                 </button>
               ))}
@@ -320,7 +320,7 @@ export function BrandSelector({ size = 20, className = '', href = '/', onClick }
                 }}
                 className="
                   w-full flex items-center space-x-3
-                  px-3 py-2 mt-2 rounded-lg
+                  px-3.5 py-2.5 mt-2 rounded-lg
                   border border-border-secondary
                   hover:bg-bg-tertiary
                   hover:border-border-brand
@@ -328,8 +328,8 @@ export function BrandSelector({ size = 20, className = '', href = '/', onClick }
                   group
                 "
               >
-                <Plus className="w-4 h-4 text-fg-brand-primary" />
-                <span className="text-sm font-medium text-fg-brand-primary">
+                <Plus className="w-5 h-5 text-fg-brand-primary" />
+                <span className="text-base font-medium text-fg-brand-primary">
                   Add New Brand
                 </span>
               </button>

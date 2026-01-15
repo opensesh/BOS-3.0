@@ -265,25 +265,26 @@ export function BreadcrumbNav({
   const allSegments = useMemo(() => [rootLabel, ...pathSegments], [rootLabel, pathSegments]);
 
   return (
-    <nav className={`flex items-center gap-1 text-sm font-mono ${className}`}>
+    <nav className={`flex items-center gap-1.5 text-sm ${className}`}>
       {allSegments.map((segment, index) => {
         const isLast = index === allSegments.length - 1;
-        
+
         return (
           <React.Fragment key={index}>
             {index > 0 && (
-              <ChevronRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)]" />
+              <ChevronRight className="w-3 h-3 text-[var(--fg-quaternary)]" />
             )}
             <button
               onClick={() => onNavigate(index - 1)}
               disabled={isLast}
               className={`
-                px-1.5 py-0.5 rounded transition-colors
-                ${isLast 
-                  ? 'text-[var(--fg-primary)] cursor-default' 
-                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                px-1.5 py-0.5 rounded transition-colors tracking-tight
+                ${isLast
+                  ? 'text-[var(--fg-primary)] cursor-default font-bold'
+                  : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] font-medium'
                 }
               `}
+              style={{ fontFamily: 'Offbit, sans-serif' }}
             >
               {formatSegmentLabel(segment)}
             </button>

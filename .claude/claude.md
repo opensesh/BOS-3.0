@@ -120,7 +120,7 @@ Use `--fg-brand-primary` and `--bg-brand-solid` sparingly:
 - NOT for borders or outlines
 
 ### Forbidden Icons
-**Never use the `Sparkles` icon from Lucide.** It's generic AI aesthetic that doesn't match the brand vision. For empty states or prompts, use text-only or more purposeful iconography.
+**NEVER use the `Sparkles` icon from Lucide. EVER.** This is a hard rule with no exceptions. The 4-point star/sparkle icon is generic AI aesthetic that doesn't match the brand vision. Do not import it, do not use it, do not suggest it. For empty states or prompts, use text-only or more purposeful iconography.
 
 ### Interactive States
 ```css
@@ -154,8 +154,8 @@ Icons should be **functional, not decorative**. They work best when they aid rec
 - **Page headers** - Main `<h1>` titles should NOT have icons
 - **Duplicated contexts** - If a card has an icon, don't repeat it in subtitles
 
-### Banned Icons (NEVER USE)
-- **`Sparkles`** - The 4-point star/galaxy icon from Lucide Icons is corny and doesn't match the app's vibe or brand language. **NEVER use this icon anywhere in the codebase.**
+### Banned Icons (ABSOLUTE BAN - NO EXCEPTIONS)
+- **`Sparkles`** - The 4-point star/galaxy icon from Lucide Icons is corny and doesn't match the app's vibe or brand language. **NEVER use this icon anywhere in the codebase. This is a HARD BAN with zero exceptions. Do not import it, do not suggest it, do not use it under any circumstances.**
 
 **Alternatives by context:**
 - For release updates/announcements: Use `Bell` or `Megaphone`

@@ -241,14 +241,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         onMouseEnter={() => setSelectedIndex(globalIndex)}
         className={`
           w-full flex items-center gap-3
-          px-4 py-2.5
+          px-5 py-3
           text-left
           transition-colors
           ${isSelected ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-[var(--bg-tertiary)]'}
         `}
       >
         <div className={`
-          w-8 h-8 rounded-lg
+          w-9 h-9 rounded-lg
           flex items-center justify-center
           flex-shrink-0
           ${isSelected 
@@ -285,14 +285,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         onMouseEnter={() => setSelectedIndex(globalIndex)}
         className={`
           w-full flex items-center gap-3
-          px-4 py-2.5
+          px-5 py-3
           text-left
           transition-colors
           ${isSelected ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-[var(--bg-tertiary)]'}
         `}
       >
         <div className={`
-          w-8 h-8 rounded-lg
+          w-9 h-9 rounded-lg
           flex items-center justify-center
           flex-shrink-0
           ${isSelected 
@@ -330,7 +330,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         onMouseEnter={() => setSelectedIndex(globalIndex)}
         className={`
           w-full flex items-center gap-3
-          px-4 py-2.5
+          px-5 py-3
           text-left
           transition-colors
           ${isSelected ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-[var(--bg-tertiary)]'}
@@ -386,14 +386,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         onMouseEnter={() => setSelectedIndex(globalIndex)}
         className={`
           w-full flex items-center gap-3
-          px-4 py-2.5
+          px-5 py-3
           text-left
           transition-colors
           ${isSelected ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-[var(--bg-tertiary)]'}
         `}
       >
         <div className={`
-          w-8 h-8 rounded-lg
+          w-9 h-9 rounded-lg
           flex items-center justify-center
           flex-shrink-0
           ${isSelected 
@@ -438,14 +438,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         onMouseEnter={() => setSelectedIndex(globalIndex)}
         className={`
           w-full flex items-center gap-3
-          px-4 py-2.5
+          px-5 py-3
           text-left
           transition-colors
           ${isSelected ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-[var(--bg-tertiary)]'}
         `}
       >
         <div className={`
-          w-8 h-8 rounded-lg
+          w-9 h-9 rounded-lg
           flex items-center justify-center
           flex-shrink-0
           ${isSelected 
@@ -473,7 +473,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   // Section header component
   const SectionHeader = ({ title, count }: { title: string; count?: number }) => (
-    <div className="px-4 py-1.5 flex items-center justify-between">
+    <div className="px-5 py-2 flex items-center justify-between">
       <span className="text-[10px] font-medium text-[var(--fg-quaternary)] uppercase tracking-wider">
         {title}
       </span>
@@ -510,7 +510,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
               transition={{ duration: 0.15 }}
               className="
-                w-full max-w-xl
+                w-full max-w-2xl
                 bg-[var(--bg-primary)]
                 rounded-xl
                 border border-[var(--border-secondary)]
@@ -520,7 +520,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Search Input */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border-secondary)]">
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border-secondary)]">
                 <Search className="w-5 h-5 text-[var(--fg-tertiary)] flex-shrink-0" />
                 <input
                   ref={inputRef}
@@ -534,7 +534,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     text-[var(--fg-primary)]
                     placeholder:text-[var(--fg-tertiary)]
                     focus:outline-none
-                    text-sm
+                    text-base
                   "
                 />
                 <div className="flex items-center gap-1">
@@ -559,7 +559,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </div>
 
               {/* Results List */}
-              <div ref={resultsRef} className="max-h-[55vh] overflow-y-auto">
+              <div ref={resultsRef} className="max-h-[60vh] overflow-y-auto">
                 {flatResults.length > 0 ? (
                   <div className="py-2">
                     {/* Pages Section */}
@@ -670,7 +670,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between px-4 py-2 border-t border-[var(--border-secondary)] text-[10px] text-[var(--fg-quaternary)]">
+              <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border-secondary)] text-[10px] text-[var(--fg-quaternary)]">
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1">
                     <kbd className="px-1 py-0.5 bg-[var(--bg-tertiary)] rounded">↵</kbd>

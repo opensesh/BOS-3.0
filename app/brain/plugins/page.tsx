@@ -10,7 +10,7 @@ import { TabSelector } from '@/components/brain/TabSelector';
 import { FolderTreeNav, BreadcrumbNav, type TreeItem } from '@/components/brain/FolderTreeNav';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { PageTransition, MotionItem } from '@/lib/motion';
-import { Settings, Loader2, FolderTree, X, ChevronDown } from 'lucide-react';
+import { Settings, Loader2, FolderTree, ChevronDown } from 'lucide-react';
 import { getPluginContent, listPlugins, getPluginStructure } from './actions';
 
 // Animation variants for content transitions
@@ -18,11 +18,6 @@ const contentVariants = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -8 },
-};
-
-const sidebarVariants = {
-  hidden: { x: -300, opacity: 0 },
-  visible: { x: 0, opacity: 1 },
 };
 
 function PluginsContent() {
@@ -39,7 +34,6 @@ function PluginsContent() {
   const [isTreeLoading, setIsTreeLoading] = useState(false);
   const [isContentLoading, setIsContentLoading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Load plugin list on mount
   useEffect(() => {
@@ -228,23 +222,13 @@ function PluginsContent() {
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-[var(--fg-primary)]">
                 Plugins
               </h1>
-              <div className="flex items-center gap-2">
-                {/* Mobile tree toggle */}
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="lg:hidden p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
-                  title="Toggle file tree"
-                >
-                  <FolderTree className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
-                </button>
-                <button
+              <button
                   onClick={() => setIsSettingsOpen(true)}
                   className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
                   title="Brain Settings"
                 >
                   <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
                 </button>
-              </div>
             </div>
             <p className="text-sm md:text-base lg:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               Complete capability packages combining commands, agents, and skills.
@@ -361,55 +345,6 @@ function PluginsContent() {
                     />
                   </div>
                 </div>
-
-                {/* Mobile Sidebar Overlay */}
-                <AnimatePresence>
-                  {isSidebarOpen && (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                        onClick={() => setIsSidebarOpen(false)}
-                      />
-                      <motion.div
-                        variants={sidebarVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="hidden"
-                        transition={{ 
-                          type: 'spring', 
-                          damping: 30, 
-                          stiffness: 300,
-                        }}
-                        className="fixed left-0 top-0 bottom-0 w-72 bg-[var(--bg-primary)] border-r border-[var(--border-primary)] z-50 lg:hidden overflow-y-auto"
-                      >
-                        <div className="p-4">
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-medium text-[var(--fg-primary)]">
-                              files
-                            </h3>
-                            <button
-                              onClick={() => setIsSidebarOpen(false)}
-                              className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <FolderTreeNav
-                            tree={pluginTree}
-                            selectedId={selectedFile?.id}
-                            onSelect={handleSelectItem}
-                            showRoot={false}
-                            initialExpanded={[pluginTree.id]}
-                          />
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
 
                 {/* Content Area */}
                 <div className="flex-1 min-w-0">

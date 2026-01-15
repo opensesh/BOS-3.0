@@ -4,9 +4,10 @@ import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { 
+import {
   Settings,
-  Sparkles,
+  Link2,
+  Rss,
   LogOut,
 } from 'lucide-react';
 import { ThemeCompactToggle } from '@/components/ui/ThemeCompactToggle';
@@ -130,6 +131,22 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
               </button>
               <button
                 onClick={() => {
+                  router.push('/links');
+                  onClose();
+                }}
+                className="
+                  w-full flex items-center gap-3
+                  px-4 py-2
+                  text-left
+                  hover:bg-[var(--bg-tertiary)]
+                  transition-colors
+                "
+              >
+                <Link2 className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                <span className="text-sm text-[var(--fg-secondary)]">{t('links')}</span>
+              </button>
+              <button
+                onClick={() => {
                   // Navigate to updates page (external documentation)
                   window.open('https://opensession.co/updates', '_blank');
                   onClose();
@@ -142,7 +159,7 @@ export function ProfileDropdown({ isOpen, onClose, triggerRef }: ProfileDropdown
                   transition-colors
                 "
               >
-                <Sparkles className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                <Rss className="w-4 h-4 text-[var(--fg-tertiary)]" />
                 <span className="text-sm text-[var(--fg-secondary)]">{t('updates')}</span>
               </button>
             </div>

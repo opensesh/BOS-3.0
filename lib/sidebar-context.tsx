@@ -5,8 +5,8 @@ import { createContext, useContext, useState, useCallback, useEffect, ReactNode 
 export type SidebarMode = 'expanded' | 'collapsed' | 'hover';
 
 // Sidebar width constants
-export const SIDEBAR_WIDTH_EXPANDED = 220;
-export const SIDEBAR_WIDTH_COLLAPSED = 48;
+export const SIDEBAR_WIDTH_EXPANDED = 256;
+export const SIDEBAR_WIDTH_COLLAPSED = 56;
 
 interface SidebarContextType {
   sidebarMode: SidebarMode;

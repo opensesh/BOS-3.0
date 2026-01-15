@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__vercel__get_deployment_build_logs"
+    ]
+  }
+}

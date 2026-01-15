@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "notion": {
+      "url": "https://mcp.notion.com/mcp"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    }
+  }
+}

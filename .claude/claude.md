@@ -288,9 +288,97 @@ NEVER put icons in card subtitles:
 
 ---
 
-## BOS MCP Server Integration
+## MCP Servers (Model Context Protocol)
 
-BOS exposes brand knowledge via the Model Context Protocol (MCP) for external AI clients like Claude Desktop.
+This repository uses MCP servers to extend Claude's capabilities. The configuration lives in `.mcp.json` at the repo root.
+
+### Available MCP Servers
+
+| Server | Type | Purpose |
+|--------|------|---------|
+| **Notion** | Remote (hosted) | Access Notion workspaces - search, read, create pages |
+| **GitHub** | Local (npx) | Repository management, issues, PRs, code search |
+| **Figma** | Remote | Design context, screenshots, code generation from designs |
+| **Vercel** | Remote | Deployment management, logs, project configuration |
+| **Supabase** | Remote | Database operations, migrations, edge functions |
+
+### Setup for New Engineers
+
+#### 1. Environment Variables
+
+Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
+
+```bash
+# GitHub MCP - Required for GitHub server
+export GITHUB_PERSONAL_ACCESS_TOKEN="ghp_your_token_here"
+```
+
+Create your GitHub PAT at: https://github.com/settings/personal-access-tokens/new
+- Recommended scopes: `repo`, `read:org`, `read:packages`
+
+#### 2. Claude Code (This Repo)
+
+The `.mcp.json` file is already configured. After setting environment variables:
+1. Restart your terminal
+2. Start Claude Code in this repo
+3. MCP servers will be available automatically
+
+#### 3. Claude Desktop (Local App)
+
+Copy this to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "notion": {
+      "url": "https://mcp.notion.com/mcp"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+Then restart Claude Desktop. Notion will prompt for OAuth authentication on first use.
+
+### MCP Server Capabilities
+
+#### Notion MCP
+- Search pages and databases
+- Read page content
+- Create and update pages
+- Query database entries
+- OAuth authentication (no token needed)
+
+#### GitHub MCP
+- Create/read/update files in repos
+- Manage issues and pull requests
+- Search code, commits, and users
+- Create branches and commits
+- Repository management
+
+### Troubleshooting
+
+**GitHub MCP not connecting:**
+- Verify `GITHUB_PERSONAL_ACCESS_TOKEN` is set: `echo $GITHUB_PERSONAL_ACCESS_TOKEN`
+- Ensure token has required scopes
+- Restart terminal/Claude after setting env vars
+
+**Notion MCP not connecting:**
+- Check network connectivity to `mcp.notion.com`
+- Re-authenticate if OAuth expired
+- Ensure Notion workspace permissions are granted
+
+---
+
+## BOS MCP Server (Outbound)
+
+BOS also exposes its own MCP server for external AI clients to access brand knowledge.
 
 ### Available Tools
 
@@ -308,11 +396,6 @@ URL: https://bos-3-0.vercel.app/api/mcp
 Transport: streamable-http
 Auth: Bearer token (API key from BOS settings)
 ```
-
-### Claude Desktop Setup
-1. Copy `.claude/claude-desktop-config.example.json` to your Claude config location
-2. Replace `YOUR_API_KEY_HERE` with your BOS API key (generate in BOS Settings > MCP)
-3. Restart Claude Desktop
 
 ### Voice Guidance for AI Assistants
 When using BOS MCP, act as a **brand steward**, not an outside advisor:

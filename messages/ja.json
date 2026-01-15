@@ -18,7 +18,8 @@
   },
   "profileDropdown": {
     "settings": "設定",
-    "releaseUpdates": "アップデート",
+    "links": "リンク",
+    "updates": "アップデート",
     "theme": "テーマ",
     "themeDark": "ダーク",
     "themeLight": "ライト",

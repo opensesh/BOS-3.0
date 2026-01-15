@@ -18,7 +18,8 @@
   },
   "profileDropdown": {
     "settings": "Einstellungen",
-    "releaseUpdates": "Updates",
+    "links": "Links",
+    "updates": "Updates",
     "theme": "Design",
     "themeDark": "Dunkel",
     "themeLight": "Hell",

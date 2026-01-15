@@ -18,7 +18,8 @@
   },
   "profileDropdown": {
     "settings": "Configuración",
-    "releaseUpdates": "Actualizaciones",
+    "links": "Enlaces",
+    "updates": "Actualizaciones",
     "theme": "Tema",
     "themeDark": "Oscuro",
     "themeLight": "Claro",

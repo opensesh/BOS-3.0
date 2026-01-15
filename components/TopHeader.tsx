@@ -60,24 +60,24 @@ export function TopHeader({ children }: TopHeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-bg-secondary border-b border-border-secondary">
+      <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-bg-secondary border-b border-border-secondary">
         <div className="flex items-center justify-between h-full pr-3">
           {/* Left Section: Brand Icon + Breadcrumbs */}
           <div className="flex items-center">
-            {/* Brandmark container - matches sidebar rail exactly (48px width, centered content) */}
-            <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+            {/* Brandmark container - matches sidebar rail exactly (56px width, centered content) */}
+            <div className="w-14 h-14 flex items-center justify-center flex-shrink-0">
               <Link
                 href="/"
                 className="
                   flex items-center justify-center
-                  w-8 h-8
+                  w-9 h-9
                   rounded-md
                   hover:bg-[var(--bg-tertiary)]
                   transition-all duration-150
                 "
                 title="Home"
               >
-                <Brandmark size={18} />
+                <Brandmark size={20} />
               </Link>
             </div>
             
@@ -90,25 +90,25 @@ export function TopHeader({ children }: TopHeaderProps) {
           </div>
 
           {/* Right Section: Utility Actions */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {/* Search - Supabase style search box */}
             <button
               onClick={() => setIsSearchOpen(true)}
               className="
                 hidden sm:flex items-center gap-1.5
-                pl-2 pr-1.5 py-1
+                pl-2.5 pr-2 py-1
                 rounded-md
                 bg-bg-tertiary/50
                 border border-border-secondary
                 text-fg-quaternary
                 hover:bg-bg-tertiary hover:border-border-primary hover:text-fg-tertiary
                 transition-all duration-150
-                text-xs
-                h-7
+                text-sm
+                h-8
               "
               title="Search (⌘K)"
             >
-              <Search className="w-3.5 h-3.5" />
+              <Search className="w-4 h-4" />
               <span className="text-left">Search...</span>
               <kbd className="hidden md:inline-flex items-center px-1 py-0.5 text-[9px] font-mono bg-bg-secondary/80 rounded text-fg-quaternary ml-1">
                 ⌘K
@@ -119,7 +119,7 @@ export function TopHeader({ children }: TopHeaderProps) {
               onClick={() => setIsSearchOpen(true)}
               className="
                 sm:hidden flex items-center justify-center
-                w-8 h-8
+                w-9 h-9
                 rounded-md
                 text-fg-tertiary hover:text-fg-primary
                 hover:bg-bg-tertiary
@@ -127,7 +127,7 @@ export function TopHeader({ children }: TopHeaderProps) {
               "
               title="Search"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-[18px] h-[18px]" />
             </button>
 
             {/* Notifications */}
@@ -137,7 +137,7 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleNotificationsClick}
                 className={`
                   relative flex items-center justify-center
-                  w-8 h-8
+                  w-9 h-9
                   rounded-md
                   text-fg-tertiary hover:text-fg-primary
                   hover:bg-bg-tertiary
@@ -146,7 +146,7 @@ export function TopHeader({ children }: TopHeaderProps) {
                 `}
                 title="Notifications"
               >
-                <Bell className="w-4 h-4" />
+                <Bell className="w-[18px] h-[18px]" />
               </button>
               <NotificationsDropdown
                 isOpen={isNotificationsOpen}
@@ -162,7 +162,7 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleHelpClick}
                 className={`
                   flex items-center justify-center
-                  w-8 h-8
+                  w-9 h-9
                   rounded-md
                   text-fg-tertiary hover:text-fg-primary
                   hover:bg-bg-tertiary
@@ -171,7 +171,7 @@ export function TopHeader({ children }: TopHeaderProps) {
                 `}
                 title="Help"
               >
-                <HelpCircle className="w-4 h-4" />
+                <HelpCircle className="w-[18px] h-[18px]" />
               </button>
               <HelpDropdown
                 isOpen={isHelpOpen}
@@ -187,7 +187,7 @@ export function TopHeader({ children }: TopHeaderProps) {
                 onClick={handleProfileClick}
                 className={`
                   flex items-center justify-center
-                  w-8 h-8
+                  w-9 h-9
                   rounded-md
                   hover:bg-bg-tertiary
                   transition-all duration-150
@@ -195,8 +195,8 @@ export function TopHeader({ children }: TopHeaderProps) {
                 `}
                 title="Profile"
               >
-                <div className="w-6 h-6 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-border-secondary rounded-full flex items-center justify-center">
-                  <span className="text-white text-[9px] font-mono">A</span>
+                <div className="w-7 h-7 bg-gradient-to-br from-[var(--color-charcoal)] to-black border border-border-secondary rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] font-mono">A</span>
                 </div>
               </button>
               <ProfileDropdown

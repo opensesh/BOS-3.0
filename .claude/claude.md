@@ -290,89 +290,17 @@ NEVER put icons in card subtitles:
 
 ## MCP Servers (Model Context Protocol)
 
-This repository uses MCP servers to extend Claude's capabilities. The configuration lives in `.mcp.json` at the repo root.
+This project uses MCP servers to extend Claude's capabilities with external tools and services.
 
-### Available MCP Servers
+| Server | Purpose |
+|--------|---------|
+| **Supabase** | Database operations, migrations, edge functions |
+| **Vercel** | Deployments, logs, project management |
+| **Figma** | Design context, screenshots, code generation |
+| **Notion** | Documentation, pages, databases |
+| **GitHub** | Repository, issues, PRs, code search |
 
-| Server | Type | Purpose |
-|--------|------|---------|
-| **Notion** | Remote (hosted) | Access Notion workspaces - search, read, create pages |
-| **GitHub** | Local (npx) | Repository management, issues, PRs, code search |
-| **Figma** | Remote | Design context, screenshots, code generation from designs |
-| **Vercel** | Remote | Deployment management, logs, project configuration |
-| **Supabase** | Remote | Database operations, migrations, edge functions |
-
-### Setup for New Engineers
-
-#### 1. Environment Variables
-
-Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
-
-```bash
-# GitHub MCP - Required for GitHub server
-export GITHUB_PERSONAL_ACCESS_TOKEN="ghp_your_token_here"
-```
-
-Create your GitHub PAT at: https://github.com/settings/personal-access-tokens/new
-- Recommended scopes: `repo`, `read:org`, `read:packages`
-
-#### 2. Claude Code (This Repo)
-
-The `.mcp.json` file is already configured. After setting environment variables:
-1. Restart your terminal
-2. Start Claude Code in this repo
-3. MCP servers will be available automatically
-
-#### 3. Claude Desktop (Local App)
-
-Copy this to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "notion": {
-      "url": "https://mcp.notion.com/mcp"
-    },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
-      }
-    }
-  }
-}
-```
-
-Then restart Claude Desktop. Notion will prompt for OAuth authentication on first use.
-
-### MCP Server Capabilities
-
-#### Notion MCP
-- Search pages and databases
-- Read page content
-- Create and update pages
-- Query database entries
-- OAuth authentication (no token needed)
-
-#### GitHub MCP
-- Create/read/update files in repos
-- Manage issues and pull requests
-- Search code, commits, and users
-- Create branches and commits
-- Repository management
-
-### Troubleshooting
-
-**GitHub MCP not connecting:**
-- Verify `GITHUB_PERSONAL_ACCESS_TOKEN` is set: `echo $GITHUB_PERSONAL_ACCESS_TOKEN`
-- Ensure token has required scopes
-- Restart terminal/Claude after setting env vars
-
-**Notion MCP not connecting:**
-- Check network connectivity to `mcp.notion.com`
-- Re-authenticate if OAuth expired
-- Ensure Notion workspace permissions are granted
+**For setup instructions, see [mcp-instructions.md](./mcp-instructions.md)**
 
 ---
 

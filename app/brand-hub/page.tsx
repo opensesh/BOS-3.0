@@ -1,22 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useResources } from '@/hooks/useResources';
+import { useCategoryLastUpdated, type CategoryTimestamps } from '@/hooks/useCategoryLastUpdated';
 import { AddResourceModal, ResourceIconPreview } from '@/components/brand-hub/AddResourceModal';
+import { ProjectStyleCard } from '@/components/ui/ProjectStyleCard';
 import { BrandResource } from '@/types';
 import { PageTransition, MotionItem, staggerContainer, fadeInUp } from '@/lib/motion';
-import { 
-  Fingerprint, 
-  Palette, 
-  Type, 
-  ImageIcon, 
+import {
+  Fingerprint,
+  Palette,
+  Type,
+  ImageIcon,
   FileText,
   Braces,
-  ArrowUpRight,
+  Layers,
   Plus,
   ExternalLink,
   Trash2,
@@ -30,6 +31,8 @@ const brandHubItems = [
     description: 'Brand marks, lockups, and usage guidelines',
     href: '/brand-hub/logo',
     icon: Fingerprint,
+    iconLabel: 'Logo',
+    timestampKey: 'logo' as keyof CategoryTimestamps,
   },
   {
     id: 'colors',
@@ -37,6 +40,8 @@ const brandHubItems = [
     description: 'Brand palette and color tokens',
     href: '/brand-hub/colors',
     icon: Palette,
+    iconLabel: 'Colors',
+    timestampKey: 'colors' as keyof CategoryTimestamps,
   },
   {
     id: 'fonts',
@@ -44,6 +49,8 @@ const brandHubItems = [
     description: 'Type system and font specimens',
     href: '/brand-hub/fonts',
     icon: Type,
+    iconLabel: 'Typography',
+    timestampKey: 'fonts' as keyof CategoryTimestamps,
   },
   {
     id: 'art-direction',
@@ -51,6 +58,17 @@ const brandHubItems = [
     description: 'Visual language and imagery',
     href: '/brand-hub/art-direction',
     icon: ImageIcon,
+    iconLabel: 'Art',
+    timestampKey: 'artDirection' as keyof CategoryTimestamps,
+  },
+  {
+    id: 'textures',
+    title: 'Textures',
+    description: 'Patterns and surface treatments',
+    href: '/brand-hub/textures',
+    icon: Layers,
+    iconLabel: 'Textures',
+    timestampKey: 'textures' as keyof CategoryTimestamps,
   },
   {
     id: 'guidelines',
@@ -58,6 +76,8 @@ const brandHubItems = [
     description: 'Complete brand documentation',
     href: '/brand-hub/guidelines',
     icon: FileText,
+    iconLabel: 'Docs',
+    timestampKey: 'guidelines' as keyof CategoryTimestamps,
   },
   {
     id: 'design-tokens',
@@ -65,6 +85,8 @@ const brandHubItems = [
     description: 'Portable styles package for AI tools',
     href: '/brand-hub/design-tokens',
     icon: Braces,
+    iconLabel: 'Tokens',
+    timestampKey: 'tokens' as keyof CategoryTimestamps,
   },
 ];
 
@@ -152,45 +174,9 @@ function AddResourceCard({ onClick }: { onClick: () => void }) {
   );
 }
 
-function BentoCard({ item }: { item: typeof brandHubItems[0] }) {
-  const Icon = item.icon;
-  
-  return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.15 }}
-    >
-      <Link
-        href={item.href}
-        className="group relative h-full flex flex-col p-6 md:p-8 gap-6 md:gap-8 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-secondary-hover transition-all duration-300 ease-out"
-      >
-        {/* Top Section: Icon and Arrow */}
-        <div className="flex items-start justify-between">
-          <div className="p-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)]">
-            <Icon className="w-6 h-6 text-[var(--fg-tertiary)]" />
-          </div>
-          <ArrowUpRight className="w-5 h-5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-2 translate-x-2 group-hover:translate-y-0 group-hover:translate-x-0" />
-        </div>
-        
-        {/* Bottom Section: Text */}
-        <div className="space-y-2">
-          <h3 className="text-xl md:text-2xl font-display font-bold text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
-            {item.title}
-          </h3>
-          <div className="h-10">
-            <p className="text-sm md:text-base text-[var(--fg-tertiary)] line-clamp-2">
-              {item.description}
-            </p>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
-
 export default function BrandHubPage() {
   const { resources, isLoaded, addResource, deleteResource, updateResource } = useResources();
+  const { timestamps } = useCategoryLastUpdated();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<BrandResource | undefined>();
 
@@ -225,16 +211,23 @@ export default function BrandHubPage() {
               </p>
             </MotionItem>
 
-            {/* Bento Grid */}
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-10"
+            {/* Cards Grid */}
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10"
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
             >
               {brandHubItems.map((item, index) => (
                 <motion.div key={item.id} variants={fadeInUp} custom={index}>
-                  <BentoCard item={item} />
+                  <ProjectStyleCard
+                    href={item.href}
+                    title={item.title}
+                    description={item.description}
+                    icon={item.icon}
+                    iconLabel={item.iconLabel}
+                    lastUpdated={timestamps[item.timestampKey]}
+                  />
                 </motion.div>
               ))}
             </motion.div>

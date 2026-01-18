@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { AddBrainResourceModal } from '@/components/brain/AddBrainResourceModal';
 import { useBrainResources, BrainResource } from '@/hooks/useBrainResources';
+import { useCategoryLastUpdated, type CategoryTimestamps } from '@/hooks/useCategoryLastUpdated';
+import { ProjectStyleCard } from '@/components/ui/ProjectStyleCard';
 import { PageTransition, MotionItem, staggerContainer, fadeInUp } from '@/lib/motion';
 import { Icon } from '@/components/ui/Icon';
 import {
@@ -19,11 +20,13 @@ import {
   FolderTree,
   BookOpen,
   PenTool,
-  ArrowUpRight,
   Zap,
+  Puzzle,
+  Bot,
+  Github,
 } from 'lucide-react';
 
-// Bento cards for subpages
+// Cards for subpages
 const brainPages = [
   {
     id: 'architecture',
@@ -31,6 +34,8 @@ const brainPages = [
     description: 'System structure and AI configuration',
     href: '/brain/architecture',
     icon: FolderTree,
+    iconLabel: 'System',
+    timestampKey: 'architecture' as keyof CategoryTimestamps,
   },
   {
     id: 'brand-identity',
@@ -38,6 +43,8 @@ const brainPages = [
     description: 'Identity, messaging, and art direction',
     href: '/brain/brand-identity',
     icon: BookOpen,
+    iconLabel: 'Identity',
+    timestampKey: 'brandIdentity' as keyof CategoryTimestamps,
   },
   {
     id: 'writing-styles',
@@ -45,6 +52,8 @@ const brainPages = [
     description: 'Voice and tone guidelines',
     href: '/brain/writing-styles',
     icon: PenTool,
+    iconLabel: 'Writing',
+    timestampKey: 'writingStyles' as keyof CategoryTimestamps,
   },
   {
     id: 'skills',
@@ -52,6 +61,26 @@ const brainPages = [
     description: 'System capabilities and configuration',
     href: '/brain/skills',
     icon: Zap,
+    iconLabel: 'Skills',
+    timestampKey: 'skills' as keyof CategoryTimestamps,
+  },
+  {
+    id: 'plugins',
+    title: 'Plugins',
+    description: 'Complete capability packages',
+    href: '/brain/plugins',
+    icon: Puzzle,
+    iconLabel: 'Plugins',
+    timestampKey: 'plugins' as keyof CategoryTimestamps,
+  },
+  {
+    id: 'agents',
+    title: 'Agents',
+    description: 'Autonomous AI workflows',
+    href: '/brain/agents',
+    icon: Bot,
+    iconLabel: 'Agents',
+    timestampKey: 'agents' as keyof CategoryTimestamps,
   },
 ];
 
@@ -170,50 +199,13 @@ function AddResourceCard({
   );
 }
 
-// Bento Card for subpages
-function BentoCard({ item }: { item: typeof brainPages[0] }) {
-  const Icon = item.icon;
-  
-  return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.15 }}
-    >
-      <Link
-        href={item.href}
-        className="group relative h-full flex flex-col p-6 md:p-8 gap-6 md:gap-8 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-secondary-hover transition-all duration-300 ease-out"
-      >
-        {/* Top Section: Icon and Arrow */}
-        <div className="flex items-start justify-between">
-          <div className="p-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)]">
-            <Icon className="w-6 h-6 text-[var(--fg-tertiary)]" />
-          </div>
-          <ArrowUpRight className="w-5 h-5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-2 translate-x-2 group-hover:translate-y-0 group-hover:translate-x-0" />
-        </div>
-        
-        {/* Bottom Section: Text */}
-        <div className="space-y-2">
-          <h3 className="text-xl md:text-2xl font-display font-bold text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
-            {item.title}
-          </h3>
-          <div className="h-10">
-            <p className="text-sm md:text-base text-[var(--fg-tertiary)] line-clamp-2">
-              {item.description}
-            </p>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
-
 export default function BrainPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddResourceOpen, setIsAddResourceOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<BrainResource | undefined>();
-  
+
   const { resources, isLoaded, addResource, deleteResource, updateResource } = useBrainResources();
+  const { timestamps } = useCategoryLastUpdated();
 
   const handleEditResource = (resource: BrainResource) => {
     setEditingResource(resource);
@@ -249,6 +241,18 @@ export default function BrainPage() {
                     <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
                   </motion.button>
                   <motion.button
+                    onClick={() => {
+                      // Placeholder - will be implemented later
+                      console.log('Connect to GitHub clicked');
+                    }}
+                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                    title="Connect to GitHub"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Github className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                  </motion.button>
+                  <motion.button
                     onClick={() => setIsSettingsOpen(true)}
                     className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
                     title="Brain Settings"
@@ -260,21 +264,28 @@ export default function BrainPage() {
                 </div>
               </div>
               <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
-                Your brand&apos;s AI knowledge center. Configure Claude with your brand identity, 
+                Your brand&apos;s AI knowledge center. Configure Claude with your brand identity,
                 messaging, and writing styles for consistent, on-brand content generation.
               </p>
             </MotionItem>
 
-            {/* Bento Cards for Subpages */}
+            {/* Cards Grid */}
             <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-10"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
             >
               {brainPages.map((page, index) => (
                 <motion.div key={page.id} variants={fadeInUp} custom={index}>
-                  <BentoCard item={page} />
+                  <ProjectStyleCard
+                    href={page.href}
+                    title={page.title}
+                    description={page.description}
+                    icon={page.icon}
+                    iconLabel={page.iconLabel}
+                    lastUpdated={timestamps[page.timestampKey]}
+                  />
                 </motion.div>
               ))}
             </motion.div>

@@ -14,21 +14,9 @@ import {
   ChevronDown,
   ChevronRight,
   Sidebar as SidebarIcon,
-  FileText,
-  Fingerprint,
-  Palette,
-  Type,
-  ImageIcon,
-  Shapes,
-  Code,
-  PenTool,
-  Zap,
   FolderPlus,
   Folder,
   ArrowRight,
-  Puzzle,
-  Bot,
-  Layers,
 } from 'lucide-react';
 import { MobileHeader } from './MobileHeader';
 import { TopHeader } from './TopHeader';
@@ -46,43 +34,44 @@ import {
 } from './mobile';
 
 // Navigation structure with subitems
+// Note: Brand and Brain sub-items have no icons (text-only for cleaner look)
 const navItems = [
-  { 
-    label: 'Home', 
-    href: '/', 
+  {
+    label: 'Home',
+    href: '/',
     icon: Home,
     subItems: []
   },
-  { 
-    label: 'Brand', 
-    href: '/brand-hub', 
+  {
+    label: 'Brand',
+    href: '/brand-hub',
     icon: ScanFace,
     subItems: [
-      { label: 'Logo', href: '/brand-hub/logo', icon: Fingerprint },
-      { label: 'Colors', href: '/brand-hub/colors', icon: Palette },
-      { label: 'Typography', href: '/brand-hub/fonts', icon: Type },
-      { label: 'Art Direction', href: '/brand-hub/art-direction', icon: ImageIcon },
-      { label: 'Textures', href: '/brand-hub/textures', icon: Layers },
-      { label: 'Tokens', href: '/brand-hub/design-tokens', icon: Shapes },
-      { label: 'Guidelines', href: '/brand-hub/guidelines', icon: FileText },
+      { label: 'Logo', href: '/brand-hub/logo' },
+      { label: 'Colors', href: '/brand-hub/colors' },
+      { label: 'Typography', href: '/brand-hub/fonts' },
+      { label: 'Art Direction', href: '/brand-hub/art-direction' },
+      { label: 'Textures', href: '/brand-hub/textures' },
+      { label: 'Tokens', href: '/brand-hub/design-tokens' },
+      { label: 'Guidelines', href: '/brand-hub/guidelines' },
     ]
   },
-  { 
-    label: 'Brain', 
-    href: '/brain', 
+  {
+    label: 'Brain',
+    href: '/brain',
     icon: BrainCog,
     subItems: [
-      { label: 'Architecture', href: '/brain/architecture', icon: Code },
-      { label: 'Brand Identity', href: '/brain/brand-identity', icon: FileText },
-      { label: 'Writing Styles', href: '/brain/writing-styles', icon: PenTool },
-      { label: 'Skills', href: '/brain/skills', icon: Zap },
-      { label: 'Plugins', href: '/brain/plugins', icon: Puzzle },
-      { label: 'Agents', href: '/brain/agents', icon: Bot },
+      { label: 'Architecture', href: '/brain/architecture' },
+      { label: 'Brand Identity', href: '/brain/brand-identity' },
+      { label: 'Writing Styles', href: '/brain/writing-styles' },
+      { label: 'Skills', href: '/brain/skills' },
+      { label: 'Plugins', href: '/brain/plugins' },
+      { label: 'Agents', href: '/brain/agents' },
     ]
   },
-  { 
-    label: 'Spaces', 
-    href: '/spaces', 
+  {
+    label: 'Spaces',
+    href: '/spaces',
     icon: LayoutGrid,
     subItems: [] // Dynamic - populated from useSpaces
   },
@@ -619,7 +608,7 @@ function CollapsedFlyout({
             </Link>
             <div className="py-2">
               {item.subItems.map((subItem) => {
-                const SubIcon = subItem.icon;
+                const SubIcon = 'icon' in subItem ? subItem.icon : null;
                 const isActive = pathname === subItem.href;
                 return (
                   <Link
@@ -628,15 +617,15 @@ function CollapsedFlyout({
                     onClick={onClose}
                     className={`
                       w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors
-                      ${isActive 
-                        ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]' 
+                      ${isActive
+                        ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]'
                         : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
                       }
                     `}
                     role="menuitem"
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                    {SubIcon && <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />}
                     <span>{subItem.label}</span>
                   </Link>
                 );
@@ -892,7 +881,7 @@ export function Sidebar() {
               flex items-center justify-center rounded-lg transition-all duration-150
               ${isExpandedMode
                 ? ''
-                : 'w-10 h-10 bg-[var(--bg-tertiary)] group-hover:bg-[var(--bg-quaternary)] border border-[var(--border-secondary)]'
+                : 'w-11 h-11 bg-[var(--bg-tertiary)] group-hover:bg-[var(--bg-quaternary)] border border-[var(--border-secondary)]'
               }
             `}>
               <Plus className={`text-[var(--fg-brand-primary)] ${isExpandedMode ? 'w-[18px] h-[18px]' : 'w-5 h-5'}`} />
@@ -1058,7 +1047,7 @@ export function Sidebar() {
                               
                               {/* Regular sub-items */}
                               {item.subItems?.map((subItem) => {
-                                const SubIcon = subItem.icon;
+                                const SubIcon = 'icon' in subItem ? subItem.icon : null;
                                 const isSubActive = pathname === subItem.href;
                                 return (
                                   <Link
@@ -1073,7 +1062,7 @@ export function Sidebar() {
                                     `}
                                     aria-current={isSubActive ? 'page' : undefined}
                                   >
-                                    <SubIcon className="w-4 h-4 flex-shrink-0" />
+                                    {SubIcon && <SubIcon className="w-4 h-4 flex-shrink-0" />}
                                     <span>{subItem.label}</span>
                                   </Link>
                                 );

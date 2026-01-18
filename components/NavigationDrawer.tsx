@@ -9,17 +9,7 @@ import {
   FolderPlus,
   Folder,
   LayoutGrid,
-  Fingerprint,
-  Palette,
-  Type,
-  ImageIcon,
-  Code,
-  PenTool,
-  Zap,
-  Shapes,
   ArrowRight,
-  Puzzle,
-  Bot,
 } from 'lucide-react';
 import { useChatContext } from '@/lib/chat-context';
 import { useSpaces } from '@/hooks/useSpaces';
@@ -38,13 +28,15 @@ interface NavigationDrawerProps {
   railRef: React.RefObject<HTMLElement | null>;
 }
 
+// Brand and Brain nav items - text-only for cleaner drawer look
 const brandHubNavItems = [
-  { label: 'Logo', href: '/brand-hub/logo', icon: Fingerprint },
-  { label: 'Colors', href: '/brand-hub/colors', icon: Palette },
-  { label: 'Typography', href: '/brand-hub/fonts', icon: Type },
-  { label: 'Art Direction', href: '/brand-hub/art-direction', icon: ImageIcon },
-  { label: 'Tokens', href: '/brand-hub/design-tokens', icon: Shapes },
-  { label: 'Guidelines', href: '/brand-hub/guidelines', icon: FileText },
+  { label: 'Logo', href: '/brand-hub/logo' },
+  { label: 'Colors', href: '/brand-hub/colors' },
+  { label: 'Typography', href: '/brand-hub/fonts' },
+  { label: 'Art Direction', href: '/brand-hub/art-direction' },
+  { label: 'Textures', href: '/brand-hub/textures' },
+  { label: 'Tokens', href: '/brand-hub/design-tokens' },
+  { label: 'Guidelines', href: '/brand-hub/guidelines' },
 ];
 
 // Quick actions that trigger chat prompts
@@ -187,7 +179,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'RecentChats':
         return (
           <motion.div
-            className="py-4"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
@@ -233,7 +225,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Projects':
         return (
           <motion.div
-            className="py-4"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
@@ -375,7 +367,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
       case 'Home':
         return (
           <motion.div
-            className="py-4"
+            className="py-3"
             variants={staggerContainerFast}
             initial="hidden"
             animate="visible"
@@ -501,14 +493,13 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
 
               <div className="space-y-1">
                 {brandHubNavItems.map((navItem, index) => {
-                  const Icon = navItem.icon;
                   const isActive = pathname === navItem.href;
                   return (
                     <motion.div key={navItem.href} variants={fadeInUp} custom={index}>
                       <Link
                         href={navItem.href}
                         className={`
-                          w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md
+                          w-full flex items-center px-2.5 py-2.5 rounded-md
                           transition-colors text-base
                           ${
                             isActive
@@ -517,7 +508,6 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                           }
                         `}
                       >
-                        <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
                         <span>{navItem.label}</span>
                       </Link>
                     </motion.div>
@@ -542,12 +532,12 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
 
       case 'Brain':
         const brainNavItems = [
-          { label: 'Architecture', href: '/brain/architecture', icon: Code },
-          { label: 'Brand Identity', href: '/brain/brand-identity', icon: FileText },
-          { label: 'Writing Styles', href: '/brain/writing-styles', icon: PenTool },
-          { label: 'Skills', href: '/brain/skills', icon: Zap },
-          { label: 'Plugins', href: '/brain/plugins', icon: Puzzle },
-          { label: 'Agents', href: '/brain/agents', icon: Bot },
+          { label: 'Architecture', href: '/brain/architecture' },
+          { label: 'Brand Identity', href: '/brain/brand-identity' },
+          { label: 'Writing Styles', href: '/brain/writing-styles' },
+          { label: 'Skills', href: '/brain/skills' },
+          { label: 'Plugins', href: '/brain/plugins' },
+          { label: 'Agents', href: '/brain/agents' },
         ];
         const isOnBrainSubpage = pathname.startsWith('/brain/');
 
@@ -558,7 +548,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
+            {/* Header */}
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
                 <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Brain</h3>
@@ -566,14 +556,13 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
 
               <div className="space-y-1">
                 {brainNavItems.map((navItem, index) => {
-                  const Icon = navItem.icon;
                   const isActive = pathname === navItem.href;
                   return (
                     <motion.div key={navItem.href} variants={fadeInUp} custom={index}>
                       <Link
                         href={navItem.href}
                         className={`
-                          w-full flex items-center gap-2 px-2.5 py-2.5 rounded-md
+                          w-full flex items-center px-2.5 py-2.5 rounded-md
                           transition-colors text-base
                           ${
                             isActive
@@ -582,7 +571,6 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
                           }
                         `}
                       >
-                        <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--fg-brand-primary)]' : ''}`} />
                         <span>{navItem.label}</span>
                       </Link>
                     </motion.div>

@@ -10,30 +10,19 @@ import { TabSelector } from '@/components/brain/TabSelector';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { VersionHistoryPanel } from '@/components/brain/VersionHistoryPanel';
 import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
-import { useBrainDocuments } from '@/hooks/useBrainDocuments';
+import { useBrainWritingStyles } from '@/hooks/useBrainWritingStyles';
 import { PageTransition, MotionItem } from '@/lib/motion';
 import { Settings, Plus, Loader2 } from 'lucide-react';
-
-// Fallback data for when database is not seeded
-// Paths point to API route that serves .claude/ files
-const FALLBACK_DOCUMENTS = [
-  { id: 'blog', slug: 'blog', label: 'Blog', file: 'blog.md', path: '/api/claude/writing-styles/blog.md' },
-  { id: 'creative', slug: 'creative', label: 'Creative', file: 'creative.md', path: '/api/claude/writing-styles/creative.md' },
-  { id: 'long-form', slug: 'long-form', label: 'Long Form', file: 'long-form.md', path: '/api/claude/writing-styles/long-form.md' },
-  { id: 'short-form', slug: 'short-form', label: 'Short Form', file: 'short-form.md', path: '/api/claude/writing-styles/short-form.md' },
-  { id: 'strategic', slug: 'strategic', label: 'Strategic', file: 'strategic.md', path: '/api/claude/writing-styles/strategic.md' },
-];
 
 function WritingStylesContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState('blog');
+  const [activeTab, setActiveTab] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [fallbackContent, setFallbackContent] = useState<Record<string, string>>({});
-  const [isUsingFallback, setIsUsingFallback] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const {
     documents,
@@ -45,54 +34,49 @@ function WritingStylesContent() {
     updateDocument,
     deleteDocument,
     restoreVersion,
-  } = useBrainDocuments({ category: 'writing-styles' });
+  } = useBrainWritingStyles();
 
-  // Set active tab from URL param on mount
+  // Initialize active tab once loading completes
+  // Priority: URL param > first document from database
   useEffect(() => {
-    if (tabParam) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
+    if (!isLoading && !hasInitialized && documents.length > 0) {
+      let initialTab = '';
 
-  // Check if we need to use fallback
-  useEffect(() => {
-    if (!isLoading && (error || documents.length === 0 || documents.every(d => !d.content))) {
-      setIsUsingFallback(true);
-      FALLBACK_DOCUMENTS.forEach(doc => {
-        fetch(doc.path)
-          .then(res => res.text())
-          .then(text => {
-            setFallbackContent(prev => ({ ...prev, [doc.slug]: text }));
-          })
-          .catch(err => console.error('Failed to load fallback:', err));
-      });
-    } else {
-      setIsUsingFallback(false);
+      if (tabParam) {
+        // Check if URL param matches a database document
+        const matchesDoc = documents.some(d => d.slug === tabParam);
+        if (matchesDoc) {
+          initialTab = tabParam;
+        }
+      }
+
+      // If no valid URL param, use first available document
+      if (!initialTab) {
+        const firstDocWithContent = documents.find(d => d.content);
+        initialTab = firstDocWithContent?.slug || documents[0].slug;
+      }
+
+      setActiveTab(initialTab);
+      setHasInitialized(true);
     }
-  }, [isLoading, error, documents]);
+  }, [isLoading, hasInitialized, tabParam, documents]);
 
   // Set active document when tab changes
   useEffect(() => {
-    if (isUsingFallback) return;
+    if (!hasInitialized || !activeTab) return;
     const doc = documents.find(d => d.slug === activeTab);
     if (doc) {
       setActiveDocument(doc);
     }
-  }, [activeTab, documents, isUsingFallback, setActiveDocument]);
+  }, [activeTab, documents, hasInitialized, setActiveDocument]);
 
-  // Generate tabs from documents or fallback (lowercase filename.md format)
-  const tabs = isUsingFallback
-    ? FALLBACK_DOCUMENTS.map(d => ({ id: d.slug, label: `${d.slug}.md` }))
-    : documents.map(d => ({ id: d.slug, label: `${d.slug}.md` }));
+  // Generate tabs from documents (lowercase filename.md format)
+  const tabs = documents.map(d => ({ id: d.slug, label: d.slug }));
 
   // Get current content
-  const currentContent = isUsingFallback
-    ? fallbackContent[activeTab] || 'Loading...'
-    : activeDocument?.content || '';
+  const currentContent = activeDocument?.content || '';
 
-  const currentFilename = isUsingFallback
-    ? FALLBACK_DOCUMENTS.find(d => d.slug === activeTab)?.file || 'document.md'
-    : `${activeDocument?.slug || 'document'}.md`;
+  const currentFilename = `${activeDocument?.slug || 'document'}.md`;
 
   // Handle save
   const handleSave = useCallback(async (content: string, changeSummary?: string) => {
@@ -140,18 +124,16 @@ function WritingStylesContent() {
                 </h1>
               </div>
               <div className="flex items-center gap-2">
-                {!isUsingFallback && (
-                  <motion.button
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    title="Add"
-                    aria-label="Add writing style"
-                  >
-                    <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
-                  </motion.button>
-                )}
+                <motion.button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  title="Add"
+                  aria-label="Add writing style"
+                >
+                  <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                </motion.button>
                 <button
                   onClick={() => setIsSettingsOpen(true)}
                   className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
@@ -164,23 +146,18 @@ function WritingStylesContent() {
             <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
               Context-specific voice guidelines for different content types. From blog posts to
               strategic communications, each style guide ensures consistent, on-brand messaging.
-              {isUsingFallback && (
-                <span className="block mt-2 text-sm text-[var(--fg-warning-primary)]">
-                  Viewing static files. Connect to database to enable editing.
-                </span>
-              )}
             </p>
           </MotionItem>
 
           {/* Loading State */}
-          {isLoading && !isUsingFallback && (
+          {(isLoading || !hasInitialized || !activeTab) && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--fg-brand-primary)]" />
             </div>
           )}
 
           {/* Tab Selector */}
-          {tabs.length > 0 && (
+          {tabs.length > 0 && !isLoading && hasInitialized && activeTab && (
             <MotionItem className="mb-6">
               <TabSelector
                 tabs={tabs}
@@ -192,20 +169,20 @@ function WritingStylesContent() {
           )}
 
           {/* Content Editor */}
-          <MotionItem>
-            <MarkdownEditor
-              documentId={activeDocument?.id || activeTab}
-              filename={currentFilename}
-              content={currentContent}
-              maxLines={50}
-              onSave={isUsingFallback ? undefined : handleSave}
-              onDelete={!isUsingFallback && activeDocument ? handleDelete : undefined}
-              onViewHistory={isUsingFallback ? undefined : () => setIsHistoryOpen(true)}
-              onEditingChange={setIsEditing}
-              isLoading={isLoading}
-              readOnly={isUsingFallback}
-            />
-          </MotionItem>
+          {!isLoading && hasInitialized && activeTab && (
+            <MotionItem>
+              <MarkdownEditor
+                documentId={activeDocument?.id || activeTab}
+                filename={currentFilename}
+                content={currentContent}
+                maxLines={50}
+                onSave={handleSave}
+                onDelete={activeDocument ? handleDelete : undefined}
+                onViewHistory={() => setIsHistoryOpen(true)}
+                onEditingChange={setIsEditing}
+              />
+            </MotionItem>
+          )}
         </PageTransition>
       </MainContent>
 

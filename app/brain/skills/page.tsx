@@ -10,7 +10,7 @@ import { TabSelector } from '@/components/brain/TabSelector';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { VersionHistoryPanel } from '@/components/brain/VersionHistoryPanel';
 import { AddDocumentModal } from '@/components/brain/AddDocumentModal';
-import { useBrainDocuments } from '@/hooks/useBrainDocuments';
+import { useBrainSkills } from '@/hooks/useBrainSkills';
 import { PageTransition, MotionItem } from '@/lib/motion';
 import { Settings, Plus, Loader2 } from 'lucide-react';
 
@@ -34,7 +34,7 @@ function SkillsContent() {
     updateDocument,
     deleteDocument,
     restoreVersion,
-  } = useBrainDocuments({ category: 'skills' });
+  } = useBrainSkills();
 
   // Initialize active tab once loading completes
   // Priority: URL param > first document from database

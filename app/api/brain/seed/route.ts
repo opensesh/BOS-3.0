@@ -1,18 +1,64 @@
 /**
  * API Route: Seed Brain Tables
- * 
+ *
  * Seeds the new brain_* tables with data from the local .claude/ directory.
  * This endpoint migrates existing content to the new architecture.
+ * Uses admin client to bypass RLS.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
-import { createBrandIdentityDoc } from '@/lib/supabase/brain-brand-identity-service';
-import { createWritingStyle } from '@/lib/supabase/brain-writing-styles-service';
-import { createPluginItem } from '@/lib/supabase/brain-plugins-service';
-import { createSkillItem } from '@/lib/supabase/brain-skills-service';
+import { createAdminClient } from '@/lib/supabase/admin';
+
+// Get admin client for bypassing RLS
+const getAdminSupabase = () => createAdminClient();
+
+// Admin versions of create functions
+async function createBrandIdentityDoc(data: Record<string, unknown>) {
+  const supabase = getAdminSupabase();
+  const { data: result, error } = await supabase
+    .from('brain_brand_identity')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return result;
+}
+
+async function createWritingStyle(data: Record<string, unknown>) {
+  const supabase = getAdminSupabase();
+  const { data: result, error } = await supabase
+    .from('brain_writing_styles')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return result;
+}
+
+async function createPluginItem(data: Record<string, unknown>) {
+  const supabase = getAdminSupabase();
+  const { data: result, error } = await supabase
+    .from('brain_plugins')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return result;
+}
+
+async function createSkillItem(data: Record<string, unknown>) {
+  const supabase = getAdminSupabase();
+  const { data: result, error } = await supabase
+    .from('brain_skills')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return result;
+}
 
 // Default brand ID - in production this would come from auth context
 const DEFAULT_BRAND_ID = '00000000-0000-0000-0000-000000000001';
@@ -25,8 +71,38 @@ interface SeedResult {
 }
 
 /**
+ * Ensure the default brand exists in the brands table
+ */
+async function ensureBrandExists(brandId: string): Promise<void> {
+  const supabase = getAdminSupabase();
+
+  // Check if brand exists
+  const { data: existingBrand } = await supabase
+    .from('brands')
+    .select('id')
+    .eq('id', brandId)
+    .single();
+
+  if (existingBrand) {
+    return; // Brand already exists
+  }
+
+  // Create the default brand with minimal fields
+  const { error } = await supabase.from('brands').insert({
+    id: brandId,
+    name: 'Default Brand',
+    slug: 'default',
+  });
+
+  if (error && error.code !== '23505') {
+    // Ignore duplicate key errors (23505) - brand was created by another request
+    throw new Error(`Failed to create default brand: ${error.message}`);
+  }
+}
+
+/**
  * POST /api/brain/seed
- * 
+ *
  * Seeds all brain tables from local .claude/ files
  */
 export async function POST(request: NextRequest) {
@@ -34,6 +110,11 @@ export async function POST(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const brandId = searchParams.get('brandId') || DEFAULT_BRAND_ID;
     const dryRun = searchParams.get('dryRun') === 'true';
+
+    // Ensure the brand exists before seeding
+    if (!dryRun) {
+      await ensureBrandExists(brandId);
+    }
 
     const results: SeedResult[] = [];
 
@@ -145,11 +226,13 @@ async function seedBrandIdentity(
 
         result.seeded++;
       } catch (err) {
-        result.errors.push(`Failed to seed ${file}: ${err}`);
+        const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+        result.errors.push(`Failed to seed ${file}: ${errorMsg}`);
       }
     }
   } catch (err) {
-    result.errors.push(`Error reading brand-identity directory: ${err}`);
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+    result.errors.push(`Error reading brand-identity directory: ${errorMsg}`);
   }
 
   return result;
@@ -207,11 +290,13 @@ async function seedWritingStyles(
 
         result.seeded++;
       } catch (err) {
-        result.errors.push(`Failed to seed ${file}: ${err}`);
+        const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+        result.errors.push(`Failed to seed ${file}: ${errorMsg}`);
       }
     }
   } catch (err) {
-    result.errors.push(`Error reading writing-styles directory: ${err}`);
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+    result.errors.push(`Error reading writing-styles directory: ${errorMsg}`);
   }
 
   return result;
@@ -277,11 +362,13 @@ async function seedPlugins(
         result.seeded += nested.seeded;
         result.errors.push(...nested.errors);
       } catch (err) {
-        result.errors.push(`Failed to seed plugin ${pluginSlug}: ${err}`);
+        const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+        result.errors.push(`Failed to seed plugin ${pluginSlug}: ${errorMsg}`);
       }
     }
   } catch (err) {
-    result.errors.push(`Error reading plugins directory: ${err}`);
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+    result.errors.push(`Error reading plugins directory: ${errorMsg}`);
   }
 
   return result;
@@ -361,11 +448,13 @@ async function seedPluginFolder(
           result.seeded++;
         }
       } catch (err) {
-        result.errors.push(`Failed to seed ${entry.name}: ${err}`);
+        const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+        result.errors.push(`Failed to seed ${entry.name}: ${errorMsg}`);
       }
     }
   } catch (err) {
-    result.errors.push(`Error reading folder: ${err}`);
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+    result.errors.push(`Error reading folder: ${errorMsg}`);
   }
 
   return result;
@@ -449,11 +538,13 @@ async function seedSkills(
           result.seeded++;
         }
       } catch (err) {
-        result.errors.push(`Failed to seed skill ${skillSlug}: ${err}`);
+        const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+        result.errors.push(`Failed to seed skill ${skillSlug}: ${errorMsg}`);
       }
     }
   } catch (err) {
-    result.errors.push(`Error reading skills directory: ${err}`);
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+    result.errors.push(`Error reading skills directory: ${errorMsg}`);
   }
 
   return result;

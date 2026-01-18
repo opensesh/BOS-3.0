@@ -34,7 +34,7 @@ html a:active {
 /* Font Declarations */
 @font-face {
   font-family: 'Offbit';
-  src: url('/fonts/OffBit-Regular.woff2') format('woff2');
+  src: url('/api/styles/fonts/OffBit-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -42,7 +42,7 @@ html a:active {
 
 @font-face {
   font-family: 'Offbit';
-  src: url('/fonts/OffBit-Bold.woff2') format('woff2');
+  src: url('/api/styles/fonts/OffBit-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -50,7 +50,7 @@ html a:active {
 
 @font-face {
   font-family: 'Neue Haas Grotesk Display Pro';
-  src: url('/fonts/NeueHaasDisplayRoman.woff2') format('woff2');
+  src: url('/api/styles/fonts/NeueHaasDisplayRoman.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -58,7 +58,7 @@ html a:active {
 
 @font-face {
   font-family: 'Neue Haas Grotesk Display Pro';
-  src: url('/fonts/NeueHaasDisplayMedium.woff2') format('woff2');
+  src: url('/api/styles/fonts/NeueHaasDisplayMedium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -66,7 +66,7 @@ html a:active {
 
 @font-face {
   font-family: 'Neue Haas Grotesk Display Pro';
-  src: url('/fonts/NeueHaasDisplayBold.woff2') format('woff2');
+  src: url('/api/styles/fonts/NeueHaasDisplayBold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;

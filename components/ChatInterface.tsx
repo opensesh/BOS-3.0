@@ -204,6 +204,9 @@ export function ChatInterface() {
     return messages.some(m => m.role === 'assistant');
   }, [messages]);
 
+  // Derive engage mode for landing state (typing triggers centered view)
+  const isEngageMode = !!(localInput.trim() || showQuickActionForm || activeQuickAction);
+
   // Helper to get message content (must be defined before callbacks that use it)
   const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
     if (typeof message.content === 'string') return message.content;
@@ -1563,11 +1566,23 @@ export function ChatInterface() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col h-full w-full justify-center"
+            className="flex flex-col h-full w-full items-center"
           >
-            {/* Content container - centered for visual balance, relative for absolute children */}
-            <div className="w-full max-w-3xl mx-auto flex flex-col relative">
-              {/* Welcome Header - fixed position */}
+            {/* Content container - smoothly transitions vertical position */}
+            <motion.div
+              layout
+              className="w-full max-w-3xl flex flex-col relative"
+              animate={{
+                marginTop: isEngageMode ? 'auto' : '10vh',
+                marginBottom: isEngageMode ? 'auto' : 0,
+              }}
+              transition={{
+                duration: 0.4,
+                ease: [0.32, 0.72, 0, 1],
+                layout: { duration: 0.4, ease: [0.32, 0.72, 0, 1] }
+              }}
+            >
+              {/* Welcome Header */}
               <div className="mb-8">
                 <WelcomeHeader />
               </div>
@@ -1810,25 +1825,23 @@ export function ChatInterface() {
                 )}
               </AnimatePresence>
               
-              {/* Pre-prompt Cards Grid - below input, fades when typing or form is active */}
-              {/* Uses opacity animation without unmounting to prevent layout shift */}
-              <motion.div
-                className="mt-4"
-                initial={{ opacity: 1 }}
-                animate={{ 
-                  opacity: input.trim() || showQuickActionForm || activeQuickAction ? 0 : 1,
-                  pointerEvents: input.trim() || showQuickActionForm || activeQuickAction ? 'none' : 'auto',
-                }}
-                transition={{ 
-                  duration: 0.3, 
-                  ease: [0.4, 0, 0.2, 1] 
-                }}
-              >
-                <QuickAccessPanels 
-                  onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)}
-                />
-              </motion.div>
-            </div>
+              {/* Quick Access Panels - fade out and unmount when engaged */}
+              <AnimatePresence>
+                {!isEngageMode && (
+                  <motion.div
+                    className="mt-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20, scale: 0.98 }}
+                    transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    <QuickAccessPanels
+                      onPromptSubmit={(prompt) => handleFollowUpSubmit(prompt)}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </motion.div>
         )}
 

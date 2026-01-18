@@ -65,7 +65,7 @@ export function ChatHeader({
   return (
     <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
       <div className="px-4">
-        <div className="flex items-center justify-between h-12">
+        <div className="flex items-center justify-between py-3">
           {/* Left side - Back button and tabs */}
           <div className="flex items-center gap-2 shrink-0">
             {/* Back button */}

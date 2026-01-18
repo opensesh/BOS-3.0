@@ -5,7 +5,7 @@
  * Skills can contain folders and files (SKILL.md, examples, references).
  */
 
-import { createClient } from './client';
+import { createAdminClient } from './admin';
 import type {
   DbBrainSkill,
   BrainSkill,
@@ -16,7 +16,8 @@ import type {
 } from './types';
 import { dbBrainSkillToApp } from './types';
 
-const supabase = createClient();
+// Use admin client to bypass RLS for server-side operations
+const getSupabase = () => createAdminClient();
 
 // ============================================
 // SKILL CRUD OPERATIONS
@@ -29,7 +30,7 @@ export async function getSkills(
   brandId: string,
   includeInactive = false
 ): Promise<BrainSkill[]> {
-  let query = supabase
+  let query = getSupabase()
     .from('brain_skills')
     .select('*')
     .eq('brand_id', brandId)
@@ -59,7 +60,7 @@ export async function getSkillItems(
   skillSlug: string,
   includeInactive = false
 ): Promise<BrainSkill[]> {
-  let query = supabase
+  let query = getSupabase()
     .from('brain_skills')
     .select('*')
     .eq('brand_id', brandId)
@@ -119,7 +120,7 @@ export async function getSkillChildren(
   parentId: string,
   includeInactive = false
 ): Promise<BrainSkill[]> {
-  let query = supabase
+  let query = getSupabase()
     .from('brain_skills')
     .select('*')
     .eq('parent_id', parentId)
@@ -144,7 +145,7 @@ export async function getSkillChildren(
  * Get a single skill item by ID
  */
 export async function getSkillItemById(id: string): Promise<BrainSkill | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_skills')
     .select('*')
     .eq('id', id)
@@ -167,7 +168,7 @@ export async function getSkillItemById(id: string): Promise<BrainSkill | null> {
 export async function createSkillItem(
   item: BrainSkillInsert
 ): Promise<BrainSkill> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_skills')
     .insert(item)
     .select()
@@ -208,7 +209,7 @@ export async function updateSkillItem(
   id: string,
   updates: BrainSkillUpdate
 ): Promise<BrainSkill> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_skills')
     .update(updates)
     .eq('id', id)
@@ -227,7 +228,7 @@ export async function updateSkillItem(
  * Delete a skill item (soft delete)
  */
 export async function deleteSkillItem(id: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('brain_skills')
     .update({ is_active: false })
     .eq('id', id);
@@ -245,7 +246,7 @@ export async function deleteSkill(
   brandId: string,
   skillSlug: string
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('brain_skills')
     .update({ is_active: false })
     .eq('brand_id', brandId)
@@ -261,7 +262,7 @@ export async function deleteSkill(
  * Hard delete a skill item
  */
 export async function hardDeleteSkillItem(id: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('brain_skills')
     .delete()
     .eq('id', id);
@@ -288,7 +289,7 @@ export async function updateSkillItemSync(
     sync_direction?: SyncDirection;
   }
 ): Promise<BrainSkill | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_skills')
     .update(updates)
     .eq('id', id)
@@ -309,7 +310,7 @@ export async function updateSkillItemSync(
 export async function getSyncableSkillItems(
   brandId: string
 ): Promise<BrainSkill[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_skills')
     .select('*')
     .eq('brand_id', brandId)
@@ -360,7 +361,7 @@ export async function isSkillSlugAvailable(
   slug: string,
   excludeId?: string
 ): Promise<boolean> {
-  let query = supabase
+  let query = getSupabase()
     .from('brain_skills')
     .select('id')
     .eq('brand_id', brandId)

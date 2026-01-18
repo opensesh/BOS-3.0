@@ -117,47 +117,59 @@ var(--border-secondary)   /* Subtle borders */
 ## Design System Guidelines
 
 ### Border Styling (IMPORTANT)
-**Avoid harsh white or brand-colored outlines.** Borders should be subtle and supportive.
+**Avoid harsh white or brand-colored outlines.** Borders should be soft, subtle, and supportive.
 
-#### Border Hierarchy
+#### Container Borders (Cards, Panels, Sections)
+Use `--border-secondary` for containers - it provides a soft gray that works in both light and dark modes:
 ```css
-/* Default - Nearly invisible */
-border border-[var(--border-primary)]/40
+/* Container borders - soft and subtle */
+border border-[var(--border-secondary)]
 
-/* Hover - Slightly more visible */
-hover:border-[var(--border-primary)]
+/* Dividers inside containers */
+border-t border-[var(--border-secondary)]
+/* Or with reduced opacity for very subtle dividers */
+border-t border-[var(--border-secondary)]/50
+```
 
-/* Focus - Primary border, NOT brand color */
+#### Interactive Element Borders (Inputs, Buttons)
+```css
+/* Default - subtle */
+border border-[var(--border-secondary)]
+
+/* Hover - slightly more visible */
+hover:border-[var(--fg-tertiary)]
+
+/* Focus - clear but not harsh */
 focus:border-[var(--border-primary)]
 ```
 
-#### NEVER
+#### NEVER use these (harsh/distracting)
 ```css
-border-[var(--border-brand-solid)]
-border-white
-border-2
-focus:ring-2 ring-[var(--bg-brand-solid)]
+border-[var(--border-brand-solid)]   /* Too bright */
+border-white                          /* Too harsh */
+border-[var(--border-primary)]/40     /* Can appear washed out */
+border-2                              /* Too thick */
+focus:ring-2 ring-[var(--bg-brand-solid)]  /* Too prominent */
 ```
 
-#### INSTEAD
+#### ALWAYS prefer
 ```css
-border border-[var(--border-primary)]/40
-hover:border-[var(--border-primary)]
-focus:border-[var(--border-primary)]
+border border-[var(--border-secondary)]  /* Soft container borders */
+hover:border-[var(--fg-tertiary)]        /* Subtle hover state */
+focus:border-[var(--border-primary)]     /* Clear focus state */
 ```
 
 ### Card Pattern
 ```css
 bg-[var(--bg-secondary)]/30
-border border-[var(--border-primary)]/40
+border border-[var(--border-secondary)]
 hover:bg-[var(--bg-secondary)]/60
-hover:border-[var(--border-primary)]
 ```
 
 ### Input Pattern
 ```css
 bg-[var(--bg-secondary)]/30
-border border-[var(--border-primary)]/40
+border border-[var(--border-secondary)]
 focus:border-[var(--border-primary)]
 focus:bg-[var(--bg-secondary)]/50
 ```

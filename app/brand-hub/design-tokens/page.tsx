@@ -1,191 +1,106 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
-import { 
-  Download, 
-  Copy, 
-  Check, 
-  Palette, 
-  Type, 
-  Square, 
-  Layers,
-  FileJson,
-  FileCode,
-  FileText,
-  FolderOpen
-} from 'lucide-react';
+import { TabSelector } from '@/components/brain/TabSelector';
+import { MarkdownCodeViewer } from '@/components/brain/MarkdownCodeViewer';
+import { ColorSettingsModal } from '@/components/brand-hub/ColorSettingsModal';
+import { TypographySettingsTableModal } from '@/components/brand-hub/TypographySettingsTableModal';
+import {
+  TokenPreviewSection,
+  ColorTokensPreview,
+  TypographyTokensPreview,
+  SpacingTokensPreview,
+  AssetsPreview,
+} from '@/components/brand-hub/design-tokens';
+import { Download } from 'lucide-react';
+import tokens from '@/lib/brand-styles/tokens.json';
 
-// Color tokens data
-const brandColors = [
-  { name: 'Charcoal', variable: '--brand-charcoal', tailwind: 'brand-charcoal', value: '#191919', description: 'Primary text, dark backgrounds' },
-  { name: 'Vanilla', variable: '--brand-vanilla', tailwind: 'brand-vanilla', value: '#FFFAEE', description: 'Primary backgrounds, light surfaces' },
-  { name: 'Aperol', variable: '--brand-aperol', tailwind: 'brand-aperol', value: '#FE5102', description: 'Accent (max 10% usage)' },
+// Tab configuration for code files
+const tabs = [
+  { id: 'tokens', label: 'tokens.json' },
+  { id: 'tailwind', label: 'tailwind.config.ts' },
+  { id: 'css', label: 'brand.css' },
+  { id: 'readme', label: 'README.md' },
+  { id: 'ai-context', label: 'AI-CONTEXT.md' },
 ];
 
-const osColors = [
-  { name: 'BG Darker', variable: '--os-bg-darker', tailwind: 'os-bg-darker', value: '#0C0C0C', description: 'Deepest background' },
-  { name: 'BG Dark', variable: '--os-bg-dark', tailwind: 'os-bg-dark', value: '#141414', description: 'Primary dark background' },
-  { name: 'Surface Dark', variable: '--os-surface-dark', tailwind: 'os-surface-dark', value: '#1C1C1C', description: 'Elevated surfaces' },
-  { name: 'Border Dark', variable: '--os-border-dark', tailwind: 'os-border-dark', value: '#2C2C2C', description: 'Borders and dividers' },
-  { name: 'Text Primary', variable: '--os-text-primary-dark', tailwind: 'os-text-primary-dark', value: '#E8E8E8', description: 'Primary text on dark' },
-  { name: 'Text Secondary', variable: '--os-text-secondary-dark', tailwind: 'os-text-secondary-dark', value: '#9CA3AF', description: 'Muted text on dark' },
+// Map tab IDs to file paths
+const filePathMap: Record<string, string> = {
+  'tokens': 'tokens.json',
+  'tailwind': 'tailwind.config.ts',
+  'css': 'brand.css',
+  'readme': 'README.md',
+  'ai-context': 'AI-CONTEXT.md',
+};
+
+// File list for download
+const downloadFiles = [
+  { path: '/api/styles/tokens.json', name: 'tokens.json' },
+  { path: '/api/styles/tailwind.config.ts', name: 'tailwind.config.ts' },
+  { path: '/api/styles/brand.css', name: 'brand.css' },
+  { path: '/api/styles/README.md', name: 'README.md' },
+  { path: '/api/styles/AI-CONTEXT.md', name: 'AI-CONTEXT.md' },
+  { path: '/api/styles/fonts/NeueHaasDisplayBold.woff2', name: 'fonts/NeueHaasDisplayBold.woff2' },
+  { path: '/api/styles/fonts/NeueHaasDisplayMedium.woff2', name: 'fonts/NeueHaasDisplayMedium.woff2' },
+  { path: '/api/styles/fonts/NeueHaasDisplayRoman.woff2', name: 'fonts/NeueHaasDisplayRoman.woff2' },
+  { path: '/api/styles/fonts/OffBit-Bold.woff2', name: 'fonts/OffBit-Bold.woff2' },
+  { path: '/api/styles/fonts/OffBit-Regular.woff2', name: 'fonts/OffBit-Regular.woff2' },
 ];
-
-// Typography tokens
-const typographyTokens = [
-  { name: 'Display', variable: '--font-display', tailwind: 'font-display', value: 'Neue Haas Grotesk Display Pro', usage: 'Headings H1-H4' },
-  { name: 'Sans', variable: '--font-sans', tailwind: 'font-sans', value: 'Neue Haas Grotesk Display Pro', usage: 'Body text' },
-  { name: 'Mono/Accent', variable: '--font-mono', tailwind: 'font-mono', value: 'Offbit', usage: 'H5-H6 (max 2/viewport)' },
-];
-
-// Radius tokens
-const radiusTokens = [
-  { name: 'Brand', variable: '--radius-brand', tailwind: 'rounded-brand', value: '12px' },
-  { name: 'Brand Large', variable: '--radius-brand-lg', tailwind: 'rounded-brand-lg', value: '16px' },
-];
-
-// Shadow tokens
-const shadowTokens = [
-  { name: 'Brand', variable: '--shadow-brand', tailwind: 'shadow-brand', value: '0 2px 8px rgba(0,0,0,0.1)' },
-  { name: 'Brand Large', variable: '--shadow-brand-lg', tailwind: 'shadow-brand-lg', value: '0 4px 16px rgba(0,0,0,0.15)' },
-];
-
-// File list for the styles folder
-const styleFiles = [
-  { name: 'tokens.json', icon: FileJson, description: 'Machine-readable design tokens' },
-  { name: 'tailwind.config.ts', icon: FileCode, description: 'Standalone Tailwind config' },
-  { name: 'brand.css', icon: FileCode, description: 'CSS variables and base styles' },
-  { name: 'fonts/', icon: FolderOpen, description: '5 font files (woff2)' },
-  { name: 'README.md', icon: FileText, description: 'Usage documentation' },
-  { name: 'AI-CONTEXT.md', icon: FileText, description: 'AI tool context' },
-];
-
-function CopyButton({ text, label }: { text: string; label?: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <button
-      onClick={handleCopy}
-      className="p-1.5 rounded-md hover:bg-[var(--bg-tertiary)]/50 transition-colors group"
-      title={`Copy ${label || text}`}
-    >
-      {copied ? (
-        <Check className="w-3.5 h-3.5 text-[var(--fg-success-primary)]" />
-      ) : (
-        <Copy className="w-3.5 h-3.5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-primary)]" />
-      )}
-    </button>
-  );
-}
-
-function ColorSwatch({ color }: { color: typeof brandColors[0] }) {
-  const isLight = color.value === '#FFFAEE' || color.value === '#E8E8E8';
-  
-  return (
-    <div className="group flex items-center gap-4 p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]/30 transition-colors">
-      <div 
-        className="w-12 h-12 rounded-lg border border-[var(--border-primary)] flex-shrink-0"
-        style={{ backgroundColor: color.value }}
-      >
-        {isLight && <div className="w-full h-full rounded-lg border border-black/10" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-[var(--fg-primary)]">{color.name}</span>
-          <code className="text-xs text-[var(--fg-tertiary)] bg-[var(--bg-primary)] px-1.5 py-0.5 rounded">
-            {color.value}
-          </code>
-        </div>
-        <p className="text-xs text-[var(--fg-tertiary)] mt-0.5 truncate">{color.description}</p>
-      </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <CopyButton text={color.value} label="hex" />
-        <CopyButton text={`var(${color.variable})`} label="CSS var" />
-        <CopyButton text={color.tailwind} label="Tailwind" />
-      </div>
-    </div>
-  );
-}
-
-function TypographySample({ token }: { token: typeof typographyTokens[0] }) {
-  const fontClass = token.tailwind === 'font-mono' ? 'font-mono' : 'font-display';
-  
-  return (
-    <div className="group p-4 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] hover:border-[var(--fg-tertiary)]/30 transition-colors">
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <span className="font-medium text-[var(--fg-primary)]">{token.name}</span>
-          <p className="text-xs text-[var(--fg-tertiary)] mt-0.5">{token.usage}</p>
-        </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <CopyButton text={`var(${token.variable})`} label="CSS var" />
-          <CopyButton text={token.tailwind} label="Tailwind" />
-        </div>
-      </div>
-      <p className={`${fontClass} text-2xl text-[var(--fg-primary)]`}>
-        {token.value}
-      </p>
-    </div>
-  );
-}
-
-function TokenRow({ name, variable, tailwind, value }: { name: string; variable: string; tailwind: string; value: string }) {
-  return (
-    <div className="group flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[var(--bg-secondary)]/50 transition-colors">
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-[var(--fg-primary)]">{name}</span>
-        <code className="text-xs text-[var(--fg-tertiary)] bg-[var(--bg-primary)] px-1.5 py-0.5 rounded">{value}</code>
-      </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <CopyButton text={`var(${variable})`} label="CSS var" />
-        <CopyButton text={tailwind} label="Tailwind" />
-      </div>
-    </div>
-  );
-}
 
 export default function DesignTokensPage() {
+  const [activeTab, setActiveTab] = useState('tokens');
+  const [content, setContent] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+
+  // Modal states
+  const [isColorModalOpen, setIsColorModalOpen] = useState(false);
+  const [isTypographyModalOpen, setIsTypographyModalOpen] = useState(false);
+
+  // Fetch file content when tab changes
+  const fetchContent = useCallback(async (tabId: string) => {
+    setIsLoading(true);
+    try {
+      const filename = filePathMap[tabId];
+      const response = await fetch(`/api/styles/${filename}`);
+      if (response.ok) {
+        const text = await response.text();
+        setContent(text);
+      } else {
+        setContent('// Failed to load file content');
+      }
+    } catch (error) {
+      console.error('Error fetching file:', error);
+      setContent('// Error loading file');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch content on mount and tab change
+  useEffect(() => {
+    fetchContent(activeTab);
+  }, [activeTab, fetchContent]);
 
   const handleDownload = async () => {
     setDownloading(true);
-    
-    try {
-      // Create a list of files to fetch from the API route
-      const files = [
-        { path: '/api/styles/tokens.json', name: 'tokens.json' },
-        { path: '/api/styles/tailwind.config.ts', name: 'tailwind.config.ts' },
-        { path: '/api/styles/brand.css', name: 'brand.css' },
-        { path: '/api/styles/README.md', name: 'README.md' },
-        { path: '/api/styles/AI-CONTEXT.md', name: 'AI-CONTEXT.md' },
-        { path: '/api/styles/fonts/NeueHaasDisplayBold.woff2', name: 'fonts/NeueHaasDisplayBold.woff2' },
-        { path: '/api/styles/fonts/NeueHaasDisplayMedium.woff2', name: 'fonts/NeueHaasDisplayMedium.woff2' },
-        { path: '/api/styles/fonts/NeueHaasDisplayRoman.woff2', name: 'fonts/NeueHaasDisplayRoman.woff2' },
-        { path: '/api/styles/fonts/OffBit-Bold.woff2', name: 'fonts/OffBit-Bold.woff2' },
-        { path: '/api/styles/fonts/OffBit-Regular.woff2', name: 'fonts/OffBit-Regular.woff2' },
-      ];
 
+    try {
       // Dynamically import JSZip
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
 
       // Fetch and add each file
-      for (const file of files) {
+      for (const file of downloadFiles) {
         try {
           const response = await fetch(file.path);
           if (response.ok) {
-            const content = file.path.endsWith('.woff2') 
+            const fileContent = file.path.endsWith('.woff2')
               ? await response.arrayBuffer()
               : await response.text();
-            zip.file(file.name, content);
+            zip.file(file.name, fileContent);
           }
         } catch (err) {
           console.warn(`Failed to fetch ${file.path}:`, err);
@@ -204,7 +119,6 @@ export default function DesignTokensPage() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download failed:', error);
-      // Show error notification (styles are served via API, no fallback URL)
       alert('Download failed. Please try again.');
     } finally {
       setDownloading(false);
@@ -216,146 +130,101 @@ export default function DesignTokensPage() {
       <Sidebar />
       <BrandHubLayout
         title="Tokens"
-        description="Portable design system package with all brand tokens, styles, and configuration. Download for use in any project or with AI tools."
+        description="Your brand packaged into Tailwind code, ready to work with AI models across Webflow, Shopify, Framer, and more."
+        headerActions={
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Download"
+          >
+            <Download className={`w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors ${downloading ? 'animate-pulse' : ''}`} />
+          </button>
+        }
       >
-        <div className="space-y-10">
-          {/* Download Section */}
-          <section className="p-6 rounded-2xl bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-primary)] border border-[var(--border-primary)]">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)] mb-2">
-                  Download Styles Package
-                </h2>
-                <p className="text-sm text-[var(--fg-tertiary)] max-w-lg">
-                  Get the complete portable styles folder with Tailwind config, CSS variables, 
-                  design tokens, fonts, and AI context documentation.
-                </p>
-              </div>
-              <button
-                onClick={handleDownload}
-                disabled={downloading}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--bg-brand-solid)] text-white font-medium hover:bg-[var(--bg-brand-solid)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-              >
-                <Download className="w-4 h-4" />
-                {downloading ? 'Preparing...' : 'Download ZIP'}
-              </button>
-            </div>
-            
-            {/* File List */}
-            <div className="mt-6 pt-6 border-t border-[var(--border-primary)]">
-              <h3 className="text-sm font-medium text-[var(--fg-tertiary)] mb-3">Package Contents</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {styleFiles.map((file) => {
-                  const Icon = file.icon;
-                  return (
-                    <div key={file.name} className="flex items-center gap-2 text-sm">
-                      <Icon className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                      <span className="text-[var(--fg-primary)]">{file.name}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+        <div className="space-y-6">
+          {/* Token Preview Sections */}
+          <section className="space-y-3">
+            {/* Colors */}
+            <TokenPreviewSection
+              title="Colors"
+              badge="3 core + semantic"
+              onEdit={() => setIsColorModalOpen(true)}
+            >
+              <ColorTokensPreview colors={tokens.colors} />
+            </TokenPreviewSection>
+
+            {/* Typography */}
+            <TokenPreviewSection
+              title="Typography"
+              badge="2 families, 8 scales"
+              onEdit={() => setIsTypographyModalOpen(true)}
+            >
+              <TypographyTokensPreview typography={tokens.typography} />
+            </TokenPreviewSection>
+
+            {/* Spacing */}
+            <TokenPreviewSection
+              title="Spacing"
+              badge="12-step scale"
+            >
+              <SpacingTokensPreview spacing={tokens.spacing} />
+            </TokenPreviewSection>
+
+            {/* Assets */}
+            <TokenPreviewSection
+              title="Assets"
+              badge="5 font files"
+            >
+              <AssetsPreview fontFiles={tokens.typography.fontFiles} />
+            </TokenPreviewSection>
           </section>
 
-          {/* Colors Section */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Palette className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-              <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Colors</h2>
-            </div>
-            
-            <div className="space-y-6">
-              {/* Brand Colors */}
-              <div>
-                <h3 className="text-sm font-medium text-[var(--fg-tertiary)] mb-3">Brand Colors</h3>
-                <div className="space-y-2">
-                  {brandColors.map((color) => (
-                    <ColorSwatch key={color.name} color={color} />
-                  ))}
-                </div>
-              </div>
-              
-              {/* OS Palette */}
-              <div>
-                <h3 className="text-sm font-medium text-[var(--fg-tertiary)] mb-3">OS Dark Theme Palette</h3>
-                <div className="space-y-2">
-                  {osColors.map((color) => (
-                    <ColorSwatch key={color.name} color={color} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Typography Section */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Type className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-              <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Typography</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {typographyTokens.map((token) => (
-                <TypographySample key={token.name} token={token} />
-              ))}
-            </div>
-          </section>
-
-          {/* Radius & Shadows Section */}
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Border Radius */}
+          {/* Code Section */}
+          <section className="space-y-4">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Square className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Border Radius</h2>
-              </div>
-              <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] space-y-1">
-                {radiusTokens.map((token) => (
-                  <TokenRow key={token.name} {...token} />
-                ))}
-              </div>
+              <h2 className="text-lg font-medium text-[var(--fg-primary)] mb-1">
+                Code
+              </h2>
+              <p className="text-sm text-[var(--fg-tertiary)]">
+                Generated Tailwind configuration based on your brand settings. Use these files with AI tools like Claude, Cursor, or Copilot.
+              </p>
             </div>
 
-            {/* Shadows */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Layers className="w-5 h-5 text-[var(--fg-brand-primary)]" />
-                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)]">Shadows</h2>
-              </div>
-              <div className="p-4 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] space-y-1">
-                {shadowTokens.map((token) => (
-                  <TokenRow key={token.name} {...token} />
-                ))}
-              </div>
-            </div>
-          </section>
+            {/* Tabs */}
+            <TabSelector
+              tabs={tabs}
+              activeTab={activeTab}
+              onChange={setActiveTab}
+            />
 
-          {/* Usage Tips */}
-          <section className="p-6 rounded-2xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]">
-            <h2 className="text-lg font-display font-semibold text-[var(--fg-primary)] mb-4">
-              Quick Usage Guide
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-              <div>
-                <h3 className="font-medium text-[var(--fg-primary)] mb-2">CSS Variables</h3>
-                <pre className="p-3 rounded-lg bg-[var(--bg-primary)] text-[var(--fg-tertiary)] overflow-x-auto">
-{`color: var(--brand-charcoal);
-background: var(--brand-vanilla);
-border-radius: var(--radius-brand);`}
-                </pre>
+            {/* Code Viewer */}
+            {isLoading ? (
+              <div className="h-[500px] rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] flex items-center justify-center">
+                <div className="text-[var(--fg-tertiary)] text-sm">Loading...</div>
               </div>
-              <div>
-                <h3 className="font-medium text-[var(--fg-primary)] mb-2">Tailwind Classes</h3>
-                <pre className="p-3 rounded-lg bg-[var(--bg-primary)] text-[var(--fg-tertiary)] overflow-x-auto">
-{`<div class="bg-brand-vanilla text-brand-charcoal">
-<button class="bg-brand-aperol rounded-brand">
-<p class="font-display text-os-text-primary-dark">`}
-                </pre>
-              </div>
-            </div>
+            ) : (
+              <MarkdownCodeViewer
+                filename={filePathMap[activeTab]}
+                content={content}
+                maxLines={30}
+              />
+            )}
           </section>
         </div>
       </BrandHubLayout>
+
+      {/* Color Settings Modal */}
+      <ColorSettingsModal
+        isOpen={isColorModalOpen}
+        onClose={() => setIsColorModalOpen(false)}
+      />
+
+      {/* Typography Settings Modal */}
+      <TypographySettingsTableModal
+        isOpen={isTypographyModalOpen}
+        onClose={() => setIsTypographyModalOpen(false)}
+      />
     </div>
   );
 }

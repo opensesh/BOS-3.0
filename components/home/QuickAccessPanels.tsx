@@ -117,17 +117,25 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
   const { triggerChatReset } = useChatContext();
   const isMobile = useIsMobile();
 
-  // Mobile accordion state - closed by default
-  const [actionsExpanded, setActionsExpanded] = useState(false);
-  const [brandExpanded, setBrandExpanded] = useState(false);
-
   // After hydration, JS takes over
   const isHydrated = isMobile !== null;
   const isActuallyMobile = isMobile === true;
-  
-  // Content visibility (JS-controlled after hydration)
-  const showActionsContent = isHydrated ? (!isActuallyMobile || actionsExpanded) : true;
-  const showBrandContent = isHydrated ? (!isActuallyMobile || brandExpanded) : true;
+
+  // Accordion state - expanded on desktop by default, collapsed on mobile
+  const [actionsExpanded, setActionsExpanded] = useState(true);
+  const [brandExpanded, setBrandExpanded] = useState(true);
+
+  // Initialize to collapsed on mobile after hydration
+  useEffect(() => {
+    if (isHydrated && isActuallyMobile) {
+      setActionsExpanded(false);
+      setBrandExpanded(false);
+    }
+  }, [isHydrated, isActuallyMobile]);
+
+  // Content visibility - now controlled by expanded state on all viewports
+  const showActionsContent = actionsExpanded;
+  const showBrandContent = brandExpanded;
 
   // Typewriter effects for titles - staggered timing
   const actionsTitle = useTypewriter('Actions', 200, 60);
@@ -150,27 +158,26 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-stretch">
         {/* Actions Panel - takes 7 columns for wider buttons */}
         <motion.div
-          className="sm:col-span-7 relative group h-full"
+          className="sm:col-span-7"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
         >
-          <div className="relative rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 sm:p-5 transition-all duration-200 hover:border-[var(--fg-tertiary)] h-full flex flex-col">
-            {/* Header - clickable on mobile */}
+          <div className="rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] transition-colors duration-200 hover:border-[var(--fg-tertiary)] overflow-hidden">
+            {/* Header - always clickable */}
             <button
-              onClick={() => isActuallyMobile && setActionsExpanded(!actionsExpanded)}
-              className={`flex items-start gap-3 w-full text-left ${isActuallyMobile ? 'cursor-pointer sm:cursor-default' : 'cursor-default'} ${!isHydrated ? 'mb-0 sm:mb-5' : showActionsContent ? 'mb-4 sm:mb-5' : ''}`}
-              disabled={!isActuallyMobile}
+              onClick={() => setActionsExpanded(!actionsExpanded)}
+              className="flex items-start gap-3 w-full text-left cursor-pointer p-4 sm:p-5"
             >
-              <motion.div 
+              <motion.div
                 className="w-9 h-9 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center flex-shrink-0"
-                whileHover={!isActuallyMobile ? { scale: 1.05 } : {}}
+                whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
                 <Zap className="w-4 h-4 text-[var(--fg-tertiary)]" strokeWidth={2} />
               </motion.div>
               <div className="flex flex-col flex-1 min-w-0">
-                <h3 
+                <h3
                   className="text-lg font-bold text-[var(--fg-primary)] tracking-tight leading-tight relative"
                   style={{ fontFamily: 'Offbit, sans-serif' }}
                 >
@@ -188,9 +195,9 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   Quick start
                 </span>
               </div>
-              {/* Chevron for mobile */}
+              {/* Chevron - visible on all viewports */}
               <motion.div
-                className="sm:hidden flex-shrink-0 mt-2"
+                className="flex-shrink-0 mt-2"
                 animate={{ rotate: actionsExpanded ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
               >
@@ -198,48 +205,62 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
               </motion.div>
             </button>
 
-            {/* Content - always visible on desktop, animated on mobile */}
-            {/* Before hydration: CSS hides on mobile. After hydration: JS controls */}
+            {/* Divider - visible when expanded */}
+            <AnimatePresence>
+              {showActionsContent && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="border-t border-[var(--border-primary)]"
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Content - collapsible on all viewports */}
             <AnimatePresence initial={false}>
               {showActionsContent && (
                 <motion.div
-                  initial={isActuallyMobile ? { height: 0, opacity: 0 } : false}
+                  initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
-                  exit={isActuallyMobile ? { height: 0, opacity: 0 } : {}}
+                  exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                  className={`overflow-hidden flex-1 flex flex-col ${!isHydrated ? 'hidden sm:block' : ''}`}
+                  className="overflow-hidden flex-1 flex flex-col"
                 >
                   {/* Action buttons - 2x2 grid */}
-                  <div className="grid grid-cols-2 gap-2.5 flex-1 content-start">
+                  <div className="grid grid-cols-2 gap-2.5 flex-1 content-start p-4 sm:p-5 pt-4">
                     {quickActions.map((action, index) => (
                       <motion.button
                         key={action.id}
                         onClick={() => handleActionClick(action)}
-                        className="group/btn relative flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-left transition-all duration-200"
-                        style={{
-                          background: 'linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%)',
-                        }}
+                        className="group/btn relative flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-left transition-all duration-150 bg-[var(--bg-tertiary)]/50 hover:bg-[var(--bg-tertiary)]/80"
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
+                        whileHover="hover"
                         transition={{ delay: 0.3 + index * 0.05, duration: 0.3 }}
-                        whileHover={{ 
-                          scale: 1.02,
-                          boxShadow: '0 4px 20px rgba(254, 81, 2, 0.1)',
-                        }}
-                        whileTap={{ scale: 0.98 }}
                       >
-                        {/* Hover gradient overlay */}
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[var(--color-brand-500)]/0 via-[var(--color-brand-500)]/5 to-[var(--color-brand-500)]/0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                        
-                        {/* Accent line - positioned slightly inset to avoid clipping */}
-                        <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-0 bg-[var(--color-brand-500)] group-hover/btn:h-1/2 transition-all duration-300 rounded-full" />
-                        
-                        <span className="relative text-sm font-medium text-[var(--fg-secondary)] group-hover/btn:text-[var(--fg-primary)] transition-colors whitespace-nowrap">
+                        {/* Animated orange border - draws around on hover */}
+                        <motion.div
+                          className="absolute inset-0 rounded-xl pointer-events-none"
+                          initial={{ opacity: 0 }}
+                          variants={{
+                            hover: {
+                              opacity: 1,
+                              transition: { duration: 0.15 }
+                            }
+                          }}
+                          style={{
+                            border: '1.5px solid var(--color-brand-500)',
+                          }}
+                        />
+
+                        <span className="text-sm font-medium text-[var(--fg-secondary)] group-hover/btn:text-[var(--fg-primary)] transition-colors whitespace-nowrap">
                           {action.title}
                         </span>
-                        
-                        {/* Arrow - simple opacity transition, no translate */}
-                        <ArrowUpRight className="relative w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/btn:text-[var(--color-brand-500)] transition-all duration-200 opacity-0 group-hover/btn:opacity-100" />
+
+                        {/* Arrow - simple opacity transition */}
+                        <ArrowUpRight className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/btn:text-[var(--fg-primary)] transition-all duration-150 opacity-0 group-hover/btn:opacity-100" />
                       </motion.button>
                     ))}
                   </div>
@@ -251,27 +272,26 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
 
         {/* Brand Panel - takes 5 columns, more compact */}
         <motion.div
-          className="sm:col-span-5 relative group h-full"
+          className="sm:col-span-5"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
         >
-          <div className="relative rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] p-4 sm:p-5 transition-all duration-200 hover:border-[var(--fg-tertiary)] h-full flex flex-col">
-            {/* Header - clickable on mobile */}
+          <div className="rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] transition-colors duration-200 hover:border-[var(--fg-tertiary)] overflow-hidden">
+            {/* Header - always clickable */}
             <button
-              onClick={() => isActuallyMobile && setBrandExpanded(!brandExpanded)}
-              className={`flex items-start gap-3 w-full text-left ${isActuallyMobile ? 'cursor-pointer sm:cursor-default' : 'cursor-default'} ${!isHydrated ? 'mb-0 sm:mb-4' : showBrandContent ? 'mb-4' : ''}`}
-              disabled={!isActuallyMobile}
+              onClick={() => setBrandExpanded(!brandExpanded)}
+              className="flex items-start gap-3 w-full text-left cursor-pointer p-4 sm:p-5"
             >
-              <motion.div 
+              <motion.div
                 className="w-9 h-9 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex items-center justify-center flex-shrink-0"
-                whileHover={!isActuallyMobile ? { scale: 1.05 } : {}}
+                whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               >
                 <FolderOpen className="w-4 h-4 text-[var(--fg-tertiary)]" />
               </motion.div>
               <div className="flex flex-col flex-1 min-w-0">
-                <h3 
+                <h3
                   className="text-lg font-bold text-[var(--fg-primary)] tracking-tight leading-tight relative"
                   style={{ fontFamily: 'Offbit, sans-serif' }}
                 >
@@ -289,9 +309,9 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   Directory
                 </span>
               </div>
-              {/* Chevron for mobile */}
+              {/* Chevron - visible on all viewports */}
               <motion.div
-                className="sm:hidden flex-shrink-0 mt-2"
+                className="flex-shrink-0 mt-2"
                 animate={{ rotate: brandExpanded ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
               >
@@ -299,19 +319,31 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
               </motion.div>
             </button>
 
-            {/* Content - always visible on desktop, animated on mobile */}
-            {/* Before hydration: CSS hides on mobile. After hydration: JS controls */}
+            {/* Divider - visible when expanded */}
+            <AnimatePresence>
+              {showBrandContent && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="border-t border-[var(--border-primary)]"
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Content - collapsible on all viewports */}
             <AnimatePresence initial={false}>
               {showBrandContent && (
                 <motion.div
-                  initial={isActuallyMobile ? { height: 0, opacity: 0 } : false}
+                  initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
-                  exit={isActuallyMobile ? { height: 0, opacity: 0 } : {}}
+                  exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                  className={`overflow-hidden flex-1 flex flex-col ${!isHydrated ? 'hidden sm:block' : ''}`}
+                  className="overflow-hidden flex-1 flex flex-col"
                 >
                   {/* Brand links - 2-column grid, more compact than Actions */}
-                  <div className="grid grid-cols-2 gap-1.5 flex-1 content-start">
+                  <div className="grid grid-cols-2 gap-1.5 flex-1 content-start p-4 sm:p-5 pt-4">
                     {brandLinks.map((link, index) => {
                       const Icon = link.icon;
                       return (
@@ -323,11 +355,15 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                         >
                           <Link
                             href={link.href}
-                            className="group/link relative flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all duration-150 hover:bg-[var(--bg-tertiary)]"
+                            className="group/link relative flex items-center gap-2 px-2.5 py-2 rounded-lg transition-colors duration-150 bg-[var(--bg-tertiary)]/50 hover:bg-[var(--bg-tertiary)]/80"
                           >
-                            {/* Accent line - same as Actions */}
-                            <div className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-0 bg-[var(--color-brand-500)] group-hover/link:h-1/2 transition-all duration-300 rounded-full" />
-                            
+                            {/* Animated orange border on hover */}
+                            <div
+                              className="absolute inset-0 rounded-lg pointer-events-none opacity-0 group-hover/link:opacity-100 transition-opacity duration-150"
+                              style={{
+                                border: '1.5px solid var(--color-brand-500)',
+                              }}
+                            />
                             <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/link:text-[var(--fg-tertiary)] transition-colors flex-shrink-0" />
                             <span className="text-[13px] text-[var(--fg-secondary)] group-hover/link:text-[var(--fg-primary)] transition-colors truncate">
                               {link.label}

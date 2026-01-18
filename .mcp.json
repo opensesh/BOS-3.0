@@ -1,14 +1,11 @@
 {
-  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/mcp-schema.json",
-  "_documentation": {
-    "_note": "This file documents required MCP servers. Actual config is in user scope.",
-    "_setup": "See .claude/mcp-instructions.md for setup instructions.",
-    "_servers": {
-      "supabase": "Database operations, migrations, edge functions (OAuth)",
-      "vercel": "Deployments, logs, project management (OAuth)",
-      "figma": "Design context, screenshots, code generation (OAuth)",
-      "notion": "Documentation, pages, databases (OAuth)",
-      "github": "Repository, issues, PRs, code search (PAT required)"
+  "mcpServers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
     }
   }
 }

@@ -4,7 +4,7 @@
  * Handles CRUD operations for writing style documents.
  */
 
-import { createClient } from './client';
+import { createAdminClient } from './admin';
 import type {
   DbBrainWritingStyle,
   BrainWritingStyle,
@@ -15,7 +15,8 @@ import type {
 } from './types';
 import { dbBrainWritingStyleToApp } from './types';
 
-const supabase = createClient();
+// Use admin client to bypass RLS for server-side operations
+const getSupabase = () => createAdminClient();
 
 // ============================================
 // DOCUMENT CRUD OPERATIONS
@@ -28,7 +29,7 @@ export async function getWritingStyles(
   brandId: string,
   includeInactive = false
 ): Promise<BrainWritingStyle[]> {
-  let query = supabase
+  let query = getSupabase()
     .from('brain_writing_styles')
     .select('*')
     .eq('brand_id', brandId)
@@ -54,7 +55,7 @@ export async function getWritingStyles(
 export async function getWritingStyleById(
   id: string
 ): Promise<BrainWritingStyle | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_writing_styles')
     .select('*')
     .eq('id', id)
@@ -78,7 +79,7 @@ export async function getWritingStyleBySlug(
   brandId: string,
   slug: string
 ): Promise<BrainWritingStyle | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_writing_styles')
     .select('*')
     .eq('brand_id', brandId)
@@ -102,7 +103,7 @@ export async function getWritingStyleBySlug(
 export async function createWritingStyle(
   style: BrainWritingStyleInsert
 ): Promise<BrainWritingStyle> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_writing_styles')
     .insert(style)
     .select()
@@ -123,7 +124,7 @@ export async function updateWritingStyle(
   id: string,
   updates: BrainWritingStyleUpdate
 ): Promise<BrainWritingStyle> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_writing_styles')
     .update(updates)
     .eq('id', id)
@@ -142,7 +143,7 @@ export async function updateWritingStyle(
  * Delete a writing style (soft delete)
  */
 export async function deleteWritingStyle(id: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('brain_writing_styles')
     .update({ is_active: false })
     .eq('id', id);
@@ -157,7 +158,7 @@ export async function deleteWritingStyle(id: string): Promise<void> {
  * Hard delete a writing style
  */
 export async function hardDeleteWritingStyle(id: string): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('brain_writing_styles')
     .delete()
     .eq('id', id);
@@ -184,7 +185,7 @@ export async function updateWritingStyleSync(
     sync_direction?: SyncDirection;
   }
 ): Promise<BrainWritingStyle | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_writing_styles')
     .update(updates)
     .eq('id', id)
@@ -205,7 +206,7 @@ export async function updateWritingStyleSync(
 export async function getSyncableWritingStyles(
   brandId: string
 ): Promise<BrainWritingStyle[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('brain_writing_styles')
     .select('*')
     .eq('brand_id', brandId)
@@ -243,7 +244,7 @@ export async function isWritingStyleSlugAvailable(
   slug: string,
   excludeId?: string
 ): Promise<boolean> {
-  let query = supabase
+  let query = getSupabase()
     .from('brain_writing_styles')
     .select('id')
     .eq('brand_id', brandId)

@@ -346,13 +346,16 @@ export const chatService = {
       }
 
       // Fetch messages for all chats
+      // MEMORY OPTIMIZATION: Limit to most recent messages per chat to prevent unbounded growth
       const chatIds = chats.map(c => c.id);
+      const MAX_MESSAGES_PER_CHAT = 100;
 
       const { data: allMessages, error: msgError } = await supabase
         .from('messages')
         .select('*')
         .in('chat_id', chatIds)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false })
+        .limit(chatIds.length * MAX_MESSAGES_PER_CHAT);
 
       if (msgError) {
         console.error('Error fetching messages:', msgError);
@@ -369,7 +372,8 @@ export const chatService = {
 
       // Transform to ChatSession format
       return chats.map((chat: DbChat) => {
-        const chatMessages = (messagesByChat[chat.id] || []).map(dbMessageToAppMessage);
+        // Reverse to get chronological order (we fetched in descending for limit efficiency)
+        const chatMessages = (messagesByChat[chat.id] || []).reverse().map(dbMessageToAppMessage);
         const preview = chatMessages.find(m => m.role === 'assistant')?.content.slice(0, 150) || null;
 
         return {

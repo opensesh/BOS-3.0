@@ -79,11 +79,24 @@ export function startDbListener(): void {
         console.log('[Sync] Successfully subscribed to document changes');
       } else if (status === 'CLOSED') {
         isListening = false;
+        channel = null;
       } else if (status === 'CHANNEL_ERROR') {
-        console.error('[Sync] Channel error - will retry');
+        console.error('[Sync] Channel error - will cleanup and retry');
+        // MEMORY OPTIMIZATION: Properly cleanup before reconnecting to prevent subscription leaks
+        // First, mark as not listening to allow reconnection
+        isListening = false;
+        // Cleanup the failed channel to prevent memory leaks
+        if (channel) {
+          try {
+            channel.unsubscribe();
+          } catch {
+            // Ignore errors during cleanup
+          }
+          channel = null;
+        }
         // Attempt to reconnect after a delay
         setTimeout(() => {
-          if (!isListening) {
+          if (!isListening && !channel) {
             startDbListener();
           }
         }, 5000);

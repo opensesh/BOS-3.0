@@ -157,9 +157,11 @@ export async function getGeoLocation(
   }
 
   try {
+    // MEMORY OPTIMIZATION: Reduced cache TTL from 24h to 1h to limit cache bloat
+    // Each unique IP creates a cache entry, which can grow to tens of MB with high traffic
     const response = await fetch(
       `http://ip-api.com/json/${ipAddress}?fields=country,countryCode,city,region,lat,lon`,
-      { next: { revalidate: 86400 } } // Cache for 24 hours
+      { next: { revalidate: 3600 } } // Cache for 1 hour (was 24 hours)
     );
 
     if (!response.ok) {
@@ -320,10 +322,14 @@ export async function getAnalytics(
   }
 
   // Build base query
+  // MEMORY OPTIMIZATION: Limit clicks to prevent unbounded data fetching
+  const MAX_CLICKS_FOR_ANALYTICS = 10000;
   let query = supabase
     .from('short_link_clicks')
     .select('*')
-    .eq('short_link_id', linkId);
+    .eq('short_link_id', linkId)
+    .order('clicked_at', { ascending: false })
+    .limit(MAX_CLICKS_FOR_ANALYTICS);
 
   if (startDate) {
     query = query.gte('clicked_at', startDate.toISOString());

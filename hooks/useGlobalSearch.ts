@@ -422,7 +422,13 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
         setIsLoading(false);
         return;
       }
-      
+
+      // Show local results immediately while semantic search loads
+      // This provides instant feedback for page/space matches
+      if (localResults.length > 0) {
+        setResults(localResults.slice(0, maxResults));
+      }
+
       // Run semantic search API
       const response = await fetch('/api/search', {
         method: 'POST',
@@ -473,21 +479,21 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
       
       setResults(mergedResults.slice(0, maxResults));
       
+      setIsLoading(false);
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
-        // Request was cancelled, ignore
+        // Request was cancelled - don't update state, a new request is in progress
         return;
       }
       console.error('Search error:', err);
       setError('Search failed');
       // Fall back to local results on error
       const localResults = searchLocalResults(
-        trimmedQuery, 
-        staticData.pages, 
+        trimmedQuery,
+        staticData.pages,
         staticData.spaces
       );
       setResults(localResults.slice(0, maxResults));
-    } finally {
       setIsLoading(false);
     }
   }, [defaultResults, staticData, maxResults, semanticThreshold]);
@@ -505,6 +511,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
     setQuery(newQuery);
     if (!newQuery.trim()) {
       setResults(defaultResults);
+      setIsLoading(false);
     }
   }, [defaultResults]);
 

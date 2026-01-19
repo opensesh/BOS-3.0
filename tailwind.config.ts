@@ -243,11 +243,12 @@ export default {
        * Typography - Custom Font Override for Untitled UI
        */
       fontFamily: {
-        sans: ['"Neue Haas Grotesk Display Pro"', 'system-ui', 'sans-serif'],
+        sans: ['"Neue Haas Grotesk Text Pro"', 'system-ui', 'sans-serif'],
         display: ['"Neue Haas Grotesk Display Pro"', 'system-ui', 'sans-serif'],
         serif: ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
-        mono: ['ui-monospace', 'SFMono-Regular', 'SF Mono', 'Menlo', 'Consolas', 'Liberation Mono', 'monospace'],
-        accent: ['Offbit', 'ui-monospace', 'monospace'],
+        // Note: We use Neue Haas Grotesk consistently—no separate monospace fonts
+        mono: ['"Neue Haas Grotesk Text Pro"', 'system-ui', 'sans-serif'],
+        accent: ['Offbit', '"Neue Haas Grotesk Text Pro"', 'sans-serif'],
       },
       
       borderRadius: {

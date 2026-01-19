@@ -1,37 +1,52 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { 
+import {
   ArrowLeft,
-  BookOpen, 
-  Wrench, 
-  Mail,
-  HelpCircle,
+  FileText,
+  Heart,
+  PlayCircle,
+  BookOpen,
+  LifeBuoy,
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
 import { useMobileMenu } from '@/lib/mobile-menu-context';
 
 const helpMenuItems = [
-  { 
-    id: 'docs', 
-    label: 'Docs', 
-    description: 'Read guides, tutorials, and API references',
+  {
+    id: 'blogs',
+    label: 'Blogs',
+    description: 'Latest industry news and guides',
+    icon: FileText,
+    external: false,
+  },
+  {
+    id: 'customer-stories',
+    label: 'Customer Stories',
+    description: 'How customers use our platform',
+    icon: Heart,
+    external: false,
+  },
+  {
+    id: 'video-tutorials',
+    label: 'Video Tutorials',
+    description: 'Get up and running quickly',
+    icon: PlayCircle,
+    external: true,
+  },
+  {
+    id: 'documentation',
+    label: 'Documentation',
+    description: 'In-depth articles and guides',
     icon: BookOpen,
     external: true,
   },
-  { 
-    id: 'faqs', 
-    label: 'FAQs', 
-    description: 'Frequently asked questions',
-    icon: HelpCircle,
-    external: false,
-  },
-  { 
-    id: 'troubleshooting', 
-    label: 'Troubleshooting', 
-    description: 'Common issues and how to fix them',
-    icon: Wrench,
+  {
+    id: 'help-support',
+    label: 'Help and Support',
+    description: 'Our team is here to help',
+    icon: LifeBuoy,
     external: false,
   },
 ];
@@ -130,20 +145,19 @@ export function MobileHelpPanel() {
               closeAll();
             }}
             className="
-              w-full flex items-center justify-center gap-2
+              w-full flex items-center justify-center
               px-4 py-3
               bg-[var(--bg-secondary)]
-              hover:bg-[var(--bg-tertiary)]
-              active:bg-[var(--bg-quaternary)]
-              text-[var(--fg-primary)]
+              hover:bg-[var(--bg-brand-primary)]
+              active:bg-[var(--bg-brand-primary)]
+              text-[var(--fg-brand-primary)]
               text-sm font-medium
               rounded-lg
-              border border-[var(--border-secondary)]
+              border border-[var(--border-brand)]
               transition-colors
             "
           >
-            <Mail className="w-4 h-4" />
-            <span>Contact us</span>
+            Contact us
           </button>
         </div>
       </div>

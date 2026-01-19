@@ -311,6 +311,8 @@ async function streamWithAnthropicNative(
   return new ReadableStream({
     async start(controller) {
       // Accumulate sources from tool results
+      // MEMORY OPTIMIZATION: Limit sources to prevent unbounded memory growth
+      const MAX_COLLECTED_SOURCES = 50;
       const collectedSources: SourceData[] = [];
 
       try {
@@ -406,7 +408,7 @@ async function streamWithAnthropicNative(
               const serverResult = block as any;
               if (serverResult.citations && Array.isArray(serverResult.citations)) {
                 for (const citation of serverResult.citations) {
-                  if (citation.url) {
+                  if (citation.url && collectedSources.length < MAX_COLLECTED_SOURCES) {
                     collectedSources.push({
                       id: `server-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                       name: citation.title || citation.url,
@@ -485,8 +487,10 @@ async function streamWithAnthropicNative(
                         type: 'external',
                       };
 
-                      collectedSources.push(sourceData);
-                      console.log(`[Server Tool] Added web_fetch URL to sources: ${fetchUrl}`);
+                      if (collectedSources.length < MAX_COLLECTED_SOURCES) {
+                        collectedSources.push(sourceData);
+                        console.log(`[Server Tool] Added web_fetch URL to sources: ${fetchUrl}`);
+                      }
 
                       // Stream the source immediately so it appears in Links
                       controller.enqueue(sse.encode({ type: 'sources', sources: [sourceData] }));
@@ -509,7 +513,7 @@ async function streamWithAnthropicNative(
                 // Extract citations from server tool result
                 if (anyBlock.citations && Array.isArray(anyBlock.citations)) {
                   for (const citation of anyBlock.citations) {
-                    if (citation.url) {
+                    if (citation.url && collectedSources.length < MAX_COLLECTED_SOURCES) {
                       collectedSources.push({
                         id: `server-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                         name: citation.title || citation.url,
@@ -563,11 +567,13 @@ async function streamWithAnthropicNative(
         // Claude may need to use multiple tools in sequence (e.g., web_search then create_artifact)
         if (response.stop_reason === 'tool_use' && pendingToolCalls.length > 0) {
           // Track conversation history for multi-turn tool use
-          let conversationMessages: Anthropic.Messages.MessageParam[] = [...anthropicMessages];
+          // MEMORY OPTIMIZATION: Use mutable array with push() to avoid exponential memory growth
+          const conversationMessages: Anthropic.Messages.MessageParam[] = [...anthropicMessages];
           let currentToolCalls = [...pendingToolCalls];
           let currentResponse = response;
           let totalToolRounds = 0;
           const MAX_TOOL_ROUNDS = 5; // Safety limit to prevent infinite loops
+          const MAX_TOOL_CONVERSATION_MESSAGES = 30; // Limit conversation history during tool use to prevent OOM
           
           // Track if we've already streamed meaningful content during tool use
           // This includes canvas content injected from create_artifact
@@ -619,6 +625,12 @@ async function streamWithAnthropicNative(
                 const webSearchData = result.data as { sources?: Array<{ title: string; url: string }> };
                 if (webSearchData.sources && Array.isArray(webSearchData.sources)) {
                   for (let i = 0; i < webSearchData.sources.length; i++) {
+                    // MEMORY OPTIMIZATION: Stop collecting sources if we hit the limit
+                    if (collectedSources.length >= MAX_COLLECTED_SOURCES) {
+                      console.log(`[Tool Use] Source limit reached (${MAX_COLLECTED_SOURCES}), skipping remaining sources`);
+                      break;
+                    }
+
                     const source = webSearchData.sources[i];
                     // Generate truly unique ID using URL hash + timestamp + index
                     const urlHash = source.url.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0).toString(36);
@@ -631,10 +643,10 @@ async function streamWithAnthropicNative(
                       type: 'external',
                     };
                     collectedSources.push(sourceData);
-                    
+
                     // Stream each source individually for a smooth "finding sources" feel
                     controller.enqueue(sse.encode({ type: 'sources', sources: [sourceData] }));
-                    
+
                     // Quick delay between sources - fast enough to feel responsive (30ms = ~500ms for 18 sources)
                     await new Promise(resolve => setTimeout(resolve, 30));
                   }
@@ -726,12 +738,20 @@ async function streamWithAnthropicNative(
               );
             }
             
-            // Update conversation history
-            conversationMessages = [
-              ...conversationMessages,
+            // Update conversation history using push() to avoid creating copies
+            conversationMessages.push(
               { role: 'assistant' as const, content: assistantContent },
-              { role: 'user' as const, content: toolResults },
-            ];
+              { role: 'user' as const, content: toolResults }
+            );
+
+            // MEMORY OPTIMIZATION: Prune older messages if conversation grows too large during tool use
+            // Keep first 2 messages (system context) and last N messages
+            if (conversationMessages.length > MAX_TOOL_CONVERSATION_MESSAGES) {
+              const excessMessages = conversationMessages.length - MAX_TOOL_CONVERSATION_MESSAGES;
+              // Remove messages from position 2 (after initial context) to avoid losing important context
+              conversationMessages.splice(2, excessMessages);
+              console.log(`[Tool Use] Pruned ${excessMessages} messages to prevent memory growth. Current: ${conversationMessages.length}`);
+            }
             
             // Set up timeout for continuation
             const CONTINUATION_TIMEOUT = 60000;
@@ -1300,6 +1320,8 @@ async function streamWithPerplexityNative(
         }
 
         // Accumulate content for snippet extraction when citations arrive
+        // MEMORY OPTIMIZATION: Limit accumulated content to prevent unbounded growth
+        const MAX_CONTENT_LENGTH = 100000; // 100KB limit for accumulated content
         let fullContent = '';
         let rawCitations: string[] = [];
 
@@ -1329,7 +1351,10 @@ async function streamWithPerplexityNative(
                 if (textDelta) {
                   const cleanDelta = stripThinkingTags(textDelta);
                   if (cleanDelta) {
-                    fullContent += cleanDelta;
+                    // Only accumulate content up to the limit (for snippet extraction)
+                    if (fullContent.length < MAX_CONTENT_LENGTH) {
+                      fullContent += cleanDelta;
+                    }
                     controller.enqueue(sse.encode({ type: 'text', content: cleanDelta }));
                   }
                 }

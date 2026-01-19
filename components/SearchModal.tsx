@@ -73,6 +73,25 @@ function getIcon(iconName: string) {
   return iconMap[iconName] || Home;
 }
 
+// Skeleton loading state for search results
+function SearchResultSkeleton() {
+  return (
+    <div className="py-2">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="flex items-center gap-3 px-5 py-3">
+          {/* Icon skeleton */}
+          <div className="w-9 h-9 rounded-lg bg-[var(--bg-tertiary)] animate-pulse" />
+          {/* Text skeleton */}
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-[var(--bg-tertiary)] rounded w-3/4 animate-pulse" />
+            <div className="h-3 bg-[var(--bg-tertiary)] rounded w-1/2 animate-pulse" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const router = useRouter();
   const { loadSession } = useChatContext();
@@ -538,9 +557,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   "
                 />
                 <div className="flex items-center gap-1">
-                  {isLoading && (
-                    <div className="w-4 h-4 border-2 border-[var(--fg-quaternary)] border-t-transparent rounded-full animate-spin" />
-                  )}
                   <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-[var(--fg-quaternary)] bg-[var(--bg-tertiary)] rounded border border-[var(--border-secondary)]">
                     <Command className="w-2.5 h-2.5" />K
                   </kbd>
@@ -653,6 +669,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       </div>
                     )}
                   </div>
+                ) : isLoading ? (
+                  <SearchResultSkeleton />
                 ) : searchQuery.trim() ? (
                   <div className="py-12 text-center">
                     <Search className="w-8 h-8 text-[var(--fg-quaternary)] mx-auto mb-3" />

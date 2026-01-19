@@ -135,18 +135,21 @@ export async function POST(req: Request): Promise<NextResponse<UploadResponse>> 
     const randomId = Math.random().toString(36).substring(2, 10);
     const storagePath = `${chatId || 'unassigned'}/${timestamp}-${randomId}.${extension}`;
 
-    // Convert base64 to buffer
-    const buffer = Buffer.from(base64, 'base64');
-    const fileSize = buffer.length;
-
-    // Validate file size (max 10MB)
+    // MEMORY OPTIMIZATION: Check estimated file size BEFORE allocating buffer
+    // Base64 encoding adds ~33% overhead, so actual size ≈ base64Length * 0.75
     const maxSize = 10 * 1024 * 1024;
-    if (fileSize > maxSize) {
+    const estimatedSize = Math.ceil(base64.length * 0.75);
+
+    if (estimatedSize > maxSize) {
       return NextResponse.json(
         { success: false, error: 'File size exceeds 10MB limit' },
         { status: 400 }
       );
     }
+
+    // Convert base64 to buffer (safe to allocate now that we know size is acceptable)
+    const buffer = Buffer.from(base64, 'base64');
+    const fileSize = buffer.length;
 
     // Get Supabase client (lazy init)
     const supabaseClient = getSupabase();

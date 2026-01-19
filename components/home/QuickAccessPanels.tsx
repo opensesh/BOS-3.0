@@ -229,33 +229,17 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   className="overflow-hidden flex-1 flex flex-col"
                 >
                   {/* Action buttons - 2x2 grid */}
-                  <div className="grid grid-cols-2 gap-2.5 flex-1 content-start p-4 sm:p-5 pt-4">
+                  <div className="grid grid-cols-2 gap-2 flex-1 content-start p-4 sm:p-5 pt-4">
                     {quickActions.map((action, index) => (
                       <motion.button
                         key={action.id}
                         onClick={() => handleActionClick(action)}
-                        className="group/btn relative flex items-center gap-2.5 px-3.5 py-3 rounded-xl text-left transition-all duration-150 bg-[var(--bg-tertiary)]/50 hover:bg-[var(--bg-tertiary)]/80"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        whileHover="hover"
-                        transition={{ delay: 0.3 + index * 0.05, duration: 0.3 }}
+                        className="group/btn flex items-center gap-2 px-3 py-2.5 rounded-lg text-left transition-all duration-150 bg-[var(--bg-tertiary)]/50 hover:bg-[var(--bg-tertiary)]/80 border border-[var(--border-secondary)] hover:border-[var(--fg-tertiary)]"
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 + index * 0.05, duration: 0.25 }}
                       >
-                        {/* Animated orange border - draws around on hover */}
-                        <motion.div
-                          className="absolute inset-0 rounded-xl pointer-events-none"
-                          initial={{ opacity: 0 }}
-                          variants={{
-                            hover: {
-                              opacity: 1,
-                              transition: { duration: 0.15 }
-                            }
-                          }}
-                          style={{
-                            border: '1.5px solid var(--color-brand-500)',
-                          }}
-                        />
-
-                        <span className="text-sm font-medium text-[var(--fg-secondary)] group-hover/btn:text-[var(--fg-primary)] transition-colors whitespace-nowrap">
+                        <span className="text-[13px] text-[var(--fg-secondary)] group-hover/btn:text-[var(--fg-primary)] transition-colors whitespace-nowrap">
                           {action.title}
                         </span>
 
@@ -342,8 +326,8 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                   className="overflow-hidden flex-1 flex flex-col"
                 >
-                  {/* Brand links - 2-column grid, more compact than Actions */}
-                  <div className="grid grid-cols-2 gap-1.5 flex-1 content-start p-4 sm:p-5 pt-4">
+                  {/* Brand links - 2-column grid */}
+                  <div className="grid grid-cols-2 gap-2 flex-1 content-start p-4 sm:p-5 pt-4">
                     {brandLinks.map((link, index) => {
                       const Icon = link.icon;
                       return (
@@ -355,15 +339,8 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                         >
                           <Link
                             href={link.href}
-                            className="group/link relative flex items-center gap-2 px-2.5 py-2 rounded-lg transition-colors duration-150 bg-[var(--bg-tertiary)]/50 hover:bg-[var(--bg-tertiary)]/80"
+                            className="group/link flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors duration-150 bg-[var(--bg-tertiary)]/50 hover:bg-[var(--bg-tertiary)]/80 border border-[var(--border-secondary)] hover:border-[var(--fg-tertiary)]"
                           >
-                            {/* Animated orange border on hover */}
-                            <div
-                              className="absolute inset-0 rounded-lg pointer-events-none opacity-0 group-hover/link:opacity-100 transition-opacity duration-150"
-                              style={{
-                                border: '1.5px solid var(--color-brand-500)',
-                              }}
-                            />
                             <Icon className="w-3.5 h-3.5 text-[var(--fg-quaternary)] group-hover/link:text-[var(--fg-tertiary)] transition-colors flex-shrink-0" />
                             <span className="text-[13px] text-[var(--fg-secondary)] group-hover/link:text-[var(--fg-primary)] transition-colors truncate">
                               {link.label}

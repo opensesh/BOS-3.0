@@ -2,11 +2,12 @@
 
 import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  BookOpen, 
-  Wrench, 
-  Mail,
-  HelpCircle,
+import {
+  FileText,
+  Heart,
+  PlayCircle,
+  BookOpen,
+  LifeBuoy,
 } from 'lucide-react';
 
 interface HelpDropdownProps {
@@ -16,23 +17,35 @@ interface HelpDropdownProps {
 }
 
 const helpMenuItems = [
-  { 
-    id: 'docs', 
-    label: 'Docs', 
+  {
+    id: 'blogs',
+    label: 'Blogs',
+    icon: FileText,
+    description: 'Latest industry news and guides',
+  },
+  {
+    id: 'customer-stories',
+    label: 'Customer Stories',
+    icon: Heart,
+    description: 'How customers use our platform',
+  },
+  {
+    id: 'video-tutorials',
+    label: 'Video Tutorials',
+    icon: PlayCircle,
+    description: 'Get up and running quickly',
+  },
+  {
+    id: 'documentation',
+    label: 'Documentation',
     icon: BookOpen,
-    description: 'Read the documentation',
+    description: 'In-depth articles and guides',
   },
-  { 
-    id: 'faqs', 
-    label: 'FAQs', 
-    icon: HelpCircle,
-    description: 'Frequently asked questions',
-  },
-  { 
-    id: 'troubleshooting', 
-    label: 'Troubleshooting', 
-    icon: Wrench,
-    description: 'Common issues & fixes',
+  {
+    id: 'help-support',
+    label: 'Help and Support',
+    icon: LifeBuoy,
+    description: 'Our team is here to help',
   },
 ];
 
@@ -132,7 +145,7 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
                   }}
                   className="
                     w-full flex items-center gap-3
-                    px-4 py-2
+                    px-4 py-3
                     text-left
                     hover:bg-[var(--bg-tertiary)]
                     transition-colors
@@ -147,7 +160,10 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
                   ">
                     <Icon className="w-4 h-4 text-[var(--fg-tertiary)]" />
                   </div>
-                  <span className="text-base text-[var(--fg-secondary)]">{item.label}</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-[var(--fg-primary)]">{item.label}</span>
+                    <span className="text-xs text-[var(--fg-tertiary)]">{item.description}</span>
+                  </div>
                 </button>
               );
             })}
@@ -161,19 +177,18 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
                 onClose();
               }}
               className="
-                w-full flex items-center justify-center gap-2
+                w-full flex items-center justify-center
                 px-4 py-2.5
-                bg-[var(--bg-primary)]
-                hover:bg-[var(--bg-tertiary)]
-                text-[var(--fg-primary)]
-                text-base font-medium
+                bg-[var(--bg-secondary)]
+                hover:bg-[var(--bg-brand-primary)]
+                text-[var(--fg-brand-primary)]
+                text-sm font-medium
                 rounded-lg
-                border border-[var(--border-secondary)]
+                border border-[var(--border-brand)]
                 transition-colors
               "
             >
-              <Mail className="w-4 h-4" />
-              <span>Contact us</span>
+              Contact us
             </button>
           </div>
           </motion.div>

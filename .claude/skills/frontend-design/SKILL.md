@@ -661,4 +661,9 @@ export default function Dashboard() {
 
 *Remember: You're capable of extraordinary creative work. Commit fully to your vision and execute with precision.*
 
-*Interaction guidelines adapted from [Vercel Web Interface Guidelines](https://vercel.com/design/guidelines) under their open documentation.*
+---
+
+**Sources & Attribution**
+- Interaction patterns adapted from [Vercel Web Interface Guidelines](https://vercel.com/design/guidelines)
+- Skill structure informed by [Claude Code](https://github.com/anthropics/claude-code)
+- BOS design tokens: `tailwind.config.ts`, `app/theme.css`, `lib/motion.tsx`

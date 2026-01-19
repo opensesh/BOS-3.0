@@ -174,6 +174,26 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
     }
   }, [isOpen, item, railRef]); // Removed onClose from dependencies
 
+  // Handle click outside to close drawer immediately
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!isOpen || !drawerRef.current || !railRef.current) return;
+
+      const target = e.target as Node;
+      const isInsideDrawer = drawerRef.current.contains(target);
+      const isInsideRail = railRef.current.contains(target);
+
+      if (!isInsideDrawer && !isInsideRail) {
+        onCloseRef.current();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen, railRef]);
+
   const renderContent = () => {
     switch (item) {
       case 'RecentChats':
@@ -186,7 +206,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
           >
             <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-2">
-                <div className="flex items-center justify-between px-2 pt-[14px] pb-2">
+                <div className="flex items-center justify-between px-2 pt-3 pb-2">
                   <h3 className="text-base font-semibold text-[var(--fg-primary)]">Chats</h3>
                   <Link
                     href="/chats"
@@ -232,7 +252,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
           >
             <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-2">
-                <div className="flex items-center justify-between px-2 pt-[14px] pb-2">
+                <div className="flex items-center justify-between px-2 pt-3 pb-2">
                   <h3 className="text-base font-semibold text-[var(--fg-primary)]">Projects</h3>
                   <Link
                     href="/projects"
@@ -292,10 +312,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
+            {/* Header - vertically centered with plus icon (py-3 outer + pt-3 inner) */}
             <div className="px-2 mb-2">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Spaces</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-3 pb-2">Spaces</h3>
               </motion.div>
 
               <motion.button
@@ -374,7 +394,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
           >
             <div className="px-3">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Home</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-3 pb-2">Home</h3>
               </motion.div>
 
               {/* Quick Actions section - First */}
@@ -485,10 +505,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
+            {/* Header - vertically centered with plus icon (py-3 outer + pt-3 inner) */}
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Brand</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-3 pb-2">Brand</h3>
               </motion.div>
 
               <div className="space-y-1">
@@ -551,7 +571,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             {/* Header */}
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Brain</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-3 pb-2">Brain</h3>
               </motion.div>
 
               <div className="space-y-1">
@@ -601,10 +621,10 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
             initial="hidden"
             animate="visible"
           >
-            {/* Header - vertically centered with plus icon (py-3 outer + pt-[14px] inner) */}
+            {/* Header - vertically centered with plus icon (py-3 outer + pt-3 inner) */}
             <div className="px-2">
               <motion.div variants={fadeInUp} className="mb-2">
-                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-[14px] pb-2">Resources</h3>
+                <h3 className="text-base font-semibold text-[var(--fg-primary)] px-2 pt-3 pb-2">Resources</h3>
               </motion.div>
 
               <motion.div variants={fadeInUp} className="text-base text-[var(--fg-tertiary)] p-2">
@@ -625,7 +645,7 @@ export function NavigationDrawer({ isOpen, item, onClose, railRef }: NavigationD
         <motion.div
           ref={drawerRef}
           data-navigation-drawer
-          className="hidden lg:block fixed z-40 w-[256px] bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] shadow-[var(--shadow-lg)] overflow-y-auto"
+          className="hidden lg:block fixed z-[175] w-[256px] bg-[var(--bg-secondary)] border-r border-[var(--border-secondary)] shadow-[var(--shadow-lg)] overflow-y-auto"
           style={{
             top: `${position.top}px`,
             left: `${position.left}px`,

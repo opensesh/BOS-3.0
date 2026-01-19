@@ -33,6 +33,9 @@ import {
   MobileFullScreenMenu,
 } from './mobile';
 
+// Flyout timing constants
+const FLYOUT_HOVER_DELAY = 500; // Time before closing when mouse leaves (ms)
+
 // Navigation structure with subitems
 // Note: Brand and Brain sub-items have no icons (text-only for cleaner look)
 const navItems = [
@@ -214,12 +217,14 @@ function RecentChatsFlyout({
   onClose,
   onMouseEnter,
   onMouseLeave,
+  closeMode = 'hover',
 }: {
   isOpen: boolean;
   anchorRect: DOMRect | null;
   onClose: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  closeMode?: 'click' | 'hover';
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -230,17 +235,27 @@ function RecentChatsFlyout({
   const iconCenter = anchorRect.top + anchorRect.height / 2;
   const flyoutTop = Math.max(iconCenter - 20, 60);
 
+  // Dynamic exit animation based on close mode
+  const exitAnimation = closeMode === 'click'
+    ? { opacity: 0 }
+    : { opacity: 0, x: -4, scale: 0.98 };
+
+  const exitTransition = closeMode === 'click'
+    ? { duration: 0.1, ease: 'linear' }
+    : { duration: 0.25, ease: [0.4, 0, 1, 1] };
+
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
+          data-flyout
           initial={{ opacity: 0, x: -4, scale: 0.98 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
+          exit={exitAnimation}
           transition={{
             duration: 0.2,
             ease: [0.4, 0, 0.2, 1],
-            exit: { duration: 0.3, ease: [0.4, 0, 1, 1] },
+            exit: exitTransition,
           }}
           className="fixed z-[60] w-[272px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
           style={{
@@ -308,12 +323,14 @@ function ProjectsFlyout({
   onClose,
   onMouseEnter,
   onMouseLeave,
+  closeMode = 'hover',
 }: {
   isOpen: boolean;
   anchorRect: DOMRect | null;
   onClose: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  closeMode?: 'click' | 'hover';
 }) {
   const { projects } = useChatContext();
 
@@ -322,17 +339,27 @@ function ProjectsFlyout({
   const iconCenter = anchorRect.top + anchorRect.height / 2;
   const flyoutTop = Math.max(iconCenter - 20, 60);
 
+  // Dynamic exit animation based on close mode
+  const exitAnimation = closeMode === 'click'
+    ? { opacity: 0 }
+    : { opacity: 0, x: -4, scale: 0.98 };
+
+  const exitTransition = closeMode === 'click'
+    ? { duration: 0.1, ease: 'linear' }
+    : { duration: 0.25, ease: [0.4, 0, 1, 1] };
+
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
+          data-flyout
           initial={{ opacity: 0, x: -4, scale: 0.98 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
+          exit={exitAnimation}
           transition={{
             duration: 0.2,
             ease: [0.4, 0, 0.2, 1],
-            exit: { duration: 0.3, ease: [0.4, 0, 1, 1] },
+            exit: exitTransition,
           }}
           className="fixed z-[60] w-[272px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
           style={{
@@ -393,20 +420,22 @@ function ProjectsFlyout({
 }
 
 // Flyout drawer for collapsed mode (small tooltip-style flyout on hover)
-function CollapsedFlyout({ 
-  item, 
-  isOpen, 
+function CollapsedFlyout({
+  item,
+  isOpen,
   anchorRect,
   onClose,
   onMouseEnter,
   onMouseLeave,
-}: { 
+  closeMode = 'hover',
+}: {
   item: typeof navItems[0] | null;
   isOpen: boolean;
   anchorRect: DOMRect | null;
   onClose: () => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  closeMode?: 'click' | 'hover';
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -420,7 +449,16 @@ function CollapsedFlyout({
   // Icon is 40px tall, flyout title row is ~40px, so align centers
   const iconCenter = anchorRect.top + anchorRect.height / 2;
   const flyoutTop = Math.max(iconCenter - 20, 60); // 20px is half of header height
-  
+
+  // Dynamic exit animation based on close mode
+  const exitAnimation = closeMode === 'click'
+    ? { opacity: 0 }
+    : { opacity: 0, x: -4, scale: 0.98 };
+
+  const exitTransition = closeMode === 'click'
+    ? { duration: 0.1, ease: 'linear' as const }
+    : { duration: 0.25, ease: [0.4, 0, 1, 1] as const };
+
   // Special content for Home
   if (item.label === 'Home') {
     return (
@@ -428,13 +466,14 @@ function CollapsedFlyout({
         {isOpen && (
           <motion.div
             ref={drawerRef}
+            data-flyout
             initial={{ opacity: 0, x: -4, scale: 0.98 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ 
-              duration: 0.2, 
+            exit={exitAnimation}
+            transition={{
+              duration: 0.2,
               ease: [0.4, 0, 0.2, 1],
-              exit: { duration: 0.3, ease: [0.4, 0, 1, 1] }
+              exit: exitTransition,
             }}
             className="fixed z-[60] w-[272px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
@@ -510,13 +549,14 @@ function CollapsedFlyout({
         {isOpen && (
           <motion.div
             ref={drawerRef}
+            data-flyout
             initial={{ opacity: 0, x: -4, scale: 0.98 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ 
-              duration: 0.2, 
+            exit={exitAnimation}
+            transition={{
+              duration: 0.2,
               ease: [0.4, 0, 0.2, 1],
-              exit: { duration: 0.3, ease: [0.4, 0, 1, 1] }
+              exit: exitTransition,
             }}
             className="fixed z-[60] w-[272px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
@@ -580,13 +620,14 @@ function CollapsedFlyout({
         {isOpen && (
           <motion.div
             ref={drawerRef}
+            data-flyout
             initial={{ opacity: 0, x: -4, scale: 0.98 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ 
-              duration: 0.2, 
+            exit={exitAnimation}
+            transition={{
+              duration: 0.2,
               ease: [0.4, 0, 0.2, 1],
-              exit: { duration: 0.3, ease: [0.4, 0, 1, 1] }
+              exit: exitTransition,
             }}
             className="fixed z-[60] w-[272px] bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg shadow-xl overflow-hidden"
             style={{
@@ -649,9 +690,11 @@ export function Sidebar() {
   const [isFlyoutHovered, setIsFlyoutHovered] = useState(false);
   // Unified flyout state for collapsed mode - only one flyout open at a time
   type FlyoutType = 'recentChats' | 'projects' | null;
+  type FlyoutCloseMode = 'click' | 'hover';
   const [activeFlyout, setActiveFlyout] = useState<FlyoutType>(null);
   const [flyoutAnchorRect, setFlyoutAnchorRect] = useState<DOMRect | null>(null);
   const [isFlyoutContentHovered, setIsFlyoutContentHovered] = useState(false);
+  const [flyoutCloseMode, setFlyoutCloseMode] = useState<FlyoutCloseMode>('hover');
   const flyoutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // For hover mode - NavigationDrawer
   const [drawerItem, setDrawerItem] = useState<string | null>(null);
@@ -676,6 +719,52 @@ export function Sidebar() {
       setExpandedSections([activeSection]);
     }
   }, [pathname]);
+
+  // Click-outside handler for collapsed flyouts - closes immediately
+  useEffect(() => {
+    if (sidebarMode !== 'collapsed') return;
+    if (!hoveredItem && activeFlyout === null) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      // Check if click is inside any flyout
+      const flyoutElements = document.querySelectorAll('[data-flyout]');
+      let isInsideFlyout = false;
+      flyoutElements.forEach(el => {
+        if (el.contains(target)) isInsideFlyout = true;
+      });
+
+      // Check if click is inside the sidebar rail
+      const isInsideRail = railRef.current?.contains(target);
+
+      if (!isInsideFlyout && !isInsideRail) {
+        // Clear any pending timeouts
+        if (hoverTimeoutRef.current) {
+          clearTimeout(hoverTimeoutRef.current);
+          hoverTimeoutRef.current = null;
+        }
+        if (flyoutTimeoutRef.current) {
+          clearTimeout(flyoutTimeoutRef.current);
+          flyoutTimeoutRef.current = null;
+        }
+
+        // Set click mode for instant close animation
+        setFlyoutCloseMode('click');
+
+        // Close all flyouts
+        setHoveredItem(null);
+        setHoveredAnchorRect(null);
+        setIsFlyoutHovered(false);
+        setActiveFlyout(null);
+        setFlyoutAnchorRect(null);
+        setIsFlyoutContentHovered(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sidebarMode, hoveredItem, activeFlyout]);
 
   const handleNewChat = useCallback(() => {
     triggerChatReset();
@@ -708,12 +797,13 @@ export function Sidebar() {
         clearTimeout(hoverTimeoutRef.current);
         hoverTimeoutRef.current = null;
       }
-      
+
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
       setHoveredAnchorRect(rect);
       setHoveredItem(item);
+      setFlyoutCloseMode('hover'); // Reset close mode when opening
     }
-    
+
     // For hover mode - use NavigationDrawer
     if (shouldShowDrawer) {
       setDrawerItem(item.label);
@@ -723,13 +813,14 @@ export function Sidebar() {
 
   const handleMouseLeaveItem = () => {
     if (shouldShowFlyout) {
-      // Long delay for better accessibility - gives user plenty of time to reach flyout
+      // Delay before closing - gives user time to reach flyout
       hoverTimeoutRef.current = setTimeout(() => {
         if (!isFlyoutHovered) {
+          setFlyoutCloseMode('hover');
           setHoveredItem(null);
           setHoveredAnchorRect(null);
         }
-      }, 600);
+      }, FLYOUT_HOVER_DELAY);
     }
     // Note: NavigationDrawer handles its own mouse leave behavior
   };
@@ -745,11 +836,12 @@ export function Sidebar() {
 
   const handleFlyoutMouseLeave = () => {
     setIsFlyoutHovered(false);
-    // Much longer delay for better UX - user can easily re-enter
+    // Delay before closing - user can easily re-enter
     hoverTimeoutRef.current = setTimeout(() => {
+      setFlyoutCloseMode('hover');
       setHoveredItem(null);
       setHoveredAnchorRect(null);
-    }, 800);
+    }, FLYOUT_HOVER_DELAY);
   };
 
   const handleFlyoutClose = () => {
@@ -768,12 +860,13 @@ export function Sidebar() {
         clearTimeout(flyoutTimeoutRef.current);
         flyoutTimeoutRef.current = null;
       }
-      
+
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
       setFlyoutAnchorRect(rect);
       setActiveFlyout(type);
+      setFlyoutCloseMode('hover'); // Reset close mode when opening
     }
-    
+
     // For hover mode - use NavigationDrawer
     if (shouldShowDrawer && type) {
       // Map flyout type to drawer item name
@@ -787,10 +880,11 @@ export function Sidebar() {
     if (shouldShowFlyout) {
       flyoutTimeoutRef.current = setTimeout(() => {
         if (!isFlyoutContentHovered) {
+          setFlyoutCloseMode('hover');
           setActiveFlyout(null);
           setFlyoutAnchorRect(null);
         }
-      }, 300);
+      }, FLYOUT_HOVER_DELAY);
     }
     // Note: NavigationDrawer handles its own mouse leave behavior
   };
@@ -806,9 +900,10 @@ export function Sidebar() {
   const handleFlyoutContentMouseLeave = () => {
     setIsFlyoutContentHovered(false);
     flyoutTimeoutRef.current = setTimeout(() => {
+      setFlyoutCloseMode('hover');
       setActiveFlyout(null);
       setFlyoutAnchorRect(null);
-    }, 300);
+    }, FLYOUT_HOVER_DELAY);
   };
 
   const closeFlyout = () => {
@@ -859,8 +954,9 @@ export function Sidebar() {
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* New Chat Button */}
-        <div className={`flex flex-col ${isExpandedMode ? 'px-3 pt-4 pb-2.5 gap-1.5' : 'items-center pt-4 pb-1.5 gap-1'}`}>
+        {/* Navigation Items */}
+        <nav className={`flex flex-col ${isExpandedMode ? 'gap-1 px-3 pt-2.5' : 'gap-1.5 items-center px-1.5 pt-1.5'}`}>
+          {/* New Chat Button */}
           <Link
             href="/"
             onClick={handleNewChat}
@@ -870,8 +966,8 @@ export function Sidebar() {
               group
               text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]
               ${isExpandedMode
-                ? 'w-full py-2.5 px-3.5 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] rounded-lg border border-[var(--border-secondary)]'
-                : 'p-2'
+                ? 'w-full py-3 px-3 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] rounded-lg border border-[var(--border-secondary)]'
+                : ''
               }
             `}
             title="New Chat"
@@ -890,10 +986,6 @@ export function Sidebar() {
               <span className="text-sm font-medium">New Chat</span>
             )}
           </Link>
-        </div>
-
-        {/* Navigation Items */}
-        <nav className={`flex flex-col ${isExpandedMode ? 'gap-1 px-3' : 'gap-1.5 items-center px-1.5'}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = isItemActive(item);
@@ -912,11 +1004,11 @@ export function Sidebar() {
                   {isExpandedMode ? (
                     // Expanded/Pinned mode - unified row with consistent styling
                     <div className="flex flex-col">
-                      <div 
+                      <div
                         className={`
-                          flex items-center rounded-md transition-colors duration-150
+                          flex items-center pr-1.5 rounded-md transition-colors duration-150
                           ${isActive || isOnMainPage
-                            ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                            ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
                             : 'text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
                           }
                         `}
@@ -1126,9 +1218,9 @@ export function Sidebar() {
                 return (
                   <div className="flex flex-col">
                     <div className={`
-                      flex items-center rounded-md transition-colors duration-150
+                      flex items-center pr-1.5 rounded-md transition-colors duration-150
                       ${isProjectsActive
-                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
                         : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
                       }
                     `}>
@@ -1229,9 +1321,9 @@ export function Sidebar() {
                 return (
                   <div className="flex flex-col">
                     <div className={`
-                      flex items-center rounded-md transition-colors duration-150
+                      flex items-center pr-1.5 rounded-md transition-colors duration-150
                       ${isRecentChatsActive
-                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]' 
+                        ? 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]'
                         : 'text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)]'
                       }
                     `}>
@@ -1329,13 +1421,40 @@ export function Sidebar() {
       {/* Collapsed mode flyouts - mutually exclusive */}
       {shouldShowFlyout && (
         <>
-          <CollapsedFlyout 
-            item={hoveredItem} 
-            isOpen={hoveredItem !== null && activeFlyout === null} 
+          {/* Hover bridge - invisible zone between nav item and flyout to prevent accidental closes */}
+          {hoveredItem && hoveredAnchorRect && activeFlyout === null && (
+            <div
+              className="fixed z-[59] bg-transparent"
+              style={{
+                left: SIDEBAR_WIDTH_COLLAPSED,
+                top: hoveredAnchorRect.top - 8,
+                width: 16,
+                height: hoveredAnchorRect.height + 16,
+              }}
+              onMouseEnter={handleFlyoutMouseEnter}
+            />
+          )}
+          {/* Hover bridge for Projects/Chats flyouts */}
+          {activeFlyout && flyoutAnchorRect && (
+            <div
+              className="fixed z-[59] bg-transparent"
+              style={{
+                left: SIDEBAR_WIDTH_COLLAPSED,
+                top: flyoutAnchorRect.top - 8,
+                width: 16,
+                height: flyoutAnchorRect.height + 16,
+              }}
+              onMouseEnter={handleFlyoutContentMouseEnter}
+            />
+          )}
+          <CollapsedFlyout
+            item={hoveredItem}
+            isOpen={hoveredItem !== null && activeFlyout === null}
             anchorRect={hoveredAnchorRect}
             onClose={handleFlyoutClose}
             onMouseEnter={handleFlyoutMouseEnter}
             onMouseLeave={handleFlyoutMouseLeave}
+            closeMode={flyoutCloseMode}
           />
           <RecentChatsFlyout
             isOpen={activeFlyout === 'recentChats'}
@@ -1343,6 +1462,7 @@ export function Sidebar() {
             onClose={closeFlyout}
             onMouseEnter={handleFlyoutContentMouseEnter}
             onMouseLeave={handleFlyoutContentMouseLeave}
+            closeMode={flyoutCloseMode}
           />
           <ProjectsFlyout
             isOpen={activeFlyout === 'projects'}
@@ -1350,6 +1470,7 @@ export function Sidebar() {
             onClose={closeFlyout}
             onMouseEnter={handleFlyoutContentMouseEnter}
             onMouseLeave={handleFlyoutContentMouseLeave}
+            closeMode={flyoutCloseMode}
           />
         </>
       )}

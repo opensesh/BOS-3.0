@@ -26,6 +26,7 @@
     "@fortawesome/react-fontawesome": "^3.1.1",
     "@gsap/react": "^2.1.2",
     "@modelcontextprotocol/sdk": "^1.25.1",
+    "@paper-design/shaders-react": "^0.0.71",
     "@perplexity-ai/perplexity_ai": "github:perplexityai/perplexity-node",
     "@react-stately/utils": "^3.10.8",
     "@supabase/ssr": "^0.8.0",

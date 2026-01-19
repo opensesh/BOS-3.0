@@ -5,6 +5,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { ChatProvider } from '@/lib/chat-context';
+import { BackgroundProvider } from '@/lib/background-context';
 import { CanvasProvider } from '@/lib/canvas-context';
 import { MobileMenuProvider } from '@/lib/mobile-menu-context';
 import { BreadcrumbProvider } from '@/lib/breadcrumb-context';
@@ -57,17 +58,19 @@ export default async function RootLayout({
             enableSystem
           >
             <ChatProvider>
-              <CanvasProvider>
-                <MobileMenuProvider>
-                  <BreadcrumbProvider>
-                    <SidebarProvider>
-                      {children}
-                      {/* Canvas Panel - Global overlay for collaborative editing */}
-                      <CanvasPanel />
-                    </SidebarProvider>
-                  </BreadcrumbProvider>
-                </MobileMenuProvider>
-              </CanvasProvider>
+              <BackgroundProvider>
+                <CanvasProvider>
+                  <MobileMenuProvider>
+                    <BreadcrumbProvider>
+                      <SidebarProvider>
+                        {children}
+                        {/* Canvas Panel - Global overlay for collaborative editing */}
+                        <CanvasPanel />
+                      </SidebarProvider>
+                    </BreadcrumbProvider>
+                  </MobileMenuProvider>
+                </CanvasProvider>
+              </BackgroundProvider>
             </ChatProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

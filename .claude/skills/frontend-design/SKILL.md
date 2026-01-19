@@ -70,14 +70,16 @@ When building for BOS-3.0, use our design tokens:
 ```
 
 ### Typography
-| Category | Font | Usage |
-|----------|------|-------|
-| **Display** | Neue Haas Grotesk Display Pro | Headlines, titles, hero text |
-| **Body** | Neue Haas Grotesk Text Pro | Body text, paragraphs, inputs, tabs |
-| **Small** | Neue Haas Grotesk Text Pro | Labels, captions, hints, metadata |
-| **Accent** | Offbit | Digital/tech feel (max 2 per viewport) |
+| Category | Font | Tailwind Class | Usage |
+|----------|------|----------------|-------|
+| **Display** | Neue Haas Grotesk Display Pro | `font-display` | Headlines, titles, hero text |
+| **Body** | Neue Haas Grotesk Text Pro | `font-sans` | Body text, paragraphs, inputs, tabs |
+| **Small** | Neue Haas Grotesk Text Pro | `font-sans text-sm` | Labels, captions, hints, metadata |
+| **Accent** | Offbit | `font-accent` | Digital/tech feel (max 2 per viewport) |
 
 **Note**: We use Neue Haas Grotesk consistently across the entire interface—no separate code or monospace fonts.
+
+> **Config reference**: Font families defined in `tailwind.config.ts` → `theme.extend.fontFamily`
 
 ### Border Philosophy
 Borders should **support, not dominate**:

@@ -1337,13 +1337,13 @@ export function ChatInterface() {
       <BackgroundGradient fadeOut={hasMessages} />
       {hasMessages && (
         <div 
-          className="fixed left-0 bottom-0 top-14 lg:top-12 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)] transition-[left,right] duration-300 ease-out"
+          className="fixed left-0 bottom-0 top-14 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)] transition-[left,right] duration-300 ease-out"
           style={{ right: chatRightOffset }}
         />
       )}
 
       <div 
-        className={`fixed left-0 bottom-0 top-14 lg:top-12 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,right] duration-300 ease-out ${hasMessages ? '' : 'items-center'}`}
+        className={`fixed left-0 bottom-0 top-14 z-10 flex flex-col lg:left-[var(--sidebar-width)] transition-[left,right] duration-300 ease-out ${hasMessages ? '' : 'items-center'}`}
         style={{ right: chatRightOffset }}
       >
         {/* Chat Mode */}
@@ -1356,6 +1356,7 @@ export function ChatInterface() {
               hasResources={allSources.length > 0 || allResourceCards.length > 0 || allImages.length > 0}
               resourcesCount={allSources.length + allResourceCards.length + allImages.length}
               threadTitle={threadTitle}
+              threadCreatedAt={currentSessionId ? chatHistory.find(c => c.id === currentSessionId)?.createdAt : undefined}
               isTitleLoading={isTitleLoading}
               onBack={handleBackToChats}
               onRenameThread={async (newTitle) => {

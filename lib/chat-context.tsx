@@ -22,6 +22,7 @@ export interface ChatHistoryItem {
   title: string;
   preview: string;
   timestamp: Date;
+  createdAt: Date;
   messages?: ChatMessage[];
   projectId?: string | null;
   spaceSlug?: string | null;
@@ -128,6 +129,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         title: session.title,
         preview: session.preview || '',
         timestamp: new Date(session.updated_at),
+        createdAt: new Date(session.created_at),
         messages: session.messages,
         projectId: session.project_id,
         quickActionType: session.quick_action_type,
@@ -348,6 +350,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         title: title.slice(0, 50),
         preview: preview.slice(0, 100),
         timestamp: new Date(),
+        createdAt: new Date(),
         messages,
         projectId: effectiveProjectId,
         quickActionType,

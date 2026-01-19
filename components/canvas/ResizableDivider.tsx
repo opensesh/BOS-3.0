@@ -78,7 +78,7 @@ export function ResizableDivider({
   return (
     <div
       ref={dividerRef}
-      className="fixed top-14 lg:top-12 bottom-0 z-50 cursor-col-resize"
+      className="fixed top-14 bottom-0 z-50 cursor-col-resize"
       style={{ 
         left: `${leftWidth}%`,
         width: '1px',

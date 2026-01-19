@@ -84,7 +84,7 @@ export function HelpDropdown({ isOpen, onClose, triggerRef }: HelpDropdownProps)
             transition={{ duration: 0.15 }}
             className="
               fixed inset-0
-              top-12 left-12
+              top-14 left-14
               backdrop-blur-sm
               bg-black/5
               z-[150]

@@ -183,7 +183,8 @@ export function ChatTitleDropdown({
     onDelete?.();
   };
 
-  const menuItems = [
+  // Primary actions - more prominent
+  const primaryItems = [
     {
       icon: Layers,
       label: 'Add to Project',
@@ -200,23 +201,19 @@ export function ChatTitleDropdown({
         setIsOpen(false);
       },
     },
-    { type: 'divider' as const },
+  ];
+
+  // Secondary actions - less prominent (export)
+  const exportItems = [
     {
       icon: FileText,
-      label: 'Export as PDF',
+      label: 'PDF',
       onClick: handleExportPdf,
     },
     {
       icon: FileCode,
-      label: 'Export as Markdown',
+      label: 'Markdown',
       onClick: handleExportMarkdown,
-    },
-    { type: 'divider' as const },
-    {
-      icon: Trash2,
-      label: 'Delete',
-      onClick: handleDelete,
-      danger: true,
     },
   ];
 
@@ -363,47 +360,60 @@ export function ChatTitleDropdown({
 
       {/* Dropdown menu */}
       {isOpen && !isEditing && !isLoading && (
-        <div className="absolute right-0 top-full mt-1.5 w-56 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] shadow-xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1.5 w-56 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-secondary)] shadow-lg z-50 overflow-hidden">
           {/* Date header */}
-          <div className="px-3.5 py-2.5 border-b border-[var(--border-primary)]">
+          <div className="px-4 min-h-[52px] flex flex-col justify-center border-b border-[var(--border-secondary)]">
             <p className="text-xs text-[var(--fg-tertiary)]">
               Created {formatDate(createdAt)}
             </p>
           </div>
 
-          {/* Menu items */}
-          <div className="py-1.5">
-            {menuItems.map((item, idx) => {
-              if ('type' in item && item.type === 'divider') {
-                return (
-                  <div
-                    key={idx}
-                    className="my-1.5 border-t border-[var(--border-primary)]"
-                  />
-                );
-              }
-
-              const Icon = 'icon' in item ? item.icon : null;
-              const isDanger = 'danger' in item && item.danger;
-
+          {/* Primary menu items */}
+          <div className="py-1 border-b border-[var(--border-secondary)]">
+            {primaryItems.map((item, idx) => {
+              const Icon = item.icon;
               return (
                 <button
                   key={idx}
-                  onClick={'onClick' in item ? item.onClick : undefined}
-                  className={`
-                    w-full flex items-center gap-2.5 px-3.5 py-2.5 text-base transition-colors
-                    ${
-                      isDanger
-                        ? 'text-[var(--fg-error-primary)] hover:bg-[var(--bg-error-primary)]'
-                        : 'text-[var(--fg-primary)] hover:bg-[var(--bg-primary)]'
-                    }
-                  `}
+                  onClick={item.onClick}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-[var(--bg-tertiary)] transition-colors"
                 >
-                  {Icon && <Icon className="w-4 h-4" />}
-                  <span>{'label' in item ? item.label : ''}</span>
+                  <Icon className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                  <span className="text-sm text-[var(--fg-secondary)]">{item.label}</span>
                 </button>
               );
             })}
+          </div>
+
+          {/* Export items - compact secondary actions */}
+          <div className="px-4 py-2 border-b border-[var(--border-secondary)]">
+            <p className="text-[10px] text-[var(--fg-quaternary)] uppercase tracking-wider mb-1.5">Export</p>
+            <div className="flex items-center gap-1.5">
+              {exportItems.map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={idx}
+                    onClick={item.onClick}
+                    className="flex items-center gap-1.5 px-2 py-1 text-xs text-[var(--fg-tertiary)] hover:text-[var(--fg-secondary)] hover:bg-[var(--bg-tertiary)] rounded transition-colors"
+                  >
+                    <Icon className="w-3 h-3" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Delete - danger action */}
+          <div className="py-1">
+            <button
+              onClick={handleDelete}
+              className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-[var(--bg-tertiary)] transition-colors"
+            >
+              <Trash2 className="w-4 h-4 text-[var(--fg-error-primary)]" />
+              <span className="text-sm text-[var(--fg-error-primary)]">Delete</span>
+            </button>
           </div>
         </div>
       )}

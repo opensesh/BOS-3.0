@@ -228,7 +228,42 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 
 # Optional
 VERCEL_ANALYTICS_ID=...
+
+# MCP (for GitHub integration)
+GITHUB_PERSONAL_ACCESS_TOKEN=ghp_...
 ```
+
+## 🔌 MCP Servers (Claude Code)
+
+This project uses [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers to extend Claude Code's capabilities with direct access to external services.
+
+### Required Servers
+
+| Server | Purpose | Auth |
+|--------|---------|------|
+| **Supabase** | Database, migrations, edge functions | OAuth |
+| **Vercel** | Deployments, logs, projects | OAuth |
+| **Figma** | Design context, screenshots | OAuth |
+| **Notion** | Documentation, databases | OAuth |
+| **GitHub** | Repository, issues, PRs | PAT |
+
+### Quick Setup
+
+```bash
+# Add OAuth servers (browser auth)
+claude mcp add --transport http supabase "https://mcp.supabase.com/mcp" --scope user
+claude mcp add --transport http vercel "https://mcp.vercel.com" --scope user
+claude mcp add --transport http figma "https://mcp.figma.com/mcp" --scope user
+claude mcp add --transport http notion "https://mcp.notion.com/mcp" --scope user
+
+# Add GitHub (requires GITHUB_PERSONAL_ACCESS_TOKEN in shell profile)
+claude mcp add-json github '{"type":"http","url":"https://api.githubcopilot.com/mcp","headers":{"Authorization":"Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"}}' --scope user
+
+# Verify all connected
+claude mcp list
+```
+
+For detailed setup instructions, see [`.claude/mcp-instructions.md`](.claude/mcp-instructions.md).
 
 ## 🚀 Scripts
 

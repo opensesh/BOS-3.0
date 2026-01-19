@@ -8,11 +8,32 @@ This project uses **Model Context Protocol (MCP)** servers to extend Claude's ca
 
 | Server | Purpose | Auth Method |
 |--------|---------|-------------|
-| **Supabase** | Database operations, migrations, edge functions | OAuth (automatic) |
-| **Vercel** | Deployments, logs, project management | OAuth (automatic) |
-| **Figma** | Design context, screenshots, code generation | OAuth (automatic) |
-| **Notion** | Documentation, pages, databases | OAuth (automatic) |
+| **Supabase** | Database operations, migrations, edge functions | OAuth |
+| **Vercel** | Deployments, logs, project management | OAuth |
+| **Figma** | Design context, screenshots, code generation | OAuth |
+| **Notion** | Documentation, pages, databases | OAuth |
 | **GitHub** | Repository, issues, PRs, code search | Personal Access Token |
+
+All servers are configured at **user scope** (`--scope user`) for global availability across projects.
+
+---
+
+## Quick Check: Verify MCP Status
+
+Run this command to check all MCP servers are connected:
+
+```bash
+claude mcp list
+```
+
+Expected output (all should show ✓ Connected):
+```
+supabase: https://mcp.supabase.com/mcp (HTTP) - ✓ Connected
+vercel: https://mcp.vercel.com (HTTP) - ✓ Connected
+figma: https://mcp.figma.com/mcp (HTTP) - ✓ Connected
+notion: https://mcp.notion.com/mcp (HTTP) - ✓ Connected
+github: https://api.githubcopilot.com/mcp (HTTP) - ✓ Connected
+```
 
 ---
 

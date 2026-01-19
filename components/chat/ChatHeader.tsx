@@ -65,7 +65,7 @@ export function ChatHeader({
   return (
     <div className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)]">
       <div className="px-4">
-        <div className="flex items-center justify-between py-3">
+        <div className="flex items-center justify-between py-2">
           {/* Left side - Back button and tabs */}
           <div className="flex items-center gap-2 shrink-0">
             {/* Back button */}
@@ -91,7 +91,7 @@ export function ChatHeader({
                     onClick={() => isAvailable && onTabChange(tab.id)}
                     disabled={!isAvailable}
                     className={`
-                      flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-all relative
+                      flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-all relative
                       ${
                         isActive
                           ? 'text-[var(--fg-primary)]'
@@ -108,9 +108,9 @@ export function ChatHeader({
                         {tab.count}
                       </span>
                     )}
-                    {/* Active indicator */}
+                    {/* Active indicator - positioned to align with container border */}
                     {isActive && (
-                      <div className="absolute bottom-0 left-3 right-3 h-0.5 bg-[var(--bg-brand-solid)] rounded-full" />
+                      <div className="absolute bottom-[-9px] left-2.5 right-2.5 h-0.5 bg-[var(--bg-brand-solid)] rounded-full" />
                     )}
                   </button>
                 );

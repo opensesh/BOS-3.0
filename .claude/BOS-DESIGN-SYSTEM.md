@@ -40,10 +40,12 @@ The system uses **warm neutrals** instead of harsh black/white for an inviting, 
 
 | Category | Font | Usage |
 |----------|------|-------|
-| **Headings** | Neue Haas Grotesk Display Pro | Headlines, titles, emphasis |
-| **Body** | Neue Haas Grotesk Display Pro | Body text, paragraphs |
-| **Accent/Display** | Offbit | Digital/tech feel, monospace-style accent |
-| **Code** | SF Mono, Consolas, Monaco | Code blocks, technical content |
+| **Display** | Neue Haas Grotesk Display Pro | Headlines, titles, hero text |
+| **Body** | Neue Haas Grotesk Text Pro | Body text, paragraphs, inputs, tabs |
+| **Small** | Neue Haas Grotesk Text Pro | Labels, captions, hints, metadata |
+| **Accent** | Offbit | Digital/tech feel (max 2 per viewport) |
+
+**Note**: We use Neue Haas Grotesk consistently—no separate code or monospace fonts.
 
 ---
 
@@ -83,11 +85,45 @@ className="bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/40 
 - Brand accent on focus (but not harsh)
 - Clear label hierarchy
 - Helpful hint text below
+- Input font ≥16px (prevents iOS auto-zoom)
+- Show errors adjacent to fields, focus first error on submit
+- Don't pre-disable submit—let users discover issues
+
+> **Deep dive**: See `frontend-design` skill §5 "Form Design" for validation patterns, autofill compatibility, and mobile considerations.
 
 ### Cards & Containers
 - Use `bg-secondary/30` for subtle layering
 - Rounded corners: `rounded-lg` (8px) or `rounded-xl` (12px for brand)
 - Shadows use Charcoal (25,25,25) not pure black
+- Nested radii: child ≤ parent (e.g., outer 16px with 8px padding → inner 8px)
+- Layered shadows: ≥2 layers (ambient + direct light)
+
+---
+
+## Interaction Patterns
+
+### Hit Targets
+| Context | Minimum |
+|---------|---------|
+| Desktop | 24×24px |
+| Mobile | 44×44px |
+
+### Loading States
+- Show delay: 150–300ms (prevent flash)
+- Minimum visible: 300–500ms (avoid jarring)
+- Keep original label visible during load
+
+### State Persistence
+Persist UI state in URL for share/refresh/Back/Forward:
+- Filters, pagination, selected tabs
+- Use [nuqs](https://nuqs.47ng.com/) for type-safe URL state
+
+### Destructive Actions
+- Confirmation dialog for permanent deletes
+- Undo with timeout for soft actions
+- Type-to-confirm for critical operations
+
+> **Deep dive**: See `frontend-design` skill §3 "Interaction Patterns" for optimistic updates, focus management, and touch interactions.
 
 ---
 
@@ -95,23 +131,45 @@ className="bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/40 
 
 | Library | Usage |
 |---------|-------|
-| **Framer Motion** | Complex choreographed animations |
-| **GSAP** | High-performance scroll, timeline animations |
+| **Framer Motion** | Component animations, gestures, layout animations |
+| **GSAP** | Timeline sequences, scroll-triggered, SVG morphing |
 | **Tailwind Animate** | Simple utility-based transitions |
 
-### Keyframes Available
-- `fadeIn`, `slideInRight`, `slideOutRight`
-- `sidebarExpand`, `labelReveal`
-- `blob`, `cursor`, `dot-pulse`, `dot-wave`
+### Motion Library (`lib/motion.tsx`)
+Pre-built Framer Motion variants for consistent animations:
+- `fadeInUp`, `fadeIn`, `scaleIn` — Content appearance
+- `slideFromLeft`, `slideFromRight` — Drawers, panels
+- `dropdownUp`, `staggerContainer` — Menus, lists
+- `PageTransition`, `MotionItem` — Page-level wrappers
+
+### Timing Guidelines
+| Operation | Duration |
+|-----------|----------|
+| Micro-interactions | 150–200ms |
+| Content transitions | 300–400ms |
+| Page transitions | 350ms |
+| Spinner show delay | 150–300ms |
+
+### Animation Performance
+- **Prefer**: `transform`, `opacity`, `filter` (GPU-accelerated)
+- **Avoid animating**: `width`, `height`, `margin`, `padding` (layout-triggering)
+- **Never**: `transition: all`
+- **Always**: Honor `prefers-reduced-motion`
+
+> **Deep dive**: See `frontend-design` skill §4 "Motion & Animation" for variant selection guide and GSAP vs Framer Motion decision tree.
 
 ---
 
 ## Accessibility (A11y) First
 
 - All components use **React Aria Components**
-- Focus states are always visible
-- Color contrast meets AAA standards
+- Focus states are always visible (`:focus-visible` over `:focus`)
+- Color contrast meets AAA standards (prefer APCA over WCAG 2)
 - Screen reader support built-in
+- Never rely on color alone—always include text/icons
+- Interactive states must have **more** contrast than rest state
+
+> **Deep dive**: See `frontend-design` skill §7 "Accessibility" for APCA guidance, color independence patterns, and motion accessibility.
 
 ---
 

@@ -21,7 +21,9 @@ html {
 }
 
 html * {
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition-property: background-color, border-color, box-shadow, color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
 }
 
 /* Exclude elements that need instant transitions (like buttons on click) */
@@ -113,10 +115,11 @@ body {
   outline-offset: 2px;
 }
 
-/* Smooth transitions */
-* {
-  @apply transition-colors duration-200;
-}
+/*
+ * Note: Global transitions handled by html * rule above.
+ * Layout-affecting properties (margin, padding, height, width, transform)
+ * are NOT globally transitioned to prevent animation conflicts with Framer Motion.
+ */
 
 /* Prevent text selection on UI elements */
 button,
@@ -175,34 +178,47 @@ button,
   transform: translateY(0);
 }
 
-/* Chat response typography - Perplexity-style */
+/* Chat response typography - Design system aligned
+ * Scale: H1 (22px) → H2 (18px) → H3 (15px) → Body (15px)
+ * Clear hierarchy through size + weight + color + font family
+ */
 .chat-content {
-  font-size: 15px;
+  font-size: 0.9375rem; /* 15px - matches text-chat-body */
   line-height: 1.75;
   letter-spacing: 0.01em;
   color: var(--fg-primary);
 }
 
-.chat-content h1,
-.chat-content h2,
-.chat-content h3 {
+.chat-content h1 {
   font-family: 'Neue Haas Grotesk Display Pro', system-ui, sans-serif;
-  font-weight: 600;
+  font-size: 1.375rem; /* 22px - matches text-chat-h1 */
+  font-weight: 700;
+  line-height: 1.3;
   color: var(--fg-primary);
   margin-top: 1.5em;
   margin-bottom: 0.75em;
 }
 
-.chat-content h1 {
-  font-size: 1.25rem;
-}
-
 .chat-content h2 {
-  font-size: 1.125rem;
+  font-family: 'Neue Haas Grotesk Display Pro', system-ui, sans-serif;
+  font-size: 1.125rem; /* 18px - matches text-chat-h2 */
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--fg-primary);
+  margin-top: 1.25em;
+  margin-bottom: 0.625em;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(254, 81, 2, 0.4); /* Aperol accent */
 }
 
 .chat-content h3 {
-  font-size: 1rem;
+  font-family: 'Neue Haas Grotesk Text Pro', system-ui, sans-serif;
+  font-size: 0.9375rem; /* 15px - matches text-chat-h3 */
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--fg-secondary); /* Secondary color for visual distinction */
+  margin-top: 1em;
+  margin-bottom: 0.5em;
 }
 
 .chat-content p {

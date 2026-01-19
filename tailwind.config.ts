@@ -250,6 +250,20 @@ export default {
         mono: ['"Neue Haas Grotesk Text Pro"', 'system-ui', 'sans-serif'],
         accent: ['Offbit', '"Neue Haas Grotesk Text Pro"', 'sans-serif'],
       },
+
+      /**
+       * Chat Typography Scale
+       * Clear visual hierarchy for AI response content
+       */
+      fontSize: {
+        // Chat-specific typography scale with clear hierarchy
+        'chat-h1': ['1.375rem', { lineHeight: '1.3', fontWeight: '700' }],   // 22px - Major sections
+        'chat-h2': ['1.125rem', { lineHeight: '1.4', fontWeight: '600' }],   // 18px - Secondary headings
+        'chat-h3': ['0.9375rem', { lineHeight: '1.5', fontWeight: '600' }],  // 15px - Tertiary headings
+        'chat-body': ['0.9375rem', { lineHeight: '1.75' }],                  // 15px - Body text
+        'chat-small': ['0.8125rem', { lineHeight: '1.6' }],                  // 13px - Small text
+        'chat-citation': ['0.6875rem', { lineHeight: '1.4' }],               // 11px - Citation chips
+      },
       
       borderRadius: {
         'brand': '12px',

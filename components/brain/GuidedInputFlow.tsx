@@ -371,7 +371,7 @@ export function GuidedInputFlow({
 
             <button
               onClick={handleNext}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] transition-colors font-medium"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--bg-brand-solid)] text-[var(--fg-white)] hover:bg-[var(--bg-brand-solid\_hover)] transition-colors font-medium"
             >
               {isLastQuestion ? (
                 <>
@@ -480,7 +480,7 @@ export function GuidedInputFlow({
             <button
               onClick={handleComplete}
               disabled={isSubmitting || !generatedTitle.trim() || !generatedContent.trim()}
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+              className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-[var(--bg-brand-solid)] text-[var(--fg-white)] hover:bg-[var(--bg-brand-solid\_hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
               {isSubmitting ? (
                 <>

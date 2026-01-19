@@ -417,7 +417,7 @@ function PasteMode({
         <button
           onClick={onSubmit}
           disabled={isSubmitting || !title.trim() || !content.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--bg-brand-solid)] text-[var(--fg-white)] hover:bg-[var(--bg-brand-solid\_hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
         >
           {isSubmitting ? (
             <>

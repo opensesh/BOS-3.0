@@ -47,7 +47,7 @@ export function Modal({
       className={({ isEntering, isExiting }) =>
         cn(
           'fixed inset-0 z-50 flex items-center justify-center p-4',
-          'bg-black/60 backdrop-blur-sm',
+          'bg-[var(--bg-overlay)] backdrop-blur-sm',
           isEntering && 'animate-in fade-in-0 duration-200',
           isExiting && 'animate-out fade-out-0 duration-150'
         )
@@ -85,7 +85,7 @@ export function Modal({
                       close();
                       onClose();
                     }}
-                    className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors focus:outline-none focus:ring-2 focus:ring-brand-aperol/50"
+                    className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]/50"
                     aria-label="Close modal"
                   >
                     <X className="w-5 h-5" />
@@ -133,9 +133,9 @@ export function ConfirmModal({
   isLoading = false,
 }: ConfirmModalProps) {
   const variantClasses = {
-    danger: 'bg-red-600 hover:bg-red-700 text-white',
-    warning: 'bg-amber-600 hover:bg-amber-700 text-white',
-    default: 'bg-brand-aperol hover:bg-brand-aperol/80 text-white',
+    danger: 'bg-[var(--bg-error-solid)] hover:bg-[var(--bg-error-solid\_hover)] text-[var(--fg-white)]',
+    warning: 'bg-[var(--bg-warning-solid)] hover:bg-[var(--bg-warning-solid\_hover)] text-[var(--fg-white)]',
+    default: 'bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid\_hover)] text-[var(--fg-white)]',
   };
 
   return (

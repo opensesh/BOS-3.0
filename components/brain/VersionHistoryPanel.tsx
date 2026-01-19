@@ -244,7 +244,7 @@ export function VersionHistoryPanel({
                       <button
                         onClick={handleRestore}
                         disabled={isRestoring}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-brand-solid)] text-[var(--fg-white)] hover:bg-[var(--bg-brand-solid\_hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
                       >
                         {isRestoring ? (
                           <span className="animate-spin">⟳</span>

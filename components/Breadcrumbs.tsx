@@ -319,9 +319,9 @@ export function Breadcrumbs() {
           <AnimatePresence mode="wait">
             <motion.span
               key={titleBreadcrumb.label}
-              initial={{ opacity: 0, x: -4 }}
+              initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 4 }}
+              exit={{ opacity: 0, x: 8 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className="px-2 py-1 text-fg-primary"
             >

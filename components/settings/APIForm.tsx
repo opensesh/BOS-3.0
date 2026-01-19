@@ -47,15 +47,15 @@ function NewKeyModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm"
         onClick={onClose}
       />
       
       {/* Modal */}
       <div className="relative bg-[var(--bg-primary)] rounded-xl border border-[var(--border-secondary)] shadow-2xl max-w-lg w-full mx-4 p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-green-500/10 rounded-lg">
-            <CheckCircle className="w-5 h-5 text-green-500" />
+          <div className="p-2 bg-[var(--bg-success-primary)] rounded-lg">
+            <CheckCircle className="w-5 h-5 text-[var(--fg-success-primary)]" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-[var(--fg-primary)]">
@@ -81,7 +81,7 @@ function NewKeyModal({
               title="Copy to clipboard"
             >
               {copied ? (
-                <Check className="w-5 h-5 text-green-500" />
+                <Check className="w-5 h-5 text-[var(--fg-success-primary)]" />
               ) : (
                 <Copy className="w-5 h-5" />
               )}
@@ -89,8 +89,8 @@ function NewKeyModal({
           </div>
         </div>
 
-        <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
-          <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 p-3 bg-[var(--bg-warning-primary)] border border-[var(--border-warning)] rounded-lg mb-4">
+          <AlertCircle className="w-4 h-4 text-[var(--fg-warning-primary)] flex-shrink-0 mt-0.5" />
           <p className="text-xs text-[var(--fg-secondary)]">
             <strong>Important:</strong> Copy this key now. You won't be able to see the full key again after closing this dialog.
           </p>
@@ -142,7 +142,7 @@ function CreateKeyModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm"
         onClick={onClose}
       />
       
@@ -194,7 +194,7 @@ function CreateKeyModal({
               className="
                 flex-1 py-2 px-4
                 bg-[var(--bg-brand-solid)]
-                text-white text-sm font-medium
+                text-[var(--fg-white)] text-sm font-medium
                 rounded-lg
                 hover:opacity-90
                 disabled:opacity-50 disabled:cursor-not-allowed
@@ -237,7 +237,7 @@ function ConfirmDeleteModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm"
         onClick={onClose}
       />
       
@@ -271,10 +271,10 @@ function ConfirmDeleteModal({
             disabled={isDeleting}
             className="
               flex-1 py-2 px-4
-              bg-red-500
-              text-white text-sm font-medium
+              bg-[var(--bg-error-solid)]
+              text-[var(--fg-white)] text-sm font-medium
               rounded-lg
-              hover:bg-red-600
+              hover:bg-[var(--bg-error-solid\_hover)]
               disabled:opacity-50 disabled:cursor-not-allowed
               transition-colors
               flex items-center justify-center gap-2
@@ -367,8 +367,8 @@ function ApiKeyRow({
           className="
             p-2
             text-[var(--fg-quaternary)]
-            hover:text-red-500
-            hover:bg-red-500/10
+            hover:text-[var(--fg-error-primary)]
+            hover:bg-[var(--bg-error-primary)]
             rounded-lg
             transition-colors
           "
@@ -401,7 +401,7 @@ function ApiKeyRow({
           title="Copy to clipboard"
         >
           {copiedKey ? (
-            <Check className="w-4 h-4 text-green-500" />
+            <Check className="w-4 h-4 text-[var(--fg-success-primary)]" />
           ) : (
             <Copy className="w-4 h-4" />
           )}
@@ -565,11 +565,11 @@ export function APIForm() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
-          <p className="text-sm text-red-500">{error}</p>
+        <div className="bg-[var(--bg-error-primary)] border border-[var(--border-error)] rounded-lg p-4 mb-6">
+          <p className="text-sm text-[var(--fg-error-primary)]">{error}</p>
           <button
             onClick={refresh}
-            className="mt-2 text-sm text-red-500 underline hover:no-underline"
+            className="mt-2 text-sm text-[var(--fg-error-primary)] underline hover:no-underline"
           >
             Try again
           </button>

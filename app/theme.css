@@ -133,6 +133,7 @@
   --bg-warning-primary: var(--color-warning-50);
   --bg-warning-secondary: var(--color-warning-100);
   --bg-warning-solid: var(--color-warning-600);
+  --bg-warning-solid_hover: var(--color-warning-700);
   
   /* Success Background */
   --bg-success-primary: var(--color-success-50);
@@ -316,6 +317,7 @@
   --bg-warning-primary: #2d2514;
   --bg-warning-secondary: #3d3219;
   --bg-warning-solid: var(--color-warning-500);
+  --bg-warning-solid_hover: var(--color-warning-400);
   
   /* Success Background (dark) */
   --bg-success-primary: #142d1f;

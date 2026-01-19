@@ -45,7 +45,7 @@ export function WritingStyleSelector({
             type="button"
             onClick={() => onSelect(style.id === 'normal' ? null : style)}
             className={`
-              w-full flex items-center justify-between px-4 py-2
+              w-full flex items-center justify-between px-3 py-2
               text-left transition-colors duration-150
               ${isSelected
                 ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]'

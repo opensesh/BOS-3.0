@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Sparkles, Brain, Search } from 'lucide-react';
+import { ChevronDown, Check, Wand2, Brain, Search } from 'lucide-react';
 import { models, ModelId, ModelConfig } from '@/lib/ai/providers';
 
 // Simple vanilla icons for each provider
@@ -12,9 +12,9 @@ function getProviderIcon(provider: 'anthropic' | 'perplexity' | 'auto') {
     case 'perplexity':
       return Search;
     case 'auto':
-      return Sparkles;
+      return Wand2;
     default:
-      return Sparkles;
+      return Wand2;
   }
 }
 
@@ -139,7 +139,7 @@ export function ModelSelector({ selectedModel, onModelChange, disabled }: ModelS
                     onModelChange(model.id);
                     setIsOpen(false);
                   }}
-                  className="group w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[var(--bg-tertiary)]"
+                  className="group w-full flex items-center gap-2 px-3 py-2 text-left transition-colors duration-150 hover:bg-[var(--bg-tertiary)]"
                 >
                   <Icon className="w-4 h-4 text-[var(--fg-quaternary)] group-hover:text-[var(--fg-tertiary)] transition-colors flex-shrink-0" />
                   <div className="flex-1 min-w-0">

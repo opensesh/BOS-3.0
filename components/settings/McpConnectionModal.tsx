@@ -42,7 +42,7 @@ function FormField({
     <div className="space-y-1.5">
       <label className="block text-sm font-medium text-[var(--fg-secondary)]">
         {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
+        {required && <span className="text-[var(--fg-error-primary)] ml-0.5">*</span>}
       </label>
       {children}
       {hint && (
@@ -196,14 +196,14 @@ export function McpConnectionModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--bg-overlay)] backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="relative w-full max-w-lg mx-4 bg-[var(--bg-primary)] rounded-xl shadow-2xl border border-[var(--border-secondary)] max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[var(--border-secondary)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-secondary)]">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-[var(--bg-tertiary)] rounded-lg">
               <Server className="w-5 h-5 text-[var(--fg-tertiary)]" />
@@ -226,7 +226,7 @@ export function McpConnectionModal({
         </div>
 
         {/* Form */}
-        <div className="p-5 space-y-5">
+        <div className="px-6 py-4 space-y-4">
           {/* Name */}
           <FormField label="Connection Name" required>
             <input
@@ -426,20 +426,20 @@ export function McpConnectionModal({
                     p-4 rounded-lg border
                     ${
                       testResult.success
-                        ? 'bg-green-500/10 border-green-500/20'
-                        : 'bg-red-500/10 border-red-500/20'
+                        ? 'bg-[var(--bg-success-primary)] border-[var(--border-success)]'
+                        : 'bg-[var(--bg-error-primary)] border-[var(--border-error)]'
                     }
                   `}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {testResult.success ? (
-                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <CheckCircle className="w-4 h-4 text-[var(--fg-success-primary)]" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-500" />
+                      <XCircle className="w-4 h-4 text-[var(--fg-error-primary)]" />
                     )}
                     <span
                       className={`text-sm font-medium ${
-                        testResult.success ? 'text-green-500' : 'text-red-500'
+                        testResult.success ? 'text-[var(--fg-success-primary)]' : 'text-[var(--fg-error-primary)]'
                       }`}
                     >
                       {testResult.success ? 'Connection successful!' : 'Connection failed'}
@@ -456,7 +456,7 @@ export function McpConnectionModal({
                   )}
 
                   {testResult.error && (
-                    <p className="text-sm text-red-500">{testResult.error}</p>
+                    <p className="text-sm text-[var(--fg-error-primary)]">{testResult.error}</p>
                   )}
                 </div>
               )}
@@ -465,7 +465,7 @@ export function McpConnectionModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-5 border-t border-[var(--border-secondary)]">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border-secondary)]">
           <button
             onClick={onClose}
             className="
@@ -488,11 +488,11 @@ export function McpConnectionModal({
             className="
               flex items-center gap-2 px-4 py-2
               bg-[var(--bg-brand-solid)]
-              text-white text-sm font-medium
+              text-[var(--fg-white)] text-sm font-medium
               rounded-lg
-              hover:opacity-90
+              hover:bg-[var(--bg-brand-solid\_hover)]
               disabled:opacity-50 disabled:cursor-not-allowed
-              transition-opacity
+              transition-colors
             "
           >
             {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}

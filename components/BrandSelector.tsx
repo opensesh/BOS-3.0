@@ -523,8 +523,8 @@ export function BrandSelector({ size = 20, className = '', href = '/', onClick }
                 onClick={handleAddBrand}
                 className="
                   px-4 py-2 rounded-lg
-                  bg-bg-brand-solid text-fg-white
-                  hover:bg-bg-brand-solid_hover
+                  bg-[var(--bg-brand-solid)] text-[var(--fg-white)]
+                  hover:bg-[var(--bg-brand-solid\_hover)]
                   transition-colors duration-200
                   font-medium
                 "

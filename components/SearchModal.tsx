@@ -101,7 +101,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const resultsRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
-  const { results, isLoading, search, clearResults } = useGlobalSearch({
+  const { results, isLoading, isInitialLoading, search, clearResults } = useGlobalSearch({
     debounceMs: 100,
     maxResults: 30,
   });
@@ -112,7 +112,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   // Flatten results for keyboard navigation
   const flatResults = useMemo(() => {
     const flat: SearchResult[] = [];
-    
+
     // Order: Pages, Actions, Chats, Documents, Logos, Images, Illustrations, Spaces
     flat.push(...groupedResults.pages);
     flat.push(...groupedResults.actions);
@@ -122,9 +122,18 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     flat.push(...groupedResults.images);
     flat.push(...groupedResults.illustrations);
     flat.push(...groupedResults.spaces);
-    
+
     return flat;
   }, [groupedResults]);
+
+  // O(1) index lookup map (fixes O(n²) performance issue)
+  const indexMap = useMemo(() => {
+    const map = new Map<string, number>();
+    flatResults.forEach((result, index) => {
+      map.set(result.id, index);
+    });
+    return map;
+  }, [flatResults]);
 
   // Handle mounting for portal
   useEffect(() => {
@@ -220,10 +229,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     }
   }, [selectedIndex]);
 
-  // Calculate global index for a result
-  const getGlobalIndex = (result: SearchResult): number => {
-    return flatResults.findIndex(r => r.id === result.id);
-  };
+  // O(1) global index lookup using memoized Map
+  const getGlobalIndex = useCallback((result: SearchResult): number => {
+    return indexMap.get(result.id) ?? -1;
+  }, [indexMap]);
 
   // Render individual result item based on type
   const renderResultItem = (result: SearchResult, isSelected: boolean) => {
@@ -576,7 +585,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
               {/* Results List */}
               <div ref={resultsRef} className="max-h-[60vh] overflow-y-auto">
-                {flatResults.length > 0 ? (
+                {isInitialLoading ? (
+                  <SearchResultSkeleton />
+                ) : flatResults.length > 0 ? (
                   <div className="py-2">
                     {/* Pages Section */}
                     {groupedResults.pages.length > 0 && (

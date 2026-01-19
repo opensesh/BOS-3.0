@@ -167,7 +167,7 @@ function ImageModal({
 
   return (
     <motion.div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-overlay)] p-4"
       onClick={onClose}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -176,9 +176,9 @@ function ImageModal({
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-30"
+        className="absolute top-4 right-4 p-2 rounded-full bg-[var(--fg-white)]/10 hover:bg-[var(--fg-white)]/20 transition-colors z-30"
       >
-        <X className="w-6 h-6 text-white" />
+        <X className="w-6 h-6 text-[var(--fg-white)]" />
       </button>
 
       {/* Left Arrow */}
@@ -187,10 +187,10 @@ function ImageModal({
           e.stopPropagation();
           goToPrevious();
         }}
-        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-30 group"
+        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-[var(--fg-white)]/10 hover:bg-[var(--fg-white)]/20 transition-colors z-30 group"
         aria-label="Previous image"
       >
-        <ChevronLeft className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+        <ChevronLeft className="w-6 h-6 text-[var(--fg-white)] group-hover:scale-110 transition-transform" />
       </button>
 
       {/* Right Arrow */}
@@ -199,14 +199,14 @@ function ImageModal({
           e.stopPropagation();
           goToNext();
         }}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-30 group"
+        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-[var(--fg-white)]/10 hover:bg-[var(--fg-white)]/20 transition-colors z-30 group"
         aria-label="Next image"
       >
-        <ChevronRight className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+        <ChevronRight className="w-6 h-6 text-[var(--fg-white)] group-hover:scale-110 transition-transform" />
       </button>
 
       {/* Image Counter */}
-      <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/50 text-white/70 text-sm font-accent tracking-wider z-30">
+      <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-[var(--bg-overlay)] text-[var(--fg-white)]/70 text-sm font-accent tracking-wider z-30">
         {currentIndex + 1} / {images.length}
       </div>
       
@@ -228,11 +228,11 @@ function ImageModal({
           quality={95}
         />
         
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
+        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--color-gray-950)]/80 to-transparent rounded-b-lg">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-medium text-white mb-1">{getImageTitle(image)}</h3>
-              <span className="text-sm text-white/70">{category || 'Image'}</span>
+              <h3 className="text-lg font-medium text-[var(--fg-white)] mb-1">{getImageTitle(image)}</h3>
+              <span className="text-sm text-[var(--fg-white)]/70">{category || 'Image'}</span>
             </div>
             <button
               onClick={handleDownload}
@@ -246,7 +246,7 @@ function ImageModal({
       </motion.div>
 
       {/* Keyboard hint */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 text-white/40 text-xs font-accent tracking-wider z-30">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[var(--fg-white)]/40 text-xs font-accent tracking-wider z-30">
         <span>← → Navigate</span>
         <span>•</span>
         <span>ESC Close</span>
@@ -530,7 +530,7 @@ export default function ArtDirectionPage() {
                       exit={{ opacity: 0 }}
                       className="absolute flex h-full w-full flex-col items-end justify-end p-4 z-20"
                     >
-                      <p className="text-left text-xs text-white/70 font-accent tracking-wider uppercase">
+                      <p className="text-left text-xs text-[var(--fg-white)]/70 font-accent tracking-wider uppercase">
                         {getCategoryFromImage(image) || 'Image'}
                       </p>
                     </motion.div>
@@ -585,7 +585,7 @@ export default function ArtDirectionPage() {
                       exit={{ opacity: 0, y: 16 }}
                       className="absolute inset-0 flex items-end justify-end px-4 pb-4 z-20"
                     >
-                      <p className="text-xs text-white/70 font-accent tracking-wider uppercase">
+                      <p className="text-xs text-[var(--fg-white)]/70 font-accent tracking-wider uppercase">
                         {getCategoryFromImage(image) || 'Image'}
                       </p>
                     </motion.div>

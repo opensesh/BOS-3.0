@@ -410,14 +410,14 @@ export function MarkdownEditor({
                 <motion.button
                   onClick={handleSave}
                   disabled={isSaving || !hasUnsavedChanges}
-                  className={`${iconButtonBase} bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid-hover)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[var(--bg-brand-solid)]`}
+                  className={`${iconButtonBase} bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid\_hover)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[var(--bg-brand-solid)]`}
                   title="Save (⌘S)"
                   whileHover={!isSaving && hasUnsavedChanges ? { scale: 1.05 } : {}}
                   whileTap={!isSaving && hasUnsavedChanges ? { scale: 0.95 } : {}}
                 >
                   {isSaving ? (
-                    <motion.span 
-                      className="block w-4 h-4 text-white"
+                    <motion.span
+                      className="block w-4 h-4 text-[var(--fg-white)]"
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                     >

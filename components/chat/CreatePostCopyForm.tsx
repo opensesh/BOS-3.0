@@ -12,6 +12,7 @@ import {
   Upload,
   Link as LinkIcon,
   Check,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/base/buttons/button';
 import type {
@@ -58,6 +59,8 @@ interface CreatePostCopyFormProps {
   channels: Channel[];
   contentSubtypes: ContentSubtype[];
   goals: Goal[];
+  /** Quick action type for displaying badge in header */
+  quickActionType?: string | null;
 }
 
 // =============================================================================

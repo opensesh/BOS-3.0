@@ -6,17 +6,13 @@ import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
 import { AddBrainResourceModal } from '@/components/brain/AddBrainResourceModal';
+import { ResourcesDrawer } from '@/components/ui/ResourcesDrawer';
 import { useBrainResources, BrainResource } from '@/hooks/useBrainResources';
 import { useCategoryLastUpdated, type CategoryTimestamps } from '@/hooks/useCategoryLastUpdated';
 import { ProjectStyleCard } from '@/components/ui/ProjectStyleCard';
 import { PageTransition, MotionItem, staggerContainer, fadeInUp } from '@/lib/motion';
-import { Icon } from '@/components/ui/Icon';
 import {
   Settings,
-  ExternalLink,
-  Plus,
-  Trash2,
-  Pencil,
   FolderTree,
   BookOpen,
   PenTool,
@@ -24,6 +20,7 @@ import {
   Puzzle,
   Bot,
   Github,
+  Library,
 } from 'lucide-react';
 
 // Cards for subpages
@@ -84,124 +81,10 @@ const brainPages = [
   },
 ];
 
-// Helper to render icon by name (supports both Lucide and Font Awesome)
-function ResourceIconPreview({ iconName }: { iconName?: string }) {
-  return <Icon name={iconName || 'Link'} className="w-5 h-5" />;
-}
-
-// Resource Card Component
-function ResourceCard({ 
-  resource, 
-  onDelete,
-  onEdit
-}: { 
-  resource: BrainResource; 
-  onDelete: (id: string) => void;
-  onEdit: (resource: BrainResource) => void;
-}) {
-  const [showActions, setShowActions] = useState(false);
-
-  return (
-    <a
-      href={resource.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary)] transition-all"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      {/* Icon - fixed size square container */}
-      <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex-shrink-0 text-[var(--fg-tertiary)]">
-        <ResourceIconPreview iconName={resource.iconName} />
-      </div>
-      
-      <div className="min-w-0 flex-1">
-        <h4 className="text-sm font-display font-medium text-[var(--fg-primary)] group-hover:text-[var(--fg-brand-primary)] transition-colors">
-          {resource.name}
-        </h4>
-        <p className="text-xs text-[var(--fg-tertiary)] truncate">
-          {new URL(resource.url).hostname}
-        </p>
-      </div>
-      <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-      
-      {showActions && (
-        <div className="absolute -top-2 -right-2 flex gap-1">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onEdit(resource);
-            }}
-            className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-brand-solid)] hover:border-[var(--border-brand-solid)] text-[var(--fg-tertiary)] hover:text-white transition-all shadow-lg"
-            aria-label="Edit resource"
-          >
-            <Pencil className="w-3 h-3" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete(resource.id);
-            }}
-            className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-error-solid)] hover:border-[var(--border-error-solid)] text-[var(--fg-tertiary)] hover:text-white transition-all shadow-lg"
-            aria-label="Delete resource"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
-      )}
-    </a>
-  );
-}
-
-// Add Resource Card - Accessible with all states
-// Fixed 64x64 square on tablet/desktop, full-width on mobile
-function AddResourceCard({ 
-  onClick, 
-  isDisabled = false 
-}: { 
-  onClick: () => void;
-  isDisabled?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={isDisabled}
-      aria-label="Add new resource"
-      aria-disabled={isDisabled}
-      className={`
-        group flex items-center justify-center rounded-xl 
-        border-2 border-dashed transition-all duration-200
-        w-full h-[60px] sm:w-16 sm:h-16 sm:flex-shrink-0
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)]
-        ${isDisabled 
-          ? 'border-[var(--border-disabled)] bg-[var(--bg-disabled)] cursor-not-allowed opacity-50' 
-          : `
-            border-[var(--border-primary)] bg-[var(--bg-secondary)]/30
-            hover:border-[var(--fg-brand-primary)] hover:bg-[var(--fg-brand-primary)]/10
-            active:scale-[0.98] active:bg-[var(--fg-brand-primary)]/20
-          `
-        }
-      `}
-    >
-      <Plus 
-        className={`
-          w-5 h-5 transition-all duration-200
-          ${isDisabled 
-            ? 'text-[var(--fg-disabled)]' 
-            : 'text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] group-hover:scale-110'
-          }
-        `}
-        aria-hidden="true"
-      />
-    </button>
-  );
-}
-
 export default function BrainPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddResourceOpen, setIsAddResourceOpen] = useState(false);
+  const [isResourcesDrawerOpen, setIsResourcesDrawerOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<BrainResource | undefined>();
 
   const { resources, isLoaded, addResource, deleteResource, updateResource } = useBrainResources();
@@ -215,6 +98,20 @@ export default function BrainPage() {
   const handleCloseResourceModal = () => {
     setIsAddResourceOpen(false);
     setEditingResource(undefined);
+  };
+
+  const handleAddFromDrawer = () => {
+    setIsResourcesDrawerOpen(false);
+    setIsAddResourceOpen(true);
+  };
+
+  const handleEditFromDrawer = (resource: BrainResource | { id: string; name: string; url: string }) => {
+    setIsResourcesDrawerOpen(false);
+    // Type guard to ensure we have a BrainResource
+    const brainResource = resources.find(r => r.id === resource.id);
+    if (brainResource) {
+      handleEditResource(brainResource);
+    }
   };
 
   return (
@@ -232,34 +129,40 @@ export default function BrainPage() {
                 </h1>
                 <div className="flex items-center gap-2">
                   <motion.button
-                    onClick={() => setIsAddResourceOpen(true)}
-                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
-                    title="Add Resource"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsResourcesDrawerOpen(true)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-secondary)] hover:border-[var(--border-brand)] transition-colors group"
+                    title="Resources"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <Plus className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                    <Library className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                    <span className="text-sm font-medium text-[var(--fg-secondary)]">Resources</span>
+                    {isLoaded && resources.length > 0 && (
+                      <span className="px-1.5 py-0.5 text-xs font-medium rounded-md bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]">
+                        {resources.length}
+                      </span>
+                    )}
                   </motion.button>
                   <motion.button
                     onClick={() => {
                       // Placeholder - will be implemented later
                       console.log('Connect to GitHub clicked');
                     }}
-                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-secondary)] hover:border-[var(--border-brand)] transition-colors group"
                     title="Connect to GitHub"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Github className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                    <Github className="w-5 h-5 text-[var(--fg-tertiary)]" />
                   </motion.button>
                   <motion.button
                     onClick={() => setIsSettingsOpen(true)}
-                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-brand-primary)] border border-[var(--border-primary)] hover:border-[var(--border-brand)] transition-colors group"
+                    className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-secondary)] hover:border-[var(--border-brand)] transition-colors group"
                     title="Brain Settings"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Settings className="w-5 h-5 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] transition-colors" />
+                    <Settings className="w-5 h-5 text-[var(--fg-tertiary)]" />
                   </motion.button>
                 </div>
               </div>
@@ -269,9 +172,9 @@ export default function BrainPage() {
               </p>
             </MotionItem>
 
-            {/* Cards Grid */}
+            {/* Cards Grid - compact with 3 columns on desktop */}
             <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
@@ -289,39 +192,6 @@ export default function BrainPage() {
                 </motion.div>
               ))}
             </motion.div>
-
-            {/* Claude Resources Section */}
-            <MotionItem>
-              <section>
-                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)] mb-4">
-                  Resources
-                </h2>
-                <motion.div 
-                  className="flex flex-col sm:flex-row sm:flex-wrap sm:items-stretch gap-3"
-                  variants={staggerContainer}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {isLoaded && resources.map((resource, index) => (
-                    <motion.div 
-                      key={resource.id} 
-                      variants={fadeInUp} 
-                      custom={index}
-                      className="w-full sm:w-[200px]"
-                    >
-                      <ResourceCard 
-                        resource={resource} 
-                        onDelete={deleteResource}
-                        onEdit={handleEditResource}
-                      />
-                    </motion.div>
-                  ))}
-                  <motion.div variants={fadeInUp} className="w-full sm:w-auto">
-                    <AddResourceCard onClick={() => setIsAddResourceOpen(true)} />
-                  </motion.div>
-                </motion.div>
-              </section>
-            </MotionItem>
           </PageTransition>
         </div>
       </MainContent>
@@ -339,6 +209,17 @@ export default function BrainPage() {
         onAddResource={addResource}
         editResource={editingResource}
         onUpdateResource={updateResource}
+      />
+
+      {/* Resources Drawer */}
+      <ResourcesDrawer
+        isOpen={isResourcesDrawerOpen}
+        onClose={() => setIsResourcesDrawerOpen(false)}
+        resources={resources}
+        onAddResource={handleAddFromDrawer}
+        onEditResource={handleEditFromDrawer}
+        onDeleteResource={deleteResource}
+        title="Brain Resources"
       />
     </div>
   );

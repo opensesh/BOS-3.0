@@ -66,7 +66,7 @@ export function ShortcutModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-overlay)] backdrop-blur-sm">
       <div
         className="relative w-full max-w-xl mx-4 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-primary)] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -85,7 +85,7 @@ export function ShortcutModal({
         </div>
 
         {/* Content */}
-        <div className="px-6 py-5 space-y-5">
+        <div className="px-6 py-4 space-y-4">
           {/* Shortcut name */}
           <div>
             <label className="block text-sm text-[var(--fg-tertiary)] mb-2">
@@ -224,7 +224,7 @@ export function ShortcutModal({
             className={`
               px-4 py-2 text-sm font-medium rounded-lg transition-colors
               ${shortcutName.trim()
-                ? 'bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid)]/90'
+                ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)] hover:bg-[var(--bg-brand-solid\_hover)]'
                 : 'bg-[var(--bg-primary)] text-[var(--fg-tertiary)] cursor-not-allowed'
               }
             `}

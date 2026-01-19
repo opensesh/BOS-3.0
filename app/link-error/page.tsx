@@ -38,8 +38,8 @@ export default function LinkErrorPage() {
             className={cn(
               'inline-flex items-center gap-2 px-6 py-3',
               'text-sm font-medium rounded-lg',
-              'bg-[var(--bg-brand-solid)] text-white',
-              'hover:bg-[var(--bg-brand-solid-hover)]',
+              'bg-[var(--bg-brand-solid)] text-[var(--fg-white)]',
+              'hover:bg-[var(--bg-brand-solid\_hover)]',
               'transition-colors'
             )}
           >

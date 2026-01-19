@@ -156,7 +156,7 @@ export function SearchResearchToggle({
         <div className="relative inline-flex items-center bg-[var(--bg-tertiary)] rounded-lg p-1">
           {/* Sliding pill indicator */}
           <div
-            className="absolute top-1 h-[calc(100%-8px)] w-[32px] bg-[var(--bg-brand-solid)] rounded-md transition-all duration-300 ease-out"
+            className="absolute top-1 h-[calc(100%-8px)] w-[32px] bg-[var(--bg-brand-solid)] rounded-md transition-all duration-200 ease-out"
             style={{
               left: activeMode === 'search' ? '4px' : '36px',
             }}
@@ -170,7 +170,7 @@ export function SearchResearchToggle({
               onMouseEnter={() => handleButtonMouseEnter('search')}
               onMouseLeave={handleButtonMouseLeave}
               className={`
-                relative z-10 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-300
+                relative z-10 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200
                 ${
                   activeMode === 'search'
                     ? 'text-[var(--fg-white)]'
@@ -197,7 +197,7 @@ export function SearchResearchToggle({
               onMouseEnter={() => handleButtonMouseEnter('research')}
               onMouseLeave={handleButtonMouseLeave}
               className={`
-                relative z-10 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-300
+                relative z-10 flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200
                 ${
                   activeMode === 'research'
                     ? 'text-[var(--fg-white)]'
@@ -250,7 +250,7 @@ export function SearchResearchToggle({
                 <p className="text-xs text-[var(--fg-tertiary)] mb-3">
                   3 queries remaining today
                 </p>
-                <button className="w-full bg-bg-brand-solid hover:bg-bg-brand-solid-hover text-[var(--fg-white)] text-sm font-medium py-2 px-4 rounded-lg transition-colors">
+                <button className="w-full bg-[var(--bg-brand-solid)] hover:bg-[var(--bg-brand-solid\_hover)] text-[var(--fg-white)] text-sm font-medium py-2 px-4 rounded-lg transition-colors">
                   Upgrade to Pro
                 </button>
               </div>

@@ -66,9 +66,9 @@ const ROLE_LABELS = {
 };
 
 const ROLE_COLORS = {
-  owner: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  admin: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  member: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
+  owner: 'bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)]',
+  admin: 'bg-[var(--bg-info-primary)] text-[var(--fg-info-primary)]',
+  member: 'bg-[var(--bg-tertiary)] text-[var(--fg-secondary)]',
 };
 
 export function TeamForm() {
@@ -127,11 +127,11 @@ export function TeamForm() {
             flex items-center gap-2
             px-4 py-2.5
             bg-[var(--bg-brand-solid)]
-            border-2 border-white/12
+            border border-[var(--fg-white)]/12
             rounded-lg
-            text-sm font-semibold text-white
+            text-sm font-semibold text-[var(--fg-white)]
             shadow-xs
-            hover:bg-[var(--bg-brand-solid-hover)]
+            hover:bg-[var(--bg-brand-solid\_hover)]
             transition-colors
           "
         >
@@ -209,8 +209,8 @@ export function TeamForm() {
                     rounded-full
                     text-xs font-medium
                     ${member.status === 'active'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      ? 'bg-[var(--bg-success-primary)] text-[var(--fg-success-primary)]'
+                      : 'bg-[var(--bg-warning-primary)] text-[var(--fg-warning-primary)]'
                     }
                   `}>
                     {member.status === 'active' ? 'Active' : 'Pending'}

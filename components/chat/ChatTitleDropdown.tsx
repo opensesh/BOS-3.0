@@ -324,10 +324,10 @@ export function ChatTitleDropdown({
               ) : (
                 <motion.span
                   key="title"
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 8 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
                   className="text-xs font-medium text-[var(--fg-secondary)] truncate flex-1 min-w-0"
                   onDoubleClick={handleDoubleClick}
                   title={`${title} (double-click to rename)`}

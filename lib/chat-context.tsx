@@ -294,9 +294,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addToHistory = useCallback(async (title: string, preview: string, messages?: ChatMessage[], projectId?: string | null, quickActionType?: string | null) => {
+    // Validate content before saving - don't save empty conversations
+    const formattedMessages: ChatMessage[] = messages || [];
+    const hasValidUserMessage = formattedMessages.some(m => m.role === 'user' && m.content?.trim());
+    const hasValidAssistantMessage = formattedMessages.some(m => m.role === 'assistant' && m.content?.trim());
+
+    if (!hasValidUserMessage || !hasValidAssistantMessage) {
+      console.warn('Skipping save: conversation has no valid content');
+      return; // Early exit - don't save empty conversations
+    }
+
     // Save to Supabase
     try {
-      const formattedMessages: ChatMessage[] = messages || [];
       // Use provided projectId, or fall back to currentProject from context
       const effectiveProjectId = projectId !== undefined ? projectId : currentProject?.id ?? null;
       const session = await chatService.saveSession(

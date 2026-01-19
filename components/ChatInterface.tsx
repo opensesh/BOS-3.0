@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useChat } from '@/hooks/useChat';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Mic,
@@ -98,6 +98,7 @@ interface ParsedMessage {
 export function ChatInterface() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   // #region agent log
   fetch('http://127.0.0.1:7243/ingest/0dc0d475-0b32-47b2-8b83-8c353392bebf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ChatInterface.tsx:mount',message:'ChatInterface rendered with searchParams',data:{actionParam:searchParams?.get('action'),qParam:searchParams?.get('q'),allParams:searchParams?.toString()},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
   // #endregion
@@ -228,12 +229,14 @@ export function ChatInterface() {
     if (messages.length > 0) {
       const firstUserMessage = messages.find(m => m.role === 'user');
       const firstAssistantMessage = messages.find(m => m.role === 'assistant');
-      // Only save if there's both a user message AND an assistant response
-      if (firstUserMessage && firstAssistantMessage) {
+      const userContent = firstUserMessage ? getMessageContent(firstUserMessage).trim() : '';
+      const assistantContent = firstAssistantMessage ? getMessageContent(firstAssistantMessage).trim() : '';
+      // Only save if there's both a user message AND an assistant response with actual content
+      if (userContent && assistantContent) {
         // For quick action chats, use a neutral placeholder until the real title is generated
         // This prevents "Create a post for..." from showing as the title
-        const title = generatedTitle || (quickActionType ? 'New conversation' : getMessageContent(firstUserMessage).slice(0, 50)) || 'Untitled Chat';
-        const preview = getMessageContent(firstAssistantMessage).slice(0, 100);
+        const title = generatedTitle || (quickActionType ? 'New conversation' : userContent.slice(0, 50)) || 'Untitled Chat';
+        const preview = assistantContent.slice(0, 100);
         const chatMessages = messages.map(m => {
           const msgSources = (m as { sources?: SourceInfo[] }).sources;
           const msgAttachments = (m as { attachments?: MessageAttachment[] }).attachments;
@@ -315,12 +318,14 @@ export function ChatInterface() {
       if (messages.length > 0) {
         const firstUserMessage = messages.find(m => m.role === 'user');
         const firstAssistantMessage = messages.find(m => m.role === 'assistant');
-        // Only save if there's both a user message AND an assistant response
-        if (firstUserMessage && firstAssistantMessage) {
+        const userContent = firstUserMessage ? getMessageContent(firstUserMessage).trim() : '';
+        const assistantContent = firstAssistantMessage ? getMessageContent(firstAssistantMessage).trim() : '';
+        // Only save if there's both a user message AND an assistant response with actual content
+        if (userContent && assistantContent) {
           // For quick action chats, use a neutral placeholder until the real title is generated
           // This prevents "Create a post for..." from showing as the title
-          const title = generatedTitle || (quickActionType ? 'New conversation' : getMessageContent(firstUserMessage).slice(0, 50)) || 'Untitled Chat';
-          const preview = getMessageContent(firstAssistantMessage).slice(0, 100);
+          const title = generatedTitle || (quickActionType ? 'New conversation' : userContent.slice(0, 50)) || 'Untitled Chat';
+          const preview = assistantContent.slice(0, 100);
           // Convert messages to the format expected by chat history
           // Include sources and attachments so they persist when reloading chat sessions
           const chatMessages = messages.map(m => {
@@ -427,18 +432,21 @@ export function ChatInterface() {
     ) {
       const firstUserMessage = messages.find(m => m.role === 'user');
       const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant');
-      
-      if (firstUserMessage && lastAssistantMessage) {
+      const userContent = firstUserMessage ? getMessageContent(firstUserMessage).trim() : '';
+      const assistantContent = lastAssistantMessage ? getMessageContent(lastAssistantMessage).trim() : '';
+
+      // Only save if there's both a user message AND an assistant response with actual content
+      if (userContent && assistantContent) {
         // Generate semantic title if we haven't already
         // Only generate after first response (2 messages: user + assistant)
         if (!generatedTitle && messages.length >= 2) {
           generateTitle(messages);
         }
-        
+
         // For quick action chats, use a neutral placeholder until the real title is generated
         // This prevents "Create a post for..." from showing as the title
-        const title = generatedTitle || (quickActionType ? 'New conversation' : getMessageContent(firstUserMessage).slice(0, 100)) || 'Untitled Chat';
-        const preview = getMessageContent(lastAssistantMessage).slice(0, 150);
+        const title = generatedTitle || (quickActionType ? 'New conversation' : userContent.slice(0, 100)) || 'Untitled Chat';
+        const preview = assistantContent.slice(0, 150);
         
         // Convert messages to chat history format
         // Include sources and attachments so they persist when reloading chat sessions
@@ -664,6 +672,31 @@ export function ChatInterface() {
       router.replace('/', { scroll: false });
     }
   }, [searchParams, router, setMessages, hasProcessedActionParam]);
+
+  // Reset quick action state when returning to home without an action param
+  // This ensures dropdown cards appear and breadcrumbs are correct
+  useEffect(() => {
+    const actionParam = searchParams.get('action');
+    // Only reset if we're on home page, no action param, and no messages
+    // This prevents resetting mid-conversation or when action param is present
+    if (pathname === '/' && !actionParam && !hasMessages) {
+      // Reset quick action form state
+      if (showQuickActionForm) {
+        setShowQuickActionForm(false);
+      }
+      if (quickActionType) {
+        setQuickActionType(null);
+      }
+      // Cancel any active quick action from context
+      if (activeQuickAction) {
+        cancelQuickAction();
+      }
+      // Reset breadcrumb quick action badge
+      setQuickAction(null);
+      // Allow re-processing of action params
+      setHasProcessedActionParam(false);
+    }
+  }, [pathname, searchParams, hasMessages, showQuickActionForm, quickActionType, activeQuickAction, cancelQuickAction, setQuickAction]);
 
   // status can be: 'submitted' | 'streaming' | 'ready' | 'error'
   const isLoading = status === 'submitted' || status === 'streaming';

@@ -62,7 +62,7 @@ export function SpaceSelector({
         type="button"
         onClick={() => onSelect(null)}
         className={`
-          w-full flex items-center justify-between px-4 py-2
+          w-full flex items-center justify-between px-3 py-2
           text-left transition-colors duration-150
           ${!currentSpace
             ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]'
@@ -85,7 +85,7 @@ export function SpaceSelector({
             type="button"
             onClick={() => onSelect(space)}
             className={`
-              w-full flex items-center justify-between px-4 py-2
+              w-full flex items-center justify-between px-3 py-2
               text-left transition-colors duration-150
               ${isSelected
                 ? 'bg-[var(--bg-tertiary)] text-[var(--fg-primary)]'
@@ -124,7 +124,7 @@ export function SpaceSelector({
       {/* Create new space */}
       {showCreateOption && onCreateSpace && (
         isCreating ? (
-          <div className="px-4 py-2">
+          <div className="px-3 py-2">
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -132,7 +132,7 @@ export function SpaceSelector({
                 onChange={(e) => setNewSpaceName(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Space name..."
-                className="flex-1 px-2 py-1 text-sm bg-[var(--bg-tertiary)] border border-[var(--border-primary)] rounded-md text-[var(--fg-primary)] placeholder:text-[var(--fg-quaternary)] focus:outline-none focus:border-[var(--border-brand-solid)]"
+                className="flex-1 px-2 py-1 text-sm bg-[var(--bg-tertiary)] border border-[var(--border-primary)] rounded-md text-[var(--fg-primary)] placeholder:text-[var(--fg-quaternary)] focus:outline-none focus:border-[var(--border-primary)]"
                 autoFocus
                 disabled={isLoading}
               />
@@ -165,7 +165,7 @@ export function SpaceSelector({
           <button
             type="button"
             onClick={() => setIsCreating(true)}
-            className="w-full flex items-center gap-2 px-4 py-2 text-left text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-left text-[var(--fg-tertiary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--fg-primary)] transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span className="text-sm">Create new space</span>

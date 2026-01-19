@@ -181,7 +181,7 @@ export function PDFViewer({
                 <div className="flex gap-3 justify-center">
                   <motion.button
                     onClick={handleDownload}
-                    className="px-4 py-2 rounded-lg bg-[var(--bg-brand-solid)] text-white text-sm font-medium hover:bg-[var(--bg-brand-solid-hover)] transition-colors"
+                    className="px-4 py-2 rounded-lg bg-[var(--bg-brand-solid)] text-[var(--fg-white)] text-sm font-medium hover:bg-[var(--bg-brand-solid\_hover)] transition-colors"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >

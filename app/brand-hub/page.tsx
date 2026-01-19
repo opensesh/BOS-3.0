@@ -6,7 +6,8 @@ import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { useResources } from '@/hooks/useResources';
 import { useCategoryLastUpdated, type CategoryTimestamps } from '@/hooks/useCategoryLastUpdated';
-import { AddResourceModal, ResourceIconPreview } from '@/components/brand-hub/AddResourceModal';
+import { AddResourceModal } from '@/components/brand-hub/AddResourceModal';
+import { ResourcesDrawer } from '@/components/ui/ResourcesDrawer';
 import { ProjectStyleCard } from '@/components/ui/ProjectStyleCard';
 import { BrandResource } from '@/types';
 import { PageTransition, MotionItem, staggerContainer, fadeInUp } from '@/lib/motion';
@@ -18,10 +19,7 @@ import {
   FileText,
   Braces,
   Layers,
-  Plus,
-  ExternalLink,
-  Trash2,
-  Pencil
+  Library,
 } from 'lucide-react';
 
 const brandHubItems = [
@@ -90,94 +88,11 @@ const brandHubItems = [
   },
 ];
 
-// Compact Resource Card
-function ResourceCard({ 
-  resource, 
-  onDelete,
-  onEdit
-}: { 
-  resource: BrandResource; 
-  onDelete: (id: string) => void;
-  onEdit: (resource: BrandResource) => void;
-}) {
-  const [showActions, setShowActions] = useState(false);
-
-  return (
-    <a
-      href={resource.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-primary)] hover:border-[var(--border-brand)] hover:bg-[var(--bg-secondary)] transition-all"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      {/* Icon - fixed size square container */}
-      <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-primary)] flex-shrink-0 text-[var(--fg-tertiary)]">
-        <ResourceIconPreview 
-          type={resource.icon} 
-          lucideIconName={resource.lucideIconName}
-          customIconUrl={resource.customIconUrl}
-          size="md" 
-        />
-      </div>
-      <div className="min-w-0 flex-1">
-        <h4 className="text-sm font-display font-medium text-[var(--fg-primary)] truncate group-hover:text-[var(--fg-brand-primary)] transition-colors">
-          {resource.name}
-        </h4>
-        <p className="text-xs text-[var(--fg-tertiary)] truncate">
-          {new URL(resource.url).hostname}
-        </p>
-      </div>
-      <ExternalLink className="w-3.5 h-3.5 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-      
-      {/* Edit and Delete buttons */}
-      {showActions && (
-        <div className="absolute -top-2 -right-2 flex gap-1">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onEdit(resource);
-            }}
-            className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-brand-solid)] hover:border-[var(--border-brand-solid)] text-[var(--fg-tertiary)] hover:text-white transition-all shadow-lg"
-            aria-label="Edit resource"
-          >
-            <Pencil className="w-3 h-3" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete(resource.id);
-            }}
-            className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:bg-[var(--bg-error-solid)] hover:border-[var(--border-error-solid)] text-[var(--fg-tertiary)] hover:text-white transition-all shadow-lg"
-            aria-label="Delete resource"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        </div>
-      )}
-    </a>
-  );
-}
-
-// Add Resource Card
-function AddResourceCard({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="group flex items-center justify-center rounded-xl border-2 border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)]/30 hover:border-[var(--border-brand-solid)] hover:bg-[var(--bg-secondary)]/50 transition-all w-16 h-16 cursor-pointer active:scale-95"
-      title="Add Resource"
-    >
-      <Plus className="w-6 h-6 text-[var(--fg-tertiary)] group-hover:text-[var(--fg-brand-primary)] group-hover:scale-110 transition-all pointer-events-none" />
-    </button>
-  );
-}
-
 export default function BrandHubPage() {
   const { resources, isLoaded, addResource, deleteResource, updateResource } = useResources();
   const { timestamps } = useCategoryLastUpdated();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isResourcesDrawerOpen, setIsResourcesDrawerOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<BrandResource | undefined>();
 
   const handleEditResource = (resource: BrandResource) => {
@@ -188,6 +103,19 @@ export default function BrandHubPage() {
   const handleCloseModal = () => {
     setIsAddModalOpen(false);
     setEditingResource(undefined);
+  };
+
+  const handleAddFromDrawer = () => {
+    setIsResourcesDrawerOpen(false);
+    setIsAddModalOpen(true);
+  };
+
+  const handleEditFromDrawer = (resource: BrandResource | { id: string; name: string; url: string }) => {
+    setIsResourcesDrawerOpen(false);
+    const brandResource = resources.find(r => r.id === resource.id);
+    if (brandResource) {
+      handleEditResource(brandResource);
+    }
   };
 
   return (
@@ -202,18 +130,31 @@ export default function BrandHubPage() {
                 <h1 className="text-4xl md:text-5xl font-display font-bold text-[var(--fg-primary)]">
                   Brand Hub
                 </h1>
-                {/* Spacer to match Brain page structure if button is added later */}
-                <div className="w-10 h-10"></div>
+                <motion.button
+                  onClick={() => setIsResourcesDrawerOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-secondary)] hover:border-[var(--border-brand)] transition-colors group"
+                  title="Resources"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Library className="w-4 h-4 text-[var(--fg-tertiary)]" />
+                  <span className="text-sm font-medium text-[var(--fg-secondary)]">Resources</span>
+                  {isLoaded && resources.length > 0 && (
+                    <span className="px-1.5 py-0.5 text-xs font-medium rounded-md bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]">
+                      {resources.length}
+                    </span>
+                  )}
+                </motion.button>
               </div>
               <p className="text-base md:text-lg text-[var(--fg-tertiary)] max-w-2xl">
-                Your central hub for brand assets, guidelines, and creative resources. 
+                Your central hub for brand assets, guidelines, and creative resources.
                 Everything you need to build on-brand experiences.
               </p>
             </MotionItem>
 
-            {/* Cards Grid */}
+            {/* Cards Grid - compact with 4 columns on xl */}
             <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-10"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
@@ -231,34 +172,6 @@ export default function BrandHubPage() {
                 </motion.div>
               ))}
             </motion.div>
-
-            {/* Resources Section */}
-            <MotionItem>
-              <section>
-                <h2 className="text-xl font-display font-semibold text-[var(--fg-primary)] mb-4">
-                  Resources
-                </h2>
-                <motion.div 
-                  className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3"
-                  variants={staggerContainer}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {isLoaded && resources.map((resource, index) => (
-                    <motion.div key={resource.id} variants={fadeInUp} custom={index}>
-                      <ResourceCard 
-                        resource={resource} 
-                        onDelete={deleteResource}
-                        onEdit={handleEditResource}
-                      />
-                    </motion.div>
-                  ))}
-                  <motion.div variants={fadeInUp}>
-                    <AddResourceCard onClick={() => setIsAddModalOpen(true)} />
-                  </motion.div>
-                </motion.div>
-              </section>
-            </MotionItem>
           </PageTransition>
         </div>
       </MainContent>
@@ -270,6 +183,17 @@ export default function BrandHubPage() {
         onAddResource={addResource}
         editResource={editingResource}
         onUpdateResource={updateResource}
+      />
+
+      {/* Resources Drawer */}
+      <ResourcesDrawer
+        isOpen={isResourcesDrawerOpen}
+        onClose={() => setIsResourcesDrawerOpen(false)}
+        resources={resources}
+        onAddResource={handleAddFromDrawer}
+        onEditResource={handleEditFromDrawer}
+        onDeleteResource={deleteResource}
+        title="Brand Resources"
       />
     </div>
   );

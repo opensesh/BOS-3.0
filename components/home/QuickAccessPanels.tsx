@@ -10,8 +10,6 @@ import {
   Fingerprint,
   Palette,
   Type,
-  ImageIcon,
-  Shapes,
   FileText,
   ArrowUpRight,
   ChevronDown,
@@ -57,8 +55,6 @@ const brandLinks = [
   { id: 'logo', label: 'Logo', href: '/brand-hub/logo', icon: Fingerprint },
   { id: 'colors', label: 'Colors', href: '/brand-hub/colors', icon: Palette },
   { id: 'typography', label: 'Typography', href: '/brand-hub/fonts', icon: Type },
-  { id: 'art-direction', label: 'Art Direction', href: '/brand-hub/art-direction', icon: ImageIcon },
-  { id: 'tokens', label: 'Tokens', href: '/brand-hub/design-tokens', icon: Shapes },
   { id: 'guidelines', label: 'Guidelines', href: '/brand-hub/guidelines', icon: FileText },
 ];
 
@@ -154,11 +150,11 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
-      {/* Asymmetric grid on desktop - Actions wider to fit text, stacked on mobile */}
+      {/* Equal grid on desktop, stacked on mobile */}
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-stretch">
-        {/* Actions Panel - takes 7 columns for wider buttons */}
+        {/* Actions Panel */}
         <motion.div
-          className="sm:col-span-7"
+          className="sm:col-span-6"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
@@ -254,9 +250,9 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
           </div>
         </motion.div>
 
-        {/* Brand Panel - takes 5 columns, more compact */}
+        {/* Brand Panel */}
         <motion.div
-          className="sm:col-span-5"
+          className="sm:col-span-6"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}

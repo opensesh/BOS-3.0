@@ -91,25 +91,25 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #404040;
+  background: var(--color-gray-600);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #505050;
+  background: var(--color-gray-500);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #404040;
+  background: var(--color-gray-600);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #505050;
+  background: var(--color-gray-500);
 }
 
 /* Focus visible styles */
 *:focus-visible {
-  outline: 2px solid #FE5102;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 

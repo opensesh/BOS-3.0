@@ -107,8 +107,8 @@ function CardIcon({ type }: { type: string }) {
   };
 
   return (
-    <div className={`w-10 h-7 ${bgColors[type] || 'bg-gray-500'} rounded flex items-center justify-center`}>
-      <span className="text-white text-xs font-bold">{labels[type] || '?'}</span>
+    <div className={`w-10 h-7 ${bgColors[type] || 'bg-[var(--bg-tertiary)]'} rounded flex items-center justify-center`}>
+      <span className="text-[var(--fg-white)] text-xs font-bold">{labels[type] || '?'}</span>
     </div>
   );
 }

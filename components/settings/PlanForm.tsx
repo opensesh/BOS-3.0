@@ -248,7 +248,7 @@ export function PlanForm() {
                   ${isCurrentPlan
                     ? 'bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)] cursor-not-allowed'
                     : plan.popular
-                      ? 'bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid-hover)]'
+                      ? 'bg-[var(--bg-brand-solid)] text-[var(--fg-white)] hover:bg-[var(--bg-brand-solid\_hover)]'
                       : 'bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--fg-secondary)] hover:bg-[var(--bg-secondary-alt)]'
                   }
                 `}

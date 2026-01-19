@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { SPACES, EXAMPLE_SPACES } from '@/lib/mock-data';
-import { chatService, ChatSession } from '@/lib/supabase/chat-service';
+import { useChatContext } from '@/lib/chat-context';
 import type { Space } from '@/types';
 
 // ===========================================
@@ -320,6 +320,7 @@ interface UseGlobalSearchOptions {
 interface UseGlobalSearchResult {
   results: SearchResult[];
   isLoading: boolean;
+  isInitialLoading: boolean;
   error: string | null;
   recentChats: ChatResult[];
   search: (query: string) => void;
@@ -328,37 +329,17 @@ interface UseGlobalSearchResult {
 
 export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobalSearchResult {
   const { debounceMs = 200, maxResults = 50, semanticThreshold = 0.5 } = options;
-  
+
+  // Use ChatContext for chat history (already loaded on app mount)
+  const { chatHistory, isLoadingHistory } = useChatContext();
+
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [recentChatSessions, setRecentChatSessions] = useState<ChatSession[]>([]);
-  
+
   // Abort controller for cancelling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  // Load recent chat sessions on mount (for empty state)
-  useEffect(() => {
-    let mounted = true;
-    
-    async function loadRecentChats() {
-      try {
-        const sessions = await chatService.getSessions(5);
-        if (mounted) {
-          setRecentChatSessions(sessions);
-        }
-      } catch (err) {
-        console.error('Failed to load recent chats:', err);
-      }
-    }
-    
-    loadRecentChats();
-    
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   // Pre-compute static data (pages, actions, spaces)
   const staticData = useMemo(() => {
@@ -367,19 +348,19 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
     return { pages, spaces };
   }, []);
 
-  // Recent chats for empty state
+  // Recent chats for empty state - derived from ChatContext (no redundant fetch)
   const recentChats = useMemo((): ChatResult[] => {
-    return recentChatSessions.map(session => ({
-      id: `chat-${session.id}`,
+    return chatHistory.slice(0, 5).map(item => ({
+      id: `chat-${item.id}`,
       type: 'chat' as const,
-      title: session.title,
-      subtitle: formatChatSubtitle(session.updated_at),
-      href: session.id,
-      preview: session.preview || undefined,
-      messageCount: session.messages.length,
-      updatedAt: session.updated_at,
+      title: item.title,
+      subtitle: formatChatSubtitle(item.timestamp.toISOString()),
+      href: item.id,
+      preview: item.preview || undefined,
+      messageCount: item.messages?.length,
+      updatedAt: item.timestamp.toISOString(),
     }));
-  }, [recentChatSessions]);
+  }, [chatHistory]);
 
   // Default results (pages + recent chats)
   const defaultResults = useMemo(() => {
@@ -528,6 +509,7 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
   return {
     results,
     isLoading,
+    isInitialLoading: isLoadingHistory,
     error,
     recentChats,
     search,
@@ -551,14 +533,46 @@ export interface GroupedResults {
 }
 
 export function groupResultsByType(results: SearchResult[]): GroupedResults {
-  return {
-    pages: results.filter((r): r is PageResult => r.type === 'page'),
-    actions: results.filter((r): r is PageResult => r.type === 'action'),
-    chats: results.filter((r): r is ChatResult => r.type === 'chat'),
-    logos: results.filter((r): r is AssetResult => r.type === 'logo'),
-    images: results.filter((r): r is AssetResult => r.type === 'image'),
-    illustrations: results.filter((r): r is AssetResult => r.type === 'illustration'),
-    spaces: results.filter((r): r is SpaceResult => r.type === 'space'),
-    documents: results.filter((r): r is DocumentResult => r.type === 'document'),
+  // Single-pass grouping for O(n) instead of 8 filter passes
+  const groups: GroupedResults = {
+    pages: [],
+    actions: [],
+    chats: [],
+    logos: [],
+    images: [],
+    illustrations: [],
+    spaces: [],
+    documents: [],
   };
+
+  for (const result of results) {
+    switch (result.type) {
+      case 'page':
+        groups.pages.push(result as PageResult);
+        break;
+      case 'action':
+        groups.actions.push(result as PageResult);
+        break;
+      case 'chat':
+        groups.chats.push(result as ChatResult);
+        break;
+      case 'logo':
+        groups.logos.push(result as AssetResult);
+        break;
+      case 'image':
+        groups.images.push(result as AssetResult);
+        break;
+      case 'illustration':
+        groups.illustrations.push(result as AssetResult);
+        break;
+      case 'space':
+        groups.spaces.push(result as SpaceResult);
+        break;
+      case 'document':
+        groups.documents.push(result as DocumentResult);
+        break;
+    }
+  }
+
+  return groups;
 }

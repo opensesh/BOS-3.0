@@ -115,17 +115,17 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed top-12 bottom-0 left-0 lg:left-[var(--sidebar-width)] right-0 bg-black/40 z-[100] backdrop-blur-sm"
+            className="fixed top-14 bottom-0 left-0 lg:left-[var(--sidebar-width)] right-0 bg-black/40 z-[100] backdrop-blur-sm"
             onClick={onClose}
           />
 
-          {/* Drawer - top-12 aligns with bottom of header */}
+          {/* Drawer - top-14 aligns with bottom of header */}
           <motion.div
             variants={drawerVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed right-0 top-12 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col shadow-2xl"
+            className="fixed right-0 top-14 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col shadow-2xl"
           >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-[var(--bg-secondary)]/30">
@@ -137,7 +137,7 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]/50 transition-colors"
+            className="p-2 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-secondary)]/50 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

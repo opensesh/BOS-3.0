@@ -679,6 +679,7 @@ export function CreatePostCopyForm({
   channels,
   contentSubtypes,
   goals,
+  quickActionType,
 }: CreatePostCopyFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -912,6 +913,13 @@ export function CreatePostCopyForm({
           className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors min-w-0"
         >
           <div className="flex items-center gap-2 min-w-0 flex-1">
+            {/* Quick Action Badge */}
+            {quickActionType && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-[var(--bg-tertiary)] text-[var(--fg-primary)] border border-[var(--border-secondary)] flex-shrink-0">
+                <Zap className="w-3 h-3" />
+                Create Post
+              </span>
+            )}
             <span className="text-sm font-semibold text-[var(--fg-primary)] truncate">Post Data Input</span>
           </div>
           <motion.div

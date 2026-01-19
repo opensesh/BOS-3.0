@@ -148,35 +148,39 @@ export function AnswerView({
 
       {/* Answer Content - Appears below reasoning and canvas */}
       <div className="space-y-3">
-        {sections.map((section, idx) => {
+        {/* Detect heading hierarchy - use Off-Bit for H1 only when multiple heading levels exist */}
+        {(() => {
+          const hasHeadingHierarchy = sections.filter(s => s.type === 'heading').length > 1;
+
+          return sections.map((section, idx) => {
           if (section.type === 'heading') {
             const level = section.level || 2;
-            // Improved heading styles with subtle left border accent
-            // Uses brand color for visual hierarchy without being overwhelming
-            const baseStyles = 'font-bold text-[var(--fg-primary)]';
-            const accentStyles = 'pl-3 border-l-2 border-[var(--fg-brand-primary)]/40';
 
-            // H1: Largest, most prominent - with accent border
+            // H1: Major section heading (22px, bold, display font)
+            // Uses Offbit accent font when there's heading hierarchy for visual impact
             if (level === 1) {
+              const h1Styles = hasHeadingHierarchy
+                ? "font-accent font-bold text-chat-h1 text-fg-primary mt-6 mb-3"
+                : "font-display font-bold text-chat-h1 text-fg-primary pl-3 border-l-2 border-[var(--fg-brand-primary)]/40 mt-6 mb-3";
               return (
-                <h1 key={idx} className={`${baseStyles} ${accentStyles} text-[18px] mt-6 mb-3`}>
+                <h1 key={idx} className={h1Styles}>
                   {renderInlineMarkdown(section.content)}
                 </h1>
               );
             }
 
-            // H2: Secondary heading - with accent border
+            // H2: Secondary heading (18px, semibold, display font with accent border)
             if (level === 2) {
               return (
-                <h2 key={idx} className={`${baseStyles} ${accentStyles} text-[17px] mt-5 mb-2.5`}>
+                <h2 key={idx} className="font-display font-semibold text-chat-h2 text-fg-primary pl-3 border-l-2 border-[var(--fg-brand-primary)]/40 mt-5 mb-2.5">
                   {renderInlineMarkdown(section.content)}
                 </h2>
               );
             }
 
-            // H3: Tertiary heading - no border, just bold styling
+            // H3: Tertiary heading (15px, semibold, sans, secondary color - no border)
             return (
-              <h3 key={idx} className={`${baseStyles} text-[16px] mt-4 mb-2 text-[var(--fg-secondary)]`}>
+              <h3 key={idx} className="font-sans font-semibold text-chat-h3 text-fg-secondary mt-4 mb-2">
                 {renderInlineMarkdown(section.content)}
               </h3>
             );
@@ -184,9 +188,9 @@ export function AnswerView({
 
           if (section.type === 'list' && section.items) {
             return (
-              <ul key={idx} className="space-y-1.5 pl-5 list-disc marker:text-[var(--fg-tertiary)]">
+              <ul key={idx} className="space-y-1.5 pl-5 list-disc marker:text-fg-tertiary">
                 {section.items.map((item, itemIdx) => (
-                  <li key={itemIdx} className="text-[15px] leading-[1.75] text-[var(--fg-primary)]/90 pl-1">
+                  <li key={itemIdx} className="text-chat-body text-fg-primary/90 pl-1">
                     {renderInlineMarkdown(item)}
                   </li>
                 ))}
@@ -200,7 +204,7 @@ export function AnswerView({
           return (
             <p
               key={idx}
-              className="text-[15px] leading-[1.75] text-[var(--fg-primary)]/90"
+              className="text-chat-body text-fg-primary/90"
             >
               {renderInlineMarkdown(section.content)}
               {showCitations && sectionSources.length > 0 && (
@@ -215,8 +219,9 @@ export function AnswerView({
               )}
             </p>
           );
-        })}
-        
+        });
+        })()}
+
         {/* Streaming trail indicator - shows AFTER content while text is arriving */}
         <StreamingTrailIndicator
           isStreaming={isStreaming}
@@ -248,6 +253,11 @@ export function parseContentToSections(
     .replace(/([^\n])(#{1,3})(\s*)([A-Z])/g, '$1\n$2 $4')
     // Normalize heading format: ensure space after # markers
     .replace(/^(#{1,3})([A-Z])/gm, '$1 $2')
+    // Remove incomplete heading markers (just # without content)
+    // This prevents raw # symbols from appearing in the output
+    .replace(/^#{1,3}\s*$/gm, '')
+    // Remove orphaned # that don't form valid headings (no content after space)
+    .replace(/^(#{1,3})\s*(?!\S)/gm, '')
     .trim();
   
   const lines = cleanedContent.split('\n');

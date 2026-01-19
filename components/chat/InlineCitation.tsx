@@ -152,16 +152,16 @@ export function InlineCitation({
       <span
         onClick={handleClick}
         className={`
-          inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs cursor-pointer transition-all duration-200 font-mono
+          inline-flex items-center gap-1 px-2 py-0.5 rounded text-chat-citation cursor-pointer transition-all duration-200 font-mono
           ${isBrandSource
-            ? 'bg-[var(--bg-secondary)]/50 text-[var(--fg-tertiary)] hover:bg-[var(--bg-secondary)]/80 hover:text-[var(--fg-primary)]'
-            : 'bg-[var(--fg-brand-primary)]/15 text-[var(--fg-brand-primary)] hover:bg-[var(--fg-brand-primary)]/25'
+            ? 'bg-bg-secondary/50 text-fg-tertiary hover:bg-bg-secondary/80 hover:text-fg-primary'
+            : 'bg-[var(--fg-brand-primary)]/15 text-fg-brand-primary hover:bg-[var(--fg-brand-primary)]/25'
           }
         `}
       >
-        <span className="lowercase">{primarySource}</span>
+        <span className="lowercase truncate max-w-[80px]">{primarySource}</span>
         {additionalCount > 0 && (
-          <span className={`text-[10px] ${isBrandSource ? 'opacity-60' : 'opacity-70'}`}>
+          <span className={`text-[10px] flex-shrink-0 ${isBrandSource ? 'opacity-60' : 'opacity-70'}`}>
             +{additionalCount}
           </span>
         )}

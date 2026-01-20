@@ -8,8 +8,10 @@
 import { getAnthropicClient } from '../ai/providers';
 
 // OpenAI embedding model configuration
-const EMBEDDING_MODEL = 'text-embedding-ada-002';
-const EMBEDDING_DIMENSIONS = 1536;
+// Using text-embedding-3-large with dimensions=1536 for improved quality
+// while maintaining compatibility with existing vector schema
+const EMBEDDING_MODEL = 'text-embedding-3-large';
+const EMBEDDING_DIMENSIONS = 1536; // Using reduced dimensions for compatibility
 const MAX_BATCH_SIZE = 100; // OpenAI allows up to 2048, but 100 is safer
 const OPENAI_API_URL = 'https://api.openai.com/v1/embeddings';
 
@@ -88,6 +90,8 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
       body: JSON.stringify({
         model: EMBEDDING_MODEL,
         input: cleanedBatch,
+        // Specify dimensions for text-embedding-3-large to match existing schema
+        dimensions: EMBEDDING_DIMENSIONS,
       }),
     });
 

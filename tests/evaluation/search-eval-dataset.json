@@ -1,0 +1,416 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "createdAt": "2026-01-20",
+    "description": "Evaluation dataset for BOS semantic search quality assessment",
+    "totalQueries": 50,
+    "categories": {
+      "exact-match": "Queries that should match exact terms (brand names, colors, acronyms)",
+      "semantic": "Conceptual questions requiring semantic understanding",
+      "ambiguous": "Queries that could match multiple areas",
+      "edge-cases": "Short queries, typos, uncommon phrasings"
+    }
+  },
+  "queries": [
+    {
+      "id": "exact-01",
+      "query": "Open Session",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["mission", "brand core"],
+      "notes": "Should match brand name exactly"
+    },
+    {
+      "id": "exact-02",
+      "query": "Aperol",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["colors", "color system"],
+      "notes": "Primary brand color name"
+    },
+    {
+      "id": "exact-03",
+      "query": "#FE5102",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["colors"],
+      "notes": "Exact hex code for Aperol"
+    },
+    {
+      "id": "exact-04",
+      "query": "Vanilla",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["colors", "color system"],
+      "notes": "Primary background color name"
+    },
+    {
+      "id": "exact-05",
+      "query": "Charcoal",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["colors", "color system"],
+      "notes": "Primary dark color name"
+    },
+    {
+      "id": "exact-06",
+      "query": "#191919",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["colors"],
+      "notes": "Exact hex code for Charcoal"
+    },
+    {
+      "id": "exact-07",
+      "query": "WCAG",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["accessibility", "colors"],
+      "notes": "Accessibility standard acronym"
+    },
+    {
+      "id": "exact-08",
+      "query": "Neue Haas Grotesk",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["typography"],
+      "notes": "Primary font family name"
+    },
+    {
+      "id": "exact-09",
+      "query": "brandmark",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo", "logo system"],
+      "notes": "Logo variant term"
+    },
+    {
+      "id": "exact-10",
+      "query": "monogram OS",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo", "logo system"],
+      "notes": "Specific logo variant"
+    },
+    {
+      "id": "exact-11",
+      "query": "glass effect",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo", "effects"],
+      "notes": "Decorative effect term"
+    },
+    {
+      "id": "exact-12",
+      "query": "Instagram",
+      "type": "exact-match",
+      "expectedDocuments": ["short-form"],
+      "expectedTopics": ["social media", "platform guidelines"],
+      "notes": "Social platform name"
+    },
+    {
+      "id": "exact-13",
+      "query": "LinkedIn",
+      "type": "exact-match",
+      "expectedDocuments": ["short-form"],
+      "expectedTopics": ["social media", "platform guidelines"],
+      "notes": "Social platform name"
+    },
+    {
+      "id": "exact-14",
+      "query": "Dribbble",
+      "type": "exact-match",
+      "expectedDocuments": ["short-form"],
+      "expectedTopics": ["social media", "platform guidelines"],
+      "notes": "Design platform name"
+    },
+    {
+      "id": "exact-15",
+      "query": "CTA",
+      "type": "exact-match",
+      "expectedDocuments": ["brand-identity", "short-form"],
+      "expectedTopics": ["buttons", "calls to action"],
+      "notes": "Common marketing acronym"
+    },
+    {
+      "id": "semantic-01",
+      "query": "What are the brand colors?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["colors", "color system", "palette"],
+      "notes": "Basic brand question"
+    },
+    {
+      "id": "semantic-02",
+      "query": "How should I write for social media?",
+      "type": "semantic",
+      "expectedDocuments": ["short-form"],
+      "expectedTopics": ["voice", "tone", "social media"],
+      "notes": "Writing guidance question"
+    },
+    {
+      "id": "semantic-03",
+      "query": "What is the brand mission?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["mission", "brand core", "purpose"],
+      "notes": "Core brand question"
+    },
+    {
+      "id": "semantic-04",
+      "query": "Typography and fonts for headings",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["typography", "fonts", "display"],
+      "notes": "Design system question"
+    },
+    {
+      "id": "semantic-05",
+      "query": "How to use the logo correctly",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo", "logo rules", "logo system"],
+      "notes": "Logo usage question"
+    },
+    {
+      "id": "semantic-06",
+      "query": "When should I use the orange color?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["colors", "Aperol", "accent usage"],
+      "notes": "Color usage guidance (orange = Aperol)"
+    },
+    {
+      "id": "semantic-07",
+      "query": "What personality should our content have?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity", "brand-messaging"],
+      "expectedTopics": ["personality", "voice", "tone"],
+      "notes": "Brand personality question"
+    },
+    {
+      "id": "semantic-08",
+      "query": "How do I maintain accessibility in designs?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["accessibility", "WCAG", "contrast"],
+      "notes": "Accessibility guidance"
+    },
+    {
+      "id": "semantic-09",
+      "query": "What makes our brand unique?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity", "brand-messaging"],
+      "expectedTopics": ["mission", "personality", "differentiation"],
+      "notes": "Brand differentiation question"
+    },
+    {
+      "id": "semantic-10",
+      "query": "How to write LinkedIn posts",
+      "type": "semantic",
+      "expectedDocuments": ["short-form"],
+      "expectedTopics": ["LinkedIn", "structure", "thought leadership"],
+      "notes": "Platform-specific writing"
+    },
+    {
+      "id": "semantic-11",
+      "query": "What tone should I use for business content?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity", "strategic"],
+      "expectedTopics": ["tone", "business", "professional"],
+      "notes": "Contextual tone guidance"
+    },
+    {
+      "id": "semantic-12",
+      "query": "Logo size requirements",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo", "specifications", "minimum size"],
+      "notes": "Technical logo requirements"
+    },
+    {
+      "id": "semantic-13",
+      "query": "Background color guidelines",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["colors", "backgrounds", "application"],
+      "notes": "Color application rules"
+    },
+    {
+      "id": "semantic-14",
+      "query": "How should we talk about AI and innovation?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity", "brand-messaging"],
+      "expectedTopics": ["AI", "innovation", "visionary", "tone"],
+      "notes": "Topic-specific voice guidance"
+    },
+    {
+      "id": "semantic-15",
+      "query": "What emojis are appropriate to use?",
+      "type": "semantic",
+      "expectedDocuments": ["short-form"],
+      "expectedTopics": ["emojis", "style", "social media"],
+      "notes": "Content styling question"
+    },
+    {
+      "id": "semantic-16",
+      "query": "Clear space around the logo",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo", "clear space", "specifications"],
+      "notes": "Logo spacing rules"
+    },
+    {
+      "id": "semantic-17",
+      "query": "Hashtag strategy for Instagram",
+      "type": "semantic",
+      "expectedDocuments": ["short-form"],
+      "expectedTopics": ["Instagram", "hashtags", "growth"],
+      "notes": "Platform-specific tactics"
+    },
+    {
+      "id": "semantic-18",
+      "query": "When to use wordmark vs brandmark",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo", "logo hierarchy", "decision tree"],
+      "notes": "Logo selection guidance"
+    },
+    {
+      "id": "semantic-19",
+      "query": "Writing for creative audiences",
+      "type": "semantic",
+      "expectedDocuments": ["short-form", "creative"],
+      "expectedTopics": ["audience", "creatives", "designers"],
+      "notes": "Audience-specific writing"
+    },
+    {
+      "id": "semantic-20",
+      "query": "What does our logo symbolize?",
+      "type": "semantic",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo", "symbolic meaning", "brandmark"],
+      "notes": "Brand symbolism question"
+    },
+    {
+      "id": "ambiguous-01",
+      "query": "colors",
+      "type": "ambiguous",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["color system", "palette"],
+      "notes": "Very broad term - could match many sections"
+    },
+    {
+      "id": "ambiguous-02",
+      "query": "writing style",
+      "type": "ambiguous",
+      "expectedDocuments": ["short-form", "long-form", "blog", "creative"],
+      "expectedTopics": ["voice", "tone", "style"],
+      "notes": "Could match any writing document"
+    },
+    {
+      "id": "ambiguous-03",
+      "query": "design guidelines",
+      "type": "ambiguous",
+      "expectedDocuments": ["brand-identity", "art-direction"],
+      "expectedTopics": ["design", "guidelines", "rules"],
+      "notes": "General design term"
+    },
+    {
+      "id": "ambiguous-04",
+      "query": "brand voice",
+      "type": "ambiguous",
+      "expectedDocuments": ["brand-identity", "brand-messaging", "short-form"],
+      "expectedTopics": ["voice", "personality", "tone"],
+      "notes": "Core concept across multiple docs"
+    },
+    {
+      "id": "ambiguous-05",
+      "query": "social media",
+      "type": "ambiguous",
+      "expectedDocuments": ["short-form", "brand-identity"],
+      "expectedTopics": ["Instagram", "LinkedIn", "Dribbble", "community"],
+      "notes": "Platform-related term"
+    },
+    {
+      "id": "ambiguous-06",
+      "query": "fonts",
+      "type": "ambiguous",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["typography", "Neue Haas Grotesk"],
+      "notes": "Typography term"
+    },
+    {
+      "id": "ambiguous-07",
+      "query": "professional content",
+      "type": "ambiguous",
+      "expectedDocuments": ["brand-identity", "strategic", "long-form"],
+      "expectedTopics": ["business", "enterprise", "tone"],
+      "notes": "Context-dependent term"
+    },
+    {
+      "id": "ambiguous-08",
+      "query": "brand rules",
+      "type": "ambiguous",
+      "expectedDocuments": ["brand-identity", "art-direction"],
+      "expectedTopics": ["rules", "guidelines", "dos and donts"],
+      "notes": "General brand governance"
+    },
+    {
+      "id": "ambiguous-09",
+      "query": "creative direction",
+      "type": "ambiguous",
+      "expectedDocuments": ["art-direction", "brand-identity"],
+      "expectedTopics": ["art direction", "creative", "visual"],
+      "notes": "Could match art direction or creative roles"
+    },
+    {
+      "id": "ambiguous-10",
+      "query": "how to write",
+      "type": "ambiguous",
+      "expectedDocuments": ["short-form", "long-form", "blog"],
+      "expectedTopics": ["writing", "guidelines", "style"],
+      "notes": "Very broad writing query"
+    },
+    {
+      "id": "edge-01",
+      "query": "logo",
+      "type": "edge-cases",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo system"],
+      "notes": "Single word query"
+    },
+    {
+      "id": "edge-02",
+      "query": "orange",
+      "type": "edge-cases",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["Aperol", "colors"],
+      "notes": "Color by common name, not brand name"
+    },
+    {
+      "id": "edge-03",
+      "query": "OS",
+      "type": "edge-cases",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["monogram", "logo"],
+      "notes": "Two-letter acronym (could be confused with Operating System)"
+    },
+    {
+      "id": "edge-04",
+      "query": "minimum logo size print",
+      "type": "edge-cases",
+      "expectedDocuments": ["brand-identity"],
+      "expectedTopics": ["logo specifications"],
+      "notes": "Specific technical query"
+    },
+    {
+      "id": "edge-05",
+      "query": "IG posts",
+      "type": "edge-cases",
+      "expectedDocuments": ["short-form"],
+      "expectedTopics": ["Instagram"],
+      "notes": "Abbreviated platform name"
+    }
+  ]
+}

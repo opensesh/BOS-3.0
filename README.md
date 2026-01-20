@@ -324,11 +324,11 @@ bun run capture-screenshots       # Capture component screenshots
 
 ## 📝 License
 
-GNU General Public License v3.0
+This project is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE). This means you're free to use, modify, and distribute this software, but any modifications must also be open-sourced under the same license—including when running the software as a network service.
 
 ## 🤝 Contributing
 
-This is a personal project for OPEN SESSION. Suggestions and feedback welcome!
+This is a work-in-progress project. Suggestions and feedback are welcome!
 
 ---
 

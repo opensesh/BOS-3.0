@@ -2,6 +2,7 @@
   "name": "bos-3.0",
   "version": "3.0.0",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "clean": "rm -rf .next",
     "dev": "pkill -f 'next-server' 2>/dev/null; pkill -f 'next dev' 2>/dev/null; next dev -H 127.0.0.1",

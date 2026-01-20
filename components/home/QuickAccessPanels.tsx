@@ -221,7 +221,7 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
                   className="overflow-hidden flex-1 flex flex-col"
                 >
                   {/* Action buttons - 2x2 grid */}
@@ -319,7 +319,7 @@ export function QuickAccessPanels({ onPromptSubmit }: QuickAccessPanelsProps) {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
                   className="overflow-hidden flex-1 flex flex-col"
                 >
                   {/* Brand links - 2-column grid */}

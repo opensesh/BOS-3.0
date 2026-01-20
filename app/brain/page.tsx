@@ -81,6 +81,14 @@ const brainPages = [
   },
 ];
 
+// Calculate dynamic min-height based on card count
+const getCardMinHeight = (cardCount: number, columns: number) => {
+  const rows = Math.ceil(cardCount / columns);
+  if (rows <= 2) return '200px';
+  if (rows === 3) return '160px';
+  return '140px';
+};
+
 export default function BrainPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddResourceOpen, setIsAddResourceOpen] = useState(false);
@@ -89,6 +97,9 @@ export default function BrainPage() {
 
   const { resources, isLoaded, addResource, deleteResource, updateResource } = useBrainResources();
   const { timestamps } = useCategoryLastUpdated();
+
+  // Calculate min card height based on number of cards (3 columns on lg)
+  const minCardHeight = getCardMinHeight(brainPages.length, 3);
 
   const handleEditResource = (resource: BrainResource) => {
     setEditingResource(resource);
@@ -188,6 +199,7 @@ export default function BrainPage() {
                     icon={page.icon}
                     iconLabel={page.iconLabel}
                     lastUpdated={timestamps[page.timestampKey]}
+                    minHeight={minCardHeight}
                   />
                 </motion.div>
               ))}

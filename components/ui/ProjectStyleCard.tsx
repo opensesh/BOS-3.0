@@ -12,6 +12,7 @@ interface ProjectStyleCardProps {
   icon: LucideIcon;
   iconLabel: string;
   lastUpdated?: string | null;
+  minHeight?: string;
 }
 
 /**
@@ -28,6 +29,7 @@ export function ProjectStyleCard({
   description,
   icon: Icon,
   lastUpdated,
+  minHeight,
 }: ProjectStyleCardProps) {
   return (
     <motion.div
@@ -38,10 +40,11 @@ export function ProjectStyleCard({
       <Link
         href={href}
         className="group relative h-full flex flex-col p-4 gap-3 rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-secondary)] hover:bg-[var(--bg-secondary)]/60 hover:border-[var(--border-brand)] transition-all duration-150"
+        style={minHeight ? { minHeight } : undefined}
       >
         {/* Row 1: Icon container (top-left) */}
         <div className="flex items-start justify-between">
-          <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-secondary)] group-hover:border-[var(--border-brand)] transition-colors">
+          <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-secondary)] transition-colors">
             <Icon className="w-5 h-5 text-[var(--fg-secondary)]" />
           </div>
           <ArrowRight className="w-4 h-4 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-all duration-150 flex-shrink-0 group-hover:translate-x-0.5" />
@@ -57,13 +60,13 @@ export function ProjectStyleCard({
           {description}
         </p>
 
-        {/* Row 4: Timestamp chip */}
-        {lastUpdated && (
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] w-fit mt-auto">
-            <Clock className="w-3 h-3" />
-            <span className="text-xs">Updated {formatRelativeTime(lastUpdated)}</span>
-          </div>
-        )}
+        {/* Row 4: Timestamp chip - always render with fallback */}
+        <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-[var(--bg-tertiary)] text-[var(--fg-quaternary)] w-fit mt-auto">
+          <Clock className="w-3 h-3" />
+          <span className="text-xs">
+            {lastUpdated ? `Updated ${formatRelativeTime(lastUpdated)}` : 'Not yet updated'}
+          </span>
+        </div>
       </Link>
     </motion.div>
   );

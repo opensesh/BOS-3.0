@@ -214,7 +214,7 @@ export function ResourcesDrawer({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed top-12 bottom-0 left-0 lg:left-[var(--sidebar-width)] right-0 bg-black/40 z-[100] backdrop-blur-sm"
+            className="fixed top-14 bottom-0 left-0 lg:left-[var(--sidebar-width)] right-0 bg-black/40 z-[100] backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -224,7 +224,7 @@ export function ResourcesDrawer({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed right-0 top-12 bottom-0 w-[380px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col shadow-2xl border-l border-[var(--border-secondary)]"
+            className="fixed right-0 top-14 bottom-0 w-[380px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col shadow-2xl border-l border-[var(--border-secondary)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-secondary)]">

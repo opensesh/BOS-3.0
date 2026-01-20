@@ -49,7 +49,6 @@ export default function ProjectDetailPage() {
 
       // Update breadcrumbs
       setBreadcrumbs([
-        { label: 'Home', href: '/' },
         { label: 'Projects', href: '/projects' },
         { label: data.name },
       ]);
@@ -74,7 +73,6 @@ export default function ProjectDetailPage() {
       // Update breadcrumbs if name changed
       if (updates.name) {
         setBreadcrumbs([
-          { label: 'Home', href: '/' },
           { label: 'Projects', href: '/projects' },
           { label: updates.name },
         ]);

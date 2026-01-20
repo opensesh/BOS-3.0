@@ -88,12 +88,23 @@ const brandHubItems = [
   },
 ];
 
+// Calculate dynamic min-height based on card count
+const getCardMinHeight = (cardCount: number, columns: number) => {
+  const rows = Math.ceil(cardCount / columns);
+  if (rows <= 2) return '200px';
+  if (rows === 3) return '160px';
+  return '140px';
+};
+
 export default function BrandHubPage() {
   const { resources, isLoaded, addResource, deleteResource, updateResource } = useResources();
   const { timestamps } = useCategoryLastUpdated();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isResourcesDrawerOpen, setIsResourcesDrawerOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<BrandResource | undefined>();
+
+  // Calculate min card height based on number of cards (4 columns on xl)
+  const minCardHeight = getCardMinHeight(brandHubItems.length, 4);
 
   const handleEditResource = (resource: BrandResource) => {
     setEditingResource(resource);
@@ -168,6 +179,7 @@ export default function BrandHubPage() {
                     icon={item.icon}
                     iconLabel={item.iconLabel}
                     lastUpdated={timestamps[item.timestampKey]}
+                    minHeight={minCardHeight}
                   />
                 </motion.div>
               ))}

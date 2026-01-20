@@ -28,7 +28,6 @@ export default function ProjectsPage() {
   // Set breadcrumbs on mount
   useEffect(() => {
     setBreadcrumbs([
-      { label: 'Home', href: '/' },
       { label: 'Projects' },
     ]);
   }, [setBreadcrumbs]);

@@ -6,6 +6,7 @@
  */
 
 import { createClient } from './client';
+import { getGeoCache, setGeoCache } from '../cache/geo-cache';
 import type {
   DbShortLinkClick,
   ShortLinkClick,
@@ -141,6 +142,9 @@ interface GeoLocation {
 /**
  * Get geolocation from IP address using ip-api.com
  * Free tier: 45 requests per minute
+ *
+ * Uses bounded in-memory LRU cache instead of Next.js file cache
+ * to prevent unbounded disk usage in production.
  */
 export async function getGeoLocation(
   ipAddress: string
@@ -156,12 +160,17 @@ export async function getGeoLocation(
     return null;
   }
 
+  // Check bounded LRU cache first
+  const cached = getGeoCache(ipAddress);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   try {
-    // MEMORY OPTIMIZATION: Reduced cache TTL from 24h to 1h to limit cache bloat
-    // Each unique IP creates a cache entry, which can grow to tens of MB with high traffic
+    // Use no-store to bypass Next.js file cache (we use our own bounded cache)
     const response = await fetch(
       `http://ip-api.com/json/${ipAddress}?fields=country,countryCode,city,region,lat,lon`,
-      { next: { revalidate: 3600 } } // Cache for 1 hour (was 24 hours)
+      { cache: 'no-store' }
     );
 
     if (!response.ok) {
@@ -172,10 +181,11 @@ export async function getGeoLocation(
     const data = await response.json();
 
     if (data.status === 'fail') {
+      setGeoCache(ipAddress, null);
       return null;
     }
 
-    return {
+    const result: GeoLocation = {
       country: data.country || '',
       countryCode: data.countryCode || '',
       city: data.city || '',
@@ -183,6 +193,11 @@ export async function getGeoLocation(
       lat: data.lat || 0,
       lon: data.lon || 0,
     };
+
+    // Store in bounded cache
+    setGeoCache(ipAddress, result);
+
+    return result;
   } catch (error) {
     console.warn('Geolocation lookup failed:', error);
     return null;

@@ -430,6 +430,7 @@ export interface BrandResource {
   id: string;
   name: string;
   url: string;
+  category?: string;
   icon: 'google-drive' | 'figma' | 'notion' | 'custom' | 'lucide';
   lucideIconName?: string;
   customIconUrl?: string;

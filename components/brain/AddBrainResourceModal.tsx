@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
+import { CategoryInput } from '@/components/ui/CategoryInput';
 import { BrainResource } from '@/hooks/useBrainResources';
 import { 
   getAllLucideIconNames, 
@@ -18,6 +19,7 @@ interface AddBrainResourceModalProps {
   onAddResource: (resource: Omit<BrainResource, 'id' | 'createdAt'>) => void;
   editResource?: BrainResource;
   onUpdateResource?: (id: string, updates: Partial<BrainResource>) => void;
+  existingCategories?: string[];
 }
 
 export function AddBrainResourceModal({
@@ -26,10 +28,12 @@ export function AddBrainResourceModal({
   onAddResource,
   editResource,
   onUpdateResource,
+  existingCategories = [],
 }: AddBrainResourceModalProps) {
   const isEditMode = !!editResource;
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  const [category, setCategory] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Link');
   const [iconSearch, setIconSearch] = useState('');
   const [error, setError] = useState('');
@@ -41,8 +45,10 @@ export function AddBrainResourceModal({
     if (editResource) {
       setName(editResource.name);
       setUrl(editResource.url);
+      setCategory(editResource.category || '');
       setSelectedIcon(editResource.iconName || 'Link');
     } else {
+      setCategory('');
       setSelectedIcon('Link');
     }
   }, [editResource]);
@@ -78,12 +84,14 @@ export function AddBrainResourceModal({
       onUpdateResource(editResource.id, {
         name: name.trim(),
         url: urlToAdd,
+        category: category.trim() || undefined,
         iconName: selectedIcon,
       });
     } else {
       onAddResource({
         name: name.trim(),
         url: urlToAdd,
+        category: category.trim() || undefined,
         icon: 'custom',
         iconName: selectedIcon,
       });
@@ -91,6 +99,7 @@ export function AddBrainResourceModal({
 
     setName('');
     setUrl('');
+    setCategory('');
     setSelectedIcon('Link');
     setIconSearch('');
     setError('');
@@ -100,6 +109,7 @@ export function AddBrainResourceModal({
   const handleClose = () => {
     setName('');
     setUrl('');
+    setCategory('');
     setSelectedIcon('Link');
     setIconSearch('');
     setError('');
@@ -109,23 +119,24 @@ export function AddBrainResourceModal({
   // Get displayed icons based on search
   const displayedIcons = useMemo(() => {
     const query = iconSearch.toLowerCase().trim();
-    
+
     if (query) {
       // When searching, search both Lucide and FA icons
-      const lucideMatches = allLucideIcons.filter(n => 
+      const lucideMatches = allLucideIcons.filter(n =>
         n.toLowerCase().includes(query)
       );
       const faMatches = FA_BRAND_ICONS.filter(icon =>
         icon.name.toLowerCase().includes(query) ||
         icon.keywords.some(k => k.includes(query))
       ).map(i => i.name);
-      
+
       // Show FA matches first (they're usually what people want for brands)
-      return [...faMatches, ...lucideMatches].slice(0, 18);
+      return [...faMatches, ...lucideMatches].slice(0, 12);
     }
-    
-    // Default: show mix of popular FA brands and Lucide icons
-    return [...POPULAR_ICONS.fontAwesome.slice(0, 6), ...POPULAR_ICONS.lucide.slice(0, 12)];
+
+    // Default: Link first, then mix of popular FA brands and Lucide icons (2 rows = 12 icons)
+    const otherLucide = POPULAR_ICONS.lucide.filter(i => i !== 'Link').slice(0, 5);
+    return ['Link', ...POPULAR_ICONS.fontAwesome.slice(0, 6), ...otherLucide];
   }, [iconSearch, allLucideIcons]);
 
   // Common input styles using UUI theme tokens
@@ -179,12 +190,27 @@ export function AddBrainResourceModal({
           )}
         </div>
 
+        {/* Category (optional) */}
+        <div>
+          <label htmlFor="brain-resource-category" className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
+            Category <span className="text-[var(--fg-tertiary)]">(optional)</span>
+          </label>
+          <CategoryInput
+            id="brain-resource-category"
+            value={category}
+            onChange={setCategory}
+            existingCategories={existingCategories}
+            placeholder="e.g., Documentation"
+            className={inputStyles}
+          />
+        </div>
+
         {/* Icon Picker */}
         <div>
           <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
             Icon
           </label>
-          
+
           {/* Search input */}
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--fg-tertiary)]" aria-hidden="true" />
@@ -218,10 +244,10 @@ export function AddBrainResourceModal({
                   title={displayName}
                   className={`
                     p-2.5 rounded-lg border transition-all flex items-center justify-center
-                    focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:ring-offset-1
+                    focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]
                     ${selectedIcon === iconName
                       ? 'bg-[var(--bg-brand-primary)] border-[var(--border-brand-solid)] text-[var(--fg-brand-primary)]'
-                      : 'bg-[var(--bg-tertiary)] border-transparent text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] hover:text-[var(--fg-primary)]'
+                      : 'bg-[var(--bg-tertiary)] border-transparent text-[var(--fg-tertiary)] hover:border-[var(--border-brand-solid)] hover:text-[var(--fg-primary)]'
                     }
                   `}
                 >
@@ -236,21 +262,6 @@ export function AddBrainResourceModal({
               No icons found for &ldquo;{iconSearch}&rdquo;
             </p>
           )}
-          
-          {/* Selected icon preview */}
-          <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-[var(--bg-tertiary)]">
-            <div className="p-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]">
-              <Icon name={selectedIcon} className="w-5 h-5" />
-            </div>
-            <span className="text-sm text-[var(--fg-secondary)]">
-              Selected: <span className="font-medium text-[var(--fg-primary)]">
-                {isFontAwesomeIcon(selectedIcon) 
-                  ? selectedIcon.replace('fa-', '').replace(/-/g, ' ')
-                  : selectedIcon
-                }
-              </span>
-            </span>
-          </div>
         </div>
       </div>
 

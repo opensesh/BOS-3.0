@@ -1,53 +1,55 @@
-name: Update Architecture Documentation
+name: Update Documentation
 
 on:
   # Run daily at 6 AM UTC (10 PM PST / 1 AM EST)
   schedule:
     - cron: '0 6 * * *'
-  
+
   # Allow manual trigger from GitHub Actions UI
   workflow_dispatch:
 
 jobs:
-  update-architecture:
+  update-docs:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Generate architecture documentation
         run: npx tsx scripts/generate-architecture.ts
-      
+
+      - name: Generate README
+        run: npx tsx scripts/generate-readme.ts
+
       - name: Check for changes
         id: changes
         run: |
-          if git diff --quiet ARCHITECTURE.md public/claude-data/system/architecture.md; then
+          if git diff --quiet ARCHITECTURE.md README.md .claude/system/architecture.md 2>/dev/null; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Commit and push if changed
         if: steps.changes.outputs.changed == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add ARCHITECTURE.md public/claude-data/system/architecture.md
-          git commit -m "docs: auto-update architecture documentation [skip ci]"
+          git add ARCHITECTURE.md README.md .claude/system/architecture.md
+          git commit -m "docs: auto-update documentation [skip ci]"
           git push
-

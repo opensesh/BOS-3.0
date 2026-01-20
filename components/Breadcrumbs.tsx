@@ -302,17 +302,8 @@ export function Breadcrumbs() {
         </div>
       ))}
 
-      {/* Quick Action Badge - appears after path breadcrumbs, before title */}
-      <AnimatePresence mode="wait">
-        {quickActionType && (
-          <div className="flex items-center">
-            <span className="mx-2 text-fg-quaternary">/</span>
-            <QuickActionBadge type={quickActionType} />
-          </div>
-        )}
-      </AnimatePresence>
-
       {/* Title breadcrumb (final item) - animated when it appears */}
+      {/* Shows lightning bolt icon for quick action chats */}
       {titleBreadcrumb && (
         <div className="flex items-center">
           <span className="mx-2 text-fg-quaternary">/</span>
@@ -323,8 +314,11 @@ export function Breadcrumbs() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 8 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="px-2 py-1 text-fg-primary"
+              className="flex items-center gap-1.5 px-2 py-1 text-fg-primary"
             >
+              {titleBreadcrumb.isQuickAction && (
+                <Zap className="w-3 h-3 text-[var(--fg-tertiary)]" />
+              )}
               {titleBreadcrumb.label}
             </motion.span>
           </AnimatePresence>

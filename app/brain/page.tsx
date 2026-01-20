@@ -19,75 +19,154 @@ import {
   Zap,
   Puzzle,
   Bot,
-  Github,
   Library,
+  Terminal,
+  FileText,
+  Plug,
+  Database,
 } from 'lucide-react';
 
-// Cards for subpages
-const brainPages = [
+// Brain page card type
+interface BrainPageCard {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconLabel: string;
+  timestampKey: keyof CategoryTimestamps;
+}
+
+// Category section type
+interface CategorySection {
+  id: string;
+  title: string;
+  description: string;
+  pages: BrainPageCard[];
+}
+
+// Organized by category: Brand, Tools, Reference, System
+const brainCategories: CategorySection[] = [
   {
-    id: 'architecture',
-    title: 'Architecture',
-    description: 'System structure and AI configuration',
-    href: '/brain/architecture',
-    icon: FolderTree,
-    iconLabel: 'System',
-    timestampKey: 'architecture' as keyof CategoryTimestamps,
+    id: 'brand',
+    title: 'Brand',
+    description: 'Identity, messaging, and creative direction',
+    pages: [
+      {
+        id: 'brand-identity',
+        title: 'Brand Identity',
+        description: 'Identity, messaging, and art direction',
+        href: '/brain/brand-identity',
+        icon: BookOpen,
+        iconLabel: 'Identity',
+        timestampKey: 'brandIdentity' as keyof CategoryTimestamps,
+      },
+      {
+        id: 'writing-styles',
+        title: 'Writing Styles',
+        description: 'Voice and tone guidelines',
+        href: '/brain/writing-styles',
+        icon: PenTool,
+        iconLabel: 'Writing',
+        timestampKey: 'writingStyles' as keyof CategoryTimestamps,
+      },
+    ],
   },
   {
-    id: 'brand-identity',
-    title: 'Brand Identity',
-    description: 'Identity, messaging, and art direction',
-    href: '/brain/brand-identity',
-    icon: BookOpen,
-    iconLabel: 'Identity',
-    timestampKey: 'brandIdentity' as keyof CategoryTimestamps,
+    id: 'tools',
+    title: 'Tools',
+    description: 'Developer capabilities and automation',
+    pages: [
+      {
+        id: 'plugins',
+        title: 'Plugins',
+        description: 'Complete capability packages',
+        href: '/brain/plugins',
+        icon: Puzzle,
+        iconLabel: 'Plugins',
+        timestampKey: 'plugins' as keyof CategoryTimestamps,
+      },
+      {
+        id: 'skills',
+        title: 'Skills',
+        description: 'Auto-activating knowledge modules',
+        href: '/brain/skills',
+        icon: Zap,
+        iconLabel: 'Skills',
+        timestampKey: 'skills' as keyof CategoryTimestamps,
+      },
+      {
+        id: 'agents',
+        title: 'Agents',
+        description: 'Autonomous AI workflows',
+        href: '/brain/agents',
+        icon: Bot,
+        iconLabel: 'Agents',
+        timestampKey: 'agents' as keyof CategoryTimestamps,
+      },
+      {
+        id: 'commands',
+        title: 'Commands',
+        description: 'Slash commands for quick actions',
+        href: '/brain/commands',
+        icon: Terminal,
+        iconLabel: 'Commands',
+        timestampKey: 'commands' as keyof CategoryTimestamps,
+      },
+    ],
   },
   {
-    id: 'writing-styles',
-    title: 'Writing Styles',
-    description: 'Voice and tone guidelines',
-    href: '/brain/writing-styles',
-    icon: PenTool,
-    iconLabel: 'Writing',
-    timestampKey: 'writingStyles' as keyof CategoryTimestamps,
+    id: 'reference',
+    title: 'Reference',
+    description: 'Documentation and data sources',
+    pages: [
+      {
+        id: 'design-system',
+        title: 'Design System',
+        description: 'UI components and patterns',
+        href: '/brain/reference/design-system',
+        icon: FileText,
+        iconLabel: 'Docs',
+        timestampKey: 'designSystem' as keyof CategoryTimestamps,
+      },
+      {
+        id: 'mcp-setup',
+        title: 'MCP Setup',
+        description: 'Model Context Protocol configuration',
+        href: '/brain/reference/mcp-setup',
+        icon: Plug,
+        iconLabel: 'MCP',
+        timestampKey: 'mcpSetup' as keyof CategoryTimestamps,
+      },
+      {
+        id: 'data',
+        title: 'Data Sources',
+        description: 'Reference data and external sources',
+        href: '/brain/reference/data',
+        icon: Database,
+        iconLabel: 'Data',
+        timestampKey: 'data' as keyof CategoryTimestamps,
+      },
+    ],
   },
   {
-    id: 'skills',
-    title: 'Skills',
-    description: 'System capabilities and configuration',
-    href: '/brain/skills',
-    icon: Zap,
-    iconLabel: 'Skills',
-    timestampKey: 'skills' as keyof CategoryTimestamps,
-  },
-  {
-    id: 'plugins',
-    title: 'Plugins',
-    description: 'Complete capability packages',
-    href: '/brain/plugins',
-    icon: Puzzle,
-    iconLabel: 'Plugins',
-    timestampKey: 'plugins' as keyof CategoryTimestamps,
-  },
-  {
-    id: 'agents',
-    title: 'Agents',
-    description: 'Autonomous AI workflows',
-    href: '/brain/agents',
-    icon: Bot,
-    iconLabel: 'Agents',
-    timestampKey: 'agents' as keyof CategoryTimestamps,
+    id: 'system',
+    title: 'System',
+    description: 'Auto-generated configuration',
+    pages: [
+      {
+        id: 'architecture',
+        title: 'Architecture',
+        description: 'System structure and AI configuration',
+        href: '/brain/architecture',
+        icon: FolderTree,
+        iconLabel: 'System',
+        timestampKey: 'architecture' as keyof CategoryTimestamps,
+      },
+    ],
   },
 ];
 
-// Calculate dynamic min-height based on card count
-const getCardMinHeight = (cardCount: number, columns: number) => {
-  const rows = Math.ceil(cardCount / columns);
-  if (rows <= 2) return '200px';
-  if (rows === 3) return '160px';
-  return '140px';
-};
 
 export default function BrainPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -95,11 +174,8 @@ export default function BrainPage() {
   const [isResourcesDrawerOpen, setIsResourcesDrawerOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<BrainResource | undefined>();
 
-  const { resources, isLoaded, addResource, deleteResource, updateResource } = useBrainResources();
+  const { resources, isLoaded, addResource, deleteResource, updateResource, getCategories } = useBrainResources();
   const { timestamps } = useCategoryLastUpdated();
-
-  // Calculate min card height based on number of cards (3 columns on lg)
-  const minCardHeight = getCardMinHeight(brainPages.length, 3);
 
   const handleEditResource = (resource: BrainResource) => {
     setEditingResource(resource);
@@ -141,30 +217,12 @@ export default function BrainPage() {
                 <div className="flex items-center gap-2">
                   <motion.button
                     onClick={() => setIsResourcesDrawerOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-secondary)] hover:border-[var(--border-brand)] transition-colors group"
-                    title="Resources"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Library className="w-4 h-4 text-[var(--fg-tertiary)]" />
-                    <span className="text-sm font-medium text-[var(--fg-secondary)]">Resources</span>
-                    {isLoaded && resources.length > 0 && (
-                      <span className="px-1.5 py-0.5 text-xs font-medium rounded-md bg-[var(--bg-tertiary)] text-[var(--fg-tertiary)]">
-                        {resources.length}
-                      </span>
-                    )}
-                  </motion.button>
-                  <motion.button
-                    onClick={() => {
-                      // Placeholder - will be implemented later
-                      console.log('Connect to GitHub clicked');
-                    }}
                     className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-secondary)] hover:border-[var(--border-brand)] transition-colors group"
-                    title="Connect to GitHub"
+                    title="Resources"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Github className="w-5 h-5 text-[var(--fg-tertiary)]" />
+                    <Library className="w-5 h-5 text-[var(--fg-tertiary)]" />
                   </motion.button>
                   <motion.button
                     onClick={() => setIsSettingsOpen(true)}
@@ -183,27 +241,50 @@ export default function BrainPage() {
               </p>
             </MotionItem>
 
-            {/* Cards Grid - compact with 3 columns on desktop */}
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-            >
-              {brainPages.map((page, index) => (
-                <motion.div key={page.id} variants={fadeInUp} custom={index}>
-                  <ProjectStyleCard
-                    href={page.href}
-                    title={page.title}
-                    description={page.description}
-                    icon={page.icon}
-                    iconLabel={page.iconLabel}
-                    lastUpdated={timestamps[page.timestampKey]}
-                    minHeight={minCardHeight}
-                  />
+            {/* Category Sections */}
+            <div className="space-y-10">
+              {brainCategories.map((category, categoryIndex) => (
+                <motion.div
+                  key={category.id}
+                  variants={fadeInUp}
+                  initial="hidden"
+                  animate="visible"
+                  custom={categoryIndex}
+                >
+                  {/* Category Header */}
+                  <div className="mb-4">
+                    <h2 className="text-xl font-semibold text-[var(--fg-primary)]">
+                      {category.title}
+                    </h2>
+                    <p className="text-sm text-[var(--fg-tertiary)]">
+                      {category.description}
+                    </p>
+                  </div>
+
+                  {/* Category Cards Grid */}
+                  <motion.div
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+                    variants={staggerContainer}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {category.pages.map((page, pageIndex) => (
+                      <motion.div key={page.id} variants={fadeInUp} custom={pageIndex}>
+                        <ProjectStyleCard
+                          href={page.href}
+                          title={page.title}
+                          description={page.description}
+                          icon={page.icon}
+                          iconLabel={page.iconLabel}
+                          lastUpdated={timestamps[page.timestampKey]}
+                          minHeight="140px"
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           </PageTransition>
         </div>
       </MainContent>
@@ -221,6 +302,7 @@ export default function BrainPage() {
         onAddResource={addResource}
         editResource={editingResource}
         onUpdateResource={updateResource}
+        existingCategories={getCategories()}
       />
 
       {/* Resources Drawer */}

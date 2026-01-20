@@ -10,7 +10,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { BackgroundGradient } from './BackgroundGradient';
+import { PlusesTexture } from './PlusesTexture';
 import { WelcomeHeader, QuickAccessPanels } from './home';
 import { PlusMenu } from './ui/plus-menu';
 import { ExtendedThinkingToggle } from './ui/extended-thinking-toggle';
@@ -22,7 +22,6 @@ import { useAttachments } from '@/hooks/useAttachments';
 import { ModelId } from '@/lib/ai/providers';
 import { useChatContext } from '@/lib/chat-context';
 import { useCanvasContextOptional } from '@/lib/canvas-context';
-import { useBackgroundContextOptional } from '@/lib/background-context';
 import { AnimatePresence } from 'framer-motion';
 import type { PageContext } from '@/lib/brand-knowledge';
 import {
@@ -186,9 +185,6 @@ export function ChatInterface() {
   const canvasPanelMode = canvasContext?.panelMode ?? 'half';
   const canvasWidthPercent = canvasContext?.canvasWidthPercent ?? 50;
 
-  // Background context for shader state management
-  const backgroundContext = useBackgroundContextOptional();
-
   // Quick action config from Supabase
   const quickActionConfig = useQuickActionConfig();
 
@@ -212,28 +208,10 @@ export function ChatInterface() {
   // Derive engage mode for landing state (typing triggers centered view)
   const isEngageMode = !!(localInput.trim() || showQuickActionForm || activeQuickAction);
 
-  // Manage background shader state based on focus/typing/messages
-  // Uses the new phase-based animation system
-  useEffect(() => {
-    if (!backgroundContext) return;
-
-    // Don't change background state when there are messages (background fades out)
-    if (hasMessages) return;
-
-    // Trigger focus animation when focused
-    if (isFocused) {
-      backgroundContext.triggerFocus();
-    }
-  }, [backgroundContext, isFocused, hasMessages]);
-
-  // Handle unfocus - trigger reverse animation when blurring without submit
+  // Handle unfocus
   const handleInputBlur = useCallback(() => {
     setIsFocused(false);
-    // Only trigger unfocus animation if there's no input (user didn't submit)
-    if (!localInput.trim() && backgroundContext) {
-      backgroundContext.triggerUnfocus();
-    }
-  }, [localInput, backgroundContext]);
+  }, []);
 
   // Helper to get message content (must be defined before callbacks that use it)
   const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
@@ -954,9 +932,6 @@ export function ChatInterface() {
     // Reset scroll tracking - user wants to see the new response
     resetScrollTracking();
 
-    // Trigger background submit animation (converging → washing → fading → hidden)
-    backgroundContext?.triggerSubmit();
-
     const userMessage = input.trim();
     const currentAttachments = [...attachments];
     setInput('');
@@ -1130,9 +1105,6 @@ export function ChatInterface() {
     // Reset scroll tracking
     resetScrollTracking();
 
-    // Trigger background submit animation (converging → washing → fading → hidden)
-    backgroundContext?.triggerSubmit();
-
     try {
       // Build the request body with form data for server-side brand voice retrieval
       const requestBody = {
@@ -1194,7 +1166,7 @@ export function ChatInterface() {
       setQuickActionType(null);
       cancelQuickAction();
     }
-  }, [quickActionConfig, cancelQuickAction, selectedModel, connectorSettings, extendedThinkingEnabled, currentWritingStyle, sendMessage, resetScrollTracking, backgroundContext]);
+  }, [quickActionConfig, cancelQuickAction, selectedModel, connectorSettings, extendedThinkingEnabled, currentWritingStyle, sendMessage, resetScrollTracking]);
 
   // Handle field editor actions
   const handleEditField = useCallback((fieldType: FieldType, mode: EditorMode, item?: unknown) => {
@@ -1333,7 +1305,7 @@ export function ChatInterface() {
     // For quick action chats, only use generated title (never show prompt as title)
     // For regular chats, can fallback to first message
     const chatTitle = quickActionType
-      ? generatedTitle
+      ? (generatedTitle || 'New Conversation')
       : (generatedTitle || (hasMessages ? parsedMessages[0]?.content.slice(0, 50) : null));
     const displayTitle = chatTitle ? (chatTitle.length > 50 ? chatTitle.slice(0, 50) + '...' : chatTitle) : null;
 
@@ -1342,32 +1314,26 @@ export function ChatInterface() {
     const chatProjectId = currentChat?.projectId;
     const chatProject = chatProjectId ? projects.find(p => p.id === chatProjectId) : null;
 
-    // For quick action chats: never show title in breadcrumb (it's already in the chat header)
-    // Breadcrumb ends at the quick action chip (e.g., "Chats / Create a Post")
-    // For regular chats: show title after assistant response
-    const showTitle = !quickActionType && hasAssistantResponse && !!displayTitle;
+    // Show title in breadcrumb after assistant response, or for quick actions show "New Conversation" initially
+    // Quick action chats show a lightning bolt next to the title to indicate they were AI-guided
+    const showTitle = hasAssistantResponse && !!displayTitle;
+    const isQuickActionChat = !!quickActionType && !showQuickActionForm;
 
-    // Set quick action badge in breadcrumbs (shows as Aperol chip)
-    // Don't show in breadcrumbs when form is visible (it's now in the form header)
-    // Only show after form submission when user is viewing the chat
-    if (quickActionType && !showQuickActionForm) {
-      setQuickAction(quickActionType);
-    } else {
-      setQuickAction(null);
-    }
+    // Clear the separate quick action badge - we now show lightning bolt next to title instead
+    setQuickAction(null);
 
     if (chatProject) {
       // Chat belongs to a project: Projects / Project Name / Chat Title
       setBreadcrumbs([
         { label: 'Projects', href: '/projects' },
         { label: chatProject.name, href: `/projects/${chatProject.id}` },
-        ...(showTitle ? [{ label: displayTitle }] : []),
+        ...(showTitle ? [{ label: displayTitle, isQuickAction: isQuickActionChat }] : []),
       ]);
     } else {
       // Chat doesn't belong to a project: Chats / Chat Title
       setBreadcrumbs([
         { label: 'Chats', href: '/chats' },
-        ...(showTitle ? [{ label: displayTitle }] : []),
+        ...(showTitle ? [{ label: displayTitle, isQuickAction: isQuickActionChat }] : []),
       ]);
     }
   }, [setBreadcrumbs, setQuickAction, generatedTitle, parsedMessages, hasAssistantResponse, currentSessionId, chatHistory, projects, showQuickActionForm, quickActionType, pathname]);
@@ -1412,7 +1378,7 @@ export function ChatInterface() {
 
   return (
     <>
-      <BackgroundGradient fadeOut={hasMessages} />
+      {!hasMessages && <PlusesTexture />}
       {hasMessages && (
         <div 
           className="fixed left-0 bottom-0 top-14 z-0 bg-[var(--bg-primary)] lg:left-[var(--sidebar-width)] transition-[left,right] duration-300 ease-out"

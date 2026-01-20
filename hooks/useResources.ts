@@ -88,12 +88,23 @@ export function useResources() {
     []
   );
 
+  const getCategories = useCallback((): string[] => {
+    return Array.from(
+      new Set(
+        resources
+          .filter((r) => r.category)
+          .map((r) => r.category as string)
+      )
+    ).sort();
+  }, [resources]);
+
   return {
     resources,
     isLoaded,
     addResource,
     deleteResource,
     updateResource,
+    getCategories,
   };
 }
 

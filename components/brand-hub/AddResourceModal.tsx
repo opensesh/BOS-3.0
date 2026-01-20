@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { Modal, Button } from '@/components/ui';
 import { Icon } from '@/components/ui/Icon';
+import { CategoryInput } from '@/components/ui/CategoryInput';
 import { BrandResource } from '@/types';
 import { 
   getAllLucideIconNames, 
@@ -18,6 +19,7 @@ interface AddResourceModalProps {
   onAddResource: (resource: Omit<BrandResource, 'id' | 'createdAt'>) => void;
   editResource?: BrandResource;
   onUpdateResource?: (id: string, updates: Partial<BrandResource>) => void;
+  existingCategories?: string[];
 }
 
 export function AddResourceModal({
@@ -26,10 +28,12 @@ export function AddResourceModal({
   onAddResource,
   editResource,
   onUpdateResource,
+  existingCategories = [],
 }: AddResourceModalProps) {
   const isEditMode = !!editResource;
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  const [category, setCategory] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Link');
   const [iconSearch, setIconSearch] = useState('');
   const [error, setError] = useState('');
@@ -41,10 +45,12 @@ export function AddResourceModal({
     if (editResource && isOpen) {
       setName(editResource.name);
       setUrl(editResource.url);
+      setCategory(editResource.category || '');
       setSelectedIcon(editResource.lucideIconName || 'Link');
     } else if (!editResource && isOpen) {
       setName('');
       setUrl('');
+      setCategory('');
       setSelectedIcon('Link');
       setIconSearch('');
       setError('');
@@ -82,12 +88,14 @@ export function AddResourceModal({
       onUpdateResource(editResource.id, {
         name: name.trim(),
         url: urlToAdd,
+        category: category.trim() || undefined,
         lucideIconName: selectedIcon,
       });
     } else {
       onAddResource({
         name: name.trim(),
         url: urlToAdd,
+        category: category.trim() || undefined,
         icon: 'lucide',
         lucideIconName: selectedIcon,
       });
@@ -95,6 +103,7 @@ export function AddResourceModal({
 
     setName('');
     setUrl('');
+    setCategory('');
     setSelectedIcon('Link');
     setIconSearch('');
     setError('');
@@ -104,6 +113,7 @@ export function AddResourceModal({
   const handleClose = () => {
     setName('');
     setUrl('');
+    setCategory('');
     setSelectedIcon('Link');
     setIconSearch('');
     setError('');
@@ -113,23 +123,24 @@ export function AddResourceModal({
   // Get displayed icons based on search
   const displayedIcons = useMemo(() => {
     const query = iconSearch.toLowerCase().trim();
-    
+
     if (query) {
       // When searching, search both Lucide and FA icons
-      const lucideMatches = allLucideIcons.filter(n => 
+      const lucideMatches = allLucideIcons.filter(n =>
         n.toLowerCase().includes(query)
       );
       const faMatches = FA_BRAND_ICONS.filter(icon =>
         icon.name.toLowerCase().includes(query) ||
         icon.keywords.some(k => k.includes(query))
       ).map(i => i.name);
-      
+
       // Show FA matches first (they're usually what people want for brands)
-      return [...faMatches, ...lucideMatches].slice(0, 18);
+      return [...faMatches, ...lucideMatches].slice(0, 12);
     }
-    
-    // Default: show mix of popular FA brands and Lucide icons
-    return [...POPULAR_ICONS.fontAwesome.slice(0, 6), ...POPULAR_ICONS.lucide.slice(0, 12)];
+
+    // Default: Link first, then mix of popular FA brands and Lucide icons (2 rows = 12 icons)
+    const otherLucide = POPULAR_ICONS.lucide.filter(i => i !== 'Link').slice(0, 5);
+    return ['Link', ...POPULAR_ICONS.fontAwesome.slice(0, 6), ...otherLucide];
   }, [iconSearch, allLucideIcons]);
 
   // Common input styles using UUI theme tokens
@@ -183,6 +194,21 @@ export function AddResourceModal({
           )}
         </div>
 
+        {/* Category (optional) */}
+        <div>
+          <label htmlFor="resource-category" className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
+            Category <span className="text-[var(--fg-tertiary)]">(optional)</span>
+          </label>
+          <CategoryInput
+            id="resource-category"
+            value={category}
+            onChange={setCategory}
+            existingCategories={existingCategories}
+            placeholder="e.g., Design Tools"
+            className={inputStyles}
+          />
+        </div>
+
         {/* Icon Picker */}
         <div>
           <label className="block text-sm font-medium text-[var(--fg-primary)] mb-1.5">
@@ -222,10 +248,10 @@ export function AddResourceModal({
                   title={displayName}
                   className={`
                     p-2.5 rounded-lg border transition-all flex items-center justify-center
-                    focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:ring-offset-1
+                    focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)]
                     ${selectedIcon === iconName
                       ? 'bg-[var(--bg-brand-primary)] border-[var(--border-brand-solid)] text-[var(--fg-brand-primary)]'
-                      : 'bg-[var(--bg-tertiary)] border-transparent text-[var(--fg-tertiary)] hover:bg-[var(--bg-quaternary)] hover:text-[var(--fg-primary)]'
+                      : 'bg-[var(--bg-tertiary)] border-transparent text-[var(--fg-tertiary)] hover:border-[var(--border-brand-solid)] hover:text-[var(--fg-primary)]'
                     }
                   `}
                 >
@@ -240,21 +266,6 @@ export function AddResourceModal({
               No icons found for &ldquo;{iconSearch}&rdquo;
             </p>
           )}
-          
-          {/* Selected icon preview */}
-          <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-[var(--bg-tertiary)]">
-            <div className="p-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]">
-              <Icon name={selectedIcon} className="w-5 h-5" />
-            </div>
-            <span className="text-sm text-[var(--fg-secondary)]">
-              Selected: <span className="font-medium text-[var(--fg-primary)]">
-                {isFontAwesomeIcon(selectedIcon) 
-                  ? selectedIcon.replace('fa-', '').replace(/-/g, ' ')
-                  : selectedIcon
-                }
-              </span>
-            </span>
-          </div>
         </div>
       </div>
 

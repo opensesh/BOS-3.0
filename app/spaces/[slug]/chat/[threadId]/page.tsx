@@ -141,9 +141,9 @@ export default function SpaceChatPage() {
   // Set breadcrumbs for this chat page
   useEffect(() => {
     // Determine the chat title
-    const chatTitle = discussion?.title 
-      || initialQuery?.slice(0, 40) 
-      || 'New Chat';
+    const chatTitle = discussion?.title
+      || initialQuery?.slice(0, 40)
+      || 'New Conversation';
     
     // Truncate if too long
     const displayTitle = chatTitle.length > 40 

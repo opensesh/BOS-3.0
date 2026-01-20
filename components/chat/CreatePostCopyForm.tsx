@@ -910,7 +910,7 @@ export function CreatePostCopyForm({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors min-w-0"
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors min-w-0 rounded-t-xl"
         >
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {/* Quick Action Badge */}
@@ -920,7 +920,6 @@ export function CreatePostCopyForm({
                 Create Post
               </span>
             )}
-            <span className="text-sm font-semibold text-[var(--fg-primary)] truncate">Post Data Input</span>
           </div>
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}

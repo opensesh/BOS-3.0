@@ -279,8 +279,10 @@ function generateMarkdown(): string {
 
 > **Living documentation** — Auto-updated: ${timestamp.split('T')[0]}
 >
-> This document is auto-generated but provides high-level architectural guidance.
+> This document is auto-generated and provides high-level architectural guidance.
 > It's designed to help AI agents, developers, and MCP tools navigate the codebase.
+>
+> **Looking for product overview?** See [README.md](./README.md) for vision, MCP integration, and quick start.
 
 ---
 

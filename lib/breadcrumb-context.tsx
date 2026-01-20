@@ -7,6 +7,8 @@ import type { QuickActionType } from '@/lib/quick-actions';
 interface BreadcrumbItem {
   label: string;
   href?: string;
+  /** Indicates this breadcrumb is from a quick action chat (shows lightning bolt icon) */
+  isQuickAction?: boolean;
 }
 
 interface BreadcrumbContextType {

@@ -6,6 +6,7 @@ export interface BrainResource {
   id: string;
   name: string;
   url: string;
+  category?: string;
   icon: 'skills' | 'projects' | 'claude-md' | 'commands' | 'writing-styles' | 'custom';
   iconName?: string; // Lucide icon name for custom icons
   createdAt: string;
@@ -103,12 +104,23 @@ export function useBrainResources() {
     []
   );
 
+  const getCategories = useCallback((): string[] => {
+    return Array.from(
+      new Set(
+        resources
+          .filter((r) => r.category)
+          .map((r) => r.category as string)
+      )
+    ).sort();
+  }, [resources]);
+
   return {
     resources,
     isLoaded,
     addResource,
     deleteResource,
     updateResource,
+    getCategories,
   };
 }
 

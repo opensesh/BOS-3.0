@@ -5,9 +5,12 @@
  * replacing direct /claude-data/ fetches. This allows .claude/ to be
  * the single source of truth for local Claude configuration.
  *
- * GET /api/claude/brand-identity/OS_brand%20identity.md
- * GET /api/claude/writing-styles/blog.md
- * GET /api/claude/skills/algorithmic-art/SKILL.md
+ * Examples:
+ * GET /api/claude/brand/identity/OS_brand%20identity.md
+ * GET /api/claude/brand/writing/blog.md
+ * GET /api/claude/tools/skills/algorithmic-art/SKILL.md
+ * GET /api/claude/tools/plugins/feature-dev/PLUGIN.md
+ * GET /api/claude/reference/design-system.md
  */
 
 import { NextRequest, NextResponse } from 'next/server';

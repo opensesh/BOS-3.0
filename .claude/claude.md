@@ -30,22 +30,63 @@ hooks/            # Custom React hooks
 
 ## Claude Configuration Structure
 
-The `.claude/` directory contains all AI assistant configuration, organized by purpose:
+The `.claude/` directory is organized for Claude Code CLI compatibility:
 
 ```
 .claude/
-├── agents/           # Autonomous workflows (auto-activate on context)
-├── commands/         # User-triggered slash commands (/feature-dev, etc.)
-├── plugins/          # Full plugin packages (agents + commands + hooks + skills)
-├── skills/           # Auto-activating knowledge modules
-├── knowledge/        # Brand knowledge base (PDFs, guidelines)
-├── brand-identity/   # Brand assets (logos, fonts, colors)
-├── writing-styles/   # Content tone guides (creative, strategic, blog)
-├── data/             # Data sources (news-sources.md, etc.)
-├── system/           # Auto-generated architecture docs
-├── CLAUDE.md         # This file - main development guide
-└── BOS-DESIGN-SYSTEM.md  # Design system reference
+├── CLAUDE.md                    # This file (CLI required at root)
+├── settings.json                # MCP permissions (CLI required at root)
+├── settings.local.json          # Local dev permissions (gitignored)
+│
+├── agents/                      # Autonomous workflows (CLI required at root)
+│   ├── README.md
+│   └── feature-dev/
+│
+├── commands/                    # Slash commands (CLI required at root)
+│   ├── README.md
+│   └── restart.md
+│
+├── plugins/                     # Full capability packages (CLI required at root)
+│   ├── agent-sdk-dev/
+│   ├── code-review/
+│   ├── commit-commands/
+│   ├── feature-dev/
+│   ├── hookify/
+│   ├── plugin-dev/
+│   ├── pr-review-toolkit/
+│   └── ralph-wiggum/
+│
+├── skills/                      # Auto-activating knowledge (CLI required at root)
+│   ├── bos-code-quality/
+│   ├── brand-guidelines/
+│   ├── frontend-design/
+│   └── ...
+│
+├── brand/                       # Brand content (for creatives)
+│   ├── identity/                # Brand guidelines, PDFs
+│   ├── writing/                 # Writing style guides
+│   └── assets/                  # Future: logos, images
+│
+├── data/                        # Reference data
+│   └── news-sources.md
+│
+├── reference/                   # Documentation
+│   ├── design-system.md         # BOS design system reference
+│   └── mcp-setup.md             # MCP server configuration
+│
+└── system/                      # Auto-generated (read-only)
+    └── architecture.md          # Codebase architecture
 ```
+
+### Categories by Audience
+
+| Category | Folder | Audience | Contents |
+|----------|--------|----------|----------|
+| **CLI Tools** | `agents/`, `commands/`, `plugins/`, `skills/` | Engineers | CLI-required paths |
+| **Brand** | `brand/` | Creatives | Identity docs, writing styles, assets |
+| **Data** | `data/` | Both | Reference data (news sources, etc.) |
+| **Reference** | `reference/` | Both | Design system, MCP setup docs |
+| **System** | `system/` | Both | Auto-generated architecture |
 
 ### Agents vs Commands vs Skills
 
@@ -73,8 +114,9 @@ Some agents live inside plugins as subagents for larger workflows:
 - **Building a feature?** → Check `plugins/feature-dev/`
 - **Reviewing a PR?** → Check `plugins/pr-review-toolkit/`
 - **Creating a plugin?** → Check `plugins/plugin-dev/`
-- **Brand questions?** → Check `knowledge/` and `brand-identity/`
-- **Writing content?** → Check `writing-styles/`
+- **Brand questions?** → Check `brand/identity/`
+- **Writing content?** → Check `brand/writing/`
+- **Design system?** → Check `reference/design-system.md`
 
 ---
 
@@ -312,7 +354,7 @@ This project uses MCP servers to extend Claude's capabilities with external tool
 | **Notion** | Documentation, pages, databases |
 | **GitHub** | Repository, issues, PRs, code search |
 
-**For setup instructions, see [mcp-instructions.md](./mcp-instructions.md)**
+**For setup instructions, see [reference/mcp-setup.md](./reference/mcp-setup.md)**
 
 ---
 

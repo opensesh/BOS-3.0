@@ -163,7 +163,7 @@ async function seedBrandIdentity(
   dryRun: boolean
 ): Promise<SeedResult> {
   const result: SeedResult = { table: 'brain_brand_identity', seeded: 0, errors: [] };
-  const brandIdentityDir = path.join(CLAUDE_DIR, 'brand-identity');
+  const brandIdentityDir = path.join(CLAUDE_DIR, 'brand', 'identity');
 
   try {
     const exists = await fs.stat(brandIdentityDir).catch(() => null);
@@ -204,7 +204,7 @@ async function seedBrandIdentity(
             title,
             content,
             file_type: 'markdown',
-            file_path: `.claude/brand-identity/${file}`,
+            file_path: `.claude/brand/identity/${file}`,
             file_hash: hash,
             sync_status: 'synced',
             sort_order: result.seeded,
@@ -217,7 +217,7 @@ async function seedBrandIdentity(
             title,
             content: '',
             file_type: 'pdf',
-            file_path: `.claude/brand-identity/${file}`,
+            file_path: `.claude/brand/identity/${file}`,
             file_size: stat.size,
             mime_type: 'application/pdf',
             sort_order: result.seeded,
@@ -246,7 +246,7 @@ async function seedWritingStyles(
   dryRun: boolean
 ): Promise<SeedResult> {
   const result: SeedResult = { table: 'brain_writing_styles', seeded: 0, errors: [] };
-  const stylesDir = path.join(CLAUDE_DIR, 'writing-styles');
+  const stylesDir = path.join(CLAUDE_DIR, 'brand', 'writing');
 
   try {
     const exists = await fs.stat(stylesDir).catch(() => null);
@@ -282,7 +282,7 @@ async function seedWritingStyles(
           slug,
           title,
           content,
-          file_path: `.claude/writing-styles/${file}`,
+          file_path: `.claude/brand/writing/${file}`,
           file_hash: hash,
           sync_status: 'synced',
           sort_order: result.seeded,

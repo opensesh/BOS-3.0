@@ -77,21 +77,21 @@ export const FILE_MAPPINGS: FileMappingConfig[] = [
   {
     category: 'brand-identity',
     slug: 'brand-identity',
-    filePath: '.claude/brand-identity/OS_brand identity.md',
+    filePath: '.claude/brand/identity/OS_brand identity.md',
     title: 'Brand Identity',
     icon: 'badge',
   },
   {
     category: 'brand-identity',
     slug: 'brand-messaging',
-    filePath: '.claude/brand-identity/OS_brand messaging.md',
+    filePath: '.claude/brand/identity/OS_brand messaging.md',
     title: 'Brand Messaging',
     icon: 'message-square',
   },
   {
     category: 'brand-identity',
     slug: 'art-direction',
-    filePath: '.claude/brand-identity/OS_art direction.md',
+    filePath: '.claude/brand/identity/OS_art direction.md',
     title: 'Art Direction',
     icon: 'palette',
   },
@@ -100,35 +100,35 @@ export const FILE_MAPPINGS: FileMappingConfig[] = [
   {
     category: 'writing-styles',
     slug: 'blog',
-    filePath: '.claude/writing-styles/blog.md',
+    filePath: '.claude/brand/writing/blog.md',
     title: 'Blog',
     icon: 'book-open',
   },
   {
     category: 'writing-styles',
     slug: 'creative',
-    filePath: '.claude/writing-styles/creative.md',
+    filePath: '.claude/brand/writing/creative.md',
     title: 'Creative',
     icon: 'wand-2',
   },
   {
     category: 'writing-styles',
     slug: 'long-form',
-    filePath: '.claude/writing-styles/long-form.md',
+    filePath: '.claude/brand/writing/long-form.md',
     title: 'Long Form',
     icon: 'file-text',
   },
   {
     category: 'writing-styles',
     slug: 'short-form',
-    filePath: '.claude/writing-styles/short-form.md',
+    filePath: '.claude/brand/writing/short-form.md',
     title: 'Short Form',
     icon: 'message-circle',
   },
   {
     category: 'writing-styles',
     slug: 'strategic',
-    filePath: '.claude/writing-styles/strategic.md',
+    filePath: '.claude/brand/writing/strategic.md',
     title: 'Strategic',
     icon: 'target',
   },
@@ -223,7 +223,7 @@ export const BRAIN_BRAND_IDENTITY_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'brand-identity',
     slug: 'brand-identity',
-    filePath: '.claude/brand-identity/OS_brand identity.md',
+    filePath: '.claude/brand/identity/OS_brand identity.md',
     title: 'Brand Identity',
     icon: 'badge',
     brainTable: 'brain_brand_identity',
@@ -232,7 +232,7 @@ export const BRAIN_BRAND_IDENTITY_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'brand-identity',
     slug: 'brand-messaging',
-    filePath: '.claude/brand-identity/OS_brand messaging.md',
+    filePath: '.claude/brand/identity/OS_brand messaging.md',
     title: 'Brand Messaging',
     icon: 'message-square',
     brainTable: 'brain_brand_identity',
@@ -241,7 +241,7 @@ export const BRAIN_BRAND_IDENTITY_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'brand-identity',
     slug: 'art-direction',
-    filePath: '.claude/brand-identity/OS_art direction.md',
+    filePath: '.claude/brand/identity/OS_art direction.md',
     title: 'Art Direction',
     icon: 'palette',
     brainTable: 'brain_brand_identity',
@@ -251,7 +251,7 @@ export const BRAIN_BRAND_IDENTITY_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'brand-identity',
     slug: 'brand-identity-pdf',
-    filePath: '.claude/brand-identity/OS_Brand Identity.pdf',
+    filePath: '.claude/brand/identity/OS_Brand Identity.pdf',
     title: 'Brand Identity (PDF)',
     icon: 'file-text',
     brainTable: 'brain_brand_identity',
@@ -260,7 +260,7 @@ export const BRAIN_BRAND_IDENTITY_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'brand-identity',
     slug: 'brand-messaging-pdf',
-    filePath: '.claude/brand-identity/OS_brand messaging.pdf',
+    filePath: '.claude/brand/identity/OS_brand messaging.pdf',
     title: 'Brand Messaging (PDF)',
     icon: 'file-text',
     brainTable: 'brain_brand_identity',
@@ -269,7 +269,7 @@ export const BRAIN_BRAND_IDENTITY_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'brand-identity',
     slug: 'art-direction-pdf',
-    filePath: '.claude/brand-identity/OS_art direction.pdf',
+    filePath: '.claude/brand/identity/OS_art direction.pdf',
     title: 'Art Direction (PDF)',
     icon: 'file-text',
     brainTable: 'brain_brand_identity',
@@ -284,7 +284,7 @@ export const BRAIN_WRITING_STYLES_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'writing-styles',
     slug: 'blog',
-    filePath: '.claude/writing-styles/blog.md',
+    filePath: '.claude/brand/writing/blog.md',
     title: 'Blog',
     icon: 'book-open',
     brainTable: 'brain_writing_styles',
@@ -293,7 +293,7 @@ export const BRAIN_WRITING_STYLES_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'writing-styles',
     slug: 'creative',
-    filePath: '.claude/writing-styles/creative.md',
+    filePath: '.claude/brand/writing/creative.md',
     title: 'Creative',
     icon: 'wand-2',
     brainTable: 'brain_writing_styles',
@@ -302,7 +302,7 @@ export const BRAIN_WRITING_STYLES_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'writing-styles',
     slug: 'long-form',
-    filePath: '.claude/writing-styles/long-form.md',
+    filePath: '.claude/brand/writing/long-form.md',
     title: 'Long Form',
     icon: 'file-text',
     brainTable: 'brain_writing_styles',
@@ -311,7 +311,7 @@ export const BRAIN_WRITING_STYLES_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'writing-styles',
     slug: 'short-form',
-    filePath: '.claude/writing-styles/short-form.md',
+    filePath: '.claude/brand/writing/short-form.md',
     title: 'Short Form',
     icon: 'message-circle',
     brainTable: 'brain_writing_styles',
@@ -320,7 +320,7 @@ export const BRAIN_WRITING_STYLES_MAPPINGS: BrainFileMappingConfig[] = [
   {
     category: 'writing-styles',
     slug: 'strategic',
-    filePath: '.claude/writing-styles/strategic.md',
+    filePath: '.claude/brand/writing/strategic.md',
     title: 'Strategic',
     icon: 'target',
     brainTable: 'brain_writing_styles',
@@ -364,29 +364,32 @@ export function getBrainTableFromPath(
   filePath: string
 ): BrainTableType | undefined {
   const normalizedPath = filePath.replace(/\\/g, '/').toLowerCase();
-  
-  if (normalizedPath.includes('/brand-identity/')) {
+
+  // New structure: .claude/brand/identity/
+  if (normalizedPath.includes('/brand/identity/')) {
     return 'brain_brand_identity';
   }
-  if (normalizedPath.includes('/writing-styles/')) {
+  // New structure: .claude/brand/writing/
+  if (normalizedPath.includes('/brand/writing/')) {
     return 'brain_writing_styles';
   }
-  if (normalizedPath.includes('/plugins/')) {
+  // CLI-required paths: .claude/plugins/
+  if (normalizedPath.includes('.claude/plugins/')) {
     return 'brain_plugins';
   }
-  if (normalizedPath.includes('/skills/')) {
+  // CLI-required paths: .claude/skills/
+  if (normalizedPath.includes('.claude/skills/')) {
     return 'brain_skills';
   }
-  if (normalizedPath.includes('/agents/')) {
+  // CLI-required paths: .claude/agents/
+  if (normalizedPath.includes('.claude/agents/')) {
     return 'brain_agents';
   }
-  if (normalizedPath.includes('/commands/')) {
+  // CLI-required paths: .claude/commands/
+  if (normalizedPath.includes('.claude/commands/')) {
     return 'brain_commands';
   }
-  if (normalizedPath.includes('/knowledge/')) {
-    return 'brain_knowledge';
-  }
-  
+
   return undefined;
 }
 

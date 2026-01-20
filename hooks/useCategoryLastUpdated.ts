@@ -16,13 +16,23 @@ export interface CategoryTimestamps {
   guidelines: string | null;
   tokens: string | null;
 
-  // Brain categories
-  architecture: string | null; // Always null - system generated
+  // Brain categories - Brand
   brandIdentity: string | null;
   writingStyles: string | null;
-  skills: string | null;
+
+  // Brain categories - Tools
   plugins: string | null;
+  skills: string | null;
   agents: string | null;
+  commands: string | null;
+
+  // Brain categories - Reference
+  designSystem: string | null;
+  mcpSetup: string | null;
+  data: string | null;
+
+  // Brain categories - System
+  architecture: string | null; // Always null - system generated
 }
 
 interface UseCategoryLastUpdatedOptions {
@@ -38,6 +48,7 @@ interface UseCategoryLastUpdatedReturn {
 }
 
 const initialTimestamps: CategoryTimestamps = {
+  // Brand Hub
   logo: null,
   colors: null,
   fonts: null,
@@ -45,12 +56,20 @@ const initialTimestamps: CategoryTimestamps = {
   textures: null,
   guidelines: null,
   tokens: null,
-  architecture: null,
+  // Brain - Brand
   brandIdentity: null,
   writingStyles: null,
-  skills: null,
+  // Brain - Tools
   plugins: null,
+  skills: null,
   agents: null,
+  commands: null,
+  // Brain - Reference
+  designSystem: null,
+  mcpSetup: null,
+  data: null,
+  // Brain - System
+  architecture: null,
 };
 
 /**
@@ -88,9 +107,10 @@ export function useCategoryLastUpdated(
         tokensResult,
         brandIdentityResult,
         writingStylesResult,
-        skillsResult,
         pluginsResult,
+        skillsResult,
         agentsResult,
+        commandsResult,
       ] = await Promise.all([
         // Brand Hub: Logo (brand_assets where category='logos')
         supabase
@@ -178,18 +198,18 @@ export function useCategoryLastUpdated(
           .limit(1)
           .maybeSingle(),
 
-        // Brain: Skills
+        // Brain: Plugins
         supabase
-          .from('brain_skills')
+          .from('brain_plugins')
           .select('updated_at')
           .eq('brand_id', brandId)
           .order('updated_at', { ascending: false })
           .limit(1)
           .maybeSingle(),
 
-        // Brain: Plugins
+        // Brain: Skills
         supabase
-          .from('brain_plugins')
+          .from('brain_skills')
           .select('updated_at')
           .eq('brand_id', brandId)
           .order('updated_at', { ascending: false })
@@ -204,9 +224,19 @@ export function useCategoryLastUpdated(
           .order('updated_at', { ascending: false })
           .limit(1)
           .maybeSingle(),
+
+        // Brain: Commands
+        supabase
+          .from('brain_commands')
+          .select('updated_at')
+          .eq('brand_id', brandId)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
 
       setTimestamps({
+        // Brand Hub
         logo: logoResult.data?.updated_at ?? null,
         colors: colorsResult.data?.updated_at ?? null,
         fonts: fontsResult.data?.updated_at ?? null,
@@ -214,12 +244,20 @@ export function useCategoryLastUpdated(
         textures: texturesResult.data?.updated_at ?? null,
         guidelines: guidelinesResult.data?.updated_at ?? null,
         tokens: tokensResult.data?.updated_at ?? null,
-        architecture: null, // Always null - system generated
+        // Brain - Brand
         brandIdentity: brandIdentityResult.data?.updated_at ?? null,
         writingStyles: writingStylesResult.data?.updated_at ?? null,
-        skills: skillsResult.data?.updated_at ?? null,
+        // Brain - Tools
         plugins: pluginsResult.data?.updated_at ?? null,
+        skills: skillsResult.data?.updated_at ?? null,
         agents: agentsResult.data?.updated_at ?? null,
+        commands: commandsResult.data?.updated_at ?? null,
+        // Brain - Reference (file-based, no DB timestamps)
+        designSystem: null,
+        mcpSetup: null,
+        data: null,
+        // Brain - System
+        architecture: null, // Auto-generated
       });
     } catch (err) {
       console.error('Error fetching category timestamps:', err);

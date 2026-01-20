@@ -3,7 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const BRAND_IDENTITY_DIR = path.join(process.cwd(), '.claude/brand-identity');
+const BRAND_IDENTITY_DIR = path.join(process.cwd(), '.claude/brand/identity');
 
 export interface BrandIdentityFile {
   id: string;
@@ -94,7 +94,7 @@ export async function getBrandIdentityPdfPath(slug: string): Promise<string | nu
     }
     
     // Return the relative path for the API route
-    return `.claude/brand-identity/${matchingFile}`;
+    return `.claude/brand/identity/${matchingFile}`;
   } catch (error) {
     console.error(`Error finding brand identity PDF ${slug}:`, error);
     return null;

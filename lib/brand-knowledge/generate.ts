@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ROOT_DIR = process.cwd();
-const KNOWLEDGE_DIR = path.join(ROOT_DIR, '.claude', 'knowledge');
+const BRAND_DIR = path.join(ROOT_DIR, '.claude', 'brand');
 const ASSETS_DIR = path.join(ROOT_DIR, 'public', 'assets');
 const OUTPUT_DIR = path.join(ROOT_DIR, 'lib', 'brand-knowledge');
 
@@ -82,17 +82,17 @@ function generateId(filename: string): string {
 function processBrandDocs(): BrandDocument[] {
   const docs: BrandDocument[] = [];
 
-  // Process core docs
-  const coreDir = path.join(KNOWLEDGE_DIR, 'core');
-  if (fs.existsSync(coreDir)) {
-    const files = fs.readdirSync(coreDir).filter((f) => f.endsWith('.md'));
+  // Process brand identity docs
+  const identityDir = path.join(BRAND_DIR, 'identity');
+  if (fs.existsSync(identityDir)) {
+    const files = fs.readdirSync(identityDir).filter((f) => f.endsWith('.md'));
     for (const file of files) {
-      const filePath = path.join(coreDir, file);
+      const filePath = path.join(identityDir, file);
       const content = fs.readFileSync(filePath, 'utf-8');
       docs.push({
         id: generateId(file),
         title: extractTitle(content),
-        path: `/.claude/brand-identity/${file}`,
+        path: `/.claude/brand/identity/${file}`,
         content,
         keywords: extractKeywords(content),
       });
@@ -100,16 +100,16 @@ function processBrandDocs(): BrandDocument[] {
   }
 
   // Process writing styles
-  const stylesDir = path.join(KNOWLEDGE_DIR, 'writing-styles');
-  if (fs.existsSync(stylesDir)) {
-    const files = fs.readdirSync(stylesDir).filter((f) => f.endsWith('.md'));
+  const writingDir = path.join(BRAND_DIR, 'writing');
+  if (fs.existsSync(writingDir)) {
+    const files = fs.readdirSync(writingDir).filter((f) => f.endsWith('.md'));
     for (const file of files) {
-      const filePath = path.join(stylesDir, file);
+      const filePath = path.join(writingDir, file);
       const content = fs.readFileSync(filePath, 'utf-8');
       docs.push({
         id: `writing_${generateId(file)}`,
         title: extractTitle(content),
-        path: `/.claude/writing-styles/${file}`,
+        path: `/.claude/brand/writing/${file}`,
         content,
         keywords: extractKeywords(content),
       });

@@ -6,10 +6,12 @@ import { AssetCarousel } from './AssetCarousel';
 import { StreamingSourcesCounter } from './InlineStreamingDisplay';
 import { ResponseActions } from './ResponseActions';
 import { RelatedQuestions } from './RelatedQuestions';
+import { ResearchTimeline } from './ResearchTimeline';
 import { CanvasPreviewBubble } from '@/components/canvas';
 import { useCanvasContextOptional } from '@/lib/canvas-context';
 import { canvasService, type Canvas } from '@/lib/supabase/canvas-service';
 import type { QuickActionMetadata } from '@/hooks/useChat';
+import type { ResearchResult } from '@/hooks/useResearch';
 
 // Message attachment interface
 interface MessageAttachment {
@@ -39,6 +41,8 @@ interface ChatContentProps {
   attachments?: MessageAttachment[];
   /** Quick action metadata for form-based submissions */
   quickAction?: QuickActionMetadata;
+  /** Research result for deep research queries */
+  researchResult?: ResearchResult;
 }
 
 export function ChatContent({
@@ -55,6 +59,7 @@ export function ChatContent({
   chatId,
   attachments,
   quickAction,
+  researchResult,
 }: ChatContentProps) {
   // Canvas context for opening canvas panel
   const canvasContext = useCanvasContextOptional();
@@ -242,6 +247,17 @@ export function ChatContent({
           showSources={hasLinks}
           modelUsed={modelUsed}
         />
+      )}
+
+      {/* Research Timeline - positioned between response actions and follow-ups */}
+      {!isStreaming && researchResult && (
+        <div className="mt-4 mb-6">
+          <ResearchTimeline
+            result={researchResult}
+            title="Research Process"
+            defaultCollapsed={true}
+          />
+        </div>
       )}
 
       {/* Related questions - only on last response, not for canvas responses */}

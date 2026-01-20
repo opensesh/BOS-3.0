@@ -10,9 +10,7 @@ import {
   Blocks,
   ChevronRight,
   Check,
-  X,
   Layers,
-  Target,
 } from 'lucide-react';
 import { WritingStyleSelector, type WritingStyle } from './writing-style-selector';
 import { ProjectSelector, type Project } from './project-selector';
@@ -32,9 +30,6 @@ interface PlusMenuProps {
   onCreateSpace?: (title: string) => Promise<void>;
   disabled?: boolean;
   showSpaceOption?: boolean;
-  // Deep Research mode
-  isResearchMode?: boolean;
-  onResearchModeChange?: (enabled: boolean) => void;
 }
 
 type Submenu = 'none' | 'project' | 'style' | 'space' | 'connectors';
@@ -53,8 +48,6 @@ export function PlusMenu({
   onCreateSpace,
   disabled,
   showSpaceOption = true,
-  isResearchMode = false,
-  onResearchModeChange,
 }: PlusMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<Submenu>('none');
@@ -166,18 +159,6 @@ export function PlusMenu({
       submenu: 'style' as Submenu,
       hasValue: !!currentStyle,
     },
-    // Deep Research toggle
-    ...(onResearchModeChange ? [{
-      id: 'research',
-      icon: Target,
-      label: 'Deep Research',
-      hasSubmenu: false,
-      isToggle: true,
-      isActive: isResearchMode,
-      onClick: () => {
-        onResearchModeChange(!isResearchMode);
-      },
-    }] : []),
     {
       id: 'connectors',
       icon: Blocks,
@@ -255,26 +236,6 @@ export function PlusMenu({
                       <div className="flex items-center gap-2">
                         {item.hasValue && (
                           <Check className="w-4 h-4 text-[var(--fg-brand-primary)]" />
-                        )}
-                        {/* Toggle switch for research mode */}
-                        {'isToggle' in item && item.isToggle && (
-                          <div
-                            className={`
-                              relative w-9 h-5 rounded-full transition-colors
-                              ${'isActive' in item && item.isActive
-                                ? 'bg-[var(--bg-brand-solid)]'
-                                : 'bg-[var(--bg-tertiary)]'
-                              }
-                            `}
-                          >
-                            <div
-                              className={`
-                                absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm
-                                transition-transform
-                                ${'isActive' in item && item.isActive ? 'translate-x-4' : 'translate-x-0.5'}
-                              `}
-                            />
-                          </div>
                         )}
                         {item.hasSubmenu && (
                           <ChevronRight className={`w-4 h-4 transition-transform ${isActiveSubmenu ? 'rotate-90' : ''}`} />
@@ -403,27 +364,3 @@ export function ProjectIndicator({
     </button>
   );
 }
-
-// Research mode indicator button (shown when research mode is active)
-export function ResearchIndicator({
-  isActive,
-  onClick,
-}: {
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  if (!isActive) return null;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="p-2 rounded-lg transition-all bg-[var(--bg-brand-primary)] text-[var(--fg-brand-primary)] hover:bg-[var(--bg-brand-secondary)]"
-      aria-label="Deep Research mode enabled"
-      title="Deep Research mode enabled - click to toggle"
-    >
-      <Target className="w-5 h-5" />
-    </button>
-  );
-}
-

@@ -6,12 +6,10 @@ import { AssetCarousel } from './AssetCarousel';
 import { StreamingSourcesCounter } from './InlineStreamingDisplay';
 import { ResponseActions } from './ResponseActions';
 import { RelatedQuestions } from './RelatedQuestions';
-import { ResearchTimeline } from './ResearchTimeline';
 import { CanvasPreviewBubble } from '@/components/canvas';
 import { useCanvasContextOptional } from '@/lib/canvas-context';
 import { canvasService, type Canvas } from '@/lib/supabase/canvas-service';
 import type { QuickActionMetadata } from '@/hooks/useChat';
-import type { ResearchResult } from '@/hooks/useResearch';
 
 // Message attachment interface
 interface MessageAttachment {
@@ -41,8 +39,6 @@ interface ChatContentProps {
   attachments?: MessageAttachment[];
   /** Quick action metadata for form-based submissions */
   quickAction?: QuickActionMetadata;
-  /** Research result for deep research queries */
-  researchResult?: ResearchResult;
 }
 
 export function ChatContent({
@@ -59,15 +55,14 @@ export function ChatContent({
   chatId,
   attachments,
   quickAction,
-  researchResult,
 }: ChatContentProps) {
   // Canvas context for opening canvas panel
   const canvasContext = useCanvasContextOptional();
-  
+
   // Persisted canvas from Supabase (for version tracking, etc.)
   const [persistedCanvas, setPersistedCanvas] = useState<Canvas | null>(null);
   const canvasSavedRef = useRef(false);
-  
+
   // Check if we should show citations (only for Perplexity models)
   const showCitations = modelUsed?.includes('sonar') || modelUsed?.includes('perplexity');
 
@@ -84,10 +79,10 @@ export function ChatContent({
   // This shows immediately when canvas tag is detected, even during streaming
   const localCanvas: Canvas | null = React.useMemo(() => {
     if (!canvasResponse) return null;
-    
+
     // If we have a persisted canvas, use that
     if (persistedCanvas) return persistedCanvas;
-    
+
     // Otherwise create a temporary local canvas for display
     return {
       id: `temp-${Date.now()}`,
@@ -107,7 +102,7 @@ export function ChatContent({
   // Only persist when both the AI stream AND canvas content are complete
   useEffect(() => {
     if (!canvasResponse || isStreaming || isCanvasStreaming || canvasSavedRef.current) return;
-    
+
     const persistCanvas = async () => {
       try {
         const newCanvas = await canvasService.createCanvas({
@@ -116,7 +111,7 @@ export function ChatContent({
           chat_id: chatId || null,
           last_edited_by: 'assistant',
         });
-        
+
         if (newCanvas) {
           setPersistedCanvas(newCanvas);
           canvasSavedRef.current = true;
@@ -126,7 +121,7 @@ export function ChatContent({
         // Canvas still displays via localCanvas even if persistence fails
       }
     };
-    
+
     persistCanvas();
   }, [canvasResponse, isStreaming, isCanvasStreaming, chatId]);
 
@@ -144,12 +139,12 @@ export function ChatContent({
   // Sync streaming content to canvas panel if it's open
   useEffect(() => {
     if (!canvasContext || !canvasContext.isCanvasOpen || !canvasResponse) return;
-    
+
     // Update canvas panel content during streaming
     if (isStreaming || isCanvasStreaming) {
       canvasContext.setLocalContent(canvasResponse.content);
     }
-    
+
     // When streaming completes, turn off streaming indicator
     if (!isStreaming && !isCanvasStreaming && canvasContext.isStreaming) {
       canvasContext.setIsStreaming(false);
@@ -247,17 +242,6 @@ export function ChatContent({
           showSources={hasLinks}
           modelUsed={modelUsed}
         />
-      )}
-
-      {/* Research Timeline - positioned between response actions and follow-ups */}
-      {!isStreaming && researchResult && (
-        <div className="mt-4 mb-6">
-          <ResearchTimeline
-            result={researchResult}
-            title="Research Process"
-            defaultCollapsed={true}
-          />
-        </div>
       )}
 
       {/* Related questions - only on last response, not for canvas responses */}

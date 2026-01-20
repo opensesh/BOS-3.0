@@ -2,16 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useChat } from '@/hooks/useChat';
-import { useResearch } from '@/hooks/useResearch';
-import { shouldSuggestDeepResearch } from '@/lib/ai/auto-router';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Mic,
   Send,
   AlertCircle,
-  Target,
-  X,
 } from 'lucide-react';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { BackgroundGradient } from './BackgroundGradient';
@@ -47,7 +43,6 @@ import {
   type FieldType,
   type EditorMode,
 } from './chat';
-import { ResearchProgress } from './chat/ResearchProgress';
 import { useBreadcrumbs } from '@/lib/breadcrumb-context';
 import type { 
   PostCopyFormData, 
@@ -130,9 +125,6 @@ export function ChatInterface() {
   const [fieldEditorType, setFieldEditorType] = useState<FieldType>('channel');
   const [fieldEditorMode, setFieldEditorMode] = useState<EditorMode>('add');
   const [fieldEditorItem, setFieldEditorItem] = useState<unknown>(undefined);
-  // Deep Research mode state
-  const [isResearchMode, setIsResearchMode] = useState(false);
-  const [showResearchSuggestion, setShowResearchSuggestion] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -206,25 +198,6 @@ export function ChatInterface() {
     onError: (err) => {
       console.error('Chat error:', err);
       setSubmitError(err.message || 'An error occurred while sending your message');
-    },
-  });
-
-  // Deep Research hook
-  const {
-    startResearch,
-    stop: stopResearch,
-    reset: resetResearch,
-    isLoading: isResearchLoading,
-    progress: researchProgress,
-    result: researchResult,
-    error: researchError,
-  } = useResearch({
-    onError: (err) => {
-      console.error('Research error:', err);
-      setSubmitError(err.message || 'An error occurred during research');
-    },
-    onComplete: (session) => {
-      console.log('Research completed:', session.id);
     },
   });
 
@@ -746,8 +719,7 @@ export function ChatInterface() {
   }, [pathname, searchParams, hasMessages, showQuickActionForm, quickActionType, activeQuickAction, cancelQuickAction, setQuickAction]);
 
   // status can be: 'submitted' | 'streaming' | 'ready' | 'error'
-  const isChatLoading = status === 'submitted' || status === 'streaming';
-  const isLoading = isChatLoading || isResearchLoading;
+  const isLoading = status === 'submitted' || status === 'streaming';
   
   // Show title loading for quick actions from submit until title is ready
   // For quick action chats: loading starts immediately when streaming, continues until title is generated
@@ -763,42 +735,6 @@ export function ChatInterface() {
     }
   }, [localInput, submitError]);
 
-  // Show research suggestion when query looks like research
-  useEffect(() => {
-    if (!isResearchMode && localInput.trim().length > 20) {
-      const shouldSuggest = shouldSuggestDeepResearch(localInput);
-      setShowResearchSuggestion(shouldSuggest);
-    } else {
-      setShowResearchSuggestion(false);
-    }
-  }, [localInput, isResearchMode]);
-
-  // Handle research completion - add result to messages
-  useEffect(() => {
-    if (researchResult && researchResult.answer) {
-      // Add assistant message with the research answer
-      const assistantMsg = {
-        id: `assistant-research-${researchResult.sessionId}`,
-        role: 'assistant' as const,
-        content: researchResult.answer,
-        sources: researchResult.citations.map((citation, idx) => ({
-          title: citation.title || citation.source,
-          url: citation.url,
-          snippet: citation.excerpt,
-        })),
-        // Store research metadata for timeline display
-        researchResult: researchResult,
-      };
-      setMessages(prev => [...prev, assistantMsg]);
-
-      // Reset research state
-      resetResearch();
-
-      // Turn off research mode after completing
-      setIsResearchMode(false);
-    }
-  }, [researchResult, setMessages, resetResearch]);
-  
   // Use local input for controlled textarea
   const input = localInput;
   const setInput = setLocalInput;
@@ -1018,32 +954,6 @@ export function ChatInterface() {
     const currentAttachments = [...attachments];
     setInput('');
     clearAttachments();
-
-    // Clear research suggestion when submitting
-    setShowResearchSuggestion(false);
-
-    // Deep Research mode - use research API
-    if (isResearchMode && currentAttachments.length === 0) {
-      try {
-        // Add user message to chat for display
-        const userMsg = {
-          id: `user-${Date.now()}`,
-          role: 'user' as const,
-          content: userMessage,
-        };
-        setMessages(prev => [...prev, userMsg]);
-
-        // Start research
-        await startResearch(userMessage);
-      } catch (err) {
-        console.error('Failed to start research:', err);
-        setSubmitError(err instanceof Error ? err.message : 'Failed to start research');
-        setInput(userMessage);
-      }
-      return;
-    }
-
-    // Regular chat mode
     if (typeof sendMessage !== 'function') {
       setSubmitError('Chat is not ready. Please refresh the page and try again.');
       return;
@@ -1558,9 +1468,6 @@ export function ChatInterface() {
                       if (message.role === 'user') {
                         const nextMessage = parsedMessages[idx + 1];
                         if (nextMessage?.role === 'assistant') {
-                          // Check if this is a research result (has researchResult metadata)
-                          const msgResearchResult = (messages.find(m => m.id === nextMessage.id) as { researchResult?: typeof researchResult })?.researchResult;
-
                           return (
                             <div key={message.id}>
                               <ChatContent
@@ -1577,37 +1484,11 @@ export function ChatInterface() {
                                 chatId={currentSessionId ?? undefined}
                                 attachments={message.attachments}
                                 quickAction={message.quickAction}
-                                researchResult={msgResearchResult}
                               />
                             </div>
                           );
                         }
                         if (!nextMessage && isLoading) {
-                          // Research mode - show progress instead of ChatContent
-                          if (isResearchLoading) {
-                            return (
-                              <div key={message.id} className="py-6 space-y-6">
-                                {/* User query display - Chat bubble style */}
-                                <div className="flex justify-end">
-                                  <div className="bg-[var(--bg-secondary)] rounded-2xl max-w-[80%] px-4 py-2.5">
-                                    <p className="text-[15px] text-[var(--fg-primary)] whitespace-pre-wrap">
-                                      {message.content}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {/* Research progress - wrapped in AnimatePresence for smooth exit */}
-                                <AnimatePresence mode="wait">
-                                  <ResearchProgress
-                                    progress={researchProgress}
-                                    showDetails={true}
-                                    defaultCollapsed={false}
-                                  />
-                                </AnimatePresence>
-                              </div>
-                            );
-                          }
-
                           // Get streaming data from the last message in the raw messages array
                           const lastRawMessage = messages[messages.length - 1];
                           const streamingThinking = lastRawMessage?.role === 'assistant'
@@ -1727,7 +1608,7 @@ export function ChatInterface() {
                       <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium">Error</p>
-                        <p className="mt-1">{error?.message || submitError || researchError?.message}</p>
+                        <p className="mt-1">{error?.message || submitError}</p>
                       </div>
                     </div>
                   </div>
@@ -1857,10 +1738,8 @@ export function ChatInterface() {
                           onCreateSpace={async (title) => {
                             createSpace(title);
                           }}
-                          disabled={isLoading || isResearchLoading}
+                          disabled={isLoading}
                           showSpaceOption={true}
-                          isResearchMode={isResearchMode}
-                          onResearchModeChange={setIsResearchMode}
                         />
 
                         <ExtendedThinkingToggle
@@ -1993,59 +1872,11 @@ export function ChatInterface() {
                   </div>
                 </form>
 
-                {/* Research suggestion banner */}
-                <AnimatePresence>
-                  {showResearchSuggestion && !isResearchMode && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="mt-3 p-3 rounded-xl bg-[var(--bg-brand-primary)]/10 border border-[var(--border-brand-solid)]/30"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-[var(--bg-brand-solid)]/10">
-                            <Target className="w-4 h-4 text-[var(--fg-brand-primary)]" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-[var(--fg-primary)]">
-                              This looks like a research task
-                            </p>
-                            <p className="text-xs text-[var(--fg-tertiary)]">
-                              Deep Research provides comprehensive answers with citations
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsResearchMode(true);
-                              setShowResearchSuggestion(false);
-                            }}
-                            className="px-3 py-1.5 text-sm font-medium rounded-lg bg-[var(--bg-brand-solid)] text-white hover:bg-[var(--bg-brand-solid)]/90 transition-colors"
-                          >
-                            Enable
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setShowResearchSuggestion(false)}
-                            className="p-1.5 rounded-lg text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
-                            aria-label="Dismiss"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
               {/* Error display */}
               <AnimatePresence>
-                {(error || submitError || researchError) && (
+                {(error || submitError) && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -2057,7 +1888,7 @@ export function ChatInterface() {
                       <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-medium">Error</p>
-                        <p className="mt-1">{error?.message || submitError || researchError?.message}</p>
+                        <p className="mt-1">{error?.message || submitError}</p>
                       </div>
                     </div>
                   </motion.div>

@@ -7,72 +7,6 @@ interface UIMessage {
   parts?: Array<{ type: string; text?: string }>;
 }
 
-// ============================================
-// DEEP RESEARCH DETECTION
-// ============================================
-
-// Keywords that strongly suggest deep research mode
-const DEEP_RESEARCH_KEYWORDS = [
-  'deep dive',
-  'comprehensive analysis',
-  'thorough research',
-  'detailed breakdown',
-  'in-depth analysis',
-  'extensive research',
-  'analyze in detail',
-  'full analysis',
-  'complete overview',
-  'detailed comparison',
-  'research report',
-  'investigate thoroughly',
-  'comprehensive review',
-  'systematic analysis',
-];
-
-// Minimum query length to consider for deep research
-const MIN_RESEARCH_QUERY_LENGTH = 20;
-
-/**
- * Check if a query should trigger deep research mode suggestion
- *
- * Returns true if the query contains indicators that it would benefit
- * from the multi-stage deep research pipeline (planning, parallel searches,
- * synthesis, gap analysis).
- */
-export function shouldSuggestDeepResearch(query: string): boolean {
-  const normalizedQuery = query.toLowerCase().trim();
-
-  // Too short for research
-  if (normalizedQuery.length < MIN_RESEARCH_QUERY_LENGTH) {
-    return false;
-  }
-
-  // Check for explicit deep research keywords
-  return DEEP_RESEARCH_KEYWORDS.some((keyword) =>
-    normalizedQuery.includes(keyword.toLowerCase())
-  );
-}
-
-/**
- * Get estimated time for deep research based on query characteristics
- */
-export function estimateResearchTime(query: string): number {
-  const normalizedQuery = query.toLowerCase();
-
-  // Simple queries: ~10s
-  if (normalizedQuery.length < 50) {
-    return 10;
-  }
-
-  // Moderate queries: ~30s
-  if (normalizedQuery.length < 150) {
-    return 30;
-  }
-
-  // Complex queries: ~60s
-  return 60;
-}
-
 // Helper to extract text content from a message (handles both formats)
 function getMessageText(message: UIMessage): string {
   // Direct content string
@@ -82,7 +16,7 @@ function getMessageText(message: UIMessage): string {
   // Parts array format (AI SDK 5.x)
   if (Array.isArray(message.parts)) {
     return message.parts
-      .filter((part): part is { type: string; text: string } => 
+      .filter((part): part is { type: string; text: string } =>
         part && typeof part === 'object' && part.type === 'text' && typeof part.text === 'string'
       )
       .map((part) => part.text)
@@ -151,7 +85,7 @@ export function autoSelectModel(messages: UIMessage[]): ModelId {
   }
 
   const messageText = getMessageText(lastUserMessage);
-  
+
   if (!messageText) {
     return 'claude-sonnet'; // Default if no text found
   }
@@ -198,41 +132,4 @@ export function getAutoRouterExplanation(query: string): string {
     return 'Using balanced model for quick response';
   }
   return 'Using balanced model for this query';
-}
-
-/**
- * Get a suggestion message for deep research mode
- */
-export function getDeepResearchSuggestion(query: string): string | null {
-  if (!shouldSuggestDeepResearch(query)) {
-    return null;
-  }
-
-  return 'This looks like a research task. Enable Deep Research for comprehensive, multi-source analysis?';
-}
-
-/**
- * Determine the best routing for a query
- * Returns both the model selection and whether deep research is recommended
- */
-export function routeQuery(messages: UIMessage[]): {
-  model: ModelId;
-  explanation: string;
-  suggestDeepResearch: boolean;
-  researchEstimatedTime: number | null;
-} {
-  const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
-  const query = lastUserMessage ? getMessageText(lastUserMessage) : '';
-
-  const model = autoSelectModel(messages);
-  const explanation = getAutoRouterExplanation(query);
-  const suggestDeepResearch = shouldSuggestDeepResearch(query);
-  const researchEstimatedTime = suggestDeepResearch ? estimateResearchTime(query) : null;
-
-  return {
-    model,
-    explanation,
-    suggestDeepResearch,
-    researchEstimatedTime,
-  };
 }

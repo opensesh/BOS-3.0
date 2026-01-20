@@ -128,7 +128,7 @@ export function SourcesDrawer({ isOpen, onClose, sources, resourceCards = [], qu
             className="fixed right-0 top-14 bottom-0 w-[400px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col shadow-2xl"
           >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-[var(--bg-secondary)]/30">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-secondary)]">
           <h2 className="text-[15px] font-semibold text-[var(--fg-primary)]">
             Sources
             <span className="text-xs text-[var(--fg-tertiary)]/50 font-normal ml-2">

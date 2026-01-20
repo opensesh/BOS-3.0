@@ -955,7 +955,7 @@ export function Sidebar() {
         aria-label="Main navigation"
       >
         {/* Navigation Items */}
-        <nav className={`flex flex-col ${isExpandedMode ? 'gap-1 px-3 pt-2.5' : 'gap-1.5 items-center px-1.5 pt-1.5'}`}>
+        <nav className={`flex flex-col ${isExpandedMode ? 'gap-1 px-3 pt-2.5' : 'gap-1.5 items-center px-1.5 pt-3'}`}>
           {/* New Chat Button */}
           <Link
             href="/"
@@ -1203,7 +1203,7 @@ export function Sidebar() {
         <div className={`${isExpandedMode ? 'mx-3 my-2.5' : 'mx-2 my-2'} border-t border-[var(--border-secondary)]`} />
 
         {/* Projects and Recent Chats Group */}
-        <div className={`flex flex-col ${isExpandedMode ? 'px-3 pb-2.5 gap-1.5' : 'items-center pb-1.5 gap-1'}`}>
+        <div className={`flex flex-col ${isExpandedMode ? 'px-3 pb-2.5 gap-1.5' : 'items-center pb-1.5 gap-1.5'}`}>
           {/* Projects Link */}
           <div 
             className={`flex flex-col ${isExpandedMode ? '' : 'justify-center'}`}
@@ -1296,12 +1296,18 @@ export function Sidebar() {
               return (
                 <Link
                   href="/projects"
-                  className={`p-2 ${isProjectsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
+                  className={`
+                    flex items-center justify-center
+                    w-11 h-11 mx-auto rounded-lg
+                    transition-colors duration-150
+                    ${isProjectsActive
+                      ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]'
+                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                    }
+                  `}
                   title="Projects"
                 >
-                  <div className={`flex items-center justify-center rounded-lg transition-all duration-150 w-10 h-10 ${isProjectsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
-                    <Folder className="w-5 h-5" />
-                  </div>
+                  <Folder className="w-5 h-5" />
                 </Link>
               );
             })()}
@@ -1398,12 +1404,18 @@ export function Sidebar() {
               return (
                 <Link
                   href="/chats"
-                  className={`p-2 ${isRecentChatsActive ? 'text-[var(--fg-brand-primary)]' : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)]'}`}
+                  className={`
+                    flex items-center justify-center
+                    w-11 h-11 mx-auto rounded-lg
+                    transition-colors duration-150
+                    ${isRecentChatsActive
+                      ? 'text-[var(--fg-brand-primary)] bg-[var(--bg-brand-primary)]'
+                      : 'text-[var(--fg-tertiary)] hover:text-[var(--fg-primary)] hover:bg-[var(--bg-tertiary)]'
+                    }
+                  `}
                   title="Chats"
                 >
-                  <div className={`flex items-center justify-center rounded-lg transition-all duration-150 w-10 h-10 ${isRecentChatsActive ? 'bg-[var(--bg-brand-primary)]' : 'hover:bg-[var(--bg-tertiary)]'}`}>
-                    <History className="w-5 h-5" />
-                  </div>
+                  <History className="w-5 h-5" />
                 </Link>
               );
             })()}

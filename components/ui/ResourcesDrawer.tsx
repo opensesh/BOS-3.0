@@ -227,7 +227,7 @@ export function ResourcesDrawer({
             className="fixed right-0 top-14 bottom-0 w-[380px] max-w-[90vw] bg-[var(--bg-primary)] z-[101] flex flex-col shadow-2xl border-l border-[var(--border-secondary)]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-secondary)]">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--border-secondary)]">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--bg-tertiary)]">
                   <BookOpen className="w-4 h-4 text-[var(--fg-tertiary)]" />

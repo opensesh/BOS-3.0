@@ -213,20 +213,27 @@ export function ChatInterface() {
   const isEngageMode = !!(localInput.trim() || showQuickActionForm || activeQuickAction);
 
   // Manage background shader state based on focus/typing/messages
+  // Uses the new phase-based animation system
   useEffect(() => {
     if (!backgroundContext) return;
 
     // Don't change background state when there are messages (background fades out)
     if (hasMessages) return;
 
-    // Set engage state when focused or typing
-    const isEngaged = isFocused || localInput.trim().length > 0;
-    if (isEngaged) {
-      backgroundContext.setBackgroundState('engage');
-    } else {
-      backgroundContext.setBackgroundState('default');
+    // Trigger focus animation when focused
+    if (isFocused) {
+      backgroundContext.triggerFocus();
     }
-  }, [backgroundContext, isFocused, localInput, hasMessages]);
+  }, [backgroundContext, isFocused, hasMessages]);
+
+  // Handle unfocus - trigger reverse animation when blurring without submit
+  const handleInputBlur = useCallback(() => {
+    setIsFocused(false);
+    // Only trigger unfocus animation if there's no input (user didn't submit)
+    if (!localInput.trim() && backgroundContext) {
+      backgroundContext.triggerUnfocus();
+    }
+  }, [localInput, backgroundContext]);
 
   // Helper to get message content (must be defined before callbacks that use it)
   const getMessageContent = useCallback((message: { content?: string; parts?: Array<{ type: string; text?: string }> }): string => {
@@ -947,8 +954,8 @@ export function ChatInterface() {
     // Reset scroll tracking - user wants to see the new response
     resetScrollTracking();
 
-    // Trigger background transition animation on submit
-    backgroundContext?.triggerTransition();
+    // Trigger background submit animation (converging → washing → fading → hidden)
+    backgroundContext?.triggerSubmit();
 
     const userMessage = input.trim();
     const currentAttachments = [...attachments];
@@ -1123,8 +1130,8 @@ export function ChatInterface() {
     // Reset scroll tracking
     resetScrollTracking();
 
-    // Trigger background transition animation on submit
-    backgroundContext?.triggerTransition();
+    // Trigger background submit animation (converging → washing → fading → hidden)
+    backgroundContext?.triggerSubmit();
 
     try {
       // Build the request body with form data for server-side brand voice retrieval
@@ -1710,7 +1717,7 @@ export function ChatInterface() {
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
+                        onBlur={handleInputBlur}
                         onPaste={handlePaste}
                         placeholder={attachments.length > 0 ? "Add a message or send with images..." : "Ask anything. Type @ for mentions and / for shortcuts."}
                         className="w-full px-4 py-4 bg-transparent text-[var(--fg-primary)] placeholder:text-[var(--fg-tertiary)] resize-none focus:outline-none min-h-[60px] max-h-[300px]"

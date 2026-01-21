@@ -15,7 +15,7 @@ Provide a code review for the given pull request.
 
 ## Step 1: Pre-check
 
-Launch a haiku agent to check if any of the following are true:
+Launch a sonnet agent to check if any of the following are true:
 - The pull request is closed
 - The pull request is a draft
 - The pull request doesn't need code review (automated PR, trivial change)
@@ -27,7 +27,7 @@ If any condition is true, stop.
 
 ## Step 2: Find Guidelines
 
-Launch a haiku agent to return a list of file paths for all relevant guideline files:
+Launch a sonnet agent to return a list of file paths for all relevant guideline files:
 - Root CLAUDE.md file, if it exists
 - Any CLAUDE.md files in directories containing modified files
 - **For BOS projects**: Check for `BOS-DESIGN-SYSTEM.md` and `theme.css` references

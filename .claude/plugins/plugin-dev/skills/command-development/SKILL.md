@@ -147,17 +147,16 @@ allowed-tools: Read, Write, Edit, Bash(git:*)
 ### model
 
 **Purpose:** Specify model for command execution
-**Type:** String (sonnet, opus, haiku)
+**Type:** String (sonnet, opus)
 **Default:** Inherits from conversation
 
 ```yaml
 ---
-model: haiku
+model: sonnet
 ---
 ```
 
 **Use cases:**
-- `haiku` - Fast, simple commands
 - `sonnet` - Standard workflows
 - `opus` - Complex analysis
 

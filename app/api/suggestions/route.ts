@@ -9,7 +9,7 @@ interface SuggestionRequest {
 }
 
 /**
- * Smart autocomplete suggestions using Claude Haiku
+ * Smart autocomplete suggestions using Claude Sonnet
  * Fast, contextual, and intelligent - not generic internet searches
  */
 export async function POST(req: Request) {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
     const trimmedQuery = query.trim();
 
-    // Use Claude Haiku for intelligent suggestions
+    // Use Claude Sonnet for intelligent suggestions
     const suggestions = await getSmartSuggestions(trimmedQuery, mode, limit);
     
     return NextResponse.json({ suggestions, source: 'ai' });
@@ -36,8 +36,8 @@ export async function POST(req: Request) {
 }
 
 /**
- * Generate intelligent autocomplete suggestions using Claude Haiku
- * Fast (~200-500ms), cheap, and contextually aware
+ * Generate intelligent autocomplete suggestions using Claude Sonnet
+ * Fast and contextually aware
  */
 async function getSmartSuggestions(
   query: string,

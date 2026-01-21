@@ -22,9 +22,9 @@ export async function POST(req: Request) {
 
     const client = await getAnthropicClient();
 
-    // Use Claude Haiku for fast, cheap summarization
+    // Use Claude Sonnet for quality summarization
     const response = await client.messages.create({
-      model: 'claude-3-5-haiku-latest',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 150,
       system: `You summarize AI reasoning into a brief, insightful phrase that captures what was actually considered—not generic labels.
 

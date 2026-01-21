@@ -284,7 +284,7 @@ Present as structured comparison report.
 ---
 description: Quick fix for common issues
 argument-hint: [issue-description]
-model: haiku
+model: sonnet
 ---
 
 Quickly fix: $ARGUMENTS
@@ -458,17 +458,17 @@ Process $1 to $2 with $3...
 
 **Use for:** Workflows, deployments, comparisons
 
-### Pattern 5: Fast Execution
+### Pattern 5: Standard Execution
 
 ```markdown
 ---
-model: haiku
+model: sonnet
 ---
 
-Quick simple task...
+Standard task...
 ```
 
-**Use for:** Simple, repetitive commands
+**Use for:** Standard commands and workflows
 
 ### Pattern 6: File Comparison
 

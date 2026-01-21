@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       .join('\n\n');
 
     const response = await client.messages.create({
-      model: 'claude-3-5-haiku-20241022', // Use fast, cheap model for titles
+      model: 'claude-sonnet-4-20250514', // Use Sonnet for reliable title generation
       max_tokens: 50,
       system: `You are a conversation title generator. Generate a SHORT, descriptive title (3-6 words) that captures the semantic meaning of what the conversation is about. 
 

@@ -100,7 +100,7 @@ When a user describes what they want an agent to do, you will:
      - Edge case handling
 
 3. **Select Configuration**:
-   - **Model**: Use `inherit` unless user specifies (sonnet for complex, haiku for simple)
+   - **Model**: Use `inherit` unless user specifies (sonnet for standard, opus for complex)
    - **Color**: Choose appropriate color:
      - blue/cyan: Analysis, review
      - green: Generation, creation

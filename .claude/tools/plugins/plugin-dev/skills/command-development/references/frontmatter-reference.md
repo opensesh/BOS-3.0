@@ -132,14 +132,11 @@ allowed-tools: "*"
 **Type:** String
 **Required:** No
 **Default:** Inherits from conversation
-**Values:** `sonnet`, `opus`, `haiku`
+**Values:** `sonnet`, `opus`
 
 **Purpose:** Specify which Claude model executes the command
 
 **Examples:**
-```yaml
-model: haiku    # Fast, efficient for simple tasks
-```
 ```yaml
 model: sonnet   # Balanced performance (default)
 ```
@@ -148,19 +145,6 @@ model: opus     # Maximum capability for complex tasks
 ```
 
 **When to use:**
-
-**Use `haiku` for:**
-- Simple, formulaic commands
-- Fast execution needed
-- Low complexity tasks
-- Frequent invocations
-
-```yaml
----
-description: Format code file
-model: haiku
----
-```
 
 **Use `sonnet` for:**
 - Standard commands (default)
@@ -188,8 +172,7 @@ model: opus
 ```
 
 **Best practices:**
-- Omit unless specific need
-- Use `haiku` for speed when possible
+- Omit unless specific need (inherits from conversation)
 - Reserve `opus` for genuinely complex tasks
 - Test with different models to find right balance
 
@@ -440,7 +423,7 @@ allowed-tools: Bash  # ❌ Missing command filter
 model: gpt4  # ❌ Not a valid Claude model
 ```
 
-**Fix:** Use `sonnet`, `opus`, or `haiku`
+**Fix:** Use `sonnet` or `opus`
 
 ### Validation Checklist
 
@@ -457,7 +440,7 @@ Before committing command:
 1. **Start minimal:** Add frontmatter only when needed
 2. **Document arguments:** Always use argument-hint with arguments
 3. **Restrict tools:** Use most restrictive allowed-tools that works
-4. **Choose right model:** Use haiku for speed, opus for complexity
+4. **Choose right model:** Use sonnet for standard tasks, opus for complexity
 5. **Manual-only sparingly:** Only use disable-model-invocation when necessary
 6. **Clear descriptions:** Make commands discoverable in `/help`
 7. **Test thoroughly:** Verify frontmatter works as expected

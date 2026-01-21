@@ -2,7 +2,7 @@
 
 **Created:** 2026-01-20
 **Purpose:** Comprehensive audit of chat functionality to identify errors, test edge cases, and validate semantic/RAG improvements.
-**Total Tests:** 126 prompts across 10 categories
+**Total Tests:** 125 prompts across 10 categories
 
 ---
 
@@ -154,7 +154,7 @@ Basic send/receive, conversation persistence, session management, and multi-turn
 
 ---
 
-## Section 2: Model Routing & Auto-Selection (12 prompts)
+## Section 2: Model Routing & Auto-Selection (11 prompts)
 
 Testing auto-router logic, connector toggles, and manual model override.
 
@@ -206,15 +206,7 @@ Testing auto-router logic, connector toggles, and manual model override.
 | **Failure Indicators** | Falls back to Sonnet, error message |
 | **Result** | |
 
-### ROUTE-007: Manual Model Override (Claude Haiku)
-| Field | Value |
-|-------|-------|
-| **Prompt** | [Select Claude Haiku manually] Give me a quick yes or no answer: Is 2+2 equal to 4? |
-| **Expected Behavior** | Fast response, uses Haiku |
-| **Failure Indicators** | Slow response, wrong model |
-| **Result** | |
-
-### ROUTE-008: Web Toggle Override
+### ROUTE-007: Web Toggle Override
 | Field | Value |
 |-------|-------|
 | **Prompt** | [Enable Web toggle, ask general question] What is photosynthesis? |
@@ -222,7 +214,7 @@ Testing auto-router logic, connector toggles, and manual model override.
 | **Failure Indicators** | No web search performed, toggle ignored |
 | **Result** | |
 
-### ROUTE-009: Brain Toggle (Knowledge Base)
+### ROUTE-008: Brain Toggle (Knowledge Base)
 | Field | Value |
 |-------|-------|
 | **Prompt** | [Enable Brain toggle] What documents do I have uploaded? |
@@ -230,7 +222,7 @@ Testing auto-router logic, connector toggles, and manual model override.
 | **Failure Indicators** | No KB search, generic response |
 | **Result** | |
 
-### ROUTE-010: Discover Toggle
+### ROUTE-009: Discover Toggle
 | Field | Value |
 |-------|-------|
 | **Prompt** | [Enable Discover toggle] Find trending topics in my industry. |
@@ -238,7 +230,7 @@ Testing auto-router logic, connector toggles, and manual model override.
 | **Failure Indicators** | Standard response, toggle has no effect |
 | **Result** | |
 
-### ROUTE-011: Multiple Toggles Enabled
+### ROUTE-010: Multiple Toggles Enabled
 | Field | Value |
 |-------|-------|
 | **Prompt** | [Enable Web + Brand + Brain] How should we position our brand on current trends? |
@@ -246,7 +238,7 @@ Testing auto-router logic, connector toggles, and manual model override.
 | **Failure Indicators** | Only uses one source, conflict errors |
 | **Result** | |
 
-### ROUTE-012: Model Persistence Across Turns
+### ROUTE-011: Model Persistence Across Turns
 | Field | Value |
 |-------|-------|
 | **Prompt** | [Select Opus, send message, then send another without changing] |
@@ -1101,7 +1093,7 @@ Testing voice consistency across messages, channels, and content types.
 | Section | Total | Pass | Fail | Partial | Blocked |
 |---------|-------|------|------|---------|---------|
 | 1. Core Chat | 15 | | | | |
-| 2. Model Routing | 12 | | | | |
+| 2. Model Routing | 11 | | | | |
 | 3. RAG & Brand | 15 | | | | |
 | 4. Extended Thinking | 12 | | | | |
 | 5. Tool Execution | 15 | | | | |
@@ -1110,7 +1102,7 @@ Testing voice consistency across messages, channels, and content types.
 | 8. Error Scenarios | 15 | | | | |
 | 9. Edge Cases | 12 | | | | |
 | 10. Brand Voice | 10 | | | | |
-| **TOTAL** | **126** | | | | |
+| **TOTAL** | **125** | | | | |
 
 ---
 

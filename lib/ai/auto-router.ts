@@ -107,7 +107,7 @@ export function autoSelectModel(messages: UIMessage[]): ModelId {
   const isSimpleQuery = SIMPLE_QUERY_PATTERNS.some((pattern) => pattern.test(query));
 
   if (isSimpleQuery || queryLength < 50) {
-    return 'claude-sonnet'; // Use Sonnet for all queries (Haiku deprecated)
+    return 'claude-sonnet'; // Use Sonnet for all queries
   }
 
   // Medium complexity - use balanced model

@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
     // Generate follow-up questions using Claude
     const result = await client.messages.create({
-      model: 'claude-3-haiku-20240307', // Use Haiku for speed and cost
+      model: 'claude-sonnet-4-20250514', // Use Sonnet for quality follow-up questions
       max_tokens: 500,
       messages: [
         {

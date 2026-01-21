@@ -1,11 +1,13 @@
 /**
  * Tool Executors
- * 
+ *
  * Server-side execution logic for each tool.
  * These functions are called when Claude uses a tool.
  */
 
 import type { ToolExecutionContext, ToolResult } from './index';
+import { CHAT_TIMEOUTS } from '@/lib/constants/chat';
+import { withRetry, isRetryableError } from '@/lib/utils/retry';
 
 // ============================================
 // WEB SEARCH EXECUTOR
@@ -60,62 +62,89 @@ export async function executeWebSearch(
   input: { query: string; max_results?: number },
   context: ToolExecutionContext
 ): Promise<ToolResult> {
-  try {
-    const apiKey = process.env.PERPLEXITY_API_KEY;
-    if (!apiKey) {
-      return { success: false, error: 'Perplexity API key not configured' };
-    }
+  const apiKey = process.env.PERPLEXITY_API_KEY;
+  if (!apiKey) {
+    return { success: false, error: 'Perplexity API key not configured' };
+  }
 
-    // Add timeout to prevent hanging
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+  // Use retry wrapper for transient failures (network issues, rate limits)
+  return withRetry(
+    async () => {
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        CHAT_TIMEOUTS.TOOL_EXECUTION_TIMEOUT
+      );
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'sonar',
-        messages: [
-          {
-            role: 'user',
-            content: input.query,
+      try {
+        const response = await fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
-        ],
-        max_tokens: 1024,
-      }),
-      signal: controller.signal,
-    });
-    
-    clearTimeout(timeoutId);
+          body: JSON.stringify({
+            model: 'sonar',
+            messages: [
+              {
+                role: 'user',
+                content: input.query,
+              },
+            ],
+            max_tokens: 1024,
+          }),
+          signal: controller.signal,
+        });
 
-    if (!response.ok) {
-      return { success: false, error: `Search failed: ${response.statusText}` };
-    }
+        clearTimeout(timeoutId);
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || 'No results found';
-    const citations = data.citations || [];
+        if (!response.ok) {
+          // Throw for retry logic to handle
+          throw new Error(`Search failed: ${response.status} ${response.statusText}`);
+        }
 
-    return {
-      success: true,
-      data: {
-        query: input.query, // Include the search query for context
-        summary: content,
-        sources: citations.map((url: string) => ({
-          title: extractTitleFromUrl(url),
-          url,
-        })),
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || 'No results found';
+        const citations = data.citations || [];
+
+        return {
+          success: true,
+          data: {
+            query: input.query, // Include the search query for context
+            summary: content,
+            sources: citations.map((url: string) => ({
+              title: extractTitleFromUrl(url),
+              url,
+            })),
+          },
+        } as ToolResult;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error; // Re-throw for retry handling
+      }
+    },
+    {
+      maxRetries: 2,
+      baseDelay: 2000,
+      shouldRetry: (error) => {
+        // Don't retry API key issues
+        if (error.message.includes('api key') || error.message.includes('401') || error.message.includes('403')) {
+          return false;
+        }
+        return isRetryableError(error);
       },
-    };
-  } catch (error) {
+      onRetry: (error, attempt) => {
+        console.log(`[Web Search] Retry attempt ${attempt}:`, error.message);
+      },
+    }
+  ).catch((error) => {
+    // Convert final error to ToolResult
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Search failed',
     };
-  }
+  });
 }
 
 // ============================================

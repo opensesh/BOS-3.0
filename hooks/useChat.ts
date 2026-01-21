@@ -1,6 +1,16 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { CHAT_TIMEOUTS, CHAT_LIMITS } from '@/lib/constants/chat';
+import {
+  ChatError,
+  InputValidationError,
+  StreamStallError,
+  TimeoutError,
+  RateLimitError,
+  toChatError,
+  isRetryable,
+} from '@/lib/utils/chat-errors';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -94,13 +104,6 @@ export interface UseChatOptions {
 
 export type ChatStatus = 'ready' | 'submitted' | 'streaming' | 'error';
 
-// Default timeout for API requests (2 minutes for extended thinking)
-const DEFAULT_TIMEOUT = 120000;
-
-// Stall timeout - if no new data received for this long during streaming, consider it stalled
-// This catches cases where sources are streamed but the continuation hangs
-const STREAM_STALL_TIMEOUT = 45000; // 45 seconds
-
 // Stream chunk types from our API
 interface StreamChunk {
   type: 'thinking' | 'text' | 'tool_use' | 'tool_result' | 'sources' | 'done' | 'error';
@@ -113,6 +116,66 @@ interface StreamChunk {
 }
 
 // ============================================
+// INPUT VALIDATION
+// ============================================
+
+/**
+ * Validate message content and attachments before sending
+ * @throws InputValidationError if validation fails
+ */
+function validateInput(
+  content: string,
+  attachments?: Array<{ type: string; data: string; mimeType: string }>
+): void {
+  // Validate message length
+  if (content.length > CHAT_LIMITS.MAX_MESSAGE_LENGTH) {
+    throw new InputValidationError(
+      `Message exceeds maximum length of ${CHAT_LIMITS.MAX_MESSAGE_LENGTH} characters`,
+      'INPUT_TOO_LARGE',
+      {
+        field: 'content',
+        maxValue: CHAT_LIMITS.MAX_MESSAGE_LENGTH,
+        actualValue: content.length,
+      }
+    );
+  }
+
+  // Validate attachment count
+  if (attachments && attachments.length > CHAT_LIMITS.MAX_ATTACHMENTS) {
+    throw new InputValidationError(
+      `Too many attachments. Maximum is ${CHAT_LIMITS.MAX_ATTACHMENTS}`,
+      'TOO_MANY_ATTACHMENTS',
+      {
+        field: 'attachments',
+        maxValue: CHAT_LIMITS.MAX_ATTACHMENTS,
+        actualValue: attachments.length,
+      }
+    );
+  }
+
+  // Validate total attachment size
+  if (attachments && attachments.length > 0) {
+    const totalSize = attachments.reduce((sum, att) => {
+      // Base64 data URLs have overhead, estimate actual size
+      const base64Data = att.data.split(',')[1] || att.data;
+      return sum + Math.ceil(base64Data.length * 0.75); // Base64 to bytes approximation
+    }, 0);
+
+    if (totalSize > CHAT_LIMITS.MAX_ATTACHMENT_SIZE) {
+      throw new InputValidationError(
+        `Total attachment size exceeds ${Math.round(CHAT_LIMITS.MAX_ATTACHMENT_SIZE / 1024 / 1024)}MB limit`,
+        'ATTACHMENTS_TOO_LARGE',
+        {
+          field: 'attachments',
+          maxValue: CHAT_LIMITS.MAX_ATTACHMENT_SIZE,
+          actualValue: totalSize,
+        }
+      );
+    }
+  }
+}
+
+// ============================================
 // HOOK IMPLEMENTATION
 // ============================================
 
@@ -122,7 +185,7 @@ export function useChat(options: UseChatOptions = {}) {
     onError,
     onFinish,
     initialMessages = [],
-    timeout = DEFAULT_TIMEOUT,
+    timeout = CHAT_TIMEOUTS.REQUEST_TIMEOUT,
   } = options;
 
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -178,6 +241,21 @@ export function useChat(options: UseChatOptions = {}) {
     message: { text: string; files?: Array<{ type: string; data: string; mimeType: string }> },
     sendOptions?: SendMessageOptions
   ) => {
+    // Validate input before proceeding
+    try {
+      validateInput(message.text, message.files);
+    } catch (validationError) {
+      const chatError = validationError instanceof ChatError
+        ? validationError
+        : toChatError(validationError);
+      setError(chatError);
+      setStatus('error');
+      if (onError) {
+        onError(chatError);
+      }
+      return;
+    }
+
     // Process file attachments for state storage
     const messageAttachments: MessageAttachment[] = message.files?.map((file, idx) => ({
       id: `att-${Date.now()}-${idx}`,
@@ -214,21 +292,29 @@ export function useChat(options: UseChatOptions = {}) {
     // Extended thinking can take longer, so use a generous timeout
     timeoutRef.current = setTimeout(() => {
       if (abortControllerRef.current) {
-        console.warn('[useChat] Request timeout - aborting');
+        console.warn('[useChat] Request timeout - aborting after', timeout, 'ms');
         timeoutOccurredRef.current = true;
         abortControllerRef.current.abort();
-        setError(new Error('Request timed out. Please try again.'));
+        const timeoutError = new TimeoutError(
+          'Request timed out. Please try again.',
+          'TIMEOUT',
+          timeout
+        );
+        setError(timeoutError);
         setStatus('error');
         // Remove the empty assistant message on timeout
         setMessages(prev => {
           const newMessages = [...prev];
-          if (newMessages[newMessages.length - 1]?.role === 'assistant' && 
+          if (newMessages[newMessages.length - 1]?.role === 'assistant' &&
               !newMessages[newMessages.length - 1]?.content) {
             newMessages.pop();
           }
           return newMessages;
         });
         resetRequestState();
+        if (onError) {
+          onError(timeoutError);
+        }
       }
     }, timeout);
 
@@ -310,23 +396,57 @@ export function useChat(options: UseChatOptions = {}) {
       let hasReceivedText = false;
       let hasReceivedSources = false;
       let lastChunkTime = Date.now();
-      
-      // Stall detection - if we receive sources but no text for too long, something's wrong
-      // This catches the case where web search completes but the continuation fails
+      const streamStartTime = Date.now();
+
+      // Stall detection - detects both:
+      // 1. Sources received but no text (web search completed but continuation failed)
+      // 2. Stream started but no content for extended period (text-only stall)
       const stallCheckInterval = setInterval(() => {
         const timeSinceLastChunk = Date.now() - lastChunkTime;
-        
-        // If we have sources but no text and stream has stalled, abort
-        if (hasReceivedSources && !hasReceivedText && timeSinceLastChunk > STREAM_STALL_TIMEOUT) {
-          console.warn('[useChat] Stream stalled: sources received but no text for', STREAM_STALL_TIMEOUT, 'ms');
+        const streamDuration = Date.now() - streamStartTime;
+
+        // Stall detection conditions:
+        // 1. Sources received but no text (existing case)
+        const sourcesWithoutText = hasReceivedSources && !hasReceivedText;
+
+        // 2. Stream started but no content for STALL_TIMEOUT (new: text-only stall detection)
+        //    Only check after minimum stream duration to avoid false positives during initial connection
+        const noContentStall =
+          streamDuration > CHAT_TIMEOUTS.MIN_STREAM_DURATION_FOR_STALL_CHECK &&
+          !hasReceivedText &&
+          timeSinceLastChunk > CHAT_TIMEOUTS.STREAM_STALL_TIMEOUT;
+
+        if ((sourcesWithoutText || noContentStall) && timeSinceLastChunk > CHAT_TIMEOUTS.STREAM_STALL_TIMEOUT) {
+          console.warn('[useChat] Stream stalled:', {
+            hasReceivedSources,
+            hasReceivedText,
+            timeSinceLastChunk,
+            streamDuration,
+            sourcesWithoutText,
+            noContentStall,
+          });
+
           if (abortControllerRef.current) {
-            // Set error state with a helpful message
-            setError(new Error('Response generation stalled after gathering sources. Please try again.'));
+            const stallError = new StreamStallError(
+              sourcesWithoutText
+                ? 'Response generation stalled after gathering sources. Please try again.'
+                : 'Response generation stalled. Please try again.',
+              'STREAM_STALL',
+              {
+                stallDurationMs: timeSinceLastChunk,
+                hadReceivedText: hasReceivedText,
+                hadReceivedSources: hasReceivedSources,
+              }
+            );
+            setError(stallError);
             setStatus('error');
             abortControllerRef.current.abort();
+            if (onError) {
+              onError(stallError);
+            }
           }
         }
-      }, 5000); // Check every 5 seconds
+      }, CHAT_TIMEOUTS.STALL_CHECK_INTERVAL);
 
       try {
         while (true) {
@@ -481,9 +601,11 @@ export function useChat(options: UseChatOptions = {}) {
     } catch (err) {
       // Clear timeout on any error
       clearTimeoutSafe();
-      
-      if ((err as Error).name === 'AbortError') {
-        // Request was cancelled - check if it was due to timeout
+
+      const rawError = err as Error;
+
+      // Handle abort errors (timeout or manual cancellation)
+      if (rawError.name === 'AbortError') {
         // If timeout occurred, the timeout handler already processed the state
         if (timeoutOccurredRef.current) {
           return;
@@ -493,15 +615,21 @@ export function useChat(options: UseChatOptions = {}) {
         return;
       }
 
-      const error = err instanceof Error ? err : new Error(String(err));
-      console.error('[useChat] Error during message send:', error.message);
-      setError(error);
+      // Convert to typed ChatError for consistent handling
+      const chatError = toChatError(err);
+      console.error('[useChat] Error during message send:', {
+        code: chatError instanceof ChatError ? chatError.code : 'UNKNOWN',
+        message: chatError.message,
+        retryable: isRetryable(chatError),
+      });
+
+      setError(chatError);
       setStatus('error');
-      
+
       // Remove the empty assistant message on error
       setMessages(prev => {
         const newMessages = [...prev];
-        if (newMessages[newMessages.length - 1]?.role === 'assistant' && 
+        if (newMessages[newMessages.length - 1]?.role === 'assistant' &&
             !newMessages[newMessages.length - 1]?.content) {
           newMessages.pop();
         }
@@ -509,7 +637,7 @@ export function useChat(options: UseChatOptions = {}) {
       });
 
       if (onError) {
-        onError(error);
+        onError(chatError);
       }
     } finally {
       resetRequestState();

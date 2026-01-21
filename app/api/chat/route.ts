@@ -1,5 +1,5 @@
-import { 
-  ModelId, 
+import {
+  ModelId,
   models,
   getAnthropicClient,
   getAnthropicModelId,
@@ -21,6 +21,13 @@ import { getAvailableMcpTools, mcpToolsToAnthropic } from '@/lib/ai/tools/mcp-ex
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type Anthropic from '@anthropic-ai/sdk';
+import { CHAT_LIMITS, CHAT_TIMEOUTS, HTTP_STATUS, ERROR_CODES } from '@/lib/constants/chat';
+import {
+  RateLimitError,
+  ToolExecutionError,
+  toChatError,
+} from '@/lib/utils/chat-errors';
+import { withRetry, isRetryableError } from '@/lib/utils/retry';
 
 export const maxDuration = 120; // Allow streaming responses up to 120 seconds for extended thinking
 
@@ -312,7 +319,6 @@ async function streamWithAnthropicNative(
     async start(controller) {
       // Accumulate sources from tool results
       // MEMORY OPTIMIZATION: Limit sources to prevent unbounded memory growth
-      const MAX_COLLECTED_SOURCES = 50;
       const collectedSources: SourceData[] = [];
 
       try {
@@ -408,7 +414,7 @@ async function streamWithAnthropicNative(
               const serverResult = block as any;
               if (serverResult.citations && Array.isArray(serverResult.citations)) {
                 for (const citation of serverResult.citations) {
-                  if (citation.url && collectedSources.length < MAX_COLLECTED_SOURCES) {
+                  if (citation.url && collectedSources.length < CHAT_LIMITS.MAX_COLLECTED_SOURCES) {
                     collectedSources.push({
                       id: `server-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                       name: citation.title || citation.url,
@@ -487,7 +493,7 @@ async function streamWithAnthropicNative(
                         type: 'external',
                       };
 
-                      if (collectedSources.length < MAX_COLLECTED_SOURCES) {
+                      if (collectedSources.length < CHAT_LIMITS.MAX_COLLECTED_SOURCES) {
                         collectedSources.push(sourceData);
                         console.log(`[Server Tool] Added web_fetch URL to sources: ${fetchUrl}`);
                       }
@@ -513,7 +519,7 @@ async function streamWithAnthropicNative(
                 // Extract citations from server tool result
                 if (anyBlock.citations && Array.isArray(anyBlock.citations)) {
                   for (const citation of anyBlock.citations) {
-                    if (citation.url && collectedSources.length < MAX_COLLECTED_SOURCES) {
+                    if (citation.url && collectedSources.length < CHAT_LIMITS.MAX_COLLECTED_SOURCES) {
                       collectedSources.push({
                         id: `server-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                         name: citation.title || citation.url,
@@ -572,15 +578,13 @@ async function streamWithAnthropicNative(
           let currentToolCalls = [...pendingToolCalls];
           let currentResponse = response;
           let totalToolRounds = 0;
-          const MAX_TOOL_ROUNDS = 5; // Safety limit to prevent infinite loops
-          const MAX_TOOL_CONVERSATION_MESSAGES = 30; // Limit conversation history during tool use to prevent OOM
           
           // Track if we've already streamed meaningful content during tool use
           // This includes canvas content injected from create_artifact
           let hasToolOutputText = false;
           
           // Loop to handle multiple rounds of tool use
-          while (currentResponse.stop_reason === 'tool_use' && currentToolCalls.length > 0 && totalToolRounds < MAX_TOOL_ROUNDS) {
+          while (currentResponse.stop_reason === 'tool_use' && currentToolCalls.length > 0 && totalToolRounds < CHAT_LIMITS.MAX_TOOL_ROUNDS) {
             totalToolRounds++;
             
             console.log(`[Tool Use] Starting tool execution round ${totalToolRounds}:`, {
@@ -596,28 +600,58 @@ async function streamWithAnthropicNative(
                 inputKeys: Object.keys(toolCall.input),
                 timestamp: new Date().toISOString(),
               });
-              
-              controller.enqueue(sse.encode({ 
-                type: 'tool_use', 
+
+              controller.enqueue(sse.encode({
+                type: 'tool_use',
                 toolName: toolCall.name,
                 toolInput: toolCall.input,
-                content: `Executing ${toolCall.name}...` 
+                content: `Executing ${toolCall.name}...`
               }));
 
-              // Execute the tool with timing
+              // Execute the tool with retry and error isolation
+              // Individual tool failures don't cascade - we continue with partial results
               const toolStartTime = Date.now();
-              const result = await executeTool(toolCall.name, toolCall.input, {});
+              let result: { success: boolean; data?: unknown; error?: string };
+
+              try {
+                // Use retry for transient failures (network, rate limits)
+                result = await withRetry(
+                  () => executeTool(toolCall.name, toolCall.input, {}),
+                  {
+                    maxRetries: 2,
+                    baseDelay: 1000,
+                    shouldRetry: (error, attempt) => {
+                      // Don't retry auth errors or unknown tools
+                      if (error.message.includes('api key') || error.message.includes('Unknown tool')) {
+                        return false;
+                      }
+                      return isRetryableError(error);
+                    },
+                    onRetry: (error, attempt) => {
+                      console.log(`[Tool Use] Retrying ${toolCall.name} (attempt ${attempt}):`, error.message);
+                    },
+                  }
+                );
+              } catch (toolError) {
+                // Tool failed even after retries - log but don't throw
+                console.error(`[Tool Use] Tool ${toolCall.name} failed after retries:`, toolError);
+                result = {
+                  success: false,
+                  error: toolError instanceof Error ? toolError.message : 'Tool execution failed',
+                };
+              }
+
               console.log(`[Tool Use] Tool ${toolCall.name} completed in ${Date.now() - toolStartTime}ms`, {
                 success: result.success,
                 hasData: !!result.data,
                 error: result.error || null,
               });
-              
-              controller.enqueue(sse.encode({ 
-                type: 'tool_result', 
+
+              controller.enqueue(sse.encode({
+                type: 'tool_result',
                 toolName: toolCall.name,
                 toolResult: result.data || result.error,
-                content: result.success ? 'Tool completed successfully' : `Error: ${result.error}` 
+                content: result.success ? 'Tool completed successfully' : `Error: ${result.error}`
               }));
 
               // Extract sources from web_search and stream them ONE BY ONE for smooth UX
@@ -626,8 +660,8 @@ async function streamWithAnthropicNative(
                 if (webSearchData.sources && Array.isArray(webSearchData.sources)) {
                   for (let i = 0; i < webSearchData.sources.length; i++) {
                     // MEMORY OPTIMIZATION: Stop collecting sources if we hit the limit
-                    if (collectedSources.length >= MAX_COLLECTED_SOURCES) {
-                      console.log(`[Tool Use] Source limit reached (${MAX_COLLECTED_SOURCES}), skipping remaining sources`);
+                    if (collectedSources.length >= CHAT_LIMITS.MAX_COLLECTED_SOURCES) {
+                      console.log(`[Tool Use] Source limit reached (${CHAT_LIMITS.MAX_COLLECTED_SOURCES}), skipping remaining sources`);
                       break;
                     }
 
@@ -746,21 +780,20 @@ async function streamWithAnthropicNative(
 
             // MEMORY OPTIMIZATION: Prune older messages if conversation grows too large during tool use
             // Keep first 2 messages (system context) and last N messages
-            if (conversationMessages.length > MAX_TOOL_CONVERSATION_MESSAGES) {
-              const excessMessages = conversationMessages.length - MAX_TOOL_CONVERSATION_MESSAGES;
+            if (conversationMessages.length > CHAT_LIMITS.MAX_TOOL_CONVERSATION_MESSAGES) {
+              const excessMessages = conversationMessages.length - CHAT_LIMITS.MAX_TOOL_CONVERSATION_MESSAGES;
               // Remove messages from position 2 (after initial context) to avoid losing important context
               conversationMessages.splice(2, excessMessages);
               console.log(`[Tool Use] Pruned ${excessMessages} messages to prevent memory growth. Current: ${conversationMessages.length}`);
             }
-            
+
             // Set up timeout for continuation
-            const CONTINUATION_TIMEOUT = 60000;
             let continuationTimedOut = false;
-            
+
             const continuationTimeoutId = setTimeout(() => {
-              console.error(`[Tool Use] Round ${totalToolRounds}: Timeout after`, CONTINUATION_TIMEOUT, 'ms');
+              console.error(`[Tool Use] Round ${totalToolRounds}: Timeout after`, CHAT_TIMEOUTS.CONTINUATION_TIMEOUT, 'ms');
               continuationTimedOut = true;
-            }, CONTINUATION_TIMEOUT);
+            }, CHAT_TIMEOUTS.CONTINUATION_TIMEOUT);
             
             try {
               console.log(`[Tool Use] Round ${totalToolRounds}: Starting continuation request`);
@@ -915,8 +948,8 @@ async function streamWithAnthropicNative(
           }
           
           // Safety check: if we hit max rounds, let the user know
-          if (totalToolRounds >= MAX_TOOL_ROUNDS) {
-            console.warn('[Tool Use] Hit maximum tool rounds limit:', MAX_TOOL_ROUNDS);
+          if (totalToolRounds >= CHAT_LIMITS.MAX_TOOL_ROUNDS) {
+            console.warn('[Tool Use] Hit maximum tool rounds limit:', CHAT_LIMITS.MAX_TOOL_ROUNDS);
             const limitMessage = "\n\n(Note: I reached the limit of tool operations. If you need more detailed information, please ask a follow-up question.)";
             controller.enqueue(sse.encode({ type: 'text', content: limitMessage }));
           }
@@ -1321,7 +1354,6 @@ async function streamWithPerplexityNative(
 
         // Accumulate content for snippet extraction when citations arrive
         // MEMORY OPTIMIZATION: Limit accumulated content to prevent unbounded growth
-        const MAX_CONTENT_LENGTH = 100000; // 100KB limit for accumulated content
         let fullContent = '';
         let rawCitations: string[] = [];
 
@@ -1352,7 +1384,7 @@ async function streamWithPerplexityNative(
                   const cleanDelta = stripThinkingTags(textDelta);
                   if (cleanDelta) {
                     // Only accumulate content up to the limit (for snippet extraction)
-                    if (fullContent.length < MAX_CONTENT_LENGTH) {
+                    if (fullContent.length < CHAT_LIMITS.MAX_CONTENT_LENGTH) {
                       fullContent += cleanDelta;
                     }
                     controller.enqueue(sse.encode({ type: 'text', content: cleanDelta }));
@@ -1528,9 +1560,26 @@ export async function POST(req: Request) {
     // Validate request
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: 'Messages array is required' }), {
-        status: 400,
+        status: HTTP_STATUS.BAD_REQUEST,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    // Validate input size to prevent OOM
+    const totalMessageLength = messages.reduce((acc: number, m: ClientMessage) => {
+      const contentLength = typeof m.content === 'string' ? m.content.length : 0;
+      return acc + contentLength;
+    }, 0);
+
+    if (totalMessageLength > CHAT_LIMITS.MAX_MESSAGE_LENGTH) {
+      console.warn('[Chat API] Message content too large:', totalMessageLength);
+      return new Response(
+        JSON.stringify({
+          error: 'Message content exceeds maximum allowed size',
+          code: ERROR_CODES.INPUT_TOO_LARGE,
+        }),
+        { status: HTTP_STATUS.PAYLOAD_TOO_LARGE, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
     // Log incoming messages to debug image attachments

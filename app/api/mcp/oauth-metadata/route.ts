@@ -2,35 +2,27 @@ import { NextResponse } from 'next/server';
 
 /**
  * OAuth Authorization Server Metadata (RFC 8414)
- * 
- * This endpoint tells OAuth clients about our server's authorization capabilities.
- * Since we use simple Bearer token authentication (API keys), we return metadata
- * that indicates clients should use client_credentials grant with their API key.
- * 
+ *
+ * Tells MCP clients how to authenticate with our server.
+ * Supports authorization_code (with PKCE) and refresh_token grants.
+ * Public clients only (token_endpoint_auth_methods: none).
+ *
  * Served at: /.well-known/oauth-authorization-server (via rewrite)
- * 
- * IMPORTANT: We always use the production URL to avoid Vercel's Deployment Protection
- * on preview deployments, which returns HTML instead of JSON and breaks mcp-remote.
  */
 export async function GET() {
-  // Always use production URL to avoid preview deployment protection issues
-  // Preview deployments have Vercel Authentication enabled which intercepts
-  // requests and returns HTML, breaking mcp-remote's JSON parser
   const baseUrl = 'https://bos-3-0.vercel.app';
 
-  // Return OAuth metadata that indicates Bearer token auth is supported
   return NextResponse.json({
     issuer: baseUrl,
     authorization_endpoint: `${baseUrl}/api/mcp/authorize`,
     token_endpoint: `${baseUrl}/api/mcp/token`,
     registration_endpoint: `${baseUrl}/api/mcp/register`,
-    token_endpoint_auth_methods_supported: ['client_secret_basic', 'client_secret_post', 'none'],
-    grant_types_supported: ['client_credentials', 'authorization_code'],
-    response_types_supported: ['code', 'token'],
+    response_types_supported: ['code'],
+    response_modes_supported: ['query'],
+    grant_types_supported: ['authorization_code', 'refresh_token'],
+    token_endpoint_auth_methods_supported: ['none'],
     code_challenge_methods_supported: ['S256'],
-    scopes_supported: ['mcp:tools', 'mcp:resources'],
-    // Tell clients the MCP endpoint location
-    mcp_endpoint: `${baseUrl}/api/mcp`,
+    scopes_supported: ['read:brand'],
   }, {
     headers: {
       'Cache-Control': 'public, max-age=3600',

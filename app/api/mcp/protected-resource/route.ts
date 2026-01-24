@@ -20,7 +20,7 @@ export async function GET() {
   return NextResponse.json({
     resource: `${baseUrl}/api/mcp`,
     authorization_servers: [baseUrl],
-    scopes_supported: ['mcp:tools', 'mcp:resources'],
+    scopes_supported: ['read:brand'],
     bearer_methods_supported: ['header'],
   }, {
     headers: {

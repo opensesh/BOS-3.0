@@ -436,6 +436,7 @@ const handler = createMcpHandler(
 const authHandler = withMcpAuth(handler, verifyMcpToken, {
   required: true,
   requiredScopes: ['read:brand'],
+  resourceUrl: 'https://bos-3-0.vercel.app',
 });
 
 // ============================================

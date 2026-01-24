@@ -44,6 +44,14 @@ const nextConfig: NextConfig = {
         destination: '/api/mcp/oauth-metadata',
       },
       {
+        source: '/authorize',
+        destination: '/api/mcp/authorize',
+      },
+      {
+        source: '/token',
+        destination: '/api/mcp/token',
+      },
+      {
         source: '/register',
         destination: '/api/mcp/register',
       },

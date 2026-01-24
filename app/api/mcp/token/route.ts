@@ -7,7 +7,7 @@ import { createHash } from 'crypto';
  * Supports two grant types:
  *   - authorization_code: Decodes the auth code (from /authorize) to extract
  *     the API key, verifies PKCE, and returns it as the access_token.
- *   - client_credentials: Uses the client_secret directly as the access_token.
+ *   - refresh_token: Reissues an access token from the refresh token.
  */
 
 function base64UrlDecode(str: string): string {
@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     let code: string | null = null;
     let codeVerifier: string | null = null;
     let redirectUri: string | null = null;
+    let refreshToken: string | null = null;
 
     // Parse body based on content type
     if (contentType.includes('application/x-www-form-urlencoded')) {
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
       code = params.get('code');
       codeVerifier = params.get('code_verifier');
       redirectUri = params.get('redirect_uri');
+      refreshToken = params.get('refresh_token');
     } else if (contentType.includes('application/json')) {
       const body = await request.json();
       grantType = body.grant_type;
@@ -72,6 +74,7 @@ export async function POST(request: NextRequest) {
       code = body.code;
       codeVerifier = body.code_verifier;
       redirectUri = body.redirect_uri;
+      refreshToken = body.refresh_token;
     }
 
     // Also check Authorization header for client credentials (Basic auth)
@@ -120,8 +123,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           access_token: payload.key,
           token_type: 'Bearer',
-          expires_in: 31536000, // 1 year
-          scope: 'mcp:tools mcp:resources',
+          expires_in: 3600,
+          refresh_token: payload.key,
+          scope: 'read:brand',
         });
       } catch {
         return NextResponse.json({
@@ -131,28 +135,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle client_credentials grant (direct API key usage)
-    if (grantType === 'client_credentials' && clientSecret) {
+    // Handle refresh_token grant (reissue access token)
+    if (grantType === 'refresh_token' && refreshToken) {
+      // The refresh token IS the API key in our system
       return NextResponse.json({
-        access_token: clientSecret,
+        access_token: refreshToken,
         token_type: 'Bearer',
-        expires_in: 31536000, // 1 year
-        scope: 'mcp:tools mcp:resources',
+        expires_in: 3600,
+        refresh_token: refreshToken,
+        scope: 'read:brand',
       });
-    }
-
-    // Missing credentials
-    if (!clientSecret && grantType === 'client_credentials') {
-      return NextResponse.json({
-        error: 'invalid_client',
-        error_description: 'Missing client_secret. Use your BOS API key as the client_secret.',
-      }, { status: 401 });
     }
 
     // Unsupported grant type
     return NextResponse.json({
       error: 'unsupported_grant_type',
-      error_description: 'Supported: authorization_code, client_credentials',
+      error_description: 'Supported: authorization_code, refresh_token',
     }, { status: 400 });
 
   } catch (err) {

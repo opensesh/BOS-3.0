@@ -1,22 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 
 /**
  * OAuth Token Endpoint
- * 
- * Supports both authorization_code and client_credentials grants.
- * For client_credentials, the client_secret is the API key.
- * For authorization_code, the code is exchanged for an access token.
+ *
+ * Supports two grant types:
+ *   - authorization_code: Decodes the auth code (from /authorize) to extract
+ *     the API key, verifies PKCE, and returns it as the access_token.
+ *   - client_credentials: Uses the client_secret directly as the access_token.
  */
+
+function base64UrlDecode(str: string): string {
+  // Restore base64 padding and characters
+  let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4) {
+    base64 += '=';
+  }
+  return Buffer.from(base64, 'base64').toString('utf-8');
+}
+
+function verifyPkce(codeVerifier: string, codeChallenge: string, method: string): boolean {
+  if (!codeChallenge) {
+    // No PKCE required — allow
+    return true;
+  }
+
+  if (method === 'S256') {
+    const hash = createHash('sha256').update(codeVerifier).digest();
+    const computed = hash
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    return computed === codeChallenge;
+  }
+
+  // Plain method (not recommended but supported)
+  if (method === 'plain') {
+    return codeVerifier === codeChallenge;
+  }
+
+  return false;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const contentType = request.headers.get('content-type') || '';
-    
+
     let grantType: string | null = null;
     let clientId: string | null = null;
     let clientSecret: string | null = null;
     let code: string | null = null;
     let codeVerifier: string | null = null;
-    
+    let redirectUri: string | null = null;
+
     // Parse body based on content type
     if (contentType.includes('application/x-www-form-urlencoded')) {
       const text = await request.text();
@@ -26,6 +63,7 @@ export async function POST(request: NextRequest) {
       clientSecret = params.get('client_secret');
       code = params.get('code');
       codeVerifier = params.get('code_verifier');
+      redirectUri = params.get('redirect_uri');
     } else if (contentType.includes('application/json')) {
       const body = await request.json();
       grantType = body.grant_type;
@@ -33,9 +71,10 @@ export async function POST(request: NextRequest) {
       clientSecret = body.client_secret;
       code = body.code;
       codeVerifier = body.code_verifier;
+      redirectUri = body.redirect_uri;
     }
-    
-    // Also check Authorization header for client credentials
+
+    // Also check Authorization header for client credentials (Basic auth)
     const authHeader = request.headers.get('authorization');
     if (authHeader?.startsWith('Basic ')) {
       const credentials = Buffer.from(authHeader.slice(6), 'base64').toString();
@@ -43,29 +82,57 @@ export async function POST(request: NextRequest) {
       clientId = clientId || id;
       clientSecret = clientSecret || secret;
     }
-    
-    // Handle authorization_code grant
+
+    // Handle authorization_code grant (Claude Desktop flow)
     if (grantType === 'authorization_code' && code) {
-      // For our API key auth, the authorization code flow still requires
-      // the user to have an API key. We accept any valid-looking code
-      // and return a token that indicates the client needs to provide
-      // their API key via the MCP_HEADERS environment variable.
-      
-      // In production, you'd validate the code here
-      if (code.startsWith('bos_auth_')) {
+      try {
+        // Decode the authorization code to extract the API key
+        const decoded = base64UrlDecode(code);
+        const payload = JSON.parse(decoded);
+
+        if (!payload.key) {
+          return NextResponse.json({
+            error: 'invalid_grant',
+            error_description: 'Authorization code is invalid or expired',
+          }, { status: 400 });
+        }
+
+        // Verify PKCE if a code_verifier was provided
+        if (codeVerifier && payload.challenge) {
+          const pkceValid = verifyPkce(codeVerifier, payload.challenge, payload.method || 'S256');
+          if (!pkceValid) {
+            return NextResponse.json({
+              error: 'invalid_grant',
+              error_description: 'PKCE verification failed',
+            }, { status: 400 });
+          }
+        }
+
+        // Check code expiry (10 minutes)
+        if (payload.ts && Date.now() - payload.ts > 10 * 60 * 1000) {
+          return NextResponse.json({
+            error: 'invalid_grant',
+            error_description: 'Authorization code has expired',
+          }, { status: 400 });
+        }
+
+        // Return the API key as the access token
         return NextResponse.json({
-          access_token: clientSecret || 'PROVIDE_YOUR_API_KEY_VIA_MCP_HEADERS',
+          access_token: payload.key,
           token_type: 'Bearer',
           expires_in: 31536000, // 1 year
           scope: 'mcp:tools mcp:resources',
         });
+      } catch {
+        return NextResponse.json({
+          error: 'invalid_grant',
+          error_description: 'Failed to decode authorization code',
+        }, { status: 400 });
       }
     }
-    
-    // For client_credentials grant, the client_secret IS the API key
+
+    // Handle client_credentials grant (direct API key usage)
     if (grantType === 'client_credentials' && clientSecret) {
-      // Return the API key as the access token
-      // The client will use this as a Bearer token
       return NextResponse.json({
         access_token: clientSecret,
         token_type: 'Bearer',
@@ -73,7 +140,7 @@ export async function POST(request: NextRequest) {
         scope: 'mcp:tools mcp:resources',
       });
     }
-    
+
     // Missing credentials
     if (!clientSecret && grantType === 'client_credentials') {
       return NextResponse.json({
@@ -81,13 +148,13 @@ export async function POST(request: NextRequest) {
         error_description: 'Missing client_secret. Use your BOS API key as the client_secret.',
       }, { status: 401 });
     }
-    
+
     // Unsupported grant type
     return NextResponse.json({
       error: 'unsupported_grant_type',
-      error_description: 'Supported grant types: client_credentials, authorization_code. Use your API key as the client_secret.',
+      error_description: 'Supported: authorization_code, client_credentials',
     }, { status: 400 });
-    
+
   } catch (err) {
     console.error('Token endpoint error:', err);
     return NextResponse.json({
@@ -97,7 +164,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Support OPTIONS for CORS preflight
+// CORS preflight
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
@@ -108,4 +175,3 @@ export async function OPTIONS() {
     },
   });
 }
-

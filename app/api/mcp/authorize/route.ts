@@ -263,13 +263,20 @@ export async function POST(request: NextRequest) {
   const code = base64UrlEncode(codePayload);
 
   // Redirect back to the client with the authorization code
+  // Use raw Response with Location header because NextResponse.redirect()
+  // cannot redirect to a different origin (e.g., http://localhost:PORT)
   const redirect = new URL(redirectUri);
   redirect.searchParams.set('code', code);
   if (state) {
     redirect.searchParams.set('state', state);
   }
 
-  return NextResponse.redirect(redirect.toString(), 302);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: redirect.toString(),
+    },
+  });
 }
 
 /**

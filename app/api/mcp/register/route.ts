@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       response_types: body.response_types || ['code'],
       client_name: body.client_name || 'MCP Client',
       redirect_uris: body.redirect_uris || [],
-      scope: body.scope || 'mcp:tools mcp:resources',
+      scope: body.scope || 'read:brand',
     }, { status: 201 });
 
   } catch {

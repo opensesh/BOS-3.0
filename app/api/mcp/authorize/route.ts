@@ -35,17 +35,18 @@ export async function GET(request: NextRequest) {
   const responseType = searchParams.get('response_type');
   const scope = searchParams.get('scope');
 
+  console.log('[MCP Authorize]', {
+    clientId,
+    redirectUri: redirectUri?.substring(0, 50),
+    responseType,
+    scope,
+    hasCodeChallenge: !!codeChallenge,
+  });
+
   if (!clientId || !redirectUri) {
     return NextResponse.json({
       error: 'invalid_request',
       error_description: 'Missing required parameters: client_id, redirect_uri',
-    }, { status: 400 });
-  }
-
-  if (responseType !== 'code') {
-    return NextResponse.json({
-      error: 'unsupported_response_type',
-      error_description: 'Only response_type=code is supported',
     }, { status: 400 });
   }
 
@@ -169,7 +170,7 @@ export async function GET(request: NextRequest) {
       <input type="hidden" name="code_challenge" value="${escapeHtml(codeChallenge || '')}" />
       <input type="hidden" name="code_challenge_method" value="${escapeHtml(codeChallengeMethod || '')}" />
       <input type="hidden" name="response_type" value="code" />
-      <input type="hidden" name="scope" value="${escapeHtml(scope || 'mcp:tools mcp:resources')}" />
+      <input type="hidden" name="scope" value="${escapeHtml(scope || 'read:brand')}" />
       <label for="api_key">API Key</label>
       <input
         type="password"

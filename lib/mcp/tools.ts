@@ -8,6 +8,12 @@
 
 import { createClient } from '@supabase/supabase-js';
 import tokens from '@/lib/brand-styles/tokens.json';
+import {
+  getBaseUrl,
+  getAppUrls,
+  getBundleUrl,
+  getDesignTokenFileUrls,
+} from './constants';
 
 // ============================================
 // Types
@@ -90,23 +96,16 @@ function getSupabaseAdmin() {
 }
 
 /**
- * Get the base URL for branded asset proxy.
- * Uses NEXT_PUBLIC_APP_URL, VERCEL_URL, or falls back to localhost.
- */
-function getBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'http://localhost:3000';
-}
-
-/**
  * Generate a branded download URL for an asset (hides Supabase infrastructure).
+ * If the storage path is already a full URL (e.g., legacy uploadthing URLs),
+ * return it directly to maintain backwards compatibility.
  */
 function getBrandedAssetUrl(storagePath: string, bucket: 'brand-assets' | 'brand-guidelines' = 'brand-assets'): string {
+  // If it's already a full URL, return it directly (legacy uploadthing support)
+  if (storagePath.startsWith('http://') || storagePath.startsWith('https://')) {
+    return storagePath;
+  }
+
   const base = getBaseUrl();
   const bucketParam = bucket === 'brand-guidelines' ? '?bucket=brand-guidelines' : '';
   return `${base}/api/brand/assets/download/${storagePath}${bucketParam}`;
@@ -218,7 +217,8 @@ export async function searchBrandKnowledge(
       results: mappedResults,
       total: mappedResults.length,
     },
-    usage_hint: 'Use these excerpts as context when writing content or answering brand questions. The content field contains the most relevant passage.',
+    appUrls: getAppUrls(['brandHub', 'guidelines']),
+    usage_hint: 'Use these excerpts as context when writing content or answering brand questions. The content field contains the most relevant passage. Visit appUrls.brandHub for full brand documentation.',
     related_tools: ['get_brand_voice', 'get_brand_context'],
   };
 }
@@ -274,7 +274,8 @@ export async function getBrandColors(
       colors: mappedColors,
       total: mappedColors.length,
     },
-    usage_hint: 'Charcoal (#191919) for dark backgrounds/text. Vanilla (#FFFAEE) for light backgrounds. Aperol (#FE5102) ONLY for CTAs and badges — max 10% of any composition. Never use Aperol for borders.',
+    appUrls: getAppUrls(['colors', 'designTokens', 'brandHub']),
+    usage_hint: 'Charcoal (#191919) for dark backgrounds/text. Vanilla (#FFFAEE) for light backgrounds. Aperol (#FE5102) ONLY for CTAs and badges — max 10% of any composition. Never use Aperol for borders. Visit appUrls.colors to see colors in the BOS interface.',
     related_tools: ['get_design_tokens', 'get_brand_context'],
   };
 }
@@ -330,7 +331,8 @@ export async function getBrandAssets(
       assets: mappedAssets,
       total: mappedAssets.length,
     },
-    usage_hint: 'URLs are direct download links from the Brand Operating System. Use the variant field to choose appropriate versions (light/dark/mono/glass).',
+    appUrls: getAppUrls(['logos', 'brandHub', 'artDirection']),
+    usage_hint: 'URLs are direct download links from the Brand Operating System. Use the variant field to choose appropriate versions (light/dark/mono/glass). Visit appUrls.logos to manage logo assets in BOS.',
     related_tools: ['search_brand_assets', 'get_brand_guidelines'],
   };
 }
@@ -371,9 +373,10 @@ export async function getBrandGuidelines(
     title: guide.title,
     slug: guide.slug,
     type: guide.guideline_type,
-    url: guide.url || (guide.storage_path
+    // Proxy URL takes precedence if storage_path exists (hides infrastructure)
+    url: guide.storage_path
       ? getBrandedAssetUrl(guide.storage_path, 'brand-guidelines')
-      : null),
+      : guide.url || null,
     embedUrl: guide.embed_url,
     description: guide.description,
     category: guide.category,
@@ -389,7 +392,8 @@ export async function getBrandGuidelines(
       guidelines: mappedGuidelines,
       total: mappedGuidelines.length,
     },
-    usage_hint: 'Guidelines provide comprehensive reference documents. Use search_brand_knowledge for quick answers, or these for deep dives into specific topics.',
+    appUrls: getAppUrls(['guidelines', 'brandHub', 'artDirection']),
+    usage_hint: 'Guidelines provide comprehensive reference documents. Use search_brand_knowledge for quick answers, or these for deep dives into specific topics. Visit appUrls.guidelines to browse all guidelines in BOS.',
     related_tools: ['search_brand_knowledge', 'get_brand_context'],
   };
 }
@@ -440,7 +444,8 @@ export async function searchBrandAssets(
       results: mappedResults,
       total: mappedResults.length,
     },
-    usage_hint: 'Results are ranked by visual/semantic relevance. Higher relevance scores indicate stronger matches to your description.',
+    appUrls: getAppUrls(['logos', 'brandHub', 'artDirection']),
+    usage_hint: 'Results are ranked by visual/semantic relevance. Higher relevance scores indicate stronger matches to your description. Visit appUrls.logos to browse all assets in BOS.',
     related_tools: ['get_brand_assets', 'get_brand_guidelines'],
   };
 }
@@ -523,7 +528,8 @@ export async function getBrandContext(
   return {
     summary: `Brand primer for Open Session: ${brandColors.length} core colors (${brandColors.map(c => c.name).join(', ')}), voice is ${context.voice.traits.slice(0, 4).join(', ')}. Key rule: Aperol accent max 10%, warm neutrals only.`,
     data: context,
-    usage_hint: 'Use this as your brand personality card. Embody the voice traits in all content. Reference colors and rules when making design decisions.',
+    appUrls: getAppUrls(['brandHub', 'colors', 'guidelines', 'voice']),
+    usage_hint: 'Use this as your brand personality card. Embody the voice traits in all content. Reference colors and rules when making design decisions. Visit appUrls.brandHub for the full brand experience.',
     related_tools: ['get_brand_voice', 'get_brand_colors', 'get_design_tokens'],
   };
 }
@@ -586,15 +592,19 @@ export async function getDesignTokens(
   }
 
   return {
-    summary: `Design tokens exported as ${format} (scopes: ${scopes.join(', ')}). Includes ${Object.keys(scopedData).length} token categories.`,
+    summary: `Design tokens exported as ${format} (scopes: ${scopes.join(', ')}). Includes ${Object.keys(scopedData).length} token categories. Download the complete bundle at bundleUrl.`,
     data: {
       format,
       scopes,
       tokens: formatted,
+      bundleUrl: getBundleUrl(),
+      bundleUrlWithFonts: getBundleUrl(true),
+      individualFiles: getDesignTokenFileUrls(),
     },
+    appUrls: getAppUrls(['designTokens', 'colors', 'fonts', 'brandHub']),
     usage_hint: format === 'json'
-      ? 'Use these tokens directly in your design system configuration. Colors use hex values, spacing uses rem units.'
-      : `Copy this ${format.toUpperCase()} output directly into your project. All values are production-ready.`,
+      ? 'Use these tokens directly in your design system configuration. Colors use hex values, spacing uses rem units. Download bundleUrl for all files as a ZIP, or use individualFiles for specific downloads.'
+      : `Copy this ${format.toUpperCase()} output directly into your project. All values are production-ready. Download bundleUrl for the complete package including CSS and Tailwind config.`,
     related_tools: ['get_brand_colors', 'get_typography_system', 'get_brand_context'],
   };
 }
@@ -657,7 +667,8 @@ export async function getBrandVoice(
   return {
     summary: `Brand voice guidance${platform ? ` for ${platform}` : ''}${content_type ? ` (${content_type} content)` : ''}: ${traits.slice(0, 4).join(', ')}. Posture: steward, not advisor.`,
     data: voice,
-    usage_hint: 'Apply these voice traits to all content you create. Use the principles as a checklist before finalizing copy. Source excerpts provide additional context from brand documentation.',
+    appUrls: getAppUrls(['voice', 'brandHub', 'guidelines']),
+    usage_hint: 'Apply these voice traits to all content you create. Use the principles as a checklist before finalizing copy. Source excerpts provide additional context from brand documentation. Visit appUrls.voice for full voice guidance.',
     related_tools: ['get_writing_style', 'search_brand_knowledge', 'get_brand_context'],
   };
 }
@@ -714,7 +725,8 @@ export async function getWritingStyle(
   return {
     summary: `Writing style guidance for "${style_type}": ${finalResults.length} relevant excerpt(s) from brand documentation.`,
     data: styleGuide,
-    usage_hint: 'Use the excerpts as reference when crafting content. The general_rules apply to all written content regardless of format.',
+    appUrls: getAppUrls(['voice', 'brandHub', 'guidelines']),
+    usage_hint: 'Use the excerpts as reference when crafting content. The general_rules apply to all written content regardless of format. Visit appUrls.voice for full voice and style guidance.',
     related_tools: ['get_brand_voice', 'search_brand_knowledge'],
   };
 }
@@ -770,7 +782,8 @@ export async function getTypographySystem(
   return {
     summary: `Typography system: ${tokens.typography.fontFamilies.display.value} (display/body), ${tokens.typography.fontFamilies.mono.value} (accent, max 2/viewport). 3 weights: 400, 500, 700.`,
     data: typography,
-    usage_hint: 'Apply the hierarchy directly to your heading elements. Use the font stack with fallbacks for CSS. Remember: Offbit accent font is strictly limited to 2 instances per viewport.',
+    appUrls: getAppUrls(['fonts', 'designTokens', 'brandHub']),
+    usage_hint: 'Apply the hierarchy directly to your heading elements. Use the font stack with fallbacks for CSS. Remember: Offbit accent font is strictly limited to 2 instances per viewport. Visit appUrls.fonts for typography documentation.',
     related_tools: ['get_design_tokens', 'get_brand_context'],
   };
 }

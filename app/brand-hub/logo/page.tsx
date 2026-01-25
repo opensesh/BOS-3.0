@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import JSZip from 'jszip';
 import { useTheme } from 'next-themes';
+import { useSearchParams } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
 import { BrandHubLayout } from '@/components/brand-hub/BrandHubLayout';
 import { LogoSettingsTableModal } from '@/components/brand-hub/LogoSettingsTableModal';
@@ -274,11 +275,17 @@ function getDisplayName(logoType: string): string {
   return displayNames[logoType] || logoType.charAt(0).toUpperCase() + logoType.slice(1);
 }
 
-export default function LogoPage() {
+/**
+ * Inner component that handles the logo page logic including auto-download
+ */
+function LogoPageContent() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  
+  const [autoDownloadTriggered, setAutoDownloadTriggered] = useState(false);
+  const searchParams = useSearchParams();
+  const downloadParam = searchParams.get('download');
+
   // Fetch logos from Supabase
   const { mainLogos, accessoryLogos, isLoading, error, refresh } = useBrandLogos();
   
@@ -356,6 +363,59 @@ export default function LogoPage() {
 
   const allLogoGroups = useMemo(() => [...groupedMainLogos, ...groupedAccessoryLogos], [groupedMainLogos, groupedAccessoryLogos]);
 
+  // Helper to download a single logo by filename
+  const downloadSingleLogo = useCallback(async (logo: BrandLogo) => {
+    if (!logo.publicUrl) return;
+
+    try {
+      const response = await fetch(logo.publicUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = logo.filename;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Failed to download logo:', err);
+    }
+  }, []);
+
+  // Auto-download handler for MCP-triggered downloads
+  const handleAutoDownload = useCallback(async () => {
+    if (!downloadParam || isLoading || autoDownloadTriggered) return;
+
+    // Mark as triggered to prevent multiple downloads
+    setAutoDownloadTriggered(true);
+
+    // Handle "all" download request
+    if (downloadParam === 'all') {
+      // This will be handled by handleDownloadAll which is defined later
+      return;
+    }
+
+    // Find the matching logo by filename across all logos
+    const allLogos = [...mainLogos, ...accessoryLogos];
+    const targetLogo = allLogos.find((logo) => {
+      const filenameMatch = logo.filename === downloadParam;
+      const publicUrlMatch = logo.publicUrl?.includes(downloadParam);
+      return filenameMatch || publicUrlMatch;
+    });
+
+    if (targetLogo) {
+      await downloadSingleLogo(targetLogo);
+    }
+  }, [downloadParam, isLoading, autoDownloadTriggered, mainLogos, accessoryLogos, downloadSingleLogo]);
+
+  // Trigger auto-download when logos are loaded and download param is present
+  useEffect(() => {
+    if (mounted && !isLoading && downloadParam && mainLogos.length > 0) {
+      handleAutoDownload();
+    }
+  }, [mounted, isLoading, downloadParam, mainLogos.length, handleAutoDownload]);
+
   const [mainColors, setMainColors] = useState<Record<string, ColorVariant>>({});
   const [accessoryColors, setAccessoryColors] = useState<Record<string, ColorVariant>>({});
 
@@ -425,17 +485,17 @@ export default function LogoPage() {
     }
   };
 
-  const handleDownloadAll = async () => {
+  const handleDownloadAll = useCallback(async () => {
     try {
       const zip = new JSZip();
-      
+
       // Create an array of promises to fetch all images
       const promises = allLogoGroups.map(async (logoGroup) => {
         const colorVariant = allColors[logoGroup.id] || 'vanilla';
         const logo = logoGroup.logos[colorVariant] || logoGroup.logos.vanilla;
-        
+
         if (!logo?.publicUrl) return;
-        
+
         try {
           const response = await fetch(logo.publicUrl);
           const blob = await response.blob();
@@ -461,7 +521,14 @@ export default function LogoPage() {
     } catch (error) {
       console.error('Failed to create zip file:', error);
     }
-  };
+  }, [allLogoGroups, allColors]);
+
+  // Handle auto-download "all" case after handleDownloadAll is defined
+  useEffect(() => {
+    if (mounted && !isLoading && downloadParam === 'all' && autoDownloadTriggered && allLogoGroups.length > 0) {
+      handleDownloadAll();
+    }
+  }, [mounted, isLoading, downloadParam, autoDownloadTriggered, allLogoGroups.length, handleDownloadAll]);
 
   if (isLoading) {
     return (
@@ -582,5 +649,31 @@ export default function LogoPage() {
         onClose={() => setIsSettingsOpen(false)}
       />
     </div>
+  );
+}
+
+/**
+ * Logo Page with Suspense boundary for useSearchParams
+ */
+export default function LogoPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen bg-[var(--bg-primary)] text-[var(--fg-primary)] font-sans">
+          <Sidebar />
+          <BrandHubLayout
+            title="Logo"
+            description="Our logo system includes multiple lockups for different contexts."
+          >
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-6 h-6 animate-spin text-[var(--fg-tertiary)]" />
+              <span className="ml-2 text-[var(--fg-tertiary)]">Loading logos...</span>
+            </div>
+          </BrandHubLayout>
+        </div>
+      }
+    >
+      <LogoPageContent />
+    </Suspense>
   );
 }

@@ -12,7 +12,9 @@ import {
   getBaseUrl,
   getAppUrls,
   getBundleUrl,
+  getLogosBundleUrl,
   getDesignTokenFileUrls,
+  BOS_APP_ROUTES,
 } from './constants';
 
 // ============================================
@@ -290,6 +292,7 @@ export async function getBrandAssets(
   const { category = 'all', variant, limit = 20 } = params;
   const effectiveLimit = Math.min(limit, 100);
   const supabase = getSupabaseAdmin();
+  const base = getBaseUrl();
 
   let query = supabase
     .from('brand_assets')
@@ -311,28 +314,46 @@ export async function getBrandAssets(
     throw new Error('Failed to fetch assets');
   }
 
-  const mappedAssets = ((assets || []) as BrandAsset[]).map((asset) => ({
-    id: asset.id,
-    name: asset.name,
-    filename: asset.filename,
-    description: asset.description,
-    category: asset.category,
-    variant: asset.variant,
-    url: getBrandedAssetUrl(asset.storage_path),
-    mimeType: asset.mime_type,
-    metadata: asset.metadata,
-  }));
+  const mappedAssets = ((assets || []) as BrandAsset[]).map((asset) => {
+    const isLogo = asset.category === 'logos';
+
+    return {
+      id: asset.id,
+      name: asset.name,
+      filename: asset.filename,
+      description: asset.description,
+      category: asset.category,
+      variant: asset.variant,
+      // Page URL with auto-download (primary for users) - only for logos
+      pageUrl: isLogo
+        ? `${base}${BOS_APP_ROUTES.logos}?download=${encodeURIComponent(asset.filename)}`
+        : null,
+      // Direct download URL (for programmatic use)
+      downloadUrl: getBrandedAssetUrl(asset.storage_path),
+      // Legacy: keep `url` for backwards compatibility
+      url: getBrandedAssetUrl(asset.storage_path),
+      mimeType: asset.mime_type,
+      metadata: asset.metadata,
+    };
+  });
 
   const categories = [...new Set(mappedAssets.map(a => a.category))];
+  const hasLogos = mappedAssets.some(a => a.category === 'logos');
 
   return {
-    summary: `${mappedAssets.length} asset(s) found${category !== 'all' ? ` in ${category}` : ''} (categories: ${categories.join(', ')}).`,
+    summary: `${mappedAssets.length} asset(s) found${category !== 'all' ? ` in ${category}` : ''} (categories: ${categories.join(', ')}).${hasLogos ? ' Logo bundle available at bundleUrl.' : ''}`,
     data: {
       assets: mappedAssets,
       total: mappedAssets.length,
+      ...(hasLogos && {
+        bundleUrl: getLogosBundleUrl(),
+        bundleNote: 'Download all logos as a single ZIP file',
+      }),
     },
     appUrls: getAppUrls(['logos', 'brandHub', 'artDirection']),
-    usage_hint: 'URLs are direct download links from the Brand Operating System. Use the variant field to choose appropriate versions (light/dark/mono/glass). Visit appUrls.logos to manage logo assets in BOS.',
+    usage_hint: hasLogos
+      ? 'For logos: pageUrl opens the BOS logo page and triggers auto-download. bundleUrl downloads all logos as a ZIP. downloadUrl/url is the direct file link. Visit appUrls.logos to browse all logos in BOS.'
+      : 'URLs are direct download links from the Brand Operating System. Use the variant field to choose appropriate versions (light/dark/mono/glass). Visit appUrls.logos to manage logo assets in BOS.',
     related_tools: ['search_brand_assets', 'get_brand_guidelines'],
   };
 }
@@ -408,6 +429,7 @@ export async function searchBrandAssets(
   const { query, category, limit = 10 } = params;
   const effectiveLimit = Math.min(limit, 50);
   const supabase = getSupabaseAdmin();
+  const base = getBaseUrl();
 
   const queryEmbedding = await generateQueryEmbedding(query);
 
@@ -423,29 +445,47 @@ export async function searchBrandAssets(
     throw new Error('Asset search failed');
   }
 
-  const mappedResults = ((assets || []) as BrandAsset[]).map((asset) => ({
-    id: asset.id,
-    name: asset.name,
-    filename: asset.filename,
-    description: asset.description,
-    category: asset.category,
-    variant: asset.variant,
-    url: getBrandedAssetUrl(asset.storage_path),
-    mimeType: asset.mime_type,
-    relevance: Math.round((asset.similarity || 0) * 100) / 100,
-  }));
+  const mappedResults = ((assets || []) as BrandAsset[]).map((asset) => {
+    const isLogo = asset.category === 'logos';
+
+    return {
+      id: asset.id,
+      name: asset.name,
+      filename: asset.filename,
+      description: asset.description,
+      category: asset.category,
+      variant: asset.variant,
+      // Page URL with auto-download (primary for users) - only for logos
+      pageUrl: isLogo
+        ? `${base}${BOS_APP_ROUTES.logos}?download=${encodeURIComponent(asset.filename)}`
+        : null,
+      // Direct download URL (for programmatic use)
+      downloadUrl: getBrandedAssetUrl(asset.storage_path),
+      // Legacy: keep `url` for backwards compatibility
+      url: getBrandedAssetUrl(asset.storage_path),
+      mimeType: asset.mime_type,
+      relevance: Math.round((asset.similarity || 0) * 100) / 100,
+    };
+  });
 
   const topResult = mappedResults[0];
+  const hasLogos = mappedResults.some(a => a.category === 'logos');
 
   return {
-    summary: `${mappedResults.length} asset(s) matched "${query}". ${topResult ? `Best match: ${topResult.name} (${Math.round(topResult.relevance * 100)}% relevance).` : 'No strong matches.'}`,
+    summary: `${mappedResults.length} asset(s) matched "${query}". ${topResult ? `Best match: ${topResult.name} (${Math.round(topResult.relevance * 100)}% relevance).` : 'No strong matches.'}${hasLogos ? ' Logo bundle available at bundleUrl.' : ''}`,
     data: {
       query,
       results: mappedResults,
       total: mappedResults.length,
+      ...(hasLogos && {
+        bundleUrl: getLogosBundleUrl(),
+        bundleNote: 'Download all logos as a single ZIP file',
+      }),
     },
     appUrls: getAppUrls(['logos', 'brandHub', 'artDirection']),
-    usage_hint: 'Results are ranked by visual/semantic relevance. Higher relevance scores indicate stronger matches to your description. Visit appUrls.logos to browse all assets in BOS.',
+    usage_hint: hasLogos
+      ? 'For logos: pageUrl opens the BOS logo page and triggers auto-download. bundleUrl downloads all logos as a ZIP. downloadUrl/url is the direct file link. Results ranked by visual/semantic relevance.'
+      : 'Results are ranked by visual/semantic relevance. Higher relevance scores indicate stronger matches to your description. Visit appUrls.logos to browse all assets in BOS.',
     related_tools: ['get_brand_assets', 'get_brand_guidelines'],
   };
 }

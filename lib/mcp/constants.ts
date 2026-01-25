@@ -42,6 +42,7 @@ export const BOS_API_ROUTES = {
   brandCss: '/api/styles/brand.css',
   readme: '/api/styles/README.md',
   aiContext: '/api/styles/AI-CONTEXT.md',
+  logosBundle: '/api/brand/assets/bundle/logos',
 } as const;
 
 // ============================================
@@ -87,6 +88,16 @@ export function getBundleUrl(includeFonts = false): string {
   const base = getBaseUrl();
   const fontParam = includeFonts ? '?include_fonts=true' : '';
   return `${base}${BOS_API_ROUTES.stylesBundle}${fontParam}`;
+}
+
+/**
+ * Get the bundle download URL for all logos.
+ * Optionally filter by color variant (vanilla, charcoal, glass).
+ */
+export function getLogosBundleUrl(variant?: string): string {
+  const base = getBaseUrl();
+  const variantParam = variant ? `?variant=${encodeURIComponent(variant)}` : '';
+  return `${base}${BOS_API_ROUTES.logosBundle}${variantParam}`;
 }
 
 /**

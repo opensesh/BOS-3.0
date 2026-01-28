@@ -187,8 +187,8 @@ const brainCategories: CategorySection[] = [
       },
       {
         id: 'claude-config',
-        title: 'Claude Configuration',
-        description: 'Main CLAUDE.md development guide',
+        title: 'Claude.md',
+        description: 'Your main Claude development guide file',
         href: '/brain/claude-config',
         icon: FileCode,
         iconLabel: 'Config',

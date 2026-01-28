@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
+      "Write(/Users/alexbouhdary/Documents/GitHub/BOS-3.0/**)",
+      "Edit(/Users/alexbouhdary/Documents/GitHub/BOS-3.0/**)",
       "mcp__vercel__get_deployment_build_logs"
+    ],
+    "deny": [
+      "Write",
+      "Edit"
     ]
   },
   "disabledMcpjsonServers": ["framer"]

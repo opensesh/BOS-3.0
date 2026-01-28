@@ -33,6 +33,7 @@ export function ProjectStyleCard({
 }: ProjectStyleCardProps) {
   return (
     <motion.div
+      className="h-full"
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.15 }}
@@ -47,7 +48,7 @@ export function ProjectStyleCard({
           <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-secondary)] transition-colors">
             <Icon className="w-5 h-5 text-[var(--fg-secondary)]" />
           </div>
-          <ArrowRight className="w-4 h-4 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-all duration-150 flex-shrink-0 group-hover:translate-x-0.5" />
+          <ArrowRight className="w4 h-4 text-[var(--fg-tertiary)] opacity-0 group-hover:opacity-100 transition-all duration-150 flex-shrink-0 group-hover:translate-x-0.5" />
         </div>
 
         {/* Row 2: Title */}

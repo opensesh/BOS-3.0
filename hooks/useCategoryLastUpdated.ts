@@ -33,6 +33,8 @@ export interface CategoryTimestamps {
 
   // Brain categories - System
   architecture: string | null; // Always null - system generated
+  claudeConfig: string | null; // Always null - file-based
+  settingsConfig: string | null; // Always null - file-based
 }
 
 interface UseCategoryLastUpdatedOptions {
@@ -70,6 +72,8 @@ const initialTimestamps: CategoryTimestamps = {
   data: null,
   // Brain - System
   architecture: null,
+  claudeConfig: null,
+  settingsConfig: null,
 };
 
 /**
@@ -256,8 +260,10 @@ export function useCategoryLastUpdated(
         designSystem: null,
         mcpSetup: null,
         data: null,
-        // Brain - System
-        architecture: null, // Auto-generated
+        // Brain - System (file-based, no DB timestamps)
+        architecture: null,
+        claudeConfig: null,
+        settingsConfig: null,
       });
     } catch (err) {
       console.error('Error fetching category timestamps:', err);

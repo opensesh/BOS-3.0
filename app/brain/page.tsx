@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from '@/components/Sidebar';
 import { MainContent } from '@/components/MainContent';
 import { BrainSettingsModal } from '@/components/brain/BrainSettingsModal';
@@ -24,6 +24,9 @@ import {
   FileText,
   Plug,
   Database,
+  FileCode,
+  Cog,
+  ChevronDown,
 } from 'lucide-react';
 
 // Brain page card type
@@ -43,6 +46,25 @@ interface CategorySection {
   title: string;
   description: string;
   pages: BrainPageCard[];
+}
+
+// LocalStorage key for expanded sections
+const EXPANDED_SECTIONS_KEY = 'brain-expanded-sections';
+
+// Default expanded state - only Brand is expanded by default
+const defaultExpandedState: Record<string, boolean> = {
+  brand: true,
+  tools: false,
+  reference: false,
+  system: false,
+};
+
+// Smart grid utility function
+function getGridCols(count: number): string {
+  if (count === 2) return 'grid-cols-1 sm:grid-cols-2';
+  if (count === 3) return 'grid-cols-1 sm:grid-cols-3';
+  if (count === 4) return 'grid-cols-2 lg:grid-cols-4';
+  return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 }
 
 // Organized by category: Brand, Tools, Reference, System
@@ -163,6 +185,24 @@ const brainCategories: CategorySection[] = [
         iconLabel: 'System',
         timestampKey: 'architecture' as keyof CategoryTimestamps,
       },
+      {
+        id: 'claude-config',
+        title: 'Claude Configuration',
+        description: 'Main CLAUDE.md development guide',
+        href: '/brain/claude-config',
+        icon: FileCode,
+        iconLabel: 'Config',
+        timestampKey: 'claudeConfig' as keyof CategoryTimestamps,
+      },
+      {
+        id: 'settings-config',
+        title: 'Settings',
+        description: 'MCP permissions and preferences',
+        href: '/brain/settings-config',
+        icon: Cog,
+        iconLabel: 'Settings',
+        timestampKey: 'settingsConfig' as keyof CategoryTimestamps,
+      },
     ],
   },
 ];
@@ -173,9 +213,38 @@ export default function BrainPage() {
   const [isAddResourceOpen, setIsAddResourceOpen] = useState(false);
   const [isResourcesDrawerOpen, setIsResourcesDrawerOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<BrainResource | undefined>();
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(defaultExpandedState);
 
   const { resources, isLoaded, addResource, deleteResource, updateResource, getCategories } = useBrainResources();
   const { timestamps } = useCategoryLastUpdated();
+
+  // Load expanded state from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(EXPANDED_SECTIONS_KEY);
+      if (saved) {
+        setExpandedSections(JSON.parse(saved));
+      }
+    } catch {
+      // Use default state if localStorage fails
+    }
+  }, []);
+
+  // Save expanded state to localStorage when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(EXPANDED_SECTIONS_KEY, JSON.stringify(expandedSections));
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [expandedSections]);
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
 
   const handleEditResource = (resource: BrainResource) => {
     setEditingResource(resource);
@@ -242,48 +311,78 @@ export default function BrainPage() {
             </MotionItem>
 
             {/* Category Sections */}
-            <div className="space-y-10">
-              {brainCategories.map((category, categoryIndex) => (
-                <motion.div
-                  key={category.id}
-                  variants={fadeInUp}
-                  initial="hidden"
-                  animate="visible"
-                  custom={categoryIndex}
-                >
-                  {/* Category Header */}
-                  <div className="mb-4">
-                    <h2 className="text-xl font-semibold text-[var(--fg-primary)]">
-                      {category.title}
-                    </h2>
-                    <p className="text-sm text-[var(--fg-tertiary)]">
-                      {category.description}
-                    </p>
-                  </div>
+            <div className="space-y-6">
+              {brainCategories.map((category, categoryIndex) => {
+                const isExpanded = expandedSections[category.id] ?? false;
+                const cardCount = category.pages.length;
+                const gridCols = getGridCols(cardCount);
 
-                  {/* Category Cards Grid */}
+                return (
                   <motion.div
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
-                    variants={staggerContainer}
+                    key={category.id}
+                    variants={fadeInUp}
                     initial="hidden"
                     animate="visible"
+                    custom={categoryIndex}
+                    className="rounded-xl border border-[var(--border-secondary)] overflow-hidden"
                   >
-                    {category.pages.map((page, pageIndex) => (
-                      <motion.div key={page.id} variants={fadeInUp} custom={pageIndex}>
-                        <ProjectStyleCard
-                          href={page.href}
-                          title={page.title}
-                          description={page.description}
-                          icon={page.icon}
-                          iconLabel={page.iconLabel}
-                          lastUpdated={timestamps[page.timestampKey]}
-                          minHeight="140px"
-                        />
+                    {/* Collapsible Category Header */}
+                    <button
+                      onClick={() => toggleSection(category.id)}
+                      className="w-full flex items-center justify-between p-4 bg-[var(--bg-secondary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-colors"
+                    >
+                      <div className="text-left">
+                        <h2 className="text-lg font-semibold text-[var(--fg-primary)]">
+                          {category.title}
+                        </h2>
+                        <p className="text-sm text-[var(--fg-tertiary)]">
+                          {category.description}
+                        </p>
+                      </div>
+                      <motion.div
+                        animate={{ rotate: isExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex-shrink-0 ml-4"
+                      >
+                        <ChevronDown className="w-5 h-5 text-[var(--fg-tertiary)]" />
                       </motion.div>
-                    ))}
+                    </button>
+
+                    {/* Collapsible Content */}
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+                        >
+                          <motion.div
+                            className={`grid ${gridCols} gap-3 p-4`}
+                            variants={staggerContainer}
+                            initial="hidden"
+                            animate="visible"
+                          >
+                            {category.pages.map((page, pageIndex) => (
+                              <motion.div key={page.id} variants={fadeInUp} custom={pageIndex}>
+                                <ProjectStyleCard
+                                  href={page.href}
+                                  title={page.title}
+                                  description={page.description}
+                                  icon={page.icon}
+                                  iconLabel={page.iconLabel}
+                                  lastUpdated={timestamps[page.timestampKey]}
+                                  minHeight="140px"
+                                />
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
-                </motion.div>
-              ))}
+                );
+              })}
             </div>
           </PageTransition>
         </div>

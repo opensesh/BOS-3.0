@@ -44,6 +44,9 @@ const routeLabels: Record<string, string> = {
   'writing-styles': 'Writing Styles',
   'skills': 'Skills',
   'components': 'Components',
+  'design-system': 'Design System',
+  'mcp-setup': 'MCP Setup',
+  'data': 'Data Sources',
 };
 
 export function BreadcrumbProvider({ children }: { children: ReactNode }) {
